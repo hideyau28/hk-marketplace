@@ -7,9 +7,10 @@ datasource db {
 }
 
 model StoreSettings {
-  id             Int      @id @default(1)
-  storeName      String
-  tagline        String
+  // singleton row
+  id             String   @id @default("default")
+  storeName      String?  // optional so minimal payload won't crash
+  tagline        String?
   returnsPolicy  String?
   shippingPolicy String?
   createdAt      DateTime @default(now())

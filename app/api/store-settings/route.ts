@@ -32,7 +32,7 @@ function sha256(s: string) {
 
 // GET /api/store-settings
 export const GET = withApi(async (req) => {
-  const row = await prisma.storeSettings.findFirst().catch(() => null);
+  const row = await prisma.storeSettings.findUnique({ where: { id: "default" } }).catch(() => null);
   return ok(req, row ?? null);
 }, { admin: true });
 
@@ -80,9 +80,9 @@ export const PUT = withApi(
 
     // 5) first-time => do write
     const updated = await prisma.storeSettings.upsert({
-      where: { id: body?.id ?? "default" },
+      where: { id: (body?.id ?? "default") as string },
       update: body ?? {},
-      create: { id: body?.id ?? "default", ...(body ?? {}) },
+      create: { id: (body?.id ?? "default") as string, ...(body ?? {}) },
     });
 
     // 6) persist idempotency record
