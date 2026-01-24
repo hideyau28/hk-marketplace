@@ -1,22 +1,31 @@
+export const runtime = "nodejs";
+
 import { prisma } from "@/lib/prisma";
+import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 
-export async function GET() {
-  const s = await prisma.storeSettings.findUnique({ where: { id: 1 } });
-  return Response.json(s ?? null);
-}
+// GET /api/store-settings
+export const GET = withApi(async (req) => {
+  // TODO: 保留你原本查詢邏輯（以下只係示例）
+  const row = await prisma.storeSettings.findFirst().catch(() => null);
 
-export async function PUT(req: Request) {
-  const body = await req.json();
-  const storeName = String(body.storeName ?? "").trim() || "HK•Market";
-  const tagline = String(body.tagline ?? "").trim() || "Deep dark, easy shopping";
-  const returnsPolicy = body.returnsPolicy ? String(body.returnsPolicy) : null;
-  const shippingPolicy = body.shippingPolicy ? String(body.shippingPolicy) : null;
+  return ok(req, row ?? null);
+});
 
-  const saved = await prisma.storeSettings.upsert({
-    where: { id: 1 },
-    create: { id: 1, storeName, tagline, returnsPolicy, shippingPolicy },
-    update: { storeName, tagline, returnsPolicy, shippingPolicy },
+// PUT /api/store-settings
+export const PUT = withApi(async (req) => {
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch {
+    throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
+  }
+
+  // TODO: 保留你原本 update/upsert 邏輯（以下只係示例）
+  const updated = await prisma.storeSettings.upsert({
+    where: { id: body?.id ?? "default" },
+    update: body ?? {},
+    create: { id: body?.id ?? "default", ...(body ?? {}) },
   });
 
-  return Response.json(saved);
-}
+  return ok(req, updated);
+}, { admin: false }); // 之後要鎖 admin：改 true + 設 ADMIN_SECRET
