@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model StoreSettings {
+  id             Int      @id @default(1)
+  storeName      String
+  tagline        String
+  returnsPolicy  String?
+  shippingPolicy String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
