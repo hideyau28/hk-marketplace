@@ -2,26 +2,26 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma?: PrismaClient;
-  pgPool?: Pool;
-};
+/**
+ * NOTE:
+ * - Do NOT use @prisma/extension-accelerate here unless you provide accelerateUrl.
+ * - For Neon Postgres, adapter-pg is sufficient.
+ */
 
-const pool =
-  globalForPrisma.pgPool ??
-  new Pool({
-    connectionString: process.env.DATABASE_URL,
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+
+function makeClient() {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error("DATABASE_URL is not set");
+  }
+
+  const pool = new Pool({ connectionString: url });
+  return new PrismaClient({
+    adapter: new PrismaPg(pool),
   });
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.pgPool = pool;
-
-const adapter = new PrismaPg(pool);
-
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-    log: ["error", "warn"],
-  });
+export const prisma = globalForPrisma.prisma ?? makeClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

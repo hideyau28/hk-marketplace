@@ -34,7 +34,7 @@ function sha256(s: string) {
 export const GET = withApi(async (req) => {
   const row = await prisma.storeSettings.findFirst().catch(() => null);
   return ok(req, row ?? null);
-}, { admin: true });
+});
 
 // PUT /api/store-settings (admin + idempotency)
 export const PUT = withApi(
