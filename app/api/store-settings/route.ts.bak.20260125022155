@@ -68,7 +68,11 @@ export const PUT = withApi(
     if (existing) {
       if (existing.requestHash !== requestHash) {
         // same key but different payload => conflict
-        throw new ApiError(409, "CONFLICT", "Idempotency key already used with different payload");
+        throw new ApiError(
+          409,
+          "BAD_REQUEST",
+          "Idempotency key already used with different payload"
+        );
       }
       // replay => return stored response
       return ok(req, existing.responseJson);
