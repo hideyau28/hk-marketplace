@@ -1,5 +1,0 @@
-{
-  "nav": { "search": "Search products", "collections": "My Collections", "orders": "My Orders", "cart": "Cart", "signin": "Sign in" },
-  "home": { "featured": "Featured", "trending": "Trending", "forYou": "For you", "byTag": "Curated by tag", "viewAll": "View all" },
-  "product": { "addToCart": "Add to cart", "buyNow": "Buy now" }
-}

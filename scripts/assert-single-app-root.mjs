@@ -1,15 +1,24 @@
-import fs from "fs";
+import fs from "node:fs";
 
-const hasApp = fs.existsSync("app");
-const hasSrcApp = fs.existsSync("src/app");
+const pairs = [
+  ["app", "src/app"],
+  ["lib", "src/lib"],
+  ["components", "src/components"],
+  ["messages", "src/messages"],
+];
 
-if (hasApp && hasSrcApp) {
-  console.error("ERROR: Both app/ and src/app/ exist. Keep only one.");
-  console.error("app/:", hasApp ? "EXISTS" : "missing");
-  console.error("src/app/:", hasSrcApp ? "EXISTS" : "missing");
-  process.exit(1);
+let ok = true;
+
+for (const [a, b] of pairs) {
+  const hasA = fs.existsSync(a);
+  const hasB = fs.existsSync(b);
+
+  if (hasA && hasB) {
+    console.error(`ERROR: Duplicate sources detected: "${a}" and "${b}" both exist. Keep ONE only.`);
+    ok = false;
+  } else {
+    console.log(`OK: "${a}" = ${hasA ? "EXISTS" : "missing"} | "${b}" = ${hasB ? "EXISTS" : "missing"}`);
+  }
 }
 
-console.log("OK: Single App Router directory detected");
-console.log("app/:", hasApp ? "EXISTS" : "missing");
-console.log("src/app/:", hasSrcApp ? "EXISTS" : "missing");
+if (!ok) process.exit(1);

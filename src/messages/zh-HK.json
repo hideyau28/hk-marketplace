@@ -1,5 +1,0 @@
-{
-  "nav": { "search": "搜尋商品", "collections": "我的清單", "orders": "我的訂單", "cart": "購物車", "signin": "登入" },
-  "home": { "featured": "今日精選", "trending": "熱門", "forYou": "你可能鍾意", "byTag": "按標籤精選", "viewAll": "查看全部" },
-  "product": { "addToCart": "加入購物車", "buyNow": "立即購買" }
-}
