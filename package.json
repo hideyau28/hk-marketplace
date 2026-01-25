@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "next dev -p 3012",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3012",
     "lint": "eslint",
     "prebuild": "node scripts/assert-single-app-root.mjs",
     "smoke": "bash scripts/smoke-store-settings.sh",
-    "ci:build": "npx prisma generate && npm run build"
+    "ci:build": "npx prisma generate && npm run build",
+    "ci:smoke": "BASE=http://localhost:3012/api/store-settings bash scripts/smoke-store-settings.sh"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",

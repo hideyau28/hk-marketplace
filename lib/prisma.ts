@@ -8,7 +8,30 @@ import { Pool } from "pg";
  * - For Neon Postgres, adapter-pg is sufficient.
  */
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient; pool?: Pool };
+
+function isLocalhost(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
+function normalizeDbUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    const isLocal = isLocalhost(parsed.hostname);
+
+    // If localhost or already has sslmode, keep as-is
+    if (isLocal || parsed.searchParams.has("sslmode")) {
+      return url;
+    }
+
+    // For remote hosts without sslmode, add sslmode=require
+    parsed.searchParams.set("sslmode", "require");
+    return parsed.toString();
+  } catch {
+    // If URL parsing fails, return original
+    return url;
+  }
+}
 
 function makeClient() {
   const url = process.env.DATABASE_URL;
@@ -16,7 +39,26 @@ function makeClient() {
     throw new Error("DATABASE_URL is not set");
   }
 
-  const pool = new Pool({ connectionString: url });
+  const normalizedUrl = normalizeDbUrl(url);
+
+  // Determine if we need SSL config for Pool
+  let needsSsl = false;
+  try {
+    const parsed = new URL(normalizedUrl);
+    needsSsl = !isLocalhost(parsed.hostname);
+  } catch {
+    // If parse fails, assume remote (safe default)
+    needsSsl = true;
+  }
+
+  const poolConfig: any = { connectionString: normalizedUrl };
+  if (needsSsl) {
+    poolConfig.ssl = { rejectUnauthorized: true };
+  }
+
+  const pool = new Pool(poolConfig);
+  globalForPrisma.pool = pool;
+
   return new PrismaClient({
     adapter: new PrismaPg(pool),
   });

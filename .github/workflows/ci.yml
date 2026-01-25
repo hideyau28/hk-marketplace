@@ -9,6 +9,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: ci_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://ci_user:ci_password@localhost:5432/ci_db?sslmode=disable
+      ADMIN_SECRET: ci-test-secret-key
+
     steps:
       - uses: actions/checkout@v4
 
@@ -17,8 +37,40 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install
+      - name: Install dependencies
         run: npm ci
 
-      - name: Prisma generate + build
-        run: npm run ci:build
+      - name: Generate Prisma Client
+        run: npx prisma generate --schema=prisma/schema.prisma
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+
+      - name: Build Next.js
+        run: npm run build
+
+      - name: Start production server (background)
+        run: |
+          npm run start &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+
+          # Wait for server to be ready (max 60 seconds)
+          for i in {1..60}; do
+            if curl -sS http://localhost:3012/api/store-settings -o /dev/null -w "%{http_code}" | grep -q "401"; then
+              echo "Server is ready!"
+              break
+            fi
+            echo "Waiting for server... ($i/60)"
+            sleep 1
+          done
+
+      - name: Run smoke tests
+        run: npm run ci:smoke
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -n "$SERVER_PID" ]; then
+            kill $SERVER_PID || true
+          fi
