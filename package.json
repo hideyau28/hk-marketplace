@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "prebuild": "node scripts/assert-single-app-root.mjs"
+    "prebuild": "node scripts/assert-single-app-root.mjs",
+    "smoke": "bash scripts/smoke-store-settings.sh",
+    "ci:build": "npx prisma generate && npm run build"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
