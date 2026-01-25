@@ -46,31 +46,5 @@ jobs:
       - name: Run database migrations
         run: npx prisma migrate deploy
 
-      - name: Build Next.js
-        run: npm run build
-
-      - name: Start production server (background)
-        run: |
-          npm run start &
-          SERVER_PID=$!
-          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
-
-          # Wait for server to be ready (max 60 seconds)
-          for i in {1..60}; do
-            if curl -sS http://localhost:3012/api/store-settings -o /dev/null -w "%{http_code}" | grep -q "401"; then
-              echo "Server is ready!"
-              break
-            fi
-            echo "Waiting for server... ($i/60)"
-            sleep 1
-          done
-
-      - name: Run smoke tests
-        run: npm run ci:smoke
-
-      - name: Stop server
-        if: always()
-        run: |
-          if [ -n "$SERVER_PID" ]; then
-            kill $SERVER_PID || true
-          fi
+      - name: Build, start server, and run smoke tests
+        run: npm run smoke:prod
