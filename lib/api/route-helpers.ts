@@ -82,14 +82,53 @@ function assertAdmin(req: Request) {
     return;
   }
 
-  const provided =
-    req.headers.get("x-admin-secret") ||
-    (req.headers.get("authorization")?.startsWith("Bearer ")
-      ? req.headers.get("authorization")!.slice("Bearer ".length)
-      : null);
+  const headerSecret = req.headers.get("x-admin-secret");
+  const auth = req.headers.get("authorization") ?? "";
 
-  if (!provided) throw new ApiError(401, "UNAUTHORIZED", "Missing admin credential");
-  if (provided !== secret) throw new ApiError(403, "FORBIDDEN", "Invalid admin credential");
+  // 1) x-admin-secret header
+  if (headerSecret) {
+    if (headerSecret !== secret) throw new ApiError(403, "FORBIDDEN", "Invalid admin credential");
+    return;
+  }
+
+  // 2) Bearer token
+  if (auth.startsWith("Bearer ")) {
+    const token = auth.slice("Bearer ".length);
+    if (token !== secret) throw new ApiError(403, "FORBIDDEN", "Invalid admin credential");
+    return;
+  }
+
+  // 3) Basic Auth
+  if (auth.toLowerCase().startsWith("basic ")) {
+    const b64 = auth.slice(6).trim();
+    let decoded = "";
+    try {
+      // Node runtime
+      decoded = Buffer.from(b64, "base64").toString("utf8");
+    } catch {
+      // Fallback (non-Node): try atob if available
+      try {
+        decoded = (globalThis as any).atob ? (globalThis as any).atob(b64) : "";
+      } catch {
+        decoded = "";
+      }
+    }
+
+    const idx = decoded.indexOf(":");
+    const user = idx >= 0 ? decoded.slice(0, idx) : decoded;
+    const pass = idx >= 0 ? decoded.slice(idx + 1) : "";
+
+    const expectedUser = process.env.ADMIN_BASIC_USER || "admin";
+    const expectedPass = process.env.ADMIN_BASIC_PASS || secret;
+
+    if (user === expectedUser && pass === expectedPass) return;
+
+    // Wrong basic auth -> 403
+    throw new ApiError(403, "FORBIDDEN", "Invalid admin credential");
+  }
+
+  // Missing credential -> 401
+  throw new ApiError(401, "UNAUTHORIZED", "Missing admin credential");
 }
 
 export function withApi(
