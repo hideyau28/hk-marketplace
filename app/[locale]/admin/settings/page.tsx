@@ -2,6 +2,7 @@
 
 import type { Locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
+import { getAdminSecret, setAdminSecret, clearAdminSecret } from "@/lib/admin/client-secret";
 
 type StoreSettings = {
   id: string;
@@ -26,24 +27,31 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const [errorMessage, setErrorMessage] = useState("");
   const [requestId, setRequestId] = useState("");
 
-  const adminSecret = process.env.NEXT_PUBLIC_ADMIN_SECRET;
-  const hasAdminSecret = !!adminSecret;
+  const [secretInput, setSecretInput] = useState("");
+  const [adminSecret, setAdminSecretState] = useState<string | null>(null);
 
   useEffect(() => {
     params.then((p) => setLocale(p.locale as Locale));
   }, [params]);
 
   useEffect(() => {
-    loadSettings();
+    const secret = getAdminSecret();
+    setAdminSecretState(secret);
   }, []);
 
+  useEffect(() => {
+    if (adminSecret) {
+      loadSettings();
+    }
+  }, [adminSecret]);
+
   async function loadSettings() {
-    if (!hasAdminSecret) return;
+    if (!adminSecret) return;
 
     try {
       const res = await fetch("/api/store-settings", {
         headers: {
-          "x-admin-secret": adminSecret!,
+          "x-admin-secret": adminSecret,
         },
       });
 
@@ -62,7 +70,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   }
 
   async function handleSave() {
-    if (!hasAdminSecret) return;
+    if (!adminSecret) return;
 
     setSaveState("saving");
     setErrorMessage("");
@@ -75,7 +83,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
         method: "PUT",
         headers: {
           "content-type": "application/json",
-          "x-admin-secret": adminSecret!,
+          "x-admin-secret": adminSecret,
           "x-idempotency-key": idempotencyKey,
         },
         body: JSON.stringify(settings),
@@ -111,6 +119,25 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
     }
   }
 
+  function handleSetSecret() {
+    if (!secretInput.trim()) return;
+    setAdminSecret(secretInput.trim());
+    setAdminSecretState(secretInput.trim());
+    setSecretInput("");
+  }
+
+  function handleClearSecret() {
+    clearAdminSecret();
+    setAdminSecretState(null);
+    setSettings({
+      id: "default",
+      storeName: "",
+      tagline: "",
+      returnsPolicy: "",
+      shippingPolicy: "",
+    });
+  }
+
   return (
     <div className="px-4 pb-16 pt-8">
       <div className="flex items-start justify-between gap-4">
@@ -122,16 +149,48 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
         <button
           onClick={handleSave}
-          disabled={!hasAdminSecret || saveState === "saving"}
+          disabled={!adminSecret || saveState === "saving"}
           className="rounded-2xl bg-white px-4 py-3 text-black font-semibold hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saveState === "saving" ? "Saving..." : "Save"}
         </button>
       </div>
 
-      {!hasAdminSecret && (
-        <div className="mt-4 rounded-2xl bg-red-500/10 border border-red-500/20 p-4 text-red-400 text-sm">
-          ⚠️ Missing NEXT_PUBLIC_ADMIN_SECRET environment variable. Please set it to enable admin actions.
+      {!adminSecret && (
+        <div className="mt-4 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 p-4">
+          <div className="text-yellow-400 text-sm font-medium">Admin secret required</div>
+          <div className="mt-2 text-yellow-300/80 text-sm">
+            Enter your admin secret to unlock admin actions. It will be stored in sessionStorage (not in build).
+          </div>
+          <div className="mt-3 flex gap-2">
+            <input
+              type="password"
+              value={secretInput}
+              onChange={(e) => setSecretInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSetSecret()}
+              placeholder="Enter admin secret"
+              className="flex-1 rounded-2xl border border-white/10 bg-black/40 px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+            />
+            <button
+              onClick={handleSetSecret}
+              disabled={!secretInput.trim()}
+              className="rounded-2xl bg-white px-4 py-2 text-sm text-black font-semibold hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Set
+            </button>
+          </div>
+        </div>
+      )}
+
+      {adminSecret && (
+        <div className="mt-4 rounded-2xl bg-green-500/10 border border-green-500/20 p-4 flex items-center justify-between">
+          <div className="text-green-400 text-sm font-medium">Admin session active</div>
+          <button
+            onClick={handleClearSecret}
+            className="rounded-2xl bg-white/10 px-3 py-1.5 text-xs text-white font-medium hover:bg-white/20"
+          >
+            Clear
+          </button>
         </div>
       )}
 
