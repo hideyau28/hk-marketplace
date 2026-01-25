@@ -32,6 +32,17 @@ echo "OK: GET wrong secret -> 403"
 echo "OK: GET correct secret -> 200"
 echo
 
+echo "== 1b) Basic auth checks =="
+h="$(curl_head -u "admin:${ADMIN_SECRET}" "$BASE" || true)"
+[[ "$h" =~ " 200 " ]] || die "expected HTTP 200 (basic ok) but got: $h (URL=$BASE)"
+
+h="$(curl_head -u "admin:WRONG" "$BASE" || true)"
+[[ "$h" =~ " 403 " ]] || die "expected HTTP 403 (basic wrong) but got: $h (URL=$BASE)"
+
+echo "OK: GET basic ok -> 200"
+echo "OK: GET basic wrong -> 403"
+echo
+
 echo "== 2) Idempotency checks (PUT) =="
 IDEM="smoke-$(date +%s)"
 h="$(curl_head -X PUT -H "content-type: application/json" -H "x-admin-secret: ${ADMIN_SECRET}" -H "x-idempotency-key: ${IDEM}" --data "{\"id\":\"default\",\"storeName\":\"B\"}" "$BASE" || true)"
