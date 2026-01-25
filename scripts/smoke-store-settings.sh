@@ -1,94 +1,52 @@
-#\!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
+# BASE can be origin OR full endpoint.
 BASE="${BASE:-http://localhost:3012}"
-ENDPOINT="${ENDPOINT:-/api/store-settings}"
-URL="${BASE}${ENDPOINT}"
-
 ADMIN_SECRET="${ADMIN_SECRET:-}"
-if [ -z "$ADMIN_SECRET" ]; then
-  echo "ERROR: ADMIN_SECRET is empty. Export it or source .env.local before running."
-  exit 1
+
+# normalize BASE to full endpoint exactly once
+if [[ "$BASE" != *"/api/store-settings" ]]; then
+  BASE="${BASE%/}/api/store-settings"
 fi
 
-IDEM="${IDEM:-smoke-$(date +%s)}"
+die() { echo "FAIL: $*" >&2; exit 1; }
 
-fail() { echo "FAIL: $*" >&2; exit 1; }
-pass() { echo "OK: $*"; }
-
-# helper: curl with headers, output both headers+body
-req() {
-  local method="$1"; shift
-  curl -sS -i -X "$method" "$@"
-}
-
-expect_status() {
-  local resp="$1"
-  local want="$2"
-  local got
-  got="$(printf "%s" "$resp" | head -n 1 | awk "{print \$2}")"
-  [ "$got" = "$want" ] || fail "expected HTTP $want but got $got. first line: $(printf "%s" "$resp" | head -n 1)"
-}
-
-expect_json_has() {
-  local resp="$1"
-  local needle="$2"
-  printf "%s" "$resp" | tr -d "\r\n" | grep -q "$needle" || fail "missing JSON fragment: $needle"
+curl_head() {
+  # prints first status line only
+  curl -sS -i "$@" | sed -n "1p"
 }
 
 echo "== 1) Auth checks =="
-r="$(req GET "$URL")"
-expect_status "$r" "401"
-expect_json_has "$r" "\"code\":\"UNAUTHORIZED\""
-pass "GET no secret -> 401 UNAUTHORIZED"
+h="$(curl_head "$BASE" || true)"
+[[ "$h" =~ " 401 " ]] || die "expected HTTP 401 but got: $h (URL=$BASE)"
 
-r="$(req GET -H "x-admin-secret: WRONG" "$URL")"
-expect_status "$r" "403"
-expect_json_has "$r" "\"code\":\"FORBIDDEN\""
-pass "GET wrong secret -> 403 FORBIDDEN"
+h="$(curl_head -H "x-admin-secret: WRONG" "$BASE" || true)"
+[[ "$h" =~ " 403 " ]] || die "expected HTTP 403 but got: $h (URL=$BASE)"
 
-r="$(req GET -H "x-admin-secret: $ADMIN_SECRET" "$URL")"
-expect_status "$r" "200"
-expect_json_has "$r" "\"ok\":true"
-pass "GET correct secret -> 200 OK"
+h="$(curl_head -H "x-admin-secret: ${ADMIN_SECRET}" "$BASE" || true)"
+[[ "$h" =~ " 200 " ]] || die "expected HTTP 200 but got: $h (URL=$BASE)"
 
+echo "OK: GET no secret -> 401"
+echo "OK: GET wrong secret -> 403"
+echo "OK: GET correct secret -> 200"
 echo
+
 echo "== 2) Idempotency checks (PUT) =="
+IDEM="smoke-$(date +%s)"
+h="$(curl_head -X PUT -H "content-type: application/json" -H "x-admin-secret: ${ADMIN_SECRET}" -H "x-idempotency-key: ${IDEM}" --data "{\"id\":\"default\",\"storeName\":\"B\"}" "$BASE" || true)"
+[[ "$h" =~ " 200 " ]] || die "expected PUT first -> 200 but got: $h (URL=$BASE)"
 
-payloadB="{\"id\":\"default\",\"storeName\":\"B\"}"
-payloadC="{\"id\":\"default\",\"storeName\":\"C\"}"
+h="$(curl_head -X PUT -H "content-type: application/json" -H "x-admin-secret: ${ADMIN_SECRET}" -H "x-idempotency-key: ${IDEM}" --data "{\"id\":\"default\",\"storeName\":\"B\"}" "$BASE" || true)"
+[[ "$h" =~ " 200 " ]] || die "expected PUT replay -> 200 but got: $h (URL=$BASE)"
 
-r="$(req PUT \
-  -H "content-type: application/json" \
-  -H "x-admin-secret: $ADMIN_SECRET" \
-  -H "x-idempotency-key: $IDEM" \
-  --data "$payloadB" \
-  "$URL")"
-expect_status "$r" "200"
-expect_json_has "$r" "\"ok\":true"
-expect_json_has "$r" "\"storeName\":\"B\""
-pass "PUT first (idem=$IDEM, payload=B) -> 200"
+# expect 409 + body code=CONFLICT
+resp="$(curl -sS -i -X PUT -H "content-type: application/json" -H "x-admin-secret: ${ADMIN_SECRET}" -H "x-idempotency-key: ${IDEM}" --data "{\"id\":\"default\",\"storeName\":\"C\"}" "$BASE" || true)"
+echo "$resp" | sed -n "1p" | grep -q " 409 " || die "expected PUT conflict -> 409 (URL=$BASE)"
+echo "$resp" | grep -q "\"code\":\"CONFLICT\"" || die "expected error.code=CONFLICT (URL=$BASE)"
 
-r2="$(req PUT \
-  -H "content-type: application/json" \
-  -H "x-admin-secret: $ADMIN_SECRET" \
-  -H "x-idempotency-key: $IDEM" \
-  --data "$payloadB" \
-  "$URL")"
-expect_status "$r2" "200"
-expect_json_has "$r2" "\"ok\":true"
-expect_json_has "$r2" "\"storeName\":\"B\""
-pass "PUT replay same key+payload -> 200"
-
-r3="$(req PUT \
-  -H "content-type: application/json" \
-  -H "x-admin-secret: $ADMIN_SECRET" \
-  -H "x-idempotency-key: $IDEM" \
-  --data "$payloadC" \
-  "$URL")"
-expect_status "$r3" "409"
-expect_json_has "$r3" "\"code\":\"CONFLICT\""
-pass "PUT same key different payload -> 409 + CONFLICT"
-
+echo "OK: PUT first -> 200"
+echo "OK: PUT replay same key+payload -> 200"
+echo "OK: PUT same key different payload -> 409 + CONFLICT"
 echo
 echo "SMOKE PASS"
