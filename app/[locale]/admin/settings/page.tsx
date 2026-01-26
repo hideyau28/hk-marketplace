@@ -3,7 +3,28 @@
 import type { Locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { getAdminSecret, setAdminSecret, clearAdminSecret } from "@/lib/admin/client-secret";
+import {
+  Save,
+  Shield,
+  ShieldAlert,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  X,
+  Store,
+  Truck,
+  Undo2
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
+// --- Utility for Tailwind merging (simulating shadcn cn()) ---
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+// --- Types (Preserved) ---
 type StoreSettings = {
   id: string;
   storeName: string | null;
@@ -15,6 +36,7 @@ type StoreSettings = {
 type SaveState = "idle" | "saving" | "success" | "error";
 
 export default function AdminSettings({ params }: { params: Promise<{ locale: string }> }) {
+  // --- Logic State (Preserved) ---
   const [locale, setLocale] = useState<Locale>("en");
   const [settings, setSettings] = useState<StoreSettings>({
     id: "default",
@@ -30,6 +52,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const [secretInput, setSecretInput] = useState("");
   const [adminSecret, setAdminSecretState] = useState<string | null>(null);
 
+  // --- Effects (Preserved) ---
   useEffect(() => {
     params.then((p) => setLocale(p.locale as Locale));
   }, [params]);
@@ -45,6 +68,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
     }
   }, [adminSecret]);
 
+  // --- Functions (Preserved Logic) ---
   async function loadSettings() {
     if (!adminSecret) return;
 
@@ -138,123 +162,241 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
     });
   }
 
+  // --- UI Components ---
+
+  const Label = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-200", className)}>
+      {children}
+    </label>
+  );
+
+  const Description = ({ children }: { children: React.ReactNode }) => (
+    <p className="text-[0.8rem] text-zinc-400 mt-1.5">
+      {children}
+    </p>
+  );
+
+  const Input = ({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
+    <input
+      className={cn(
+        "flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 ring-offset-zinc-950 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-600 disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  );
+
+  const Textarea = ({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
+    <textarea
+      className={cn(
+        "flex min-h-[80px] w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-600 disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  );
+
   return (
-    <div className="px-4 pb-16 pt-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="text-white/60 text-sm">Admin</div>
-          <h1 className="mt-1 text-2xl font-semibold text-white">Settings</h1>
-          <div className="mt-2 text-white/60 text-sm">Single-shop storefront settings.</div>
-        </div>
+    <div className="min-h-screen bg-black text-zinc-100 pb-20">
+      <div className="mx-auto max-w-4xl px-6 py-12">
 
-        <button
-          onClick={handleSave}
-          disabled={!adminSecret || saveState === "saving"}
-          className="rounded-2xl bg-white px-4 py-3 text-black font-semibold hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {saveState === "saving" ? "Saving..." : "Save"}
-        </button>
-      </div>
-
-      {!adminSecret && (
-        <div className="mt-4 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 p-4">
-          <div className="text-yellow-400 text-sm font-medium">Admin secret required</div>
-          <div className="mt-2 text-yellow-300/80 text-sm">
-            Enter your admin secret to unlock admin actions. It will be stored in sessionStorage (not in build).
+        {/* Header Section */}
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-1.5">
+            <h1 className="text-3xl font-bold tracking-tight text-white">Store Settings</h1>
+            <p className="text-zinc-400 text-base max-w-lg">
+              Manage your storefront identity, policies, and global configurations.
+            </p>
           </div>
-          <div className="mt-3 flex gap-2">
-            <input
-              type="password"
-              value={secretInput}
-              onChange={(e) => setSecretInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSetSecret()}
-              placeholder="Enter admin secret"
-              className="flex-1 rounded-2xl border border-white/10 bg-black/40 px-4 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
-            />
+
+          <div className="flex items-center gap-4">
+            {/* Status Indicators */}
+            <AnimatePresence mode="wait">
+              {saveState === "success" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-sm font-medium text-emerald-400"
+                >
+                  <CheckCircle2 className="h-4 w-4" /> Saved
+                </motion.div>
+              )}
+              {saveState === "error" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="flex items-center gap-2 rounded-full bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-sm font-medium text-red-400"
+                >
+                  <AlertCircle className="h-4 w-4" /> Failed
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <button
-              onClick={handleSetSecret}
-              disabled={!secretInput.trim()}
-              className="rounded-2xl bg-white px-4 py-2 text-sm text-black font-semibold hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleSave}
+              disabled={!adminSecret || saveState === "saving"}
+              className={cn(
+                "inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:pointer-events-none disabled:opacity-50",
+                saveState === "saving" && "opacity-80"
+              )}
             >
-              Set
+              {saveState === "saving" ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" /> Save Changes
+                </>
+              )}
             </button>
           </div>
         </div>
-      )}
 
-      {adminSecret && (
-        <div className="mt-4 rounded-2xl bg-green-500/10 border border-green-500/20 p-4 flex items-center justify-between">
-          <div className="text-green-400 text-sm font-medium">Admin session active</div>
-          <button
-            onClick={handleClearSecret}
-            className="rounded-2xl bg-white/10 px-3 py-1.5 text-xs text-white font-medium hover:bg-white/20"
-          >
-            Clear
-          </button>
-        </div>
-      )}
+        <div className="mt-8 space-y-6">
 
-      {saveState === "success" && (
-        <div className="mt-4 rounded-2xl bg-green-500/10 border border-green-500/20 p-4 text-green-400 text-sm">
-          ✓ Settings saved successfully
-        </div>
-      )}
+          {/* Admin Secret Section (Authentication) */}
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-zinc-100 font-semibold">
+                  <Shield className={cn("h-5 w-5", adminSecret ? "text-emerald-500" : "text-amber-500")} />
+                  <h3>Admin Authentication</h3>
+                </div>
+                <p className="text-sm text-zinc-400">
+                  {adminSecret
+                    ? "Session active. You have write access to store settings."
+                    : "Enter your admin secret key to unlock editing capabilities."}
+                </p>
+              </div>
 
-      {saveState === "error" && errorMessage && (
-        <div className="mt-4 rounded-2xl bg-red-500/10 border border-red-500/20 p-4">
-          <div className="text-red-400 text-sm font-medium">Error saving settings</div>
-          <div className="mt-1 text-red-300/80 text-sm">{errorMessage}</div>
-          {requestId && (
-            <div className="mt-1 text-red-300/60 text-xs">Request ID: {requestId}</div>
-          )}
-        </div>
-      )}
+              {!adminSecret ? (
+                <div className="flex w-full md:w-auto items-center gap-2">
+                  <div className="relative flex-1 md:w-64">
+                    <Input
+                      type="password"
+                      value={secretInput}
+                      onChange={(e) => setSecretInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSetSecret()}
+                      placeholder="Enter secret key"
+                      className="pr-10 bg-black"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSetSecret}
+                    disabled={!secretInput.trim()}
+                    className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    Unlock
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleClearSecret}
+                  className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-700 bg-zinc-800 px-4 text-xs font-medium text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors"
+                >
+                  Lock Session
+                </button>
+              )}
+            </div>
 
-      <div className="mt-6 grid gap-4 max-w-3xl">
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-          <div className="text-white font-medium">Store name</div>
-          <div className="mt-2 text-white/60 text-sm">Shown in TopNav / branding.</div>
-          <input
-            value={settings.storeName || ""}
-            onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
-            className="mt-3 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
-            placeholder="e.g. Yau Store"
-          />
-        </div>
+            {/* Error Message Display */}
+            <AnimatePresence>
+              {errorMessage && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                  animate={{ height: "auto", opacity: 1, marginTop: 16 }}
+                  exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="rounded-md bg-red-950/30 border border-red-900/50 p-3 flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="text-red-400 font-medium">{errorMessage}</p>
+                      {requestId && <p className="text-red-500/60 text-xs mt-1 font-mono">ID: {requestId}</p>}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-          <div className="text-white font-medium">Tagline</div>
-          <div className="mt-2 text-white/60 text-sm">Shown on homepage hero.</div>
-          <input
-            value={settings.tagline || ""}
-            onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
-            className="mt-3 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
-            placeholder="e.g. Curated picks, easy checkout"
-          />
-        </div>
+          {/* Main Settings Form */}
+          <div className={cn("grid gap-6 transition-opacity duration-300", !adminSecret && "opacity-50 pointer-events-none grayscale-[0.5]")}>
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-          <div className="text-white font-medium">Returns Policy</div>
-          <div className="mt-2 text-white/60 text-sm">Displayed on product pages and checkout.</div>
-          <textarea
-            value={settings.returnsPolicy || ""}
-            onChange={(e) => setSettings({ ...settings, returnsPolicy: e.target.value })}
-            rows={4}
-            className="mt-3 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
-            placeholder="e.g. 30-day return policy..."
-          />
-        </div>
+            {/* General Info Card */}
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Store className="h-5 w-5 text-zinc-400" />
+                  General Information
+                </h3>
+                <p className="text-sm text-zinc-400 mt-1 border-b border-zinc-800/50 pb-4">
+                  Basic details about your storefront branding.
+                </p>
+              </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-          <div className="text-white font-medium">Shipping Policy</div>
-          <div className="mt-2 text-white/60 text-sm">Displayed on product pages and checkout.</div>
-          <textarea
-            value={settings.shippingPolicy || ""}
-            onChange={(e) => setSettings({ ...settings, shippingPolicy: e.target.value })}
-            rows={4}
-            className="mt-3 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
-            placeholder="e.g. Free shipping on orders over $50..."
-          />
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-3">
+                  <Label>Store Name</Label>
+                  <Input
+                    value={settings.storeName || ""}
+                    onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
+                    placeholder="e.g. Yau Store"
+                  />
+                  <Description>Visible in the navigation bar and browser title.</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Tagline</Label>
+                  <Input
+                    value={settings.tagline || ""}
+                    onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
+                    placeholder="e.g. Premium Tech & Lifestyle"
+                  />
+                  <Description>Featured prominently on the homepage hero section.</Description>
+                </div>
+              </div>
+            </div>
+
+            {/* Policies Card */}
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Undo2 className="h-5 w-5 text-zinc-400" />
+                  Store Policies
+                </h3>
+                <p className="text-sm text-zinc-400 mt-1 border-b border-zinc-800/50 pb-4">
+                  Define how you handle shipping and returns for your customers.
+                </p>
+              </div>
+
+              <div className="grid gap-8">
+                <div className="space-y-3">
+                  <Label>Returns Policy</Label>
+                  <Textarea
+                    value={settings.returnsPolicy || ""}
+                    onChange={(e) => setSettings({ ...settings, returnsPolicy: e.target.value })}
+                    rows={4}
+                    placeholder="e.g. Items can be returned within 30 days of delivery..."
+                    className="font-mono text-sm resize-y min-h-[120px]"
+                  />
+                  <Description>Displayed on product detail pages and during checkout.</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Shipping Policy</Label>
+                  <Textarea
+                    value={settings.shippingPolicy || ""}
+                    onChange={(e) => setSettings({ ...settings, shippingPolicy: e.target.value })}
+                    rows={4}
+                    placeholder="e.g. Standard shipping takes 3-5 business days..."
+                    className="font-mono text-sm resize-y min-h-[120px]"
+                  />
+                  <Description>Inform customers about delivery times and costs.</Description>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
