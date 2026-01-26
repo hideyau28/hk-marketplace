@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+AI routing protocol: see docs/AI_ROUTING_PROTOCOL.md (TASK PACKAGE required for L2/L3).
+
 ## Getting Started
 
 First, run the development server:
