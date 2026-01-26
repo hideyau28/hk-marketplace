@@ -5,6 +5,18 @@
 - Start dev:
   - `npm run dev`
 
+## Deployment model (single-tenant per instance)
+- This codebase is a single-tenant merchant site template (“B” model).
+- Each merchant gets a separate deployment with its own DB + ADMIN_SECRET.
+- Do NOT expose ADMIN_SECRET via `NEXT_PUBLIC_*`.
+
+## Provision a new merchant instance (minimal)
+- `npm run provision -- "<DATABASE_URL>" "<ADMIN_SECRET>"`
+  - Copies `.env.example` to `.env.local` if missing.
+  - Sets DATABASE_URL + ADMIN_SECRET in `.env.local`.
+  - Runs `npx prisma generate`, `npx prisma migrate deploy`, `npm run smoke:prod`.
+  - Next: `npm run dev`
+
 ## Production smoke (local)
 - `npm run smoke:prod`
 What it does: build -> start server on :3012 -> wait readiness -> run smoke -> stop server
@@ -44,6 +56,7 @@ Admin UI:
 - Task cutting + handoff rules: see `WORKFLOW.md`
 - Use TASK PACKAGE format for agent handoff (see `WORKFLOW.md`)
 - Generate a TASK PACKAGE quickly: `npm run taskpkg -- P1 "Objective"`
+- Provision a new single-tenant instance: `npm run provision -- "<DATABASE_URL>" "<ADMIN_SECRET>"`
 - Local verification:
   - `npm run verify:local`
 - Full verification (local + CI check for HEAD):

@@ -2,6 +2,8 @@
 
 Goal: reduce back-and-forth between ChatGPT and coding agents by using a single, complete task package per change.
 
+Deployment model note: hk-marketplace is a single-tenant merchant site template (“B” model). Each merchant = one deployment + DB + ADMIN_SECRET.
+
 ## 1) Routing Rule (L1/L2/L3)
 - L1 (cheap): planning/spec only. No code changes, no commands run.
 - L2 (primary): implement + tests + small refactors. Default for most tasks.
