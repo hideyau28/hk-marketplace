@@ -1,4 +1,5 @@
 # hk-marketplace Runbook (Minimal)
+Workflow protocol + agent handoff: see WORKFLOW.md (TASK PACKAGE required)
 
 Workflow protocol + agent handoff: see `WORKFLOW.md` (TASK PACKAGE required)
 
