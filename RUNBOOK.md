@@ -43,6 +43,7 @@ Admin UI:
 ## Workflow Protocol
 - Task cutting + handoff rules: see `WORKFLOW.md`
 - Use TASK PACKAGE format for agent handoff (see `WORKFLOW.md`)
+- Generate a TASK PACKAGE quickly: `npm run taskpkg -- P1 "Objective"`
 - Local verification:
   - `npm run verify:local`
 - Full verification (local + CI check for HEAD):
