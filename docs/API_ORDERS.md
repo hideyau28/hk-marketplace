@@ -1,3 +1,4 @@
+
 # Orders API (L1) - Cross-Project Delivery Package
 
 Purpose: reusable delivery package for Orders API. Copy into other repos as-is.
@@ -81,3 +82,14 @@ See scripts/smoke-orders.sh (wired into smoke-local / prod smoke):
 - [ ] PATCH enforces status validation (invalid -> 400 BAD_REQUEST)
 - [ ] x-request-id + JSON content-type present on success and error
 - [ ] smoke-orders passes locally and in CI
+
+## How to verify
+Recommended order (fast, consistent evidence):
+1) `npm run smoke:local`
+2) `npm run smoke:prod`
+3) `npm run ci:verify`
+
+Evidence to paste:
+- Local: `SMOKE PASS` + `=== Local Smoke Complete ===`
+- Prod: `SMOKE PASS` + `=== Production Smoke Complete ===`
+- CI: `status=completed conclusion=success ...` + a `SMOKE PASS` log line

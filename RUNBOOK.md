@@ -1,6 +1,6 @@
 # hk-marketplace Runbook (Minimal)
 
-Workflow protocol + agent handoff: see `WORKFLOW.md` (TASK PACKAGE required)
+Workflow protocol + agent handoff: see `WORKFLOW.md` (TASK PACKAGE required for L2/L3).
 
 ## Local verification (fast)
 - Recommended order:
@@ -12,64 +12,39 @@ Workflow protocol + agent handoff: see `WORKFLOW.md` (TASK PACKAGE required)
   - `Prod SMOKE PASS`
   - `CI SMOKE PASS`
 
+## Orders delivery checklist (P0)
+Every Orders-related delivery MUST paste these evidence lines:
+
+- Local: a snippet containing both:
+  - `SMOKE PASS`
+  - `=== Local Smoke Complete ===`
+
+- Prod: a snippet containing both:
+  - `SMOKE PASS`
+  - `=== Production Smoke Complete ===`
+
+- CI: `npm run ci:verify` output containing:
+  - `status=completed conclusion=success ...`
+  - a `SMOKE PASS` log line
+
+Coverage expectations (must be green in `scripts/smoke-orders.sh`):
+- Admin auth: 401 `ADMIN_AUTH_MISSING`, 403 `ADMIN_AUTH_INVALID`
+- Create validation: missing `x-idempotency-key` -> 400 `BAD_REQUEST`
+- Payload validation: invalid currency/qty/amounts -> 400 `BAD_REQUEST`
+- Idempotency: same key same payload -> 200; same key different payload -> 409 `CONFLICT`
+- Admin list/get/update: list 200; get 200; patch valid 200; patch invalid status -> 400 `BAD_REQUEST`
+
+All error responses must include:
+- `x-request-id`
+- JSON `content-type`
+- `error.code`
+
 ## Local dev
 - Create `.env.local` from `.env.example`
 - Start dev:
   - `npm run dev`
 
 ## Deployment model (single-tenant per instance)
-- This codebase is a single-tenant merchant site template (“B” model).
+- This codebase is a single-tenant merchant site template (“B” mode).
 - Each merchant gets a separate deployment with its own DB + ADMIN_SECRET.
 - Do NOT expose ADMIN_SECRET via `NEXT_PUBLIC_*`.
-
-## Provision a new merchant instance (minimal)
-- `npm run provision -- "<DATABASE_URL>" "<ADMIN_SECRET>"`
-  - Copies `.env.example` to `.env.local` if missing.
-  - Sets DATABASE_URL + ADMIN_SECRET in `.env.local`.
-  - Runs `npx prisma generate`, `npx prisma migrate deploy`, `npm run smoke:prod`.
-  - Next: `npm run dev`
-
-## Production smoke (local)
-- `npm run smoke:prod`
-What it does: build -> start server on :3012 -> wait readiness -> run smoke -> stop server
-
-## Admin auth (API)
-Admin guard accepts **one of**:
-1) `x-admin-secret: <ADMIN_SECRET>`
-2) `Authorization: Bearer <ADMIN_SECRET>`
-3) `Authorization: Basic <user:pass base64>`
-   - Defaults: `ADMIN_BASIC_USER=admin`, `ADMIN_BASIC_PASS=<ADMIN_SECRET>`
-   - Can override via env
-
-Examples:
-- Header secret:
-  - `curl -i -H "x-admin-secret: $ADMIN_SECRET" http://localhost:3012/api/store-settings`
-- Bearer:
-  - `curl -i -H "Authorization: Bearer $ADMIN_SECRET" http://localhost:3012/api/store-settings`
-- Basic:
-  - `curl -i -u "admin:$ADMIN_SECRET" http://localhost:3012/api/store-settings`
-
-Admin UI:
-- Admin secret is stored in `sessionStorage` at runtime (not bundled). You will be prompted to enter it on the settings page.
-
-## CI (GitHub Actions)
-- Trigger: push to `main` or PR
-- It runs:
-  - Postgres service
-  - `npm ci`
-  - `npx prisma generate --schema=prisma/schema.prisma`
-  - `npx prisma migrate deploy`
-  - `npm run smoke:prod`
-
-## Verify CI for current HEAD (green + SMOKE PASS)
-- `npm run ci:verify`
-
-## Workflow Protocol
-- Task cutting + handoff rules: see `WORKFLOW.md`
-- Use TASK PACKAGE format for agent handoff (see `WORKFLOW.md`)
-- Generate a TASK PACKAGE quickly: `npm run taskpkg -- P1 "Objective"`
-- Provision a new single-tenant instance: `npm run provision -- "<DATABASE_URL>" "<ADMIN_SECRET>"`
-- Local verification:
-  - `npm run verify:local`
-- Full verification (local + CI check for HEAD):
-  - `npm run verify:all`
