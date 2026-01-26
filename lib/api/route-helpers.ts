@@ -6,7 +6,9 @@ export type ApiErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "CONFLICT"
-  | "INTERNAL";
+  | "INTERNAL"
+  | "ADMIN_AUTH_MISSING"
+  | "ADMIN_AUTH_INVALID";
 
 export class ApiError extends Error {
   status: number;
@@ -87,14 +89,14 @@ function assertAdmin(req: Request) {
 
   // 1) x-admin-secret header
   if (headerSecret) {
-    if (headerSecret !== secret) throw new ApiError(403, "FORBIDDEN", "Invalid admin credential");
+    if (headerSecret !== secret) throw new ApiError(403, "ADMIN_AUTH_INVALID", "Invalid admin credential");
     return;
   }
 
   // 2) Bearer token
   if (auth.startsWith("Bearer ")) {
     const token = auth.slice("Bearer ".length);
-    if (token !== secret) throw new ApiError(403, "FORBIDDEN", "Invalid admin credential");
+    if (token !== secret) throw new ApiError(403, "ADMIN_AUTH_INVALID", "Invalid admin credential");
     return;
   }
 
@@ -124,11 +126,11 @@ function assertAdmin(req: Request) {
     if (user === expectedUser && pass === expectedPass) return;
 
     // Wrong basic auth -> 403
-    throw new ApiError(403, "FORBIDDEN", "Invalid admin credential");
+    throw new ApiError(403, "ADMIN_AUTH_INVALID", "Invalid admin credential");
   }
 
   // Missing credential -> 401
-  throw new ApiError(401, "UNAUTHORIZED", "Missing admin credential");
+  throw new ApiError(401, "ADMIN_AUTH_MISSING", "Missing admin credential");
 }
 
 export function withApi(
