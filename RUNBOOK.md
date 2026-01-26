@@ -2,6 +2,16 @@
 
 Workflow protocol + agent handoff: see `WORKFLOW.md` (TASK PACKAGE required)
 
+## Local verification (fast)
+- Recommended order:
+  - `npm run smoke:local`
+  - `npm run smoke:prod`
+  - `npm run ci:verify`
+- Evidence must include three lines:
+  - `Local SMOKE PASS`
+  - `Prod SMOKE PASS`
+  - `CI SMOKE PASS`
+
 ## Local dev
 - Create `.env.local` from `.env.example`
 - Start dev:
