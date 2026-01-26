@@ -39,3 +39,10 @@ Admin UI:
 
 ## Verify CI for current HEAD (green + SMOKE PASS)
 - `npm run ci:verify`
+
+## Workflow Protocol
+- Task cutting + handoff rules: see `WORKFLOW.md`
+- Local verification:
+  - `npm run verify:local`
+- Full verification (local + CI check for HEAD):
+  - `npm run verify:all`
