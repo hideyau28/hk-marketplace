@@ -1,5 +1,7 @@
 # hk-marketplace Runbook (Minimal)
 
+Workflow protocol + agent handoff: see `WORKFLOW.md` (TASK PACKAGE required)
+
 ## Local dev
 - Create `.env.local` from `.env.example`
 - Start dev:
