@@ -74,7 +74,7 @@ echo
 
 echo "== Orders 2) Create validations =="
 
-PAYLOAD='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-1","name":"Product 1","unitPrice":199,"quantity":2}],"amounts":{"subtotal":398,"discount":0,"deliveryFee":0,"total":398,"currency":"HKD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
+PAYLOAD='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-1","name":"Product 1","unitPrice":199,"quantity":2}],"amounts":{"subtotal":398,"discount":1,"deliveryFee":1,"total":400,"currency":"HKD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
 
 resp="$(curl_resp -X POST -H "content-type: application/json" --data "${PAYLOAD}" "$BASE")"
 h="$(echo "$resp" | sed -n "1p")"
@@ -85,6 +85,40 @@ must_have_header "$resp" "x-request-id"
 must_have_header "$resp" "content-type"
 
 echo "OK: POST missing idempotency -> 400 + BAD_REQUEST"
+echo
+
+echo "== Orders 2.1) Payload validation (negative cases) =="
+
+PAYLOAD_BAD_CURRENCY='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-1","name":"Product 1","unitPrice":199,"quantity":2}],"amounts":{"subtotal":398,"discount":1,"deliveryFee":1,"total":400,"currency":"HKDD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
+resp="$(curl_resp -X POST -H "content-type: application/json" -H "x-idempotency-key: bad-currency-$(date +%s)" --data "${PAYLOAD_BAD_CURRENCY}" "$BASE")"
+h="$(echo "$resp" | sed -n "1p")"
+[[ "$h" =~ " 400 " ]] || die "expected POST bad currency -> 400 but got: $h (URL=$BASE)"
+must_have_request_id "$resp"
+must_have_error_code "$resp" "BAD_REQUEST"
+must_have_header "$resp" "x-request-id"
+must_have_header "$resp" "content-type"
+
+PAYLOAD_BAD_QTY='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-1","name":"Product 1","unitPrice":199,"quantity":0}],"amounts":{"subtotal":398,"discount":1,"deliveryFee":1,"total":400,"currency":"HKD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
+resp="$(curl_resp -X POST -H "content-type: application/json" -H "x-idempotency-key: bad-qty-$(date +%s)" --data "${PAYLOAD_BAD_QTY}" "$BASE")"
+h="$(echo "$resp" | sed -n "1p")"
+[[ "$h" =~ " 400 " ]] || die "expected POST bad quantity -> 400 but got: $h (URL=$BASE)"
+must_have_request_id "$resp"
+must_have_error_code "$resp" "BAD_REQUEST"
+must_have_header "$resp" "x-request-id"
+must_have_header "$resp" "content-type"
+
+PAYLOAD_BAD_AMOUNTS='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-1","name":"Product 1","unitPrice":199,"quantity":2}],"amounts":{"subtotal":398,"discount":1,"deliveryFee":1,"total":0,"currency":"HKD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
+resp="$(curl_resp -X POST -H "content-type: application/json" -H "x-idempotency-key: bad-amounts-$(date +%s)" --data "${PAYLOAD_BAD_AMOUNTS}" "$BASE")"
+h="$(echo "$resp" | sed -n "1p")"
+[[ "$h" =~ " 400 " ]] || die "expected POST bad amounts -> 400 but got: $h (URL=$BASE)"
+must_have_request_id "$resp"
+must_have_error_code "$resp" "BAD_REQUEST"
+must_have_header "$resp" "x-request-id"
+must_have_header "$resp" "content-type"
+
+echo "OK: POST invalid currency -> 400 + BAD_REQUEST"
+echo "OK: POST invalid quantity -> 400 + BAD_REQUEST"
+echo "OK: POST invalid amounts -> 400 + BAD_REQUEST"
 echo
 
 echo "== Orders 3) Create with idempotency =="
@@ -108,7 +142,7 @@ body="$(resp_body "$resp")"
 ORDER_ID_REPLAY="$(echo "$body" | jq -r '.data.id')"
 [ "$ORDER_ID_REPLAY" = "$ORDER_ID" ] || die "expected same order id on idempotent replay"
 
-PAYLOAD_ALT='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-2","name":"Product 2","unitPrice":199,"quantity":2}],"amounts":{"subtotal":398,"discount":0,"deliveryFee":0,"total":398,"currency":"HKD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
+PAYLOAD_ALT='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-2","name":"Product 2","unitPrice":199,"quantity":2}],"amounts":{"subtotal":398,"discount":1,"deliveryFee":1,"total":400,"currency":"HKD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
 resp="$(curl_resp -X POST -H "content-type: application/json" -H "x-idempotency-key: ${IDEM}" --data "${PAYLOAD_ALT}" "$BASE")"
 h="$(echo "$resp" | sed -n "1p")"
 [[ "$h" =~ " 409 " ]] || die "expected POST conflict -> 409 but got: $h (URL=$BASE)"

@@ -59,7 +59,7 @@ type CreateOrderPayload = {
         discount?: number;
         deliveryFee?: number;
         total: number;
-        currency: "HKD";
+        currency: string;
     };
     fulfillment: {
         type: "pickup" | "delivery";
@@ -79,7 +79,7 @@ function assertNonEmptyString(value: unknown, field: string) {
 }
 
 function assertPositiveNumber(value: unknown, field: string) {
-    if (typeof value !== "number" || Number.isNaN(value) || value < 0) {
+    if (typeof value !== "number" || Number.isNaN(value) || value <= 0) {
         throw new ApiError(400, "BAD_REQUEST", `Missing or invalid ${field}`);
     }
 }
@@ -129,8 +129,13 @@ function parseCreatePayload(body: any): CreateOrderPayload {
     }
     assertPositiveNumber(body.amounts.total, "amounts.total");
 
-    if (body.amounts.currency !== "HKD") {
-        throw new ApiError(400, "BAD_REQUEST", "amounts.currency must be HKD");
+    const currencyRaw = body.amounts.currency;
+    if (typeof currencyRaw !== "string" || currencyRaw.trim().length === 0) {
+        throw new ApiError(400, "BAD_REQUEST", "Missing or invalid amounts.currency");
+    }
+    const currency = currencyRaw.trim().toUpperCase();
+    if (!/^[A-Z]{3}$/.test(currency)) {
+        throw new ApiError(400, "BAD_REQUEST", "amounts.currency must be 3 letters");
     }
 
     if (!body.fulfillment || typeof body.fulfillment !== "object") {
@@ -153,7 +158,10 @@ function parseCreatePayload(body: any): CreateOrderPayload {
         phone: body.phone.trim(),
         email: typeof body.email === "string" && body.email.trim().length > 0 ? body.email.trim() : undefined,
         items: body.items,
-        amounts: body.amounts,
+        amounts: {
+            ...body.amounts,
+            currency,
+        },
         fulfillment: body.fulfillment,
         note: typeof body.note === "string" && body.note.trim().length > 0 ? body.note.trim() : undefined,
     };
@@ -224,7 +232,7 @@ export const POST = withApi(async (req) => {
             amounts: payload.amounts,
             fulfillmentType: payload.fulfillment.type === "pickup" ? "PICKUP" : "DELIVERY",
             fulfillmentAddress:
-              payload.fulfillment.type === "delivery" ? (payload.fulfillment.address ?? undefined) : undefined,
+                payload.fulfillment.type === "delivery" ? (payload.fulfillment.address ?? undefined) : undefined,
             status: "PENDING",
             note: payload.note ?? null,
         },
