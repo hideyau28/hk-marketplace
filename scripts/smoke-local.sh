@@ -75,6 +75,7 @@ fi
 echo ""
 echo "4) Run smoke tests"
 BASE="$BASE" ADMIN_SECRET="$ADMIN_SECRET" bash scripts/smoke-store-settings.sh
+BASE="$BASE" ADMIN_SECRET="$ADMIN_SECRET" bash scripts/smoke-orders.sh
 
 echo ""
 echo "=== Local Smoke Complete ==="

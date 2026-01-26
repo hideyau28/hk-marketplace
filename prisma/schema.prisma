@@ -30,3 +30,37 @@ model IdempotencyKey {
   @@unique([key, route, method])
   @@index([createdAt])
 }
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+}
+
+enum FulfillmentType {
+  PICKUP
+  DELIVERY
+}
+
+model Order {
+  id                 String          @id @default(cuid())
+  customerName       String
+  phone              String
+  email              String?
+  items              Json
+  amounts            Json
+  fulfillmentType    FulfillmentType
+  fulfillmentAddress Json?
+  status             OrderStatus     @default(PENDING)
+  note               String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}

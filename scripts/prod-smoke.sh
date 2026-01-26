@@ -79,6 +79,7 @@ fi
 echo ""
 echo "5) Run smoke tests"
 bash scripts/smoke-store-settings.sh
+bash scripts/smoke-orders.sh
 
 echo ""
 echo "=== Production Smoke Complete ==="

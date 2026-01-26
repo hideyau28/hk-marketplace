@@ -136,13 +136,23 @@ function assertAdmin(req: Request) {
 export function withApi(
   handler: (req: Request) => Promise<Response>,
   opts?: WithApiOptions
+): (req: Request) => Promise<Response>;
+export function withApi<C>(
+  handler: (req: Request, ctx: C) => Promise<Response>,
+  opts?: WithApiOptions
+): (req: Request, ctx: C) => Promise<Response>;
+export function withApi<C>(
+  handler: ((req: Request) => Promise<Response>) | ((req: Request, ctx: C) => Promise<Response>),
+  opts?: WithApiOptions
 ) {
-  return async (req: Request) => {
+  return async (req: Request, ctx?: C) => {
     try {
       if (opts?.admin) assertAdmin(req);
-      return await handler(req);
+      // Call handler with ctx only if it expects 2 args; keep TS happy via casting.
+      return await ((handler as any).length >= 2 ? (handler as any)(req, ctx) : (handler as any)(req));
     } catch (e) {
       return fail(req, e);
     }
   };
 }
+
