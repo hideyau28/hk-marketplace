@@ -10,6 +10,7 @@
     "prebuild": "node scripts/assert-single-app-root.mjs",
     "smoke": "bash scripts/smoke-store-settings.sh",
     "smoke:prod": "bash scripts/prod-smoke.sh",
+    "smoke:local": "bash scripts/smoke-local.sh",
     "taskpkg": "bash scripts/taskpkg.sh",
     "provision": "bash scripts/provision-site.sh",
     "ci:build": "npx prisma generate && npm run build",
