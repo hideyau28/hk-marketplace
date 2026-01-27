@@ -26,11 +26,11 @@ const ORDER_STATUSES = [
 
 function badgeClass(status: string) {
   const s = status.toLowerCase();
-  if (s === "paid" || s === "completed") return "bg-emerald-500/15 text-emerald-200 border-emerald-500/20";
-  if (s === "pending") return "bg-white/10 text-white/70 border-white/10";
-  if (s === "fulfilling" || s === "shipped") return "bg-sky-500/15 text-sky-200 border-sky-500/20";
-  if (s === "refunded") return "bg-amber-500/15 text-amber-200 border-amber-500/20";
-  return "bg-rose-500/15 text-rose-200 border-rose-500/20";
+  if (s === "paid" || s === "completed") return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (s === "pending") return "bg-zinc-100 text-zinc-700 border-zinc-200";
+  if (s === "fulfilling" || s === "shipped") return "bg-sky-50 text-sky-700 border-sky-200";
+  if (s === "refunded") return "bg-amber-50 text-amber-700 border-amber-200";
+  return "bg-rose-50 text-rose-700 border-rose-200";
 }
 
 export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps) {
@@ -59,7 +59,7 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
           <select
             value={selectedStatus}
             onChange={(e) => handleStatusChange(e.target.value)}
-            className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+            className="w-full rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
           >
             {ORDER_STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
@@ -70,11 +70,11 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+      <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-[980px] w-full text-sm">
             <thead>
-              <tr className="text-white/60 border-b border-white/10">
+              <tr className="text-zinc-600 border-b border-zinc-200">
                 <th className="px-4 py-3 text-left">Order ID</th>
                 <th className="px-4 py-3 text-left">Customer</th>
                 <th className="px-4 py-3 text-left">Phone</th>
@@ -89,7 +89,7 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-white/60">
+                  <td colSpan={8} className="px-4 py-12 text-center text-zinc-500">
                     No orders found
                   </td>
                 </tr>
@@ -97,16 +97,16 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
                 orders.map((order) => {
                   const amounts = order.amounts as any;
                   return (
-                    <tr key={order.id} className="border-t border-white/10 hover:bg-white/5">
+                    <tr key={order.id} className="border-t border-zinc-200 hover:bg-zinc-50">
                       <td className="px-4 py-3">
-                        <div className="text-white font-medium font-mono text-xs">
+                        <div className="text-zinc-900 font-medium font-mono text-xs">
                           {order.id.slice(0, 12)}...
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-white/80">{order.customerName}</td>
-                      <td className="px-4 py-3 text-white/80">{order.phone}</td>
-                      <td className="px-4 py-3 text-white/80">{order.fulfillmentType}</td>
-                      <td className="px-4 py-3 text-right text-white font-medium">
+                      <td className="px-4 py-3 text-zinc-700">{order.customerName}</td>
+                      <td className="px-4 py-3 text-zinc-700">{order.phone}</td>
+                      <td className="px-4 py-3 text-zinc-700">{order.fulfillmentType}</td>
+                      <td className="px-4 py-3 text-right text-zinc-900 font-medium">
                         {amounts?.currency || "HKD"} {amounts?.total || 0}
                       </td>
                       <td className="px-4 py-3">
@@ -118,13 +118,13 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
                           {order.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-white/70">
+                      <td className="px-4 py-3 text-zinc-600">
                         {new Date(order.createdAt).toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={() => handleViewOrder(order)}
-                          className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 hover:bg-white/10"
+                          className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50"
                         >
                           View
                         </button>
@@ -137,7 +137,7 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t border-white/10 px-4 py-3 text-white/60 text-sm">
+        <div className="flex items-center justify-between border-t border-zinc-200 px-4 py-3 text-zinc-600 text-sm">
           <div>Showing {orders.length} orders</div>
         </div>
       </div>

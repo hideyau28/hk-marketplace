@@ -13,15 +13,15 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
     return (
       <div className="px-4 py-6">
         <div className="mx-auto max-w-4xl">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
-            <h1 className="text-2xl font-semibold">{t.order.thankYou}</h1>
+          <div className="rounded-2xl border border-zinc-200 bg-white p-8 text-center">
+            <h1 className="text-2xl font-semibold text-zinc-900">{t.order.thankYou}</h1>
             <div className="mt-4">
-              <p className="text-white/80">{t.order.orderId}</p>
-              <p className="mt-1 font-mono text-lg">{id}</p>
+              <p className="text-zinc-600">{t.order.orderId}</p>
+              <p className="mt-1 font-mono text-lg text-zinc-900">{id}</p>
             </div>
             <Link
               href={`/${locale}`}
-              className="mt-6 inline-block rounded-2xl bg-white px-6 py-3 text-black font-semibold hover:bg-white/90"
+              className="mt-6 inline-block rounded-2xl bg-zinc-900 px-6 py-3 text-white font-semibold hover:bg-zinc-800"
             >
               {t.order.backToHome}
             </Link>
@@ -47,54 +47,54 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   return (
     <div className="px-4 py-6">
       <div className="mx-auto max-w-4xl">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
-          <h1 className="text-2xl font-semibold">{t.order.thankYou}</h1>
+        <div className="rounded-2xl border border-zinc-200 bg-white p-8">
+          <h1 className="text-2xl font-semibold text-zinc-900">{t.order.thankYou}</h1>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-white/60 text-sm">{t.order.orderId}</p>
-              <p className="mt-1 font-mono">{order.id}</p>
+              <p className="text-zinc-500 text-sm">{t.order.orderId}</p>
+              <p className="mt-1 font-mono text-zinc-900">{order.id}</p>
             </div>
             <div>
-              <p className="text-white/60 text-sm">{t.order.status}</p>
-              <p className="mt-1 font-semibold">{order.status}</p>
+              <p className="text-zinc-500 text-sm">{t.order.status}</p>
+              <p className="mt-1 font-semibold text-zinc-900">{order.status}</p>
             </div>
             <div>
-              <p className="text-white/60 text-sm">{t.order.customerName}</p>
-              <p className="mt-1">{order.customerName}</p>
+              <p className="text-zinc-500 text-sm">{t.order.customerName}</p>
+              <p className="mt-1 text-zinc-900">{order.customerName}</p>
             </div>
             <div>
-              <p className="text-white/60 text-sm">{t.order.phone}</p>
-              <p className="mt-1">{order.phone}</p>
+              <p className="text-zinc-500 text-sm">{t.order.phone}</p>
+              <p className="mt-1 text-zinc-900">{order.phone}</p>
             </div>
           </div>
 
-          <div className="mt-6 border-t border-white/10 pt-6">
-            <p className="text-white/60 text-sm">{t.order.fulfillmentType}</p>
-            <p className="mt-1 font-semibold">
+          <div className="mt-6 border-t border-zinc-200 pt-6">
+            <p className="text-zinc-500 text-sm">{t.order.fulfillmentType}</p>
+            <p className="mt-1 font-semibold text-zinc-900">
               {order.fulfillmentType === "PICKUP" ? t.order.pickup : t.order.delivery}
             </p>
             {order.fulfillmentType === "DELIVERY" && fulfillmentAddress && (
               <div className="mt-2">
-                <p className="text-white/60 text-sm">{t.order.deliveryAddress}</p>
-                <p className="mt-1">{fulfillmentAddress.line1}</p>
-                {fulfillmentAddress.district && <p className="text-white/80 text-sm">{fulfillmentAddress.district}</p>}
+                <p className="text-zinc-500 text-sm">{t.order.deliveryAddress}</p>
+                <p className="mt-1 text-zinc-900">{fulfillmentAddress.line1}</p>
+                {fulfillmentAddress.district && <p className="text-zinc-700 text-sm">{fulfillmentAddress.district}</p>}
                 {fulfillmentAddress.notes && (
-                  <p className="mt-1 text-white/60 text-sm">{fulfillmentAddress.notes}</p>
+                  <p className="mt-1 text-zinc-500 text-sm">{fulfillmentAddress.notes}</p>
                 )}
               </div>
             )}
           </div>
 
-          <div className="mt-6 border-t border-white/10 pt-6">
-            <h2 className="font-semibold">{t.order.items}</h2>
+          <div className="mt-6 border-t border-zinc-200 pt-6">
+            <h2 className="font-semibold text-zinc-900">{t.order.items}</h2>
             <div className="mt-4 space-y-3">
               {items.map((item, idx) => (
                 <div key={idx} className="flex justify-between">
-                  <span className="text-white/80">
+                  <span className="text-zinc-700">
                     {item.name} × {item.quantity}
                   </span>
-                  <span>
+                  <span className="text-zinc-900">
                     {amounts.currency} ${(item.unitPrice * item.quantity).toFixed(2)}
                   </span>
                 </div>
@@ -102,24 +102,24 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
             </div>
           </div>
 
-          <div className="mt-6 space-y-2 border-t border-white/10 pt-6">
+          <div className="mt-6 space-y-2 border-t border-zinc-200 pt-6">
             <div className="flex justify-between">
-              <span className="text-white/80">{t.order.subtotal}</span>
-              <span>
+              <span className="text-zinc-700">{t.order.subtotal}</span>
+              <span className="text-zinc-900">
                 {amounts.currency} ${amounts.subtotal.toFixed(2)}
               </span>
             </div>
             {amounts.deliveryFee && (
               <div className="flex justify-between">
-                <span className="text-white/80">{t.order.deliveryFee}</span>
-                <span>
+                <span className="text-zinc-700">{t.order.deliveryFee}</span>
+                <span className="text-zinc-900">
                   {amounts.currency} ${amounts.deliveryFee.toFixed(2)}
                 </span>
               </div>
             )}
-            <div className="flex justify-between border-t border-white/10 pt-2 text-lg font-semibold">
-              <span>{t.order.total}</span>
-              <span>
+            <div className="flex justify-between border-t border-zinc-200 pt-2 text-lg font-semibold">
+              <span className="text-zinc-900">{t.order.total}</span>
+              <span className="text-zinc-900">
                 {amounts.currency} ${amounts.total.toFixed(2)}
               </span>
             </div>
@@ -127,7 +127,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
 
           <Link
             href={`/${locale}`}
-            className="mt-8 block w-full rounded-2xl bg-white py-4 text-center text-black font-semibold hover:bg-white/90"
+            className="mt-8 block w-full rounded-2xl bg-zinc-900 py-4 text-center text-white font-semibold hover:bg-zinc-800"
           >
             {t.order.backToHome}
           </Link>

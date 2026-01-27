@@ -21,9 +21,9 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
     <div className="px-4 pb-16 pt-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="text-white/60 text-sm">Admin</div>
-          <h1 className="mt-1 text-2xl font-semibold text-white">Orders</h1>
-          <div className="mt-2 text-white/60 text-sm">Track payment, fulfillment, refunds.</div>
+          <div className="text-zinc-500 text-sm">Admin</div>
+          <h1 className="mt-1 text-2xl font-semibold text-zinc-900">Orders</h1>
+          <div className="mt-2 text-zinc-500 text-sm">Track payment, fulfillment, refunds.</div>
         </div>
       </div>
 

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n";
+import TopNav from "@/components/TopNav";
 
 export default async function LocaleLayout({
   children,
@@ -16,9 +18,14 @@ export default async function LocaleLayout({
   }
 
   const l = locale as Locale;
+  const t = getDict(l);
+
   return (
     <html lang={locale}>
-      <body>{children}</body>
+      <body>
+        <TopNav locale={l} t={t} />
+        {children}
+      </body>
     </html>
   );
 }

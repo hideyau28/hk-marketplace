@@ -165,13 +165,13 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   // --- UI Components ---
 
   const Label = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-200", className)}>
+    <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-900", className)}>
       {children}
     </label>
   );
 
   const Description = ({ children }: { children: React.ReactNode }) => (
-    <p className="text-[0.8rem] text-zinc-400 mt-1.5">
+    <p className="text-[0.8rem] text-zinc-600 mt-1.5">
       {children}
     </p>
   );
@@ -179,7 +179,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const Input = ({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
     <input
       className={cn(
-        "flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 ring-offset-zinc-950 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-600 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}
@@ -189,7 +189,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const Textarea = ({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
     <textarea
       className={cn(
-        "flex min-h-[80px] w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 ring-offset-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-600 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}
@@ -197,14 +197,14 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   );
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 pb-20">
+    <div className="min-h-screen bg-white text-zinc-900 pb-20">
       <div className="mx-auto max-w-4xl px-6 py-12">
 
         {/* Header Section */}
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-1.5">
-            <h1 className="text-3xl font-bold tracking-tight text-white">Store Settings</h1>
-            <p className="text-zinc-400 text-base max-w-lg">
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Store Settings</h1>
+            <p className="text-zinc-600 text-base max-w-lg">
               Manage your storefront identity, policies, and global configurations.
             </p>
           </div>
@@ -234,7 +234,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
               onClick={handleSave}
               disabled={!adminSecret || saveState === "saving"}
               className={cn(
-                "inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:pointer-events-none disabled:opacity-50",
+                "inline-flex items-center justify-center gap-2 rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:pointer-events-none disabled:opacity-50",
                 saveState === "saving" && "opacity-80"
               )}
             >
@@ -254,14 +254,14 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
         <div className="mt-8 space-y-6">
 
           {/* Admin Secret Section (Authentication) */}
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
             <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-zinc-100 font-semibold">
-                  <Shield className={cn("h-5 w-5", adminSecret ? "text-emerald-500" : "text-amber-500")} />
+                <div className="flex items-center gap-2 text-zinc-900 font-semibold">
+                  <Shield className={cn("h-5 w-5", adminSecret ? "text-emerald-600" : "text-amber-600")} />
                   <h3>Admin Authentication</h3>
                 </div>
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-zinc-600">
                   {adminSecret
                     ? "Session active. You have write access to store settings."
                     : "Enter your admin secret key to unlock editing capabilities."}
@@ -277,13 +277,13 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                       onChange={(e) => setSecretInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSetSecret()}
                       placeholder="Enter secret key"
-                      className="pr-10 bg-black"
+                      className="pr-10"
                     />
                   </div>
                   <button
                     onClick={handleSetSecret}
                     disabled={!secretInput.trim()}
-                    className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 disabled:pointer-events-none disabled:opacity-50"
+                    className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-50"
                   >
                     Unlock
                   </button>
@@ -291,7 +291,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
               ) : (
                 <button
                   onClick={handleClearSecret}
-                  className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-700 bg-zinc-800 px-4 text-xs font-medium text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors"
+                  className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-300 bg-white px-4 text-xs font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
                 >
                   Lock Session
                 </button>
@@ -307,11 +307,11 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                   exit={{ height: 0, opacity: 0, marginTop: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="rounded-md bg-red-950/30 border border-red-900/50 p-3 flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                  <div className="rounded-md bg-red-50 border border-red-200 p-3 flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                     <div className="text-sm">
-                      <p className="text-red-400 font-medium">{errorMessage}</p>
-                      {requestId && <p className="text-red-500/60 text-xs mt-1 font-mono">ID: {requestId}</p>}
+                      <p className="text-red-800 font-medium">{errorMessage}</p>
+                      {requestId && <p className="text-red-700/60 text-xs mt-1 font-mono">ID: {requestId}</p>}
                     </div>
                   </div>
                 </motion.div>
@@ -323,13 +323,13 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
           <div className={cn("grid gap-6 transition-opacity duration-300", !adminSecret && "opacity-50 pointer-events-none grayscale-[0.5]")}>
 
             {/* General Info Card */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-6 md:p-8 space-y-8">
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
               <div>
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <Store className="h-5 w-5 text-zinc-400" />
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Store className="h-5 w-5 text-zinc-600" />
                   General Information
                 </h3>
-                <p className="text-sm text-zinc-400 mt-1 border-b border-zinc-800/50 pb-4">
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
                   Basic details about your storefront branding.
                 </p>
               </div>
@@ -358,13 +358,13 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
             </div>
 
             {/* Policies Card */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-6 md:p-8 space-y-8">
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
               <div>
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <Undo2 className="h-5 w-5 text-zinc-400" />
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Undo2 className="h-5 w-5 text-zinc-600" />
                   Store Policies
                 </h3>
-                <p className="text-sm text-zinc-400 mt-1 border-b border-zinc-800/50 pb-4">
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
                   Define how you handle shipping and returns for your customers.
                 </p>
               </div>

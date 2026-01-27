@@ -5,8 +5,8 @@ export default function ShelfRow({ locale, title, cta, products }: { locale: Loc
   return (
     <section className="mt-8">
       <div className="mb-3 flex items-center justify-between px-4">
-        <h2 className="text-white text-lg font-semibold">{title}</h2>
-        <button className="text-white/60 hover:text-white text-sm">{cta}</button>
+        <h2 className="text-zinc-900 text-lg font-semibold">{title}</h2>
+        <button className="text-zinc-500 hover:text-zinc-900 text-sm">{cta}</button>
       </div>
       <div className="flex gap-3 overflow-x-auto px-4 pb-2">
         {products.map((p) => (

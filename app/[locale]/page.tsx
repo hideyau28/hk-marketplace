@@ -26,10 +26,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   return (
     <div className="pb-16">
       <div className="px-4 pt-8">
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/5 p-6">
-          <div className="text-white/80 text-sm">HK Marketplace</div>
-          <div className="mt-2 text-2xl font-semibold">Deep dark, easy shopping</div>
-          <div className="mt-2 text-white/60 text-sm">Spotify-like browsing, standard checkout.</div>
+        <div className="rounded-3xl border border-zinc-200 bg-white p-6">
+          <div className="text-zinc-600 text-sm">HK Marketplace</div>
+          <div className="mt-2 text-2xl font-semibold text-zinc-900">Deep dark, easy shopping</div>
+          <div className="mt-2 text-zinc-600 text-sm">Spotify-like browsing, standard checkout.</div>
         </div>
       </div>
 
