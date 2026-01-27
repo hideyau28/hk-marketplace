@@ -1,8 +1,7 @@
 import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
-import { prisma } from "@/lib/prisma";
 import { OrdersTable } from "./orders-table";
-import type { OrderStatus } from "@prisma/client";
+import { fetchOrders } from "./actions";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -15,13 +14,8 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
   const l = locale as Locale;
   const t = getDict(l);
 
-  // Fetch orders from database
-  const whereClause = status ? { status: status.toUpperCase() as OrderStatus } : undefined;
-  const orders = await prisma.order.findMany({
-    where: whereClause,
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+  // Fetch orders via API using server action
+  const result = await fetchOrders(status);
 
   return (
     <div className="px-4 pb-16 pt-8">
@@ -33,7 +27,17 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
         </div>
       </div>
 
-      <OrdersTable orders={orders} locale={l} currentStatus={status} />
+      {result.ok ? (
+        <OrdersTable orders={result.data} locale={l} currentStatus={status} />
+      ) : (
+        <div className="mt-6 rounded-3xl border border-red-500/20 bg-red-500/10 p-6">
+          <div className="text-red-400 font-semibold">Error loading orders</div>
+          <div className="mt-2 text-red-300 text-sm">
+            <div className="font-mono">{result.code}</div>
+            <div className="mt-1">{result.message}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
