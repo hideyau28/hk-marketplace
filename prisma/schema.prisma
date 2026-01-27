@@ -64,3 +64,15 @@ model Order {
   @@index([status])
   @@index([createdAt])
 }
+
+model Product {
+  id        String   @id @default(cuid())
+  title     String
+  price     Float
+  imageUrl  String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+}
