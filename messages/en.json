@@ -1,5 +1,51 @@
 {
   "nav": { "search": "Search products", "collections": "My Collections", "orders": "My Orders", "cart": "Cart", "signin": "Sign in" },
   "home": { "featured": "Featured", "trending": "Trending", "forYou": "For you", "byTag": "Curated by tag", "viewAll": "View all" },
-  "product": { "addToCart": "Add to cart", "buyNow": "Buy now" }
+  "product": { "addToCart": "Add to cart", "buyNow": "Buy now", "addedToCart": "Added to cart!" },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "continueShopping": "Continue shopping",
+    "remove": "Remove",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Delivery fee",
+    "total": "Total",
+    "checkout": "Proceed to checkout"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "customerInfo": "Customer Information",
+    "customerName": "Full name",
+    "phone": "Phone number",
+    "email": "Email (optional)",
+    "fulfillment": "Fulfillment",
+    "fulfillmentType": "Fulfillment type",
+    "pickup": "Pickup",
+    "delivery": "Delivery",
+    "deliveryAddress": "Delivery Address",
+    "addressLine1": "Address",
+    "district": "District (optional)",
+    "notes": "Delivery notes (optional)",
+    "orderNote": "Order note (optional)",
+    "placeOrder": "Place order",
+    "processing": "Processing...",
+    "orderSummary": "Order Summary"
+  },
+  "order": {
+    "title": "Order Confirmation",
+    "thankYou": "Thank you for your order!",
+    "orderId": "Order ID",
+    "status": "Status",
+    "customerName": "Customer",
+    "phone": "Phone",
+    "fulfillmentType": "Fulfillment",
+    "pickup": "Pickup",
+    "delivery": "Delivery",
+    "deliveryAddress": "Delivery address",
+    "items": "Items",
+    "subtotal": "Subtotal",
+    "deliveryFee": "Delivery fee",
+    "total": "Total",
+    "backToHome": "Back to home"
+  }
 }

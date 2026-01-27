@@ -1,5 +1,51 @@
 {
   "nav": { "search": "搜尋商品", "collections": "我的清單", "orders": "我的訂單", "cart": "購物車", "signin": "登入" },
   "home": { "featured": "今日精選", "trending": "熱門", "forYou": "你可能鍾意", "byTag": "按標籤精選", "viewAll": "查看全部" },
-  "product": { "addToCart": "加入購物車", "buyNow": "立即購買" }
+  "product": { "addToCart": "加入購物車", "buyNow": "立即購買", "addedToCart": "已加入購物車！" },
+  "cart": {
+    "title": "購物車",
+    "empty": "購物車空空如也",
+    "continueShopping": "繼續購物",
+    "remove": "移除",
+    "subtotal": "小計",
+    "deliveryFee": "運費",
+    "total": "總計",
+    "checkout": "去結帳"
+  },
+  "checkout": {
+    "title": "結帳",
+    "customerInfo": "客戶資料",
+    "customerName": "姓名",
+    "phone": "電話號碼",
+    "email": "電郵（選填）",
+    "fulfillment": "取貨方式",
+    "fulfillmentType": "取貨方式",
+    "pickup": "自取",
+    "delivery": "送貨",
+    "deliveryAddress": "送貨地址",
+    "addressLine1": "地址",
+    "district": "地區（選填）",
+    "notes": "送貨備註（選填）",
+    "orderNote": "訂單備註（選填）",
+    "placeOrder": "確認訂單",
+    "processing": "處理中...",
+    "orderSummary": "訂單摘要"
+  },
+  "order": {
+    "title": "訂單確認",
+    "thankYou": "多謝惠顧！",
+    "orderId": "訂單編號",
+    "status": "狀態",
+    "customerName": "客戶",
+    "phone": "電話",
+    "fulfillmentType": "取貨方式",
+    "pickup": "自取",
+    "delivery": "送貨",
+    "deliveryAddress": "送貨地址",
+    "items": "商品",
+    "subtotal": "小計",
+    "deliveryFee": "運費",
+    "total": "總計",
+    "backToHome": "返回主頁"
+  }
 }
