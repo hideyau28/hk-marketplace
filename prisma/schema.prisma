@@ -58,11 +58,19 @@ model Order {
   fulfillmentAddress Json?
   status             OrderStatus     @default(PENDING)
   note               String?
+
+  // Payments (Stripe Checkout)
+  stripeCheckoutSessionId String?
+  stripePaymentIntentId   String?
+  paidAt                  DateTime?
+
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
 
   @@index([status])
   @@index([createdAt])
+  @@index([stripeCheckoutSessionId])
+  @@index([stripePaymentIntentId])
 }
 
 model Product {

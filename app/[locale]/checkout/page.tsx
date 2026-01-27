@@ -95,10 +95,27 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       const result = await response.json();
 
       if (result.ok) {
+        const orderId = result.data.id as string;
+
+        // Create Stripe Checkout session
+        const res2 = await fetch("/api/checkout/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, locale }),
+        });
+        const json2 = await res2.json();
+
+        if (json2.ok && json2.data?.url) {
+          clearCart();
+          window.location.href = json2.data.url;
+          return;
+        }
+
+        // Fallback to order page
         clearCart();
-        router.push(`/${locale}/orders/${result.data.id}`);
+        router.push(`/${locale}/orders/${orderId}`);
       } else {
-        alert(`Error: ${result.error.message}`);
+        alert(`Error: ${result.error?.code || "ERROR"}: ${result.error?.message || "Unknown error"}`);
         setProcessing(false);
       }
     } catch (error) {
