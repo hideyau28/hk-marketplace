@@ -31,8 +31,18 @@ type UpdateProductOk = { ok: true; data: Product };
 type UpdateProductResult = UpdateProductOk | ActionFail;
 
 function getApiBaseUrl() {
-  // Use localhost for server-side API calls
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  // Server-side calls back into this same app.
+  // Prefer an explicit base URL when deployed; fall back to local dev port 3012.
+  const explicit = process.env.NEXT_PUBLIC_API_URL;
+  if (explicit) return explicit;
+
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl) return `https://${vercelUrl}`;
+
+  const zeaburUrl = process.env.ZEABUR_URL || process.env.ZEABUR_DOMAIN;
+  if (zeaburUrl) return zeaburUrl.startsWith("http") ? zeaburUrl : `https://${zeaburUrl}`;
+
+  return "http://localhost:3012";
 }
 
 export async function fetchProducts(active?: boolean): Promise<FetchProductsResult> {
