@@ -41,15 +41,15 @@ Updated: 2026-01-28
 - `app/[locale]/admin/orders/order-detail-modal.tsx`
 
 **Checklist**
-- [ ] Orders table: show Last Payment (already exists) as badge with color mapping
-- [ ] Orders table: add columns for key timestamps (PaidAt, ShippedAt) or a compact “Fulfillment” indicator
-- [ ] Detail modal: add copy button for Stripe IDs (optional), keep monospace selectable
-- [ ] Empty states (no attempts / no timestamps) look clean
-- [ ] `npm run ci:build` PASS
-- [ ] Commit + `git status` clean
+- [x] Orders table: show Last Payment (already exists) as badge with color mapping
+- [x] Orders table: add columns for key timestamps (PaidAt, ShippedAt) or a compact "Fulfillment" indicator
+- [x] Detail modal: add copy button for Stripe IDs (optional), keep monospace selectable
+- [x] Empty states (no attempts / no timestamps) look clean
+- [x] `npm run ci:build` PASS
+- [x] Commit + `git status` clean
 
 **Owner**: Claude Code (Sonnet 4.5)
-**Progress**: ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+**Progress**: ☑ Done
 
 ---
 

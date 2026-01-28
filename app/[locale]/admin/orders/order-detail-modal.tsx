@@ -22,6 +22,38 @@ const ORDER_STATUSES: OrderStatus[] = [
   "DISPUTED",
 ];
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="ml-1 px-1.5 py-0.5 text-xs rounded border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-500 hover:text-zinc-700"
+      title="Copy to clipboard"
+    >
+      {copied ? "Copied!" : "Copy"}
+    </button>
+  );
+}
+
 export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalProps) {
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(order.status);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -264,36 +296,45 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                           )}
                         </>
                       )}
-                      <div className="border-t border-zinc-200 pt-2 mt-2 space-y-1">
-                        <div className="text-xs text-zinc-500">Stripe IDs:</div>
-                        <div className="flex justify-between">
+                      <div className="border-t border-zinc-200 pt-2 mt-2 space-y-1.5">
+                        <div className="text-xs text-zinc-500 font-medium">Stripe IDs</div>
+                        <div className="flex items-center justify-between">
                           <span className="text-zinc-600 text-xs">Session:</span>
                           {attempt.stripeCheckoutSessionId ? (
-                            <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
-                              {attempt.stripeCheckoutSessionId}
-                            </code>
+                            <div className="flex items-center">
+                              <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                                {attempt.stripeCheckoutSessionId}
+                              </code>
+                              <CopyButton text={attempt.stripeCheckoutSessionId} />
+                            </div>
                           ) : (
-                            <span className="text-zinc-400 text-xs">-</span>
+                            <span className="text-zinc-400 text-xs">—</span>
                           )}
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex items-center justify-between">
                           <span className="text-zinc-600 text-xs">Payment Intent:</span>
                           {attempt.stripePaymentIntentId ? (
-                            <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
-                              {attempt.stripePaymentIntentId}
-                            </code>
+                            <div className="flex items-center">
+                              <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                                {attempt.stripePaymentIntentId}
+                              </code>
+                              <CopyButton text={attempt.stripePaymentIntentId} />
+                            </div>
                           ) : (
-                            <span className="text-zinc-400 text-xs">-</span>
+                            <span className="text-zinc-400 text-xs">—</span>
                           )}
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex items-center justify-between">
                           <span className="text-zinc-600 text-xs">Charge:</span>
                           {attempt.stripeChargeId ? (
-                            <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
-                              {attempt.stripeChargeId}
-                            </code>
+                            <div className="flex items-center">
+                              <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                                {attempt.stripeChargeId}
+                              </code>
+                              <CopyButton text={attempt.stripeChargeId} />
+                            </div>
                           ) : (
-                            <span className="text-zinc-400 text-xs">-</span>
+                            <span className="text-zinc-400 text-xs">—</span>
                           )}
                         </div>
                       </div>
@@ -306,22 +347,29 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                 ))}
               </div>
             ) : (
-              <div className="text-zinc-500 text-sm">
-                No payment attempts yet.
-                {order.stripeCheckoutSessionId && (
-                  <div className="mt-2 text-xs">
-                    <div className="text-zinc-600">Legacy Stripe Session ID:</div>
-                    <code className="text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
-                      {order.stripeCheckoutSessionId}
-                    </code>
-                  </div>
-                )}
-                {order.stripePaymentIntentId && (
-                  <div className="mt-2 text-xs">
-                    <div className="text-zinc-600">Legacy Payment Intent ID:</div>
-                    <code className="text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
-                      {order.stripePaymentIntentId}
-                    </code>
+              <div className="text-center py-4">
+                <div className="text-zinc-400 text-sm">No payment attempts recorded</div>
+                {(order.stripeCheckoutSessionId || order.stripePaymentIntentId) && (
+                  <div className="mt-3 pt-3 border-t border-zinc-200">
+                    <div className="text-xs text-zinc-500 mb-2">Legacy Stripe IDs</div>
+                    {order.stripeCheckoutSessionId && (
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <span className="text-zinc-500 text-xs">Session:</span>
+                        <code className="text-zinc-700 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                          {order.stripeCheckoutSessionId}
+                        </code>
+                        <CopyButton text={order.stripeCheckoutSessionId} />
+                      </div>
+                    )}
+                    {order.stripePaymentIntentId && (
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-zinc-500 text-xs">Intent:</span>
+                        <code className="text-zinc-700 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                          {order.stripePaymentIntentId}
+                        </code>
+                        <CopyButton text={order.stripePaymentIntentId} />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
