@@ -22,7 +22,7 @@ Use task files under `TASKS/`:
 
 Progress
 - UI-1 Tokens: ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
-- UI-2 Cards:  ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+- UI-2 Cards:  ☑ Done
 - UI-3 Home:   ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
 
 ---

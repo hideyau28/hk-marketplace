@@ -1,16 +1,106 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
+import { Badge } from "./Badge";
 
-export default function ProductCard({ locale, p }: { locale: Locale; p: any }) {
+type ProductCardProps = {
+  locale: Locale;
+  p: {
+    id: string;
+    title?: string;
+    image?: string;
+    price?: number;
+    shopName?: string;
+    badge?: string;
+  };
+};
+
+function HeartIcon({ filled }: { filled: boolean }) {
   return (
-    <Link href={`/${locale}/product/${p.id}`} className="group rounded-2xl border border-zinc-200 bg-white p-3 hover:bg-zinc-50 transition">
-      <div className="aspect-square overflow-hidden rounded-xl bg-zinc-100">
-        <img src={p.image} alt={p.title} className="h-full w-full object-cover group-hover:scale-[1.02] transition" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={filled ? 0 : 2}
+      className="w-5 h-5"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+      />
+    </svg>
+  );
+}
+
+export default function ProductCard({ locale, p }: ProductCardProps) {
+  const [wishlisted, setWishlisted] = useState(false);
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setWishlisted(!wishlisted);
+  };
+
+  return (
+    <Link
+      href={`/${locale}/product/${p.id}`}
+      className="group block rounded-2xl border border-zinc-200 bg-white overflow-hidden hover:shadow-md transition-shadow"
+    >
+      {/* Image container with fixed aspect ratio */}
+      <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100">
+        {p.image ? (
+          <img
+            src={p.image}
+            alt={p.title || "Product"}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center text-zinc-400">
+            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        )}
+
+        {/* Wishlist heart button */}
+        <button
+          onClick={handleWishlistClick}
+          className={`absolute top-2 right-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white transition-colors ${
+            wishlisted ? "text-red-500" : "text-zinc-400 hover:text-zinc-600"
+          }`}
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <HeartIcon filled={wishlisted} />
+        </button>
       </div>
-      <div className="mt-3">
-        <div className="line-clamp-2 text-sm text-zinc-900">{p.title}</div>
-        <div className="mt-1 text-xs text-zinc-500">{p.shopName}</div>
-        <div className="mt-2 text-sm text-zinc-900 font-semibold">HK$ {p.price}</div>
+
+      {/* Content */}
+      <div className="p-3">
+        {/* Badge */}
+        {p.badge && (
+          <div className="mb-2">
+            <Badge>{p.badge}</Badge>
+          </div>
+        )}
+
+        {/* Title - 2 line clamp */}
+        <h3 className="text-sm text-zinc-900 font-medium line-clamp-2 min-h-[2.5rem]">
+          {p.title || "—"}
+        </h3>
+
+        {/* Shop name */}
+        <div className="mt-1 text-xs text-zinc-500 truncate">
+          {p.shopName || "—"}
+        </div>
+
+        {/* Price - prominent */}
+        <div className="mt-2 text-lg font-bold text-zinc-900">
+          {p.price != null ? `HK$ ${p.price.toLocaleString()}` : "—"}
+        </div>
       </div>
     </Link>
   );
