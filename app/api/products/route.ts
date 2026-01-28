@@ -7,14 +7,37 @@ import { prisma } from "@/lib/prisma";
 // Query params:
 //   - limit: max results (1-200, default 50)
 //   - q: search query (case-insensitive, matches title OR brand)
+//   - category: optional category filter (1-50 chars)
+//   - sort: 'new' | 'price_asc' | 'price_desc'
 export const GET = withApi(async (req) => {
   const { searchParams } = new URL(req.url);
+
   const limitParam = searchParams.get("limit");
   const limit = limitParam ? Number(limitParam) : 50;
-  const q = searchParams.get("q")?.trim() || "";
+
+  const qRaw = searchParams.get("q");
+  const q = qRaw?.trim() || "";
+
+  const categoryRaw = searchParams.get("category");
+  const category = categoryRaw?.trim() || "";
+
+  const sortRaw = searchParams.get("sort")?.trim() || "";
+  const sort = sortRaw as "" | "new" | "price_asc" | "price_desc";
 
   if (limitParam && (Number.isNaN(limit) || limit <= 0 || limit > 200)) {
     throw new ApiError(400, "BAD_REQUEST", "limit must be between 1 and 200");
+  }
+
+  if (q.length > 50) {
+    throw new ApiError(400, "BAD_REQUEST", "q must be 50 characters or less");
+  }
+
+  if (category.length > 50) {
+    throw new ApiError(400, "BAD_REQUEST", "category must be 50 characters or less");
+  }
+
+  if (sort && sort !== "new" && sort !== "price_asc" && sort !== "price_desc") {
+    throw new ApiError(400, "BAD_REQUEST", "sort must be one of: new, price_asc, price_desc");
   }
 
   const where: any = { active: true };
@@ -27,9 +50,20 @@ export const GET = withApi(async (req) => {
     ];
   }
 
+  if (category) {
+    where.category = category;
+  }
+
+  const orderBy =
+    sort === "price_asc"
+      ? ({ price: "asc" } as const)
+      : sort === "price_desc"
+        ? ({ price: "desc" } as const)
+        : ({ createdAt: "desc" } as const);
+
   const products = await prisma.product.findMany({
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy,
     take: limit,
   });
 
