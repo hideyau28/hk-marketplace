@@ -20,13 +20,13 @@ export default function ProductRail({
         <h2 className="text-zinc-900 text-lg font-semibold mb-4">{title}</h2>
       </div>
 
-      {/* Mobile: horizontal rail with "peek". Desktop: grid. */}
-      <div className="-mx-4 px-4 sm:mx-0 sm:px-4">
-        <div className="flex gap-3 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] snap-x snap-mandatory pr-6 sm:grid sm:grid-cols-3 md:grid-cols-4 sm:gap-3 sm:overflow-visible sm:pr-0">
+      {/* <= md: always horizontal rail. Desktop (lg+): grid. */}
+      <div className="-mx-4 px-4 lg:mx-0 lg:px-4">
+        <div className="flex gap-3 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] snap-x snap-mandatory pr-6 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:gap-3 lg:overflow-visible lg:pr-0">
           {products.map((p) => (
             <div
               key={p.id}
-              className={(size === "lg" ? "w-[200px]" : "w-[160px]") + " shrink-0 snap-start sm:w-auto"}
+              className={(size === "lg" ? "w-[200px]" : "w-[160px]") + " shrink-0 snap-start lg:w-auto"}
             >
               <ProductCard locale={locale} p={p} />
             </div>
