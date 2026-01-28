@@ -340,6 +340,34 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                 <span className="text-zinc-600">Updated:</span>
                 <span className="text-zinc-900">{new Date(order.updatedAt).toLocaleString()}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-600">Paid:</span>
+                <span className="text-zinc-900">{order.paidAt ? new Date(order.paidAt).toLocaleString() : "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-600">Fulfilling:</span>
+                <span className="text-zinc-900">{order.fulfillingAt ? new Date(order.fulfillingAt).toLocaleString() : "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-600">Shipped:</span>
+                <span className="text-zinc-900">{order.shippedAt ? new Date(order.shippedAt).toLocaleString() : "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-600">Completed:</span>
+                <span className="text-zinc-900">{order.completedAt ? new Date(order.completedAt).toLocaleString() : "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-600">Cancelled:</span>
+                <span className="text-zinc-900">{order.cancelledAt ? new Date(order.cancelledAt).toLocaleString() : "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-600">Refunded:</span>
+                <span className="text-zinc-900">{order.refundedAt ? new Date(order.refundedAt).toLocaleString() : "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-600">Disputed:</span>
+                <span className="text-zinc-900">{order.disputedAt ? new Date(order.disputedAt).toLocaleString() : "—"}</span>
+              </div>
             </div>
           </div>
         </div>

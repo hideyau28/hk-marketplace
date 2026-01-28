@@ -79,6 +79,14 @@ model Order {
   stripePaymentIntentId   String?
   paidAt                  DateTime?
 
+  // Fulfillment timestamps (auto-set on status change, write-once)
+  fulfillingAt DateTime?
+  shippedAt    DateTime?
+  completedAt  DateTime?
+  cancelledAt  DateTime?
+  refundedAt   DateTime?
+  disputedAt   DateTime?
+
   paymentAttempts PaymentAttempt[]
 
   createdAt DateTime @default(now())

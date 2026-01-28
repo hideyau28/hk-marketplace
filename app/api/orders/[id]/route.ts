@@ -57,6 +57,16 @@ export const GET = withApi(
     { admin: true }
 );
 
+// Map status to its corresponding timestamp field
+const STATUS_TIMESTAMP_MAP: Record<string, string> = {
+    FULFILLING: "fulfillingAt",
+    SHIPPED: "shippedAt",
+    COMPLETED: "completedAt",
+    CANCELLED: "cancelledAt",
+    REFUNDED: "refundedAt",
+    DISPUTED: "disputedAt",
+};
+
 // PATCH /api/orders/:id (admin update)
 export const PATCH = withApi(
     async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
@@ -74,9 +84,28 @@ export const PATCH = withApi(
             throw new ApiError(400, "BAD_REQUEST", "status is required");
         }
 
+        // Build update data with status
+        const updateData: Record<string, any> = { status };
+
+        // Auto-set timestamp if this status has one and it's not already set
+        const timestampField = STATUS_TIMESTAMP_MAP[status];
+        if (timestampField) {
+            // Check if timestamp is already set (write-once)
+            const existing = await prisma.order.findUnique({
+                where: { id },
+                select: { [timestampField]: true },
+            });
+            if (!existing) {
+                throw new ApiError(404, "NOT_FOUND", "Order not found");
+            }
+            if (existing[timestampField] === null) {
+                updateData[timestampField] = new Date();
+            }
+        }
+
         const order = await prisma.order.update({
             where: { id },
-            data: { status },
+            data: updateData,
         }).catch(() => null);
 
         if (!order) {
