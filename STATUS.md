@@ -22,11 +22,20 @@ Use task files under `TASKS/`:
 
 Progress
 - UI-1 Tokens: ☑ Done
-- UI-2 Cards:  ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+- UI-2 Cards:  ☑ Done
 - UI-3 Home:   ☑ Done
 
 ---
 
+## CONTENT (sports merchant) — next tasks
+- `TASKS/CONTENT-1-product-badges.md` (P0)
+- `TASKS/CONTENT-2-categorygrid-sports.md` (P1)
+
+Progress
+- CONTENT-1 Product badges: ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+- CONTENT-2 CategoryGrid sports: ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+
+---
 
 ### TASK 1 (P0) — Fulfillment status transition rules + timestamps correctness
 **Goal**: make status updates safe/consistent (no impossible jumps), ensure timestamps are set only when appropriate.
@@ -85,7 +94,7 @@ Progress
 - [x] Attempts an invalid transition; asserts 400 BAD_REQUEST
 - [x] Prints `SMOKE PASS (fulfillment)`
 - [x] Document in `RUNBOOK.md`
-- [ ] Commit + `git status` clean
+- [x] Commit + `git status` clean
 
 **Owner**: Claude Code (Sonnet 4.5)
 **Progress**: ☑ Done
