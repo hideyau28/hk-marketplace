@@ -183,6 +183,25 @@ export const GET = withApi(
             where: status ? { status } : undefined,
             orderBy: { createdAt: "desc" },
             take: limit,
+            include: {
+                paymentAttempts: {
+                    select: {
+                        id: true,
+                        provider: true,
+                        status: true,
+                        amount: true,
+                        currency: true,
+                        stripeCheckoutSessionId: true,
+                        stripePaymentIntentId: true,
+                        stripeChargeId: true,
+                        failureCode: true,
+                        failureMessage: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                    orderBy: { createdAt: "desc" },
+                },
+            },
         });
 
         return ok(req, { orders });

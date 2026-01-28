@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
-import type { Order } from "@prisma/client";
 import { OrderDetailModal } from "./order-detail-modal";
+import type { OrderWithPayments } from "./actions";
 
 type OrdersTableProps = {
-  orders: Order[];
+  orders: OrderWithPayments[];
   locale: Locale;
   currentStatus?: string;
 };
@@ -26,17 +26,25 @@ const ORDER_STATUSES = [
 
 function badgeClass(status: string) {
   const s = status.toLowerCase();
-  if (s === "paid" || s === "completed") return "bg-emerald-50 text-emerald-700 border-emerald-200";
-  if (s === "pending") return "bg-zinc-100 text-zinc-700 border-zinc-200";
-  if (s === "fulfilling" || s === "shipped") return "bg-sky-50 text-sky-700 border-sky-200";
+  if (s === "paid" || s === "completed" || s === "succeeded") return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (s === "pending" || s === "created") return "bg-zinc-100 text-zinc-700 border-zinc-200";
+  if (s === "fulfilling" || s === "shipped" || s === "processing" || s === "requires_action") return "bg-sky-50 text-sky-700 border-sky-200";
   if (s === "refunded") return "bg-amber-50 text-amber-700 border-amber-200";
-  return "bg-rose-50 text-rose-700 border-rose-200";
+  if (s === "failed" || s === "disputed") return "bg-rose-50 text-rose-700 border-rose-200";
+  return "bg-zinc-100 text-zinc-700 border-zinc-200";
+}
+
+function getLastPaymentStatus(order: OrderWithPayments): string | null {
+  if (order.paymentAttempts && order.paymentAttempts.length > 0) {
+    return order.paymentAttempts[0].status;
+  }
+  return null;
 }
 
 export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps) {
   const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus || "");
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithPayments | null>(null);
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
@@ -44,7 +52,7 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
     router.push(url);
   };
 
-  const handleViewOrder = (order: Order) => {
+  const handleViewOrder = (order: OrderWithPayments) => {
     setSelectedOrder(order);
   };
 
@@ -81,6 +89,7 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
                 <th className="px-4 py-3 text-left">Fulfillment</th>
                 <th className="px-4 py-3 text-right">Total</th>
                 <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">Last Payment</th>
                 <th className="px-4 py-3 text-left">Created</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
@@ -89,13 +98,14 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-zinc-500">
+                  <td colSpan={9} className="px-4 py-12 text-center text-zinc-500">
                     No orders found
                   </td>
                 </tr>
               ) : (
                 orders.map((order) => {
                   const amounts = order.amounts as any;
+                  const lastPayment = getLastPaymentStatus(order);
                   return (
                     <tr key={order.id} className="border-t border-zinc-200 hover:bg-zinc-50">
                       <td className="px-4 py-3">
@@ -117,6 +127,19 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
                         >
                           {order.status}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {lastPayment ? (
+                          <span
+                            className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${badgeClass(
+                              lastPayment
+                            )}`}
+                          >
+                            {lastPayment}
+                          </span>
+                        ) : (
+                          <span className="text-zinc-400 text-xs">-</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-zinc-600">
                         {new Date(order.createdAt).toLocaleString()}

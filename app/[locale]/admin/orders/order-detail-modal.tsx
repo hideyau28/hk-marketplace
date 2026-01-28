@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { Order, OrderStatus } from "@prisma/client";
+import type { OrderStatus } from "@prisma/client";
 import type { Locale } from "@/lib/i18n";
-import { updateOrderStatus } from "./actions";
+import { updateOrderStatus, type OrderWithPayments } from "./actions";
 
 type OrderDetailModalProps = {
-  order: Order;
+  order: OrderWithPayments;
   onClose: () => void;
   locale: Locale;
 };
@@ -205,6 +205,128 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
               <div className="text-zinc-700 text-sm">{order.note}</div>
             </div>
           )}
+
+          {/* Payment Attempts */}
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+            <h3 className="text-zinc-900 font-semibold mb-3">Payment Attempts</h3>
+            {order.paymentAttempts && order.paymentAttempts.length > 0 ? (
+              <div className="space-y-3">
+                {order.paymentAttempts.map((attempt) => (
+                  <div key={attempt.id} className="rounded-xl border border-zinc-200 bg-white p-3 text-sm">
+                    <div className="grid gap-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-zinc-600">Provider:</span>
+                        <span className="text-zinc-900 font-medium">{attempt.provider}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-zinc-600">Status:</span>
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
+                            attempt.status === "SUCCEEDED"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : attempt.status === "FAILED"
+                              ? "bg-red-50 text-red-700 border-red-200"
+                              : attempt.status === "CANCELLED"
+                              ? "bg-zinc-100 text-zinc-700 border-zinc-200"
+                              : attempt.status === "REFUNDED"
+                              ? "bg-amber-50 text-amber-700 border-amber-200"
+                              : attempt.status === "DISPUTED"
+                              ? "bg-rose-50 text-rose-700 border-rose-200"
+                              : "bg-blue-50 text-blue-700 border-blue-200"
+                          }`}
+                        >
+                          {attempt.status}
+                        </span>
+                      </div>
+                      {attempt.amount && attempt.currency && (
+                        <div className="flex justify-between">
+                          <span className="text-zinc-600">Amount:</span>
+                          <span className="text-zinc-900 font-medium">
+                            {attempt.currency} {(attempt.amount / 100).toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                      {attempt.status === "FAILED" && (
+                        <>
+                          {attempt.failureCode && (
+                            <div className="flex justify-between">
+                              <span className="text-zinc-600">Failure Code:</span>
+                              <code className="text-red-700 text-xs bg-red-50 px-2 py-0.5 rounded">
+                                {attempt.failureCode}
+                              </code>
+                            </div>
+                          )}
+                          {attempt.failureMessage && (
+                            <div className="mt-1">
+                              <span className="text-zinc-600">Failure Message:</span>
+                              <div className="text-red-700 text-xs mt-1">{attempt.failureMessage}</div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      <div className="border-t border-zinc-200 pt-2 mt-2 space-y-1">
+                        <div className="text-xs text-zinc-500">Stripe IDs:</div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-600 text-xs">Session:</span>
+                          {attempt.stripeCheckoutSessionId ? (
+                            <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                              {attempt.stripeCheckoutSessionId}
+                            </code>
+                          ) : (
+                            <span className="text-zinc-400 text-xs">-</span>
+                          )}
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-600 text-xs">Payment Intent:</span>
+                          {attempt.stripePaymentIntentId ? (
+                            <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                              {attempt.stripePaymentIntentId}
+                            </code>
+                          ) : (
+                            <span className="text-zinc-400 text-xs">-</span>
+                          )}
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-600 text-xs">Charge:</span>
+                          {attempt.stripeChargeId ? (
+                            <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                              {attempt.stripeChargeId}
+                            </code>
+                          ) : (
+                            <span className="text-zinc-400 text-xs">-</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-xs text-zinc-500 border-t border-zinc-200 pt-2 mt-2">
+                        <span>Created: {new Date(attempt.createdAt).toLocaleString()}</span>
+                        <span>Updated: {new Date(attempt.updatedAt).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-zinc-500 text-sm">
+                No payment attempts yet.
+                {order.stripeCheckoutSessionId && (
+                  <div className="mt-2 text-xs">
+                    <div className="text-zinc-600">Legacy Stripe Session ID:</div>
+                    <code className="text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                      {order.stripeCheckoutSessionId}
+                    </code>
+                  </div>
+                )}
+                {order.stripePaymentIntentId && (
+                  <div className="mt-2 text-xs">
+                    <div className="text-zinc-600">Legacy Payment Intent ID:</div>
+                    <code className="text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                      {order.stripePaymentIntentId}
+                    </code>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Timestamps */}
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">

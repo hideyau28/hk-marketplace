@@ -27,7 +27,28 @@ function normalizeStatus(value?: string | null) {
 export const GET = withApi(
     async (_req: Request, { params }: { params: Promise<{ id: string }> }) => {
         const { id } = await params;
-        const order = await prisma.order.findUnique({ where: { id } });
+        const order = await prisma.order.findUnique({
+            where: { id },
+            include: {
+                paymentAttempts: {
+                    select: {
+                        id: true,
+                        provider: true,
+                        status: true,
+                        amount: true,
+                        currency: true,
+                        stripeCheckoutSessionId: true,
+                        stripePaymentIntentId: true,
+                        stripeChargeId: true,
+                        failureCode: true,
+                        failureMessage: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                    orderBy: { createdAt: "desc" },
+                },
+            },
+        });
         if (!order) {
             throw new ApiError(404, "NOT_FOUND", "Order not found");
         }

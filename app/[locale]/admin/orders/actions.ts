@@ -1,7 +1,26 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { Order } from "@prisma/client";
+import type { Order, PaymentAttempt } from "@prisma/client";
+
+// Extended Order type with paymentAttempts
+export type OrderWithPayments = Order & {
+  paymentAttempts: Array<Pick<
+    PaymentAttempt,
+    | "id"
+    | "provider"
+    | "status"
+    | "amount"
+    | "currency"
+    | "stripeCheckoutSessionId"
+    | "stripePaymentIntentId"
+    | "stripeChargeId"
+    | "failureCode"
+    | "failureMessage"
+    | "createdAt"
+    | "updatedAt"
+  >>;
+};
 
 const ORDER_STATUSES = [
   "PENDING",
@@ -32,11 +51,11 @@ type ApiSuccessResponse<T> = {
 
 type ActionFail = { ok: false; code: string; message: string };
 
-type FetchOrdersOk = { ok: true; data: Order[] };
+type FetchOrdersOk = { ok: true; data: OrderWithPayments[] };
 
 type FetchOrdersResult = FetchOrdersOk | ActionFail;
 
-type UpdateOrderOk = { ok: true; data: Order };
+type UpdateOrderOk = { ok: true; data: OrderWithPayments };
 
 type UpdateOrderResult = UpdateOrderOk | ActionFail;
 
@@ -77,7 +96,7 @@ export async function fetchOrders(status?: string): Promise<FetchOrdersResult> {
       cache: "no-store",
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<{ orders: Order[] }>;
+    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<{ orders: OrderWithPayments[] }>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -88,7 +107,7 @@ export async function fetchOrders(status?: string): Promise<FetchOrdersResult> {
       };
     }
 
-    const result = json as ApiSuccessResponse<{ orders: Order[] }>;
+    const result = json as ApiSuccessResponse<{ orders: OrderWithPayments[] }>;
     return { ok: true, data: result.data.orders };
   } catch (error) {
     console.error("Failed to fetch orders:", error);
@@ -120,7 +139,7 @@ export async function updateOrderStatus(orderId: string, status: string, locale?
       body: JSON.stringify({ status: normalizedStatus }),
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Order>;
+    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<OrderWithPayments>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -131,7 +150,7 @@ export async function updateOrderStatus(orderId: string, status: string, locale?
       };
     }
 
-    const result = json as ApiSuccessResponse<Order>;
+    const result = json as ApiSuccessResponse<OrderWithPayments>;
     if (locale) revalidatePath(`/${locale}/admin/orders`, "page");
     return { ok: true, data: result.data };
   } catch (error) {
