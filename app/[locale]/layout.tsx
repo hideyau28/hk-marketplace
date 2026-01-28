@@ -23,13 +23,11 @@ export default async function LocaleLayout({
   const t = getDict(l);
 
   return (
-    <html lang={locale}>
-      <body>
-        <TopNav locale={l} t={t} />
-        {children}
-        <FloatingSearchPill />
-        <BottomTab />
-      </body>
-    </html>
+    <>
+      <TopNav locale={l} t={t} />
+      {children}
+      <FloatingSearchPill />
+      <BottomTab />
+    </>
   );
 }
