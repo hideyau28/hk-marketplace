@@ -94,10 +94,27 @@ export const POST = withApi(async (req) => {
     },
   });
 
+  // Track as a payment attempt (canonical record)
+  await prisma.paymentAttempt.create({
+    data: {
+      provider: "STRIPE",
+      status: "CREATED",
+      orderId,
+      amount: typeof session.amount_total === "number" ? session.amount_total : null,
+      currency: typeof session.currency === "string" ? session.currency : null,
+      stripeCheckoutSessionId: session.id,
+      stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : null,
+      lastEventType: "checkout.session.created",
+      lastEvent: session as unknown as import("@prisma/client").Prisma.InputJsonValue,
+    },
+  }).catch(() => null);
+
+  // Legacy fields (for backward compatibility)
   await prisma.order.update({
     where: { id: orderId },
     data: {
       stripeCheckoutSessionId: session.id,
+      stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : undefined,
     },
   });
 

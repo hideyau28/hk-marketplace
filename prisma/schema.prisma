@@ -9,7 +9,7 @@ datasource db {
 model StoreSettings {
   // singleton row
   id             String   @id @default("default")
-  storeName      String?  // optional so minimal payload won't crash
+  storeName      String? // optional so minimal payload won't crash
   tagline        String?
   returnsPolicy  String?
   shippingPolicy String?
@@ -18,14 +18,14 @@ model StoreSettings {
 }
 
 model IdempotencyKey {
-  id          String   @id @default(cuid())
-  key         String
-  route       String
-  method      String
-  requestHash String
-  status      Int
+  id           String   @id @default(cuid())
+  key          String
+  route        String
+  method       String
+  requestHash  String
+  status       Int
   responseJson Json
-  createdAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
 
   @@unique([key, route, method])
   @@index([createdAt])
@@ -47,6 +47,21 @@ enum FulfillmentType {
   DELIVERY
 }
 
+enum PaymentProvider {
+  STRIPE
+}
+
+enum PaymentAttemptStatus {
+  CREATED
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+  DISPUTED
+}
+
 model Order {
   id                 String          @id @default(cuid())
   customerName       String
@@ -59,18 +74,54 @@ model Order {
   status             OrderStatus     @default(PENDING)
   note               String?
 
-  // Payments (Stripe Checkout)
+  // Payments (Stripe Checkout) - legacy fields
   stripeCheckoutSessionId String?
   stripePaymentIntentId   String?
   paidAt                  DateTime?
 
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  paymentAttempts PaymentAttempt[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status])
   @@index([createdAt])
   @@index([stripeCheckoutSessionId])
   @@index([stripePaymentIntentId])
+}
+
+model PaymentAttempt {
+  id       String               @id @default(cuid())
+  provider PaymentProvider
+  status   PaymentAttemptStatus @default(CREATED)
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  amount   Int?
+  currency String?
+
+  // Stripe identifiers
+  stripeCheckoutSessionId String?
+  stripePaymentIntentId   String?
+  stripeChargeId          String?
+
+  failureCode    String?
+  failureMessage String?
+
+  // Audit/debug
+  lastEventId   String?
+  lastEventType String?
+  lastEvent     Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([provider, status])
+  @@index([stripeCheckoutSessionId])
+  @@index([stripePaymentIntentId])
+  @@index([stripeChargeId])
 }
 
 model Product {

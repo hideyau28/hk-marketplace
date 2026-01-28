@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 
 import Stripe from "stripe";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 
@@ -73,11 +74,47 @@ export const POST = withApi(async (req) => {
     }
   };
 
+  const updateAttemptBySessionId = async (sessionId: string, data: Prisma.PaymentAttemptUpdateManyMutationInput) => {
+    try {
+      await prisma.paymentAttempt.updateMany({
+        where: { provider: "STRIPE", stripeCheckoutSessionId: sessionId },
+        data,
+      });
+    } catch (e: unknown) {
+      const err = e instanceof Error ? e.message : String(e);
+      log("warn", "PaymentAttempt updateMany failed", { sessionId, err });
+    }
+  };
+
+  const updateAttemptByPaymentIntentId = async (
+    paymentIntentId: string,
+    data: Prisma.PaymentAttemptUpdateManyMutationInput
+  ) => {
+    try {
+      await prisma.paymentAttempt.updateMany({
+        where: { provider: "STRIPE", stripePaymentIntentId: paymentIntentId },
+        data,
+      });
+    } catch (e: unknown) {
+      const err = e instanceof Error ? e.message : String(e);
+      log("warn", "PaymentAttempt updateMany failed", { paymentIntentId, err });
+    }
+  };
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const orderId = String(session.metadata?.orderId || "").trim();
+
+        await updateAttemptBySessionId(session.id, {
+          status: "SUCCEEDED",
+          stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : undefined,
+          lastEventId: event.id,
+          lastEventType: event.type,
+          lastEvent: event as unknown as Prisma.InputJsonValue,
+        });
+
         if (!orderId) {
           log("warn", "Missing orderId in session.metadata", { sessionId: session.id });
           break;
@@ -96,6 +133,14 @@ export const POST = withApi(async (req) => {
       case "checkout.session.expired": {
         const session = event.data.object as Stripe.Checkout.Session;
         const orderId = String(session.metadata?.orderId || "").trim();
+
+        await updateAttemptBySessionId(session.id, {
+          status: "CANCELLED",
+          lastEventId: event.id,
+          lastEventType: event.type,
+          lastEvent: event as unknown as Prisma.InputJsonValue,
+        });
+
         if (!orderId) break;
 
         // Only cancel if it's still pending.
@@ -111,11 +156,18 @@ export const POST = withApi(async (req) => {
         const pid = typeof pi.id === "string" ? pi.id : "";
         if (!pid) break;
 
-        // We don't have a FAILED status enum; use CANCELLED as a safe terminal state.
-        const updated = await updateByPaymentIntent(pid, {
-          status: "CANCELLED",
+        await updateAttemptByPaymentIntentId(pid, {
+          status: "FAILED",
+          failureCode: typeof pi.last_payment_error?.code === "string" ? pi.last_payment_error.code : undefined,
+          failureMessage:
+            typeof pi.last_payment_error?.message === "string" ? pi.last_payment_error.message : undefined,
+          lastEventId: event.id,
+          lastEventType: event.type,
+          lastEvent: event as unknown as Prisma.InputJsonValue,
         });
-        log("info", "payment_failed applied", { paymentIntentId: pid, updated });
+
+        // Keep order as-is; a failed payment attempt is not necessarily an order cancellation.
+        log("info", "payment_failed recorded", { paymentIntentId: pid });
         break;
       }
 
@@ -123,10 +175,20 @@ export const POST = withApi(async (req) => {
         const ch = event.data.object as Stripe.Charge;
         const pid = typeof ch.payment_intent === "string" ? ch.payment_intent : "";
         if (!pid) break;
-        const updated = await updateByPaymentIntent(pid, {
+
+        await updateAttemptByPaymentIntentId(pid, {
+          status: "REFUNDED",
+          stripeChargeId: ch.id,
+          lastEventId: event.id,
+          lastEventType: event.type,
+          lastEvent: event as unknown as Prisma.InputJsonValue,
+        });
+
+        await updateByPaymentIntent(pid, {
           status: "REFUNDED",
         });
-        log("info", "refund applied", { paymentIntentId: pid, updated });
+
+        log("info", "refund applied", { paymentIntentId: pid });
         break;
       }
 
@@ -141,7 +203,16 @@ export const POST = withApi(async (req) => {
         try {
           const ch = await stripe.charges.retrieve(chargeId);
           const pid = typeof ch.payment_intent === "string" ? ch.payment_intent : "";
+
           if (pid) {
+            await updateAttemptByPaymentIntentId(pid, {
+              status: "DISPUTED",
+              stripeChargeId: ch.id,
+              lastEventId: event.id,
+              lastEventType: event.type,
+              lastEvent: event as unknown as Prisma.InputJsonValue,
+            });
+
             const updated = await updateByPaymentIntent(pid, { status: "DISPUTED" });
             log("info", "dispute applied", { chargeId, paymentIntentId: pid, updated });
           } else {
