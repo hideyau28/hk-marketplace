@@ -52,6 +52,7 @@ type CreateProductPayload = {
   title: string;
   price: number;
   imageUrl?: string | null;
+  category?: string | null;
   badges?: string[];
   active?: boolean;
 };
@@ -71,11 +72,27 @@ function parseCreatePayload(body: any): CreateProductPayload {
       ? body.brand.trim()
       : null;
 
+  // Validate category: optional, 1-50 chars if provided
+  let category: string | null = null;
+  if (body.category !== undefined && body.category !== null) {
+    if (typeof body.category !== "string") {
+      throw new ApiError(400, "BAD_REQUEST", "category must be a string");
+    }
+    const trimmed = body.category.trim();
+    if (trimmed.length > 0) {
+      if (trimmed.length > 50) {
+        throw new ApiError(400, "BAD_REQUEST", "category must be 50 characters or less");
+      }
+      category = trimmed;
+    }
+  }
+
   return {
     brand,
     title: body.title.trim(),
     price: body.price,
     imageUrl: typeof body.imageUrl === "string" && body.imageUrl.trim().length > 0 ? body.imageUrl.trim() : null,
+    category,
     badges: badges.length > 0 ? badges : undefined,
     active: typeof body.active === "boolean" ? body.active : true,
   };
@@ -154,6 +171,7 @@ export const POST = withApi(
         title: payload.title,
         price: payload.price,
         imageUrl: payload.imageUrl ?? null,
+        category: payload.category ?? null,
         badges: payload.badges,
         active: payload.active ?? true,
       },

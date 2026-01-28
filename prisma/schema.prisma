@@ -138,6 +138,7 @@ model Product {
   title     String
   price     Float
   imageUrl  String?
+  category  String? // optional: categorize products for rails/hero links
   badges    Json?
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -145,4 +146,5 @@ model Product {
 
   @@index([active])
   @@index([brand])
+  @@index([category])
 }
