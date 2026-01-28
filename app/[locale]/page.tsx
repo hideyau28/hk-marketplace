@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import ProductRail from "@/components/ProductRail";
 import CategoryGrid from "@/components/CategoryGrid";
 import BrandRail from "@/components/BrandRail";
+import HeroCarousel from "@/components/HeroCarousel";
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -35,25 +36,53 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       {/* Sentinel for showing/hiding floating search */}
       <div id="home-search-sentinel" className="h-px w-full" />
 
-      {/* 1) Hero Banner */}
-      <section className="px-4 pt-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 to-zinc-800 px-6 py-7 md:p-12 max-h-[240px]">
-          <div className="relative z-10">
-            <h1 className="text-3xl md:text-4xl font-bold text-white">
-              {t.home.heroTitle}
-            </h1>
-            <p className="mt-2 text-zinc-300 text-base md:text-lg max-w-md">
-              {t.home.heroSubtitle}
-            </p>
-            <button className="mt-5 rounded-full bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--primary-dark)] transition">
-              {t.home.viewAll}
-            </button>
-          </div>
-          <div className="absolute right-0 top-0 h-full w-1/2 opacity-15">
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-zinc-900" />
-          </div>
-        </div>
-      </section>
+      {/* 1) Hero carousel (4–5 slides) */}
+      <div className="px-4 pt-4">
+        <HeroCarousel
+          slides={[
+            {
+              title: t.home.heroTitle,
+              subtitle: t.home.heroSubtitle,
+              cta: t.home.viewAll,
+              href: (loc) => `/${loc}?section=featured`,
+              imageUrl:
+                "https://images.unsplash.com/photo-1518441902117-f0aee0b2fbd9?auto=format&fit=crop&w=1400&q=70",
+            },
+            {
+              title: l === "zh-HK" ? "精選運動裝備" : "Sports essentials",
+              subtitle: l === "zh-HK" ? "跑步／健身／球類" : "Run / gym / ball sports",
+              cta: l === "zh-HK" ? "查看" : "View",
+              href: (loc) => `/${loc}?category=sports`,
+              imageUrl:
+                "https://images.unsplash.com/photo-1526401485004-2fda9f6a7fdc?auto=format&fit=crop&w=1400&q=70",
+            },
+            {
+              title: l === "zh-HK" ? "潮流配件" : "Accessories",
+              subtitle: l === "zh-HK" ? "每日穿搭加分" : "Upgrade your daily fit",
+              cta: l === "zh-HK" ? "查看" : "View",
+              href: (loc) => `/${loc}?category=accessories`,
+              imageUrl:
+                "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=1400&q=70",
+            },
+            {
+              title: l === "zh-HK" ? "居家辦公" : "Home office",
+              subtitle: l === "zh-HK" ? "桌面整理好物" : "Desk setup picks",
+              cta: l === "zh-HK" ? "查看" : "View",
+              href: (loc) => `/${loc}?category=office`,
+              imageUrl:
+                "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1400&q=70",
+            },
+            {
+              title: l === "zh-HK" ? "新品上架" : "New arrivals",
+              subtitle: l === "zh-HK" ? "每日更新" : "Updated daily",
+              cta: l === "zh-HK" ? "查看" : "View",
+              href: (loc) => `/${loc}?sort=new`,
+              imageUrl:
+                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1400&q=70",
+            },
+          ]}
+        />
+      </div>
 
       {/* 2) Recently Viewed (grid) */}
       {recentlyViewed.length > 0 && (

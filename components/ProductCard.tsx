@@ -7,6 +7,7 @@ import { Badge } from "./Badge";
 
 type ProductCardProps = {
   locale: Locale;
+  imageAspect?: "square" | "landscape";
   p: {
     id: string;
     brand?: string;
@@ -38,7 +39,7 @@ function HeartIcon({ filled }: { filled: boolean }) {
   );
 }
 
-export default function ProductCard({ locale, p }: ProductCardProps) {
+export default function ProductCard({ locale, p, imageAspect = "square" }: ProductCardProps) {
   const [wishlisted, setWishlisted] = useState(false);
 
   const handleWishlistClick = (e: React.MouseEvent) => {
@@ -52,8 +53,13 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
       href={`/${locale}/product/${p.id}`}
       className="group block"
     >
-      {/* Image container (1:1) */}
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100">
+      {/* Image container */}
+      <div
+        className={
+          "relative overflow-hidden rounded-2xl bg-zinc-100 " +
+          (imageAspect === "landscape" ? "aspect-[4/3]" : "aspect-square")
+        }
+      >
         {p.image ? (
           <img
             src={p.image}
