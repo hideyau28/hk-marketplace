@@ -39,6 +39,28 @@ All error responses must include:
 - JSON `content-type`
 - `error.code`
 
+## Payments smoke test (one-click)
+
+Quick verification of the payment flow critical path:
+
+```bash
+# Prereqs: dev server running + ADMIN_SECRET set
+ADMIN_SECRET=your-secret bash scripts/smoke-payments.sh
+# or
+npm run smoke:payments
+```
+
+Tests:
+1. POST /api/orders — create order
+2. POST /api/checkout/session — create Stripe checkout session
+3. Verify response contains `https://checkout.stripe.com/` URL
+
+Success output:
+```
+SMOKE PASS (payments)
+orderId=...
+```
+
 ## Local dev
 - Create `.env.local` from `.env.example`
 - Start dev:

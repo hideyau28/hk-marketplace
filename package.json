@@ -12,6 +12,7 @@
     "lint": "eslint",
     "prebuild": "node scripts/assert-single-app-root.mjs",
     "smoke": "bash scripts/smoke-store-settings.sh && bash scripts/smoke-orders.sh",
+    "smoke:payments": "bash scripts/smoke-payments.sh",
     "smoke:prod": "bash scripts/prod-smoke.sh",
     "smoke:local": "bash scripts/smoke-local.sh",
     "taskpkg": "bash scripts/taskpkg.sh",
