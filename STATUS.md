@@ -12,6 +12,22 @@ Updated: 2026-01-28
 
 ## NEXT 3 TASKS (priority order)
 
+---
+
+## UI BASELINE (Army Green) — 3 parallel tasks
+Use task files under `TASKS/`:
+- `TASKS/UI-1-tokens.md`
+- `TASKS/UI-2-cards.md`
+- `TASKS/UI-3-home.md`
+
+Progress
+- UI-1 Tokens: ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+- UI-2 Cards:  ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+- UI-3 Home:   ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+
+---
+
+
 ### TASK 1 (P0) — Fulfillment status transition rules + timestamps correctness
 **Goal**: make status updates safe/consistent (no impossible jumps), ensure timestamps are set only when appropriate.
 
