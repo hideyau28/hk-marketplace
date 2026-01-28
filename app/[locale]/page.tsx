@@ -35,9 +35,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="pb-[calc(96px+env(safe-area-inset-bottom))]">
-      {/* Sentinel for showing/hiding floating search */}
-      <div id="home-search-sentinel" className="h-px w-full" />
-
       {/* 1) Hero carousel (4–5 slides) */}
       <div className="px-4 pt-4">
         <HeroCarousel
@@ -85,6 +82,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           ]}
         />
       </div>
+
+      {/* Sentinel: used to hide floating search once user scrolls past hero */}
+      <div id="home-search-sentinel" className="h-px w-full" />
 
       {/* 2) Shop by Category (icon grid) */}
       <CategoryGrid locale={l} title={t.home.shopByCategory} />
