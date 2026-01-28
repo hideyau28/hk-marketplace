@@ -90,6 +90,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           locale={l}
           title={t.home.recentlyViewed}
           products={recentlyViewed}
+          size="sm"
         />
       )}
 
@@ -101,6 +102,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         locale={l}
         title={t.home.forYou}
         products={recommended}
+        size="lg"
       />
 
       {/* 5) Popular Brands (rail + "See all") */}

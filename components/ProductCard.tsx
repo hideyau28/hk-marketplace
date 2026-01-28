@@ -7,7 +7,7 @@ import { Badge } from "./Badge";
 
 type ProductCardProps = {
   locale: Locale;
-  imageAspect?: "square" | "landscape";
+  // (reserved) imageAspect could be extended later; currently always square
   p: {
     id: string;
     brand?: string;
@@ -39,7 +39,7 @@ function HeartIcon({ filled }: { filled: boolean }) {
   );
 }
 
-export default function ProductCard({ locale, p, imageAspect = "square" }: ProductCardProps) {
+export default function ProductCard({ locale, p }: ProductCardProps) {
   const [wishlisted, setWishlisted] = useState(false);
 
   const handleWishlistClick = (e: React.MouseEvent) => {
@@ -55,19 +55,13 @@ export default function ProductCard({ locale, p, imageAspect = "square" }: Produ
     >
       {/* Image container */}
       <div
-        className={
-          "relative overflow-hidden rounded-2xl bg-zinc-100 " +
-          (imageAspect === "landscape" ? "h-[160px]" : "aspect-square")
-        }
+        className="relative overflow-hidden rounded-2xl bg-zinc-100 aspect-square"
       >
         {p.image ? (
           <img
             src={p.image}
             alt={p.title || "Product"}
-            className={
-              "h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 " +
-              (imageAspect === "landscape" ? "origin-center" : "")
-            }
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-zinc-400">
