@@ -22,7 +22,7 @@ export default function ProductRail({
 
       {/* <= md: always horizontal rail. Desktop (lg+): grid. */}
       <div className="lg:px-4">
-        <div className="flex gap-3 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch] snap-x snap-mandatory scroll-pl-4 scroll-pr-4 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:gap-3 lg:overflow-visible lg:scroll-pl-0 lg:scroll-pr-0">
+        <div className="flex gap-3 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch] snap-x snap-mandatory pl-4 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:gap-3 lg:overflow-visible lg:pl-0">
           {products.map((p) => (
             <div
               key={p.id}
@@ -31,6 +31,8 @@ export default function ProductRail({
               <ProductCard locale={locale} p={p} />
             </div>
           ))}
+          {/* End spacer: ensures last card can scroll fully into view on mobile */}
+          <div className="w-4 shrink-0 lg:hidden" aria-hidden="true" />
         </div>
       </div>
     </section>
