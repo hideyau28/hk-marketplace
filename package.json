@@ -11,6 +11,7 @@
     "start": "next start -p 3012",
     "lint": "eslint",
     "prebuild": "node scripts/assert-single-app-root.mjs",
+    "db:migrate:deploy": "npx prisma migrate deploy",
     "smoke": "bash scripts/smoke-store-settings.sh && bash scripts/smoke-orders.sh",
     "smoke:payments": "bash scripts/smoke-payments.sh",
     "smoke:prod": "bash scripts/prod-smoke.sh",
