@@ -1,38 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# hk-marketplace
 
-AI routing protocol: see docs/AI_ROUTING_PROTOCOL.md (TASK PACKAGE required for L2/L3).
+Single-tenant marketplace template (Next.js + Prisma + Postgres) with:
+- Orders + admin dashboard
+- Stripe Checkout + webhook to update order status
 
-## Getting Started
+## Local dev (recommended)
 
-First, run the development server:
+1) Create `.env.local` from `.env.example`
+2) Start app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# http://localhost:3012
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Stripe (optional)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Terminal A:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Terminal B (webhook forward to local):
+```bash
+npm run stripe:listen
+```
 
-## Learn More
+The Stripe CLI prints a `whsec_...` signing secret. Put it into `.env.local` as:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Smoke-test webhook delivery:
+```bash
+npm run stripe:trigger:checkout
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Config notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Never commit `.env.local` (repo ignores `.env*` except `.env.example`).
+- Set `APP_URL` (e.g. `http://localhost:3012` in dev, `https://your-domain` in prod) so Stripe success/cancel URLs are always correct.

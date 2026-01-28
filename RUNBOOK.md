@@ -42,7 +42,22 @@ All error responses must include:
 ## Local dev
 - Create `.env.local` from `.env.example`
 - Start dev:
+  - `npm run dev` (固定跑 http://localhost:3012)
+
+### Stripe local webhook (optional)
+Prereqs: install + login Stripe CLI.
+
+- Terminal A:
   - `npm run dev`
+- Terminal B (webhook forward):
+  - `npm run stripe:listen`
+
+Test (optional):
+- `npm run stripe:trigger:checkout`
+
+Notes:
+- `STRIPE_WEBHOOK_SECRET` 由 `stripe listen` 印出（whsec_...）。只放入 `.env.local`，唔好 commit。
+- 建議設定 `APP_URL=http://localhost:3012`，避免 success/cancel URL 受 proxy header 影響。
 
 ## Deployment model (single-tenant per instance)
 - This codebase is a single-tenant merchant site template (“B” mode).

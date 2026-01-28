@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3012",
+    "dev:local": "next dev -p 3012",
+    "stripe:listen": "stripe listen --forward-to http://localhost:3012/api/stripe/webhook",
+    "stripe:trigger:checkout": "stripe trigger checkout.session.completed",
     "build": "next build",
     "start": "next start -p 3012",
     "lint": "eslint",

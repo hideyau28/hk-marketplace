@@ -78,8 +78,11 @@ export const POST = withApi(async (req) => {
   const proto = req.headers.get("x-forwarded-proto") || "http";
   const locale = (body.locale || "zh-HK").trim();
 
-  const successUrl = `${proto}://${host}/${locale}/orders/${orderId}?payment=success`;
-  const cancelUrl = `${proto}://${host}/${locale}/checkout?orderId=${orderId}&payment=cancel`;
+  // Prefer explicit base URL for correctness behind proxies / local dev.
+  const baseUrl = (process.env.APP_URL || `${proto}://${host}`).replace(/\/$/, "");
+
+  const successUrl = `${baseUrl}/${locale}/orders/${orderId}?payment=success`;
+  const cancelUrl = `${baseUrl}/${locale}/checkout?orderId=${orderId}&payment=cancel`;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
