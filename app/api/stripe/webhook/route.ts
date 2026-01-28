@@ -132,7 +132,6 @@ export const POST = withApi(async (req) => {
 
       case "checkout.session.expired": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const orderId = String(session.metadata?.orderId || "").trim();
 
         await updateAttemptBySessionId(session.id, {
           status: "CANCELLED",
@@ -141,13 +140,8 @@ export const POST = withApi(async (req) => {
           lastEvent: event as unknown as Prisma.InputJsonValue,
         });
 
-        if (!orderId) break;
-
-        // Only cancel if it's still pending.
-        await updateByOrderId(orderId, {
-          status: "CANCELLED",
-          stripeCheckoutSessionId: session.id,
-        });
+        // Keep order as-is; an expired session is not necessarily an order cancellation.
+        log("info", "session expired recorded", { sessionId: session.id });
         break;
       }
 
