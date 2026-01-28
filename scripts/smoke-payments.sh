@@ -74,8 +74,6 @@ ORDER_PAYLOAD='{
   ],
   "amounts": {
     "subtotal": 100,
-    "discount": 0,
-    "deliveryFee": 0,
     "total": 100,
     "currency": "HKD"
   },
