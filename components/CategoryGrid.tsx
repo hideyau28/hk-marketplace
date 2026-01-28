@@ -2,12 +2,12 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 
 const categories = [
-  { id: "electronics", icon: "📱", labelEn: "Electronics", labelZh: "電子產品" },
-  { id: "fashion", icon: "👕", labelEn: "Fashion", labelZh: "時裝" },
-  { id: "home", icon: "🏠", labelEn: "Home", labelZh: "家居" },
-  { id: "beauty", icon: "💄", labelEn: "Beauty", labelZh: "美妝" },
-  { id: "sports", icon: "⚽", labelEn: "Sports", labelZh: "運動" },
-  { id: "food", icon: "🍜", labelEn: "Food", labelZh: "食品" },
+  { id: "shoes", icon: "👟", labelEn: "Shoes", labelZh: "球鞋" },
+  { id: "tops", icon: "👕", labelEn: "Tops", labelZh: "上衣" },
+  { id: "pants", icon: "👖", labelEn: "Pants", labelZh: "褲" },
+  { id: "socks", icon: "🧦", labelEn: "Socks", labelZh: "襪" },
+  { id: "accessories", icon: "🎒", labelEn: "Accessories", labelZh: "配件" },
+  { id: "protection", icon: "🦵", labelEn: "Protection", labelZh: "護具" },
 ];
 
 export default function CategoryGrid({ locale, title }: { locale: Locale; title: string }) {

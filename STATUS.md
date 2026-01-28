@@ -33,7 +33,7 @@ Progress
 
 Progress
 - CONTENT-1 Product badges: ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
-- CONTENT-2 CategoryGrid sports: ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+- CONTENT-2 CategoryGrid sports: ☑ Done
 
 ---
 
