@@ -82,13 +82,15 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
 
       {/* Content (no frame) — 4 lines: brand / desc / price / badges */}
       <div className="pt-3">
-        {/* 1) Brand */}
-        <div className="text-xs font-medium tracking-wide text-zinc-700 truncate">
-          {p.brand || "—"}
-        </div>
+        {/* 1) Brand (only show if present) */}
+        {p.brand ? (
+          <div className="text-xs font-medium tracking-wide text-zinc-700 truncate">
+            {p.brand}
+          </div>
+        ) : null}
 
         {/* 2) Model / short description (2 lines) */}
-        <h3 className="mt-1 text-sm text-zinc-900 font-medium line-clamp-2 min-h-[2.5rem]">
+        <h3 className={"text-sm text-zinc-900 font-medium line-clamp-2 min-h-[2.5rem] " + (p.brand ? "mt-1" : "") }>
           {p.title || "—"}
         </h3>
 

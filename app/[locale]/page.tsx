@@ -1,6 +1,6 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
-import ProductGrid from "@/components/ProductGrid";
+import ProductRail from "@/components/ProductRail";
 import CategoryGrid from "@/components/CategoryGrid";
 import BrandRail from "@/components/BrandRail";
 
@@ -19,7 +19,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   // Map DB products to expected format
   const products = dbProducts.map((p) => ({
     id: p.id,
-    brand: p.brand || "—",
+    brand: p.brand || "",
     title: p.title,
     price: p.price,
     image: p.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
@@ -27,8 +27,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   }));
 
   // Simulate different product sets for sections
-  const recentlyViewed = products.slice(0, 4);
-  const recommended = products.slice(4, 12);
+  const recentlyViewed = products.slice(0, 8);
+  const recommended = products.slice(8, 16);
 
   return (
     <div className="pb-20">
@@ -54,7 +54,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* 2) Recently Viewed (grid) */}
       {recentlyViewed.length > 0 && (
-        <ProductGrid
+        <ProductRail
           locale={l}
           title={t.home.recentlyViewed}
           products={recentlyViewed}
@@ -65,7 +65,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <CategoryGrid locale={l} title={t.home.shopByCategory} />
 
       {/* 4) Recommended / For You (grid) */}
-      <ProductGrid
+      <ProductRail
         locale={l}
         title={t.home.forYou}
         products={recommended}
