@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
 import TopNav from "@/components/TopNav";
+import BottomTab from "@/components/BottomTab";
+import FloatingSearchPill from "@/components/FloatingSearchPill";
 
 export default async function LocaleLayout({
   children,
@@ -25,6 +27,8 @@ export default async function LocaleLayout({
       <body>
         <TopNav locale={l} t={t} />
         {children}
+        <FloatingSearchPill />
+        <BottomTab />
       </body>
     </html>
   );
