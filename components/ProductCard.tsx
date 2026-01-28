@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
+import { isWishlisted, toggleWishlist } from "@/lib/wishlist";
 import { Badge } from "./Badge";
 
 type ProductCardProps = {
@@ -42,10 +43,25 @@ function HeartIcon({ filled }: { filled: boolean }) {
 export default function ProductCard({ locale, p }: ProductCardProps) {
   const [wishlisted, setWishlisted] = useState(false);
 
+  useEffect(() => {
+    setWishlisted(isWishlisted(p.id));
+
+    const handleUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { id?: string; wishlisted?: boolean } | undefined;
+      if (detail?.id === p.id && typeof detail.wishlisted === "boolean") {
+        setWishlisted(detail.wishlisted);
+      }
+    };
+
+    window.addEventListener("wishlistUpdated", handleUpdate);
+    return () => window.removeEventListener("wishlistUpdated", handleUpdate);
+  }, [p.id]);
+
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setWishlisted(!wishlisted);
+    const newState = toggleWishlist(p.id);
+    setWishlisted(newState);
   };
 
   return (
