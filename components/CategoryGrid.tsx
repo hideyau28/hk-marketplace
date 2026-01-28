@@ -22,20 +22,20 @@ export default function CategoryGrid({ locale, title }: { locale: Locale; title:
             <Link
               key={cat.id}
               href={`/${locale}?category=${cat.id}`}
-              className="flex w-[132px] flex-col items-center gap-2 snap-start sm:w-auto"
+              className="group flex w-[132px] flex-col items-center gap-2 snap-start sm:w-auto"
             >
-              <div className="w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:bg-zinc-50 hover:border-[var(--primary)]">
+              <div className="w-full overflow-hidden rounded-2xl border-2 border-zinc-300 bg-zinc-50 shadow-sm transition-all duration-200 hover:border-[var(--primary)] hover:shadow-md hover:scale-[1.02] active:scale-[0.98]">
                 <div className="relative aspect-square w-full">
                   <Image
                     src={cat.image}
                     alt={locale === "zh-HK" ? cat.labelZh : cat.labelEn}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-200 group-hover:scale-105"
                     sizes="(max-width: 640px) 132px, 120px"
                   />
                 </div>
               </div>
-              <span className="text-sm text-zinc-800 text-center">
+              <span className="text-sm font-medium text-zinc-900 text-center transition-colors group-hover:text-[var(--primary)]">
                 {locale === "zh-HK" ? cat.labelZh : cat.labelEn}
               </span>
             </Link>
