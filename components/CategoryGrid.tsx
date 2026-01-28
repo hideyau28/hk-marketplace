@@ -1,13 +1,14 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 
 const categories = [
-  { id: "shoes", icon: "👟", labelEn: "Shoes", labelZh: "球鞋" },
-  { id: "tops", icon: "👕", labelEn: "Tops", labelZh: "上衣" },
-  { id: "pants", icon: "👖", labelEn: "Pants", labelZh: "褲" },
-  { id: "socks", icon: "🧦", labelEn: "Socks", labelZh: "襪" },
-  { id: "accessories", icon: "🎒", labelEn: "Accessories", labelZh: "配件" },
-  { id: "protection", icon: "🦵", labelEn: "Protection", labelZh: "護具" },
+  { id: "shoes", image: "/categories/shoes.svg", labelEn: "Shoes", labelZh: "球鞋" },
+  { id: "tops", image: "/categories/tops.svg", labelEn: "Tops", labelZh: "上衣" },
+  { id: "pants", image: "/categories/pants.svg", labelEn: "Pants", labelZh: "褲" },
+  { id: "socks", image: "/categories/socks.svg", labelEn: "Socks", labelZh: "襪" },
+  { id: "accessories", image: "/categories/accessories.svg", labelEn: "Accessories", labelZh: "配件" },
+  { id: "protection", image: "/categories/protection.svg", labelEn: "Protection", labelZh: "護具" },
 ];
 
 export default function CategoryGrid({ locale, title }: { locale: Locale; title: string }) {
@@ -19,10 +20,20 @@ export default function CategoryGrid({ locale, title }: { locale: Locale; title:
           <Link
             key={cat.id}
             href={`/${locale}?category=${cat.id}`}
-            className="flex flex-col items-center gap-2 rounded-2xl border border-zinc-200 bg-white p-4 hover:border-[#4a5d23] hover:bg-zinc-50 transition"
+            className="flex flex-col items-center gap-2"
           >
-            <span className="text-3xl">{cat.icon}</span>
-            <span className="text-sm text-zinc-700 text-center">
+            <div className="w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:bg-zinc-50 hover:border-[var(--primary)]">
+              <div className="relative aspect-[4/3] w-full">
+                <Image
+                  src={cat.image}
+                  alt={locale === "zh-HK" ? cat.labelZh : cat.labelEn}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 33vw, 120px"
+                />
+              </div>
+            </div>
+            <span className="text-sm text-zinc-800 text-center">
               {locale === "zh-HK" ? cat.labelZh : cat.labelEn}
             </span>
           </Link>

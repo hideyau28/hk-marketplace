@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="384" viewBox="0 0 512 384">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2F4F3E" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#111111" stop-opacity="0.06"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="384" rx="32" fill="url(#g)"/>
+  <path d="M168 150c0-26 22-48 48-48h80c26 0 48 22 48 48v18h22c14 0 26 12 26 26v104c0 14-12 26-26 26H146c-14 0-26-12-26-26V194c0-14 12-26 26-26h22v-18zm48-22c-12 0-22 10-22 22v18h124v-18c0-12-10-22-22-22h-80z" fill="#2F4F3E" fill-opacity="0.20"/>
+  <text x="28" y="64" font-family="ui-sans-serif, system-ui" font-size="28" fill="#111111" fill-opacity="0.55">Accessories</text>
+</svg>
