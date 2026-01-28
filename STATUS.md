@@ -21,15 +21,15 @@ Updated: 2026-01-28
 - (optional) `lib/*` helper only
 
 **Checklist**
-- [ ] Define allowed status transitions (e.g. PENDING→PAID→FULFILLING→SHIPPED→COMPLETED; allow CANCELLED from PENDING/PAID; etc.)
-- [ ] Enforce transitions in PATCH `/api/orders/[id]` (400 BAD_REQUEST on invalid)
-- [ ] When transitioning, set the correct timestamp only once (already implemented) and don’t set unrelated timestamps
-- [ ] Admin UI shows a clear error on invalid transition
-- [ ] `npm run ci:build` PASS
-- [ ] Commit + `git status` clean
+- [x] Define allowed status transitions (e.g. PENDING→PAID→FULFILLING→SHIPPED→COMPLETED; allow CANCELLED from PENDING/PAID; etc.)
+- [x] Enforce transitions in PATCH `/api/orders/[id]` (400 BAD_REQUEST on invalid)
+- [x] When transitioning, set the correct timestamp only once (already implemented) and don't set unrelated timestamps
+- [x] Admin UI shows a clear error on invalid transition
+- [x] `npm run ci:build` PASS
+- [x] Commit + `git status` clean
 
 **Owner**: Claude Code (Opus 4.5)
-**Progress**: ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+**Progress**: ☑ Done
 
 ---
 

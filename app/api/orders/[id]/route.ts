@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
+import { isValidTransition, getTransitionError } from "@/lib/orders/status-transitions";
 
 const ORDER_STATUSES = [
     "PENDING",
@@ -82,6 +83,21 @@ export const PATCH = withApi(
         const status = normalizeStatus(body?.status);
         if (!status) {
             throw new ApiError(400, "BAD_REQUEST", "status is required");
+        }
+
+        // Fetch current order to validate transition
+        const currentOrder = await prisma.order.findUnique({
+            where: { id },
+            select: { status: true },
+        });
+
+        if (!currentOrder) {
+            throw new ApiError(404, "NOT_FOUND", "Order not found");
+        }
+
+        // Validate status transition
+        if (!isValidTransition(currentOrder.status, status)) {
+            throw new ApiError(400, "BAD_REQUEST", getTransitionError(currentOrder.status, status));
         }
 
         // Build update data with status
