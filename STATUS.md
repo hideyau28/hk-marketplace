@@ -62,14 +62,14 @@ Updated: 2026-01-28
 - (optional) `package.json` scripts only
 
 **Checklist**
-- [ ] New `scripts/smoke-fulfillment.sh`
-- [ ] Requires `ADMIN_SECRET` env; fails fast with usage hint
-- [ ] Creates an order (reuse logic from smoke-payments if possible)
-- [ ] PATCH status through a valid sequence; asserts timestamps change as expected
-- [ ] Attempts an invalid transition; asserts 400 BAD_REQUEST
-- [ ] Prints `SMOKE PASS (fulfillment)`
-- [ ] Document in `RUNBOOK.md`
+- [x] New `scripts/smoke-fulfillment.sh`
+- [x] Requires `ADMIN_SECRET` env; fails fast with usage hint
+- [x] Creates an order (reuse logic from smoke-payments if possible)
+- [x] PATCH status through a valid sequence; asserts timestamps change as expected
+- [x] Attempts an invalid transition; asserts 400 BAD_REQUEST
+- [x] Prints `SMOKE PASS (fulfillment)`
+- [x] Document in `RUNBOOK.md`
 - [ ] Commit + `git status` clean
 
 **Owner**: Claude Code (Sonnet 4.5)
-**Progress**: ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
+**Progress**: ☑ Done

@@ -61,6 +61,27 @@ SMOKE PASS (payments)
 orderId=...
 ```
 
+## Fulfillment smoke test
+
+Validates admin auth + status transitions + timestamp write-once:
+
+```bash
+# Prereqs: dev server running + ADMIN_SECRET set
+ADMIN_SECRET=your-secret bash scripts/smoke-fulfillment.sh
+```
+
+Tests:
+1. Admin auth for PATCH (401/403)
+2. Valid status sequence: PENDING → FULFILLING → SHIPPED → COMPLETED
+3. Timestamps auto-set on first transition, unchanged on repeat (write-once)
+4. Invalid status value → 400 BAD_REQUEST
+
+Success output:
+```
+SMOKE PASS (fulfillment)
+orderId=...
+```
+
 ## Local dev
 - Create `.env.local` from `.env.example`
 - Start dev:
