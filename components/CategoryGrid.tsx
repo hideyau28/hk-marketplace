@@ -15,29 +15,32 @@ export default function CategoryGrid({ locale, title }: { locale: Locale; title:
   return (
     <section className="mt-12 px-4">
       <h2 className="text-zinc-900 text-lg font-semibold mb-4">{title}</h2>
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-        {categories.map((cat) => (
-          <Link
-            key={cat.id}
-            href={`/${locale}?category=${cat.id}`}
-            className="flex flex-col items-center gap-2"
-          >
-            <div className="w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:bg-zinc-50 hover:border-[var(--primary)]">
-              <div className="relative aspect-[4/3] w-full">
-                <Image
-                  src={cat.image}
-                  alt={locale === "zh-HK" ? cat.labelZh : cat.labelEn}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 33vw, 120px"
-                />
+      {/* Mobile: horizontal rail. Desktop: grid. */}
+      <div className="-mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex gap-3 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] snap-x snap-mandatory sm:grid sm:grid-cols-6 sm:gap-3 sm:overflow-visible">
+          {categories.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/${locale}?category=${cat.id}`}
+              className="flex w-[132px] flex-col items-center gap-2 snap-start sm:w-auto"
+            >
+              <div className="w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:bg-zinc-50 hover:border-[var(--primary)]">
+                <div className="relative aspect-square w-full">
+                  <Image
+                    src={cat.image}
+                    alt={locale === "zh-HK" ? cat.labelZh : cat.labelEn}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 132px, 120px"
+                  />
+                </div>
               </div>
-            </div>
-            <span className="text-sm text-zinc-800 text-center">
-              {locale === "zh-HK" ? cat.labelZh : cat.labelEn}
-            </span>
-          </Link>
-        ))}
+              <span className="text-sm text-zinc-800 text-center">
+                {locale === "zh-HK" ? cat.labelZh : cat.labelEn}
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );
