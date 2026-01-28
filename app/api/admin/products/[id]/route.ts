@@ -85,6 +85,20 @@ export const PATCH = withApi(
       updateData.active = body.active;
     }
 
+    if (body.category !== undefined) {
+      if (body.category === null || body.category === "") {
+        updateData.category = null;
+      } else if (typeof body.category === "string") {
+        const trimmed = body.category.trim();
+        if (trimmed.length > 50) {
+          throw new ApiError(400, "BAD_REQUEST", "category must be 50 characters or less");
+        }
+        updateData.category = trimmed;
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "category must be a string or null");
+      }
+    }
+
     if (body.badges !== undefined) {
       const badges = parseBadges(body.badges);
       updateData.badges = badges.length > 0 ? badges : undefined;
