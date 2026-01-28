@@ -15,9 +15,13 @@ export default function FloatingSearchPill() {
 
   // Show only while the home top sentinel is visible.
   // This avoids cases where scroll events/scrollY behave unexpectedly (mobile Safari, nested scroll containers).
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
+
   useEffect(() => {
-    if (!isHome) return;
+    if (!isHome) {
+      setShow(false);
+      return;
+    }
 
     const el = document.getElementById("home-search-sentinel");
     if (!el || typeof IntersectionObserver === "undefined") {
@@ -30,9 +34,10 @@ export default function FloatingSearchPill() {
 
     const obs = new IntersectionObserver(
       (entries) => {
-        setShow(entries[0]?.isIntersecting ?? false);
+        const isVisible = entries[0]?.isIntersecting ?? false;
+        setShow(isVisible);
       },
-      { root: null, threshold: 0.01 }
+      { root: null, threshold: 0, rootMargin: "-10px 0px 0px 0px" }
     );
 
     obs.observe(el);
@@ -42,10 +47,10 @@ export default function FloatingSearchPill() {
   if (!isHome || !show) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-[72px] z-40 flex justify-center px-4">
+    <div className="fixed inset-x-0 bottom-[calc(80px+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 pointer-events-none">
       <Link
         href={`/${locale}/search`}
-        className="flex w-full max-w-sm items-center gap-2 rounded-full border border-zinc-200 bg-white/90 px-4 py-3 text-sm text-zinc-600 shadow-sm backdrop-blur"
+        className="flex w-full max-w-sm items-center gap-2 rounded-full border border-zinc-200 bg-white/90 px-4 py-3 text-sm text-zinc-600 shadow-sm backdrop-blur pointer-events-auto"
       >
         <Search size={18} className="text-zinc-500" />
         <span>搜尋</span>

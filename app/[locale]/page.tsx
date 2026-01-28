@@ -34,7 +34,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const rail4 = products.slice(24, 32);
 
   return (
-    <div className="pb-20">
+    <div className="pb-[calc(96px+env(safe-area-inset-bottom))]">
       {/* Sentinel for showing/hiding floating search */}
       <div id="home-search-sentinel" className="h-px w-full" />
 

@@ -84,7 +84,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
       </div>
 
       {/* Content (no frame) — 4 lines: brand / desc / price / badges */}
-      <div className="pt-3">
+      <div className="pt-2.5">
         {/* 1) Brand (only show if present) */}
         {p.brand ? (
           <div className="text-xs font-medium tracking-wide text-zinc-700 truncate">
@@ -93,18 +93,18 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         ) : null}
 
         {/* 2) Model / short description (2 lines) */}
-        <h3 className={"text-sm text-zinc-900 font-medium line-clamp-2 min-h-[2.5rem] " + (p.brand ? "mt-1" : "") }>
+        <h3 className={"text-sm text-zinc-900 font-medium line-clamp-2 leading-snug " + (p.brand ? "mt-0.5" : "")}>
           {p.title || "—"}
         </h3>
 
         {/* 3) Price */}
-        <div className="mt-2 text-lg font-bold text-zinc-900">
+        <div className="mt-1.5 text-base font-bold text-zinc-900 leading-tight">
           {p.price != null ? `HK$ ${p.price.toLocaleString()}` : "—"}
         </div>
 
         {/* 4) Badges - show up to 2 */}
         {p.badges && p.badges.length > 0 && (
-          <div className="mt-2 flex gap-1.5 flex-wrap">
+          <div className="mt-1.5 flex gap-1.5 flex-wrap">
             {p.badges.slice(0, 2).map((badge, idx) => (
               <Badge key={idx}>{badge}</Badge>
             ))}
@@ -113,7 +113,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
 
         {/* Legacy single badge support */}
         {!p.badges && p.badge && (
-          <div className="mt-2">
+          <div className="mt-1.5">
             <Badge>{p.badge}</Badge>
           </div>
         )}

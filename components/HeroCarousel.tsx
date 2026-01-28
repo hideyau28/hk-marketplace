@@ -12,9 +12,9 @@ type Slide = {
 };
 
 export default function HeroCarousel({ slides }: { slides: Slide[] }) {
-
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(0);
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     const el = scrollerRef.current;
@@ -40,6 +40,10 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
     return () => obs.disconnect();
   }, [slides.length]);
 
+  const handleImageError = (index: number) => {
+    setImageErrors((prev) => ({ ...prev, [index]: true }));
+  };
+
   return (
     <section className="mt-4">
       {/* Full-width, one-slide-per-screen carousel */}
@@ -50,6 +54,7 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
         >
           {slides.map((s, i) => {
             const href = s.href;
+            const hasError = imageErrors[i];
 
             const Inner = (
               <div
@@ -57,11 +62,23 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
                 data-index={i}
                 className="relative w-full snap-start px-4"
               >
-                <div className="relative overflow-hidden rounded-3xl bg-zinc-900">
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-800 to-zinc-900">
                   <div className="relative h-[200px] w-full md:h-[280px]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={s.imageUrl} alt={s.title} className="h-full w-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    {!hasError ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={s.imageUrl}
+                          alt={s.title}
+                          className="h-full w-full object-cover"
+                          onError={() => handleImageError(i)}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                      </>
+                    ) : (
+                      // Fallback gradient background when image fails
+                      <div className="h-full w-full bg-gradient-to-br from-zinc-700 via-zinc-800 to-zinc-900" />
+                    )}
                   </div>
 
                   <div className="absolute inset-x-0 bottom-0 p-5">

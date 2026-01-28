@@ -15,14 +15,14 @@ export default function ProductRail({
   if (products.length === 0) return null;
 
   return (
-    <section className="mt-12">
+    <section className="mt-8">
       <div className="px-4">
-        <h2 className="text-zinc-900 text-lg font-semibold mb-4">{title}</h2>
+        <h2 className="text-zinc-900 text-lg font-semibold mb-3">{title}</h2>
       </div>
 
       {/* <= md: always horizontal rail. Desktop (lg+): grid. */}
-      <div className="-mx-4 px-4 lg:mx-0 lg:px-4">
-        <div className="flex gap-3 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] snap-x snap-mandatory pr-6 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:gap-3 lg:overflow-visible lg:pr-0">
+      <div className="lg:px-4">
+        <div className="flex gap-3 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch] snap-x snap-mandatory scroll-pl-4 scroll-pr-4 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:gap-3 lg:overflow-visible lg:scroll-pl-0 lg:scroll-pr-0">
           {products.map((p) => (
             <div
               key={p.id}
