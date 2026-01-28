@@ -22,6 +22,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [badges, setBadges] = useState(
     product?.badges && Array.isArray(product.badges) ? (product.badges as string[]).join(", ") : ""
   );
+  const [category, setCategory] = useState(product?.category || "");
   const [active, setActive] = useState(product?.active ?? true);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,6 +57,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             price: priceNum,
             imageUrl: imageUrl.trim() || null,
             badges: badges.trim() || undefined,
+            category: category.trim() || null,
             active,
           },
           locale
@@ -69,6 +71,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             price: priceNum,
             imageUrl: imageUrl.trim() || undefined,
             badges: badges.trim() || undefined,
+            category: category.trim() || null,
             active,
           },
           locale
@@ -177,6 +180,21 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               placeholder="現貨, 快乾, 透氣"
             />
             <p className="mt-1 text-white/40 text-xs">Enter badges separated by commas. Duplicates will be removed.</p>
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-2">
+              Category <span className="text-white/40 font-normal">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              disabled={isPending}
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+              placeholder="sports / accessories / office"
+            />
+            <p className="mt-1 text-white/40 text-xs">Used for filtering and home rails later.</p>
           </div>
 
           <div className="flex items-center gap-3">
