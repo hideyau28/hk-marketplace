@@ -1,6 +1,8 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
-import ShelfRow from "@/components/ShelfRow";
+import ProductGrid from "@/components/ProductGrid";
+import CategoryGrid from "@/components/CategoryGrid";
+import BrandRail from "@/components/BrandRail";
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -11,10 +13,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const dbProducts = await prisma.product.findMany({
     where: { active: true },
     orderBy: { createdAt: "desc" },
-    take: 12,
+    take: 16,
   });
 
-  // Map DB products to expected format (with image and shopName)
+  // Map DB products to expected format
   const products = dbProducts.map((p) => ({
     id: p.id,
     title: p.title,
@@ -23,19 +25,57 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     shopName: "HK Marketplace",
   }));
 
-  return (
-    <div className="pb-16">
-      <div className="px-4 pt-8">
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6">
-          <div className="text-zinc-600 text-sm">HK Marketplace</div>
-          <div className="mt-2 text-2xl font-semibold text-zinc-900">Deep dark, easy shopping</div>
-          <div className="mt-2 text-zinc-600 text-sm">Spotify-like browsing, standard checkout.</div>
-        </div>
-      </div>
+  // Simulate different product sets for sections
+  const recentlyViewed = products.slice(0, 4);
+  const recommended = products.slice(4, 12);
 
-      <ShelfRow locale={l} title={t.home.featured} cta={t.home.viewAll} products={products.slice(0, 8)} />
-      <ShelfRow locale={l} title={t.home.trending} cta={t.home.viewAll} products={products.slice(2, 10)} />
-      <ShelfRow locale={l} title={t.home.forYou} cta={t.home.viewAll} products={products.slice(4, 12)} />
+  return (
+    <div className="pb-20">
+      {/* 1) Hero Banner */}
+      <section className="px-4 pt-8">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 to-zinc-800 p-8 md:p-12">
+          <div className="relative z-10">
+            <h1 className="text-3xl md:text-4xl font-bold text-white">
+              {t.home.heroTitle}
+            </h1>
+            <p className="mt-3 text-zinc-300 text-lg max-w-md">
+              {t.home.heroSubtitle}
+            </p>
+            <button className="mt-6 rounded-full bg-[#4a5d23] px-6 py-3 text-sm font-medium text-white hover:bg-[#3a4a1c] transition">
+              {t.home.viewAll}
+            </button>
+          </div>
+          <div className="absolute right-0 top-0 h-full w-1/2 opacity-20">
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-zinc-900" />
+          </div>
+        </div>
+      </section>
+
+      {/* 2) Recently Viewed (grid) */}
+      {recentlyViewed.length > 0 && (
+        <ProductGrid
+          locale={l}
+          title={t.home.recentlyViewed}
+          products={recentlyViewed}
+        />
+      )}
+
+      {/* 3) Shop by Category (icon grid) */}
+      <CategoryGrid locale={l} title={t.home.shopByCategory} />
+
+      {/* 4) Recommended / For You (grid) */}
+      <ProductGrid
+        locale={l}
+        title={t.home.forYou}
+        products={recommended}
+      />
+
+      {/* 5) Popular Brands (rail + "See all") */}
+      <BrandRail
+        locale={l}
+        title={t.home.popularBrands}
+        seeAllText={t.home.seeAll}
+      />
     </div>
   );
 }

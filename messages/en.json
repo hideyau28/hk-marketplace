@@ -1,6 +1,6 @@
 {
   "nav": { "search": "Search products", "collections": "My Collections", "orders": "My Orders", "cart": "Cart", "signin": "Sign in" },
-  "home": { "featured": "Featured", "trending": "Trending", "forYou": "For you", "byTag": "Curated by tag", "viewAll": "View all" },
+  "home": { "featured": "Featured", "trending": "Trending", "forYou": "Recommended for you", "byTag": "Curated by tag", "viewAll": "View all", "recentlyViewed": "Recently viewed", "shopByCategory": "Shop by category", "popularBrands": "Popular brands", "seeAll": "See all", "heroTitle": "Discover quality products", "heroSubtitle": "Curated selection for Hong Kong" },
   "product": { "addToCart": "Add to cart", "buyNow": "Buy now", "addedToCart": "Added to cart!" },
   "cart": {
     "title": "Shopping Cart",

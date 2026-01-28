@@ -1,6 +1,6 @@
 {
   "nav": { "search": "搜尋商品", "collections": "我的清單", "orders": "我的訂單", "cart": "購物車", "signin": "登入" },
-  "home": { "featured": "今日精選", "trending": "熱門", "forYou": "你可能鍾意", "byTag": "按標籤精選", "viewAll": "查看全部" },
+  "home": { "featured": "今日精選", "trending": "熱門", "forYou": "為你推薦", "byTag": "按標籤精選", "viewAll": "查看全部", "recentlyViewed": "最近瀏覽", "shopByCategory": "分類選購", "popularBrands": "熱門品牌", "seeAll": "查看全部", "heroTitle": "發掘優質商品", "heroSubtitle": "為香港精心挑選" },
   "product": { "addToCart": "加入購物車", "buyNow": "立即購買", "addedToCart": "已加入購物車！" },
   "cart": {
     "title": "購物車",
