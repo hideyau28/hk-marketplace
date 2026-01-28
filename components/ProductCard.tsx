@@ -14,6 +14,7 @@ type ProductCardProps = {
     price?: number;
     shopName?: string;
     badge?: string;
+    badges?: string[];
   };
 };
 
@@ -80,8 +81,17 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
 
       {/* Content */}
       <div className="p-3">
-        {/* Badge */}
-        {p.badge && (
+        {/* Badges - show up to 2 */}
+        {p.badges && p.badges.length > 0 && (
+          <div className="mb-2 flex gap-1.5 flex-wrap">
+            {p.badges.slice(0, 2).map((badge, idx) => (
+              <Badge key={idx}>{badge}</Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Legacy single badge support */}
+        {!p.badges && p.badge && (
           <div className="mb-2">
             <Badge>{p.badge}</Badge>
           </div>

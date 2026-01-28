@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
+import { parseBadges } from "@/lib/parse-badges";
 
 function assertNonEmptyString(value: unknown, field: string) {
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -72,6 +73,11 @@ export const PATCH = withApi(
         throw new ApiError(400, "BAD_REQUEST", "active must be a boolean");
       }
       updateData.active = body.active;
+    }
+
+    if (body.badges !== undefined) {
+      const badges = parseBadges(body.badges);
+      updateData.badges = badges.length > 0 ? badges : undefined;
     }
 
     if (Object.keys(updateData).length === 0) {

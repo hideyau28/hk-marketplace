@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
+import { parseBadges } from "@/lib/parse-badges";
 import crypto from "node:crypto";
 
 const ROUTE = "/api/admin/products";
@@ -50,6 +51,7 @@ type CreateProductPayload = {
   title: string;
   price: number;
   imageUrl?: string | null;
+  badges?: string[];
   active?: boolean;
 };
 
@@ -61,10 +63,13 @@ function parseCreatePayload(body: any): CreateProductPayload {
   assertNonEmptyString(body.title, "title");
   assertNonNegativeNumber(body.price, "price");
 
+  const badges = parseBadges(body.badges);
+
   return {
     title: body.title.trim(),
     price: body.price,
     imageUrl: typeof body.imageUrl === "string" && body.imageUrl.trim().length > 0 ? body.imageUrl.trim() : null,
+    badges: badges.length > 0 ? badges : undefined,
     active: typeof body.active === "boolean" ? body.active : true,
   };
 }
@@ -141,6 +146,7 @@ export const POST = withApi(
         title: payload.title,
         price: payload.price,
         imageUrl: payload.imageUrl ?? null,
+        badges: payload.badges,
         active: payload.active ?? true,
       },
     });

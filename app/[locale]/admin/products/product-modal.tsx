@@ -18,6 +18,9 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [title, setTitle] = useState(product?.title || "");
   const [price, setPrice] = useState(product?.price.toString() || "");
   const [imageUrl, setImageUrl] = useState(product?.imageUrl || "");
+  const [badges, setBadges] = useState(
+    product?.badges && Array.isArray(product.badges) ? (product.badges as string[]).join(", ") : ""
+  );
   const [active, setActive] = useState(product?.active ?? true);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,6 +48,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             title: title.trim(),
             price: priceNum,
             imageUrl: imageUrl.trim() || null,
+            badges: badges.trim() || undefined,
             active,
           },
           locale
@@ -56,6 +60,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             title: title.trim(),
             price: priceNum,
             imageUrl: imageUrl.trim() || undefined,
+            badges: badges.trim() || undefined,
             active,
           },
           locale
@@ -136,6 +141,21 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
               placeholder="https://example.com/image.jpg"
             />
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-2">
+              Badges <span className="text-white/40 font-normal">(comma-separated)</span>
+            </label>
+            <input
+              type="text"
+              value={badges}
+              onChange={(e) => setBadges(e.target.value)}
+              disabled={isPending}
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+              placeholder="現貨, 快乾, 透氣"
+            />
+            <p className="mt-1 text-white/40 text-xs">Enter badges separated by commas. Duplicates will be removed.</p>
           </div>
 
           <div className="flex items-center gap-3">
