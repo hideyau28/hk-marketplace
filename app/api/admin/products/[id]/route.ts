@@ -48,6 +48,16 @@ export const PATCH = withApi(
     const updateData: any = {};
 
     // Validate and collect fields to update
+    if (body.brand !== undefined) {
+      if (body.brand === null || body.brand === "") {
+        updateData.brand = null;
+      } else if (typeof body.brand === "string") {
+        updateData.brand = body.brand.trim();
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "brand must be a string or null");
+      }
+    }
+
     if (body.title !== undefined) {
       assertNonEmptyString(body.title, "title");
       updateData.title = body.title.trim();

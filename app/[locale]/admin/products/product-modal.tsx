@@ -15,6 +15,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
 
+  const [brand, setBrand] = useState(product?.brand || "");
   const [title, setTitle] = useState(product?.title || "");
   const [price, setPrice] = useState(product?.price.toString() || "");
   const [imageUrl, setImageUrl] = useState(product?.imageUrl || "");
@@ -33,6 +34,11 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       return;
     }
 
+    if (!brand.trim()) {
+      setError({ code: "VALIDATION_ERROR", message: "Brand is required" });
+      return;
+    }
+
     if (!title.trim()) {
       setError({ code: "VALIDATION_ERROR", message: "Title is required" });
       return;
@@ -45,6 +51,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         result = await updateProduct(
           product.id,
           {
+            brand: brand.trim(),
             title: title.trim(),
             price: priceNum,
             imageUrl: imageUrl.trim() || null,
@@ -57,6 +64,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         // Create new product
         result = await createProduct(
           {
+            brand: brand.trim(),
             title: title.trim(),
             price: priceNum,
             imageUrl: imageUrl.trim() || undefined,
@@ -104,14 +112,27 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">Title *</label>
+            <label className="block text-white/80 text-sm font-medium mb-2">Brand *</label>
+            <input
+              type="text"
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              disabled={isPending}
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+              placeholder="Nike / Adidas / Uniqlo"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-2">Model / Description *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               disabled={isPending}
               className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
-              placeholder="Product name"
+              placeholder="Dri-FIT Tee / Air Zoom Pegasus"
               required
             />
           </div>

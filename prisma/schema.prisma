@@ -134,6 +134,7 @@ model PaymentAttempt {
 
 model Product {
   id        String   @id @default(cuid())
+  brand     String? // optional for backward compatibility
   title     String
   price     Float
   imageUrl  String?
@@ -143,4 +144,5 @@ model Product {
   updatedAt DateTime @updatedAt
 
   @@index([active])
+  @@index([brand])
 }

@@ -9,12 +9,13 @@ type ProductCardProps = {
   locale: Locale;
   p: {
     id: string;
-    title?: string;
+    brand?: string;
+    title?: string; // model/short description
     image?: string;
     price?: number;
-    shopName?: string;
-    badge?: string;
     badges?: string[];
+    // legacy single badge support
+    badge?: string;
   };
 };
 
@@ -49,10 +50,10 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
   return (
     <Link
       href={`/${locale}/product/${p.id}`}
-      className="group block rounded-2xl border border-zinc-200 bg-white overflow-hidden hover:shadow-md transition-shadow"
+      className="group block"
     >
-      {/* Image container with fixed aspect ratio */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100">
+      {/* Image container (1:1) */}
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-100">
         {p.image ? (
           <img
             src={p.image}
@@ -70,8 +71,8 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         {/* Wishlist heart button */}
         <button
           onClick={handleWishlistClick}
-          className={`absolute top-2 right-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white transition-colors ${
-            wishlisted ? "text-red-500" : "text-zinc-400 hover:text-zinc-600"
+          className={`absolute top-2 right-2 p-1 rounded-full bg-white/70 backdrop-blur shadow-sm hover:bg-white transition-colors ${
+            wishlisted ? "text-red-500" : "text-zinc-500 hover:text-zinc-700"
           }`}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
@@ -79,11 +80,26 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         </button>
       </div>
 
-      {/* Content */}
-      <div className="p-3">
-        {/* Badges - show up to 2 */}
+      {/* Content (no frame) — 4 lines: brand / desc / price / badges */}
+      <div className="pt-3">
+        {/* 1) Brand */}
+        <div className="text-xs font-medium tracking-wide text-zinc-700 truncate">
+          {p.brand || "—"}
+        </div>
+
+        {/* 2) Model / short description (2 lines) */}
+        <h3 className="mt-1 text-sm text-zinc-900 font-medium line-clamp-2 min-h-[2.5rem]">
+          {p.title || "—"}
+        </h3>
+
+        {/* 3) Price */}
+        <div className="mt-2 text-lg font-bold text-zinc-900">
+          {p.price != null ? `HK$ ${p.price.toLocaleString()}` : "—"}
+        </div>
+
+        {/* 4) Badges - show up to 2 */}
         {p.badges && p.badges.length > 0 && (
-          <div className="mb-2 flex gap-1.5 flex-wrap">
+          <div className="mt-2 flex gap-1.5 flex-wrap">
             {p.badges.slice(0, 2).map((badge, idx) => (
               <Badge key={idx}>{badge}</Badge>
             ))}
@@ -92,25 +108,10 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
 
         {/* Legacy single badge support */}
         {!p.badges && p.badge && (
-          <div className="mb-2">
+          <div className="mt-2">
             <Badge>{p.badge}</Badge>
           </div>
         )}
-
-        {/* Title - 2 line clamp */}
-        <h3 className="text-sm text-zinc-900 font-medium line-clamp-2 min-h-[2.5rem]">
-          {p.title || "—"}
-        </h3>
-
-        {/* Shop name */}
-        <div className="mt-1 text-xs text-zinc-500 truncate">
-          {p.shopName || "—"}
-        </div>
-
-        {/* Price - prominent */}
-        <div className="mt-2 text-lg font-bold text-zinc-900">
-          {p.price != null ? `HK$ ${p.price.toLocaleString()}` : "—"}
-        </div>
       </div>
     </Link>
   );

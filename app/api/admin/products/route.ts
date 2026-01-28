@@ -48,6 +48,7 @@ function getIdempotencyKey(req: Request) {
 }
 
 type CreateProductPayload = {
+  brand?: string | null;
   title: string;
   price: number;
   imageUrl?: string | null;
@@ -65,7 +66,13 @@ function parseCreatePayload(body: any): CreateProductPayload {
 
   const badges = parseBadges(body.badges);
 
+  const brand =
+    typeof body.brand === "string" && body.brand.trim().length > 0
+      ? body.brand.trim()
+      : null;
+
   return {
+    brand,
     title: body.title.trim(),
     price: body.price,
     imageUrl: typeof body.imageUrl === "string" && body.imageUrl.trim().length > 0 ? body.imageUrl.trim() : null,
@@ -143,6 +150,7 @@ export const POST = withApi(
 
     const product = await prisma.product.create({
       data: {
+        brand: payload.brand,
         title: payload.title,
         price: payload.price,
         imageUrl: payload.imageUrl ?? null,

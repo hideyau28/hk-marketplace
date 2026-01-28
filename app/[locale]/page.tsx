@@ -19,10 +19,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   // Map DB products to expected format
   const products = dbProducts.map((p) => ({
     id: p.id,
+    brand: p.brand || "—",
     title: p.title,
     price: p.price,
     image: p.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
-    shopName: "HK Marketplace",
+    badges: Array.isArray(p.badges) ? (p.badges as any[]) : [],
   }));
 
   // Simulate different product sets for sections
@@ -41,7 +42,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <p className="mt-3 text-zinc-300 text-lg max-w-md">
               {t.home.heroSubtitle}
             </p>
-            <button className="mt-6 rounded-full bg-[#4a5d23] px-6 py-3 text-sm font-medium text-white hover:bg-[#3a4a1c] transition">
+            <button className="mt-6 rounded-full bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--primary-dark)] transition">
               {t.home.viewAll}
             </button>
           </div>

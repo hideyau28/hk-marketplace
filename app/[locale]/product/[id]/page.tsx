@@ -18,10 +18,10 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
 
   const p = {
     id: product.id,
+    brand: product.brand || "—",
     title: product.title,
     price: product.price,
     image: product.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
-    shopName: "HK Marketplace",
   };
 
   return (
@@ -31,7 +31,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
           <img src={p.image} alt={p.title} className="h-full w-full object-cover" />
         </div>
         <div>
-          <div className="text-zinc-600 text-sm">{p.shopName}</div>
+          <div className="text-zinc-600 text-sm">{p.brand}</div>
           <h1 className="mt-2 text-2xl font-semibold text-zinc-900">{p.title}</h1>
           <div className="mt-3 text-xl font-semibold text-zinc-900">HK$ {p.price}</div>
           <div className="mt-4 text-zinc-600 text-sm leading-6">Placeholder description. Shipping calculated at checkout.</div>
