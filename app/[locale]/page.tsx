@@ -14,7 +14,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const dbProducts = await prisma.product.findMany({
     where: { active: true },
     orderBy: { createdAt: "desc" },
-    take: 16,
+    take: 40,
   });
 
   // Map DB products to expected format
@@ -27,9 +27,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     badges: Array.isArray(p.badges) ? (p.badges as any[]) : [],
   }));
 
-  // Simulate different product sets for sections
-  const recentlyViewed = products.slice(0, 8);
-  const recommended = products.slice(8, 16);
+  // Product rails (mobile-first)
+  const rail1 = products.slice(0, 8);
+  const rail2 = products.slice(8, 16);
+  const rail3 = products.slice(16, 24);
+  const rail4 = products.slice(24, 32);
 
   return (
     <div className="pb-20">
@@ -84,28 +86,47 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       </div>
 
-      {/* 2) Recently Viewed (grid) */}
-      {recentlyViewed.length > 0 && (
+      {/* 2) Shop by Category (icon grid) */}
+      <CategoryGrid locale={l} title={t.home.shopByCategory} />
+
+      {/* 3) Product rails (4 rows, alternating sizes sm/lg/sm/lg) */}
+      {rail1.length > 0 && (
         <ProductRail
           locale={l}
           title={t.home.recentlyViewed}
-          products={recentlyViewed}
+          products={rail1}
           size="sm"
         />
       )}
 
-      {/* 3) Shop by Category (icon grid) */}
-      <CategoryGrid locale={l} title={t.home.shopByCategory} />
+      {rail2.length > 0 && (
+        <ProductRail
+          locale={l}
+          title={t.home.forYou}
+          products={rail2}
+          size="lg"
+        />
+      )}
 
-      {/* 4) Recommended / For You (grid) */}
-      <ProductRail
-        locale={l}
-        title={t.home.forYou}
-        products={recommended}
-        size="lg"
-      />
+      {rail3.length > 0 && (
+        <ProductRail
+          locale={l}
+          title={l === "zh-HK" ? "熱門" : "Trending"}
+          products={rail3}
+          size="sm"
+        />
+      )}
 
-      {/* 5) Popular Brands (rail + "See all") */}
+      {rail4.length > 0 && (
+        <ProductRail
+          locale={l}
+          title={l === "zh-HK" ? "新品上架" : "New arrivals"}
+          products={rail4}
+          size="lg"
+        />
+      )}
+
+      {/* 4) Popular Brands (rail + "See all") */}
       <BrandRail
         locale={l}
         title={t.home.popularBrands}
