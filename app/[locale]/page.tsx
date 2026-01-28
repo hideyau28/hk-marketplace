@@ -89,42 +89,34 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       {/* 2) Shop by Category (icon grid) */}
       <CategoryGrid locale={l} title={t.home.shopByCategory} />
 
-      {/* 3) Product rails (4 rows, alternating sizes sm/lg/sm/lg) */}
-      {rail1.length > 0 && (
-        <ProductRail
-          locale={l}
-          title={t.home.recentlyViewed}
-          products={rail1}
-          size="sm"
-        />
-      )}
+      {/* 3) Product rails (4 rows, alternating sizes sm/lg/sm/lg) — always show all 4 */}
+      <ProductRail
+        locale={l}
+        title={t.home.recentlyViewed}
+        products={rail1}
+        size="sm"
+      />
 
-      {rail2.length > 0 && (
-        <ProductRail
-          locale={l}
-          title={t.home.forYou}
-          products={rail2}
-          size="lg"
-        />
-      )}
+      <ProductRail
+        locale={l}
+        title={t.home.forYou}
+        products={rail2}
+        size="lg"
+      />
 
-      {rail3.length > 0 && (
-        <ProductRail
-          locale={l}
-          title={l === "zh-HK" ? "熱門" : "Trending"}
-          products={rail3}
-          size="sm"
-        />
-      )}
+      <ProductRail
+        locale={l}
+        title={l === "zh-HK" ? "熱門" : "Trending"}
+        products={rail3}
+        size="sm"
+      />
 
-      {rail4.length > 0 && (
-        <ProductRail
-          locale={l}
-          title={l === "zh-HK" ? "新品上架" : "New arrivals"}
-          products={rail4}
-          size="lg"
-        />
-      )}
+      <ProductRail
+        locale={l}
+        title={l === "zh-HK" ? "新品上架" : "New arrivals"}
+        products={rail4}
+        size="lg"
+      />
 
       {/* 4) Popular Brands (rail + "See all") */}
       <BrandRail
