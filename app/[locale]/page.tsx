@@ -32,6 +32,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="pb-20">
+      {/* Sentinel for showing/hiding floating search */}
+      <div id="home-search-sentinel" className="h-px w-full" />
+
       {/* 1) Hero Banner */}
       <section className="px-4 pt-8">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 to-zinc-800 px-6 py-7 md:p-12 max-h-[240px]">

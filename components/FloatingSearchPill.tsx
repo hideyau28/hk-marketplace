@@ -13,18 +13,30 @@ export default function FloatingSearchPill() {
   // Show only on locale home (e.g. /zh-HK or /en)
   const isHome = pathname === `/${locale}`;
 
-  // Hide after user scrolls down a bit (so it doesn't "stick" forever)
+  // Show only while the home top sentinel is visible.
+  // This avoids cases where scroll events/scrollY behave unexpectedly (mobile Safari, nested scroll containers).
   const [show, setShow] = useState(true);
   useEffect(() => {
     if (!isHome) return;
 
-    const onScroll = () => {
-      setShow(window.scrollY < 120);
-    };
+    const el = document.getElementById("home-search-sentinel");
+    if (!el || typeof IntersectionObserver === "undefined") {
+      // Fallback: hide as soon as user scrolls a little.
+      const onScroll = () => setShow(window.scrollY < 8);
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      return () => window.removeEventListener("scroll", onScroll);
+    }
 
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const obs = new IntersectionObserver(
+      (entries) => {
+        setShow(entries[0]?.isIntersecting ?? false);
+      },
+      { root: null, threshold: 0.01 }
+    );
+
+    obs.observe(el);
+    return () => obs.disconnect();
   }, [isHome]);
 
   if (!isHome || !show) return null;
