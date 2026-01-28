@@ -42,46 +42,59 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
 
   return (
     <section className="mt-4">
-      <div className="-mx-4 px-4">
+      {/* Full-width, one-slide-per-screen carousel */}
+      <div className="-mx-4 overflow-hidden">
         <div
           ref={scrollerRef}
-          className="flex gap-3 overflow-x-auto [-webkit-overflow-scrolling:touch] snap-x snap-mandatory"
+          className="flex w-full overflow-x-auto [-webkit-overflow-scrolling:touch] snap-x snap-mandatory scroll-pl-4 scroll-pr-4"
         >
           {slides.map((s, i) => {
             const href = s.href;
-            const Card = (
+
+            const Inner = (
               <div
                 data-hero-slide
                 data-index={i}
-                key={i}
-                className="relative w-full shrink-0 snap-start overflow-hidden rounded-3xl bg-zinc-900"
+                className="relative w-full snap-start px-4"
               >
-                <div className="relative h-[180px] w-full md:h-[260px]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={s.imageUrl} alt={s.title} className="h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-transparent" />
-                </div>
-                <div className="absolute inset-0 flex flex-col justify-end p-5">
-                  <div className="text-white text-2xl font-bold leading-tight">{s.title}</div>
-                  {s.subtitle ? <div className="mt-2 text-white/80 text-sm">{s.subtitle}</div> : null}
-                  {s.cta && href ? (
-                    <div className="mt-4">
-                      <span className="inline-flex rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-zinc-900">
-                        {s.cta}
-                      </span>
-                    </div>
-                  ) : null}
+                <div className="relative overflow-hidden rounded-3xl bg-zinc-900">
+                  <div className="relative h-[200px] w-full md:h-[280px]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={s.imageUrl} alt={s.title} className="h-full w-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  </div>
+
+                  <div className="absolute inset-x-0 bottom-0 p-5">
+                    <div className="text-white text-2xl font-bold leading-tight">{s.title}</div>
+                    {s.subtitle ? <div className="mt-1.5 text-white/80 text-sm">{s.subtitle}</div> : null}
+
+                    {s.cta && href ? (
+                      <div className="mt-4">
+                        <span className="inline-flex rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-zinc-900">
+                          {s.cta}
+                        </span>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             );
 
-            return href ? <Link key={i} href={href} className="block">{Card}</Link> : Card;
+            return href ? (
+              <Link key={i} href={href} className="block w-full shrink-0">
+                {Inner}
+              </Link>
+            ) : (
+              <div key={i} className="w-full shrink-0">
+                {Inner}
+              </div>
+            );
           })}
         </div>
 
         {/* Dots */}
         {slides.length > 1 ? (
-          <div className="mt-3 flex justify-center gap-1.5">
+          <div className="mt-3 flex justify-center gap-1.5 px-4">
             {slides.map((_, i) => (
               <div
                 key={i}
