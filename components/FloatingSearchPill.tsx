@@ -25,19 +25,21 @@ export default function FloatingSearchPill() {
 
     const el = document.getElementById("home-search-sentinel");
     if (!el || typeof IntersectionObserver === "undefined") {
-      // Fallback: hide as soon as user scrolls a little.
+      // Fallback: show only near top.
       const onScroll = () => setShow(window.scrollY < 8);
       onScroll();
       window.addEventListener("scroll", onScroll, { passive: true });
       return () => window.removeEventListener("scroll", onScroll);
     }
 
+    // Sentinel sits just below the hero.
+    // Show pill only while sentinel is NOT visible (i.e. user is still at the very top/hero area).
     const obs = new IntersectionObserver(
       (entries) => {
-        const isVisible = entries[0]?.isIntersecting ?? false;
-        setShow(isVisible);
+        const sentinelVisible = entries[0]?.isIntersecting ?? false;
+        setShow(!sentinelVisible);
       },
-      { root: null, threshold: 0, rootMargin: "-10px 0px 0px 0px" }
+      { root: null, threshold: 0, rootMargin: "0px" }
     );
 
     obs.observe(el);
