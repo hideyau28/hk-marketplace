@@ -1,20 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 type Slide = {
   title: string;
   subtitle?: string;
   cta?: string;
-  href?: (locale: string) => string;
+  href?: string;
   imageUrl: string;
 };
 
 export default function HeroCarousel({ slides }: { slides: Slide[] }) {
-  const params = useParams() as { locale?: string };
-  const locale = params?.locale || "zh-HK";
 
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(0);
@@ -51,7 +48,7 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
           className="flex gap-3 overflow-x-auto [-webkit-overflow-scrolling:touch] snap-x snap-mandatory pr-6"
         >
           {slides.map((s, i) => {
-            const href = s.href ? s.href(locale) : undefined;
+            const href = s.href;
             const Card = (
               <div
                 data-hero-slide

@@ -44,7 +44,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               title: t.home.heroTitle,
               subtitle: t.home.heroSubtitle,
               cta: t.home.viewAll,
-              href: (loc) => `/${loc}?section=featured`,
+              href: `/${l}?section=featured`,
               imageUrl:
                 "https://images.unsplash.com/photo-1518441902117-f0aee0b2fbd9?auto=format&fit=crop&w=1400&q=70",
             },
@@ -52,7 +52,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               title: l === "zh-HK" ? "精選運動裝備" : "Sports essentials",
               subtitle: l === "zh-HK" ? "跑步／健身／球類" : "Run / gym / ball sports",
               cta: l === "zh-HK" ? "查看" : "View",
-              href: (loc) => `/${loc}?category=sports`,
+              href: `/${l}?category=sports`,
               imageUrl:
                 "https://images.unsplash.com/photo-1526401485004-2fda9f6a7fdc?auto=format&fit=crop&w=1400&q=70",
             },
@@ -60,7 +60,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               title: l === "zh-HK" ? "潮流配件" : "Accessories",
               subtitle: l === "zh-HK" ? "每日穿搭加分" : "Upgrade your daily fit",
               cta: l === "zh-HK" ? "查看" : "View",
-              href: (loc) => `/${loc}?category=accessories`,
+              href: `/${l}?category=accessories`,
               imageUrl:
                 "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=1400&q=70",
             },
@@ -68,7 +68,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               title: l === "zh-HK" ? "居家辦公" : "Home office",
               subtitle: l === "zh-HK" ? "桌面整理好物" : "Desk setup picks",
               cta: l === "zh-HK" ? "查看" : "View",
-              href: (loc) => `/${loc}?category=office`,
+              href: `/${l}?category=office`,
               imageUrl:
                 "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1400&q=70",
             },
@@ -76,7 +76,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               title: l === "zh-HK" ? "新品上架" : "New arrivals",
               subtitle: l === "zh-HK" ? "每日更新" : "Updated daily",
               cta: l === "zh-HK" ? "查看" : "View",
-              href: (loc) => `/${loc}?sort=new`,
+              href: `/${l}?sort=new`,
               imageUrl:
                 "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1400&q=70",
             },
