@@ -57,14 +57,17 @@ export default function ProductCard({ locale, p, imageAspect = "square" }: Produ
       <div
         className={
           "relative overflow-hidden rounded-2xl bg-zinc-100 " +
-          (imageAspect === "landscape" ? "aspect-[4/3]" : "aspect-square")
+          (imageAspect === "landscape" ? "h-[160px]" : "aspect-square")
         }
       >
         {p.image ? (
           <img
             src={p.image}
             alt={p.title || "Product"}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className={
+              "h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 " +
+              (imageAspect === "landscape" ? "origin-center" : "")
+            }
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-zinc-400">

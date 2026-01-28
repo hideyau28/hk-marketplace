@@ -45,7 +45,7 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
       <div className="-mx-4 px-4">
         <div
           ref={scrollerRef}
-          className="flex gap-3 overflow-x-auto [-webkit-overflow-scrolling:touch] snap-x snap-mandatory pr-6"
+          className="flex gap-3 overflow-x-auto [-webkit-overflow-scrolling:touch] snap-x snap-mandatory"
         >
           {slides.map((s, i) => {
             const href = s.href;
@@ -54,9 +54,9 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
                 data-hero-slide
                 data-index={i}
                 key={i}
-                className="relative w-[88%] shrink-0 snap-start overflow-hidden rounded-3xl bg-zinc-900"
+                className="relative w-full shrink-0 snap-start overflow-hidden rounded-3xl bg-zinc-900"
               >
-                <div className="relative aspect-[16/9] w-full">
+                <div className="relative h-[180px] w-full md:h-[260px]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={s.imageUrl} alt={s.title} className="h-full w-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-transparent" />
