@@ -14,7 +14,21 @@ type Slide = {
 export default function HeroCarousel({ slides }: { slides: Slide[] }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(0);
-  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
+  const fallbackUrl =
+    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1400&q=70";
+  const [imgSrc, setImgSrc] = useState<Record<number, string>>({});
+  const [hardFail, setHardFail] = useState<Record<number, boolean>>({});
+
+  // Keep src map in sync when slides change
+  useEffect(() => {
+    setImgSrc((prev) => {
+      const next: Record<number, string> = { ...prev };
+      slides.forEach((s, i) => {
+        if (!next[i]) next[i] = s.imageUrl;
+      });
+      return next;
+    });
+  }, [slides]);
 
   useEffect(() => {
     const el = scrollerRef.current;
@@ -41,34 +55,46 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
   }, [slides.length]);
 
   const handleImageError = (index: number) => {
-    setImageErrors((prev) => ({ ...prev, [index]: true }));
+    // First failure: swap to a known-good fallback URL.
+    // Second failure: show gradient block.
+    setImgSrc((prev) => {
+      const current = prev[index];
+      if (current && current !== fallbackUrl) return { ...prev, [index]: fallbackUrl };
+      return prev;
+    });
+
+    setHardFail((prev) => {
+      const current = imgSrc[index];
+      if (current && current === fallbackUrl) return { ...prev, [index]: true };
+      return prev;
+    });
   };
 
   return (
     <section className="mt-4">
-      {/* Full-width, one-slide-per-screen carousel */}
-      <div className="-mx-4 overflow-hidden">
+      {/* One-slide-per-screen carousel (no peek) */}
+      <div className="overflow-hidden">
         <div
           ref={scrollerRef}
-          className="flex w-full overflow-x-auto [-webkit-overflow-scrolling:touch] snap-x snap-mandatory scroll-pl-4 scroll-pr-4"
+          className="flex w-full overflow-x-auto [-webkit-overflow-scrolling:touch] snap-x snap-mandatory"
         >
           {slides.map((s, i) => {
             const href = s.href;
-            const hasError = imageErrors[i];
+            const isHardFail = !!hardFail[i];
 
             const Inner = (
               <div
                 data-hero-slide
                 data-index={i}
-                className="relative w-full snap-start px-4"
+                className="relative w-full snap-start"
               >
                 <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-800 to-zinc-900">
                   <div className="relative h-[200px] w-full md:h-[280px]">
-                    {!hasError ? (
+                    {!isHardFail ? (
                       <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={s.imageUrl}
+                          src={imgSrc[i] || s.imageUrl}
                           alt={s.title}
                           className="h-full w-full object-cover"
                           onError={() => handleImageError(i)}
@@ -76,7 +102,6 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                       </>
                     ) : (
-                      // Fallback gradient background when image fails
                       <div className="h-full w-full bg-gradient-to-br from-zinc-700 via-zinc-800 to-zinc-900" />
                     )}
                   </div>
