@@ -87,7 +87,7 @@ export async function fetchProducts(active?: boolean): Promise<FetchProductsResu
 }
 
 export async function createProduct(
-  data: { brand: string; title: string; price: number; imageUrl?: string; badges?: string; active?: boolean },
+  data: { brand: string; title: string; price: number; imageUrl?: string; badges?: string; category?: string | null; active?: boolean },
   locale?: string
 ): Promise<CreateProductResult> {
   const adminSecret = process.env.ADMIN_SECRET;
@@ -132,7 +132,7 @@ export async function createProduct(
 
 export async function updateProduct(
   productId: string,
-  data: { brand?: string | null; title?: string; price?: number; imageUrl?: string | null; badges?: string; active?: boolean },
+  data: { brand?: string | null; title?: string; price?: number; imageUrl?: string | null; badges?: string; category?: string | null; active?: boolean },
   locale?: string
 ): Promise<UpdateProductResult> {
   const adminSecret = process.env.ADMIN_SECRET;
