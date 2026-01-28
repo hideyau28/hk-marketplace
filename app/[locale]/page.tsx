@@ -34,19 +34,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     <div className="pb-20">
       {/* 1) Hero Banner */}
       <section className="px-4 pt-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 to-zinc-800 p-8 md:p-12">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 to-zinc-800 px-6 py-7 md:p-12 max-h-[240px]">
           <div className="relative z-10">
             <h1 className="text-3xl md:text-4xl font-bold text-white">
               {t.home.heroTitle}
             </h1>
-            <p className="mt-3 text-zinc-300 text-lg max-w-md">
+            <p className="mt-2 text-zinc-300 text-base md:text-lg max-w-md">
               {t.home.heroSubtitle}
             </p>
-            <button className="mt-6 rounded-full bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--primary-dark)] transition">
+            <button className="mt-5 rounded-full bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--primary-dark)] transition">
               {t.home.viewAll}
             </button>
           </div>
-          <div className="absolute right-0 top-0 h-full w-1/2 opacity-20">
+          <div className="absolute right-0 top-0 h-full w-1/2 opacity-15">
             <div className="absolute inset-0 bg-gradient-to-l from-transparent to-zinc-900" />
           </div>
         </div>
