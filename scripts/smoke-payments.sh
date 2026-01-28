@@ -87,6 +87,7 @@ ORDER_PAYLOAD='{
 
 resp="$(curl_resp -X POST \
   -H "content-type: application/json" \
+  -H "x-admin-secret: ${ADMIN_SECRET}" \
   -H "x-idempotency-key: ${IDEM_KEY}" \
   --data "${ORDER_PAYLOAD}" \
   "${BASE}/api/orders")"
