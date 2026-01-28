@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 
 export default function FloatingSearchPill() {
@@ -11,7 +12,22 @@ export default function FloatingSearchPill() {
 
   // Show only on locale home (e.g. /zh-HK or /en)
   const isHome = pathname === `/${locale}`;
-  if (!isHome) return null;
+
+  // Hide after user scrolls down a bit (so it doesn't "stick" forever)
+  const [show, setShow] = useState(true);
+  useEffect(() => {
+    if (!isHome) return;
+
+    const onScroll = () => {
+      setShow(window.scrollY < 120);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
+  if (!isHome || !show) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-[72px] z-40 flex justify-center px-4">

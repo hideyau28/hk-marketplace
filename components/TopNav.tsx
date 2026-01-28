@@ -40,15 +40,22 @@ export default function TopNav({ locale, t }: { locale: Locale; t: any }) {
     <div className="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
         <Link href={`/${locale}`} className="text-zinc-900 font-semibold tracking-wide">HK•Market</Link>
-        <div className="flex-1">
+        {/* Desktop search only (mobile uses floating pill + bottom tab) */}
+        <div className="hidden md:block flex-1">
           <input
             placeholder={t.nav.search}
             className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
           />
         </div>
-        <div className="flex items-center gap-2 text-sm">
+
+        {/* Desktop links only */}
+        <div className="hidden md:flex items-center gap-2 text-sm">
           <Link className="text-zinc-600 hover:text-zinc-900" href={`/${locale}/collections`}>{t.nav.collections}</Link>
           <Link className="text-zinc-600 hover:text-zinc-900" href={`/${locale}/orders`}>{t.nav.orders}</Link>
+        </div>
+
+        {/* Cart stays visible on mobile */}
+        <div className="flex items-center">
           <Link className="relative text-zinc-600 hover:text-zinc-900 flex items-center gap-1" href={`/${locale}/cart`}>
             <ShoppingCart size={18} />
             {cartCount > 0 && (
