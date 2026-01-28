@@ -1,13 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #FAFAF7;
+  --foreground: #111111;
+
+  /* Army Green Theme Tokens */
+  --primary: #2F4F3E;
+  --primary-dark: #223A2F;
+  --primary-soft: #E7EFEA;
+  --text: #111111;
+  --muted: #6B7280;
+  --border: #E5E7EB;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-soft: var(--primary-soft);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
