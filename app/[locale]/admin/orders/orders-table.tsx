@@ -26,7 +26,7 @@ const ORDER_STATUSES = [
 
 function badgeClass(status: string) {
   const s = status.toLowerCase();
-  if (s === "paid" || s === "completed" || s === "succeeded") return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (s === "paid" || s === "completed" || s === "succeeded") return "bg-olive-100 text-olive-700 border-olive-200";
   if (s === "pending" || s === "created") return "bg-zinc-100 text-zinc-700 border-zinc-200";
   if (s === "fulfilling" || s === "shipped" || s === "processing" || s === "requires_action") return "bg-sky-50 text-sky-700 border-sky-200";
   if (s === "refunded") return "bg-amber-50 text-amber-700 border-amber-200";

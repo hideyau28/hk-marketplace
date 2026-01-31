@@ -89,59 +89,59 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#0a0a0a] p-6">
+      <div className="w-full max-w-lg rounded-3xl border border-zinc-200 bg-white p-6">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-white">{product ? "Edit Product" : "Create Product"}</h2>
-            <p className="mt-1 text-white/60 text-sm">
+            <h2 className="text-xl font-semibold text-zinc-900">{product ? "Edit Product" : "Create Product"}</h2>
+            <p className="mt-1 text-zinc-500 text-sm">
               {product ? "Update product details" : "Add a new product to your catalog"}
             </p>
           </div>
           <button
             onClick={onClose}
             disabled={isPending}
-            className="text-white/60 hover:text-white disabled:opacity-50"
+            className="text-zinc-400 hover:text-zinc-600 disabled:opacity-50"
           >
             ✕
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
-            <div className="text-red-400 font-semibold text-sm">{error.code}</div>
-            <div className="mt-1 text-red-300 text-sm">{error.message}</div>
+          <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4">
+            <div className="text-red-600 font-semibold text-sm">{error.code}</div>
+            <div className="mt-1 text-red-600 text-sm">{error.message}</div>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">Brand *</label>
+            <label className="block text-zinc-700 text-sm font-medium mb-2">Brand *</label>
             <input
               type="text"
               value={brand}
               onChange={(e) => setBrand(e.target.value)}
               disabled={isPending}
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               placeholder="Nike / Adidas / Uniqlo"
               required
             />
           </div>
 
           <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">Model / Description *</label>
+            <label className="block text-zinc-700 text-sm font-medium mb-2">Model / Description *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               disabled={isPending}
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               placeholder="Dri-FIT Tee / Air Zoom Pegasus"
               required
             />
           </div>
 
           <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">Price (HKD) *</label>
+            <label className="block text-zinc-700 text-sm font-medium mb-2">Price (HKD) *</label>
             <input
               type="number"
               step="0.01"
@@ -149,52 +149,52 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               disabled={isPending}
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               placeholder="0.00"
               required
             />
           </div>
 
           <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">Image URL</label>
+            <label className="block text-zinc-700 text-sm font-medium mb-2">Image URL</label>
             <input
               type="url"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               disabled={isPending}
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               placeholder="https://example.com/image.jpg"
             />
           </div>
 
           <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">
-              Badges <span className="text-white/40 font-normal">(comma-separated)</span>
+            <label className="block text-zinc-700 text-sm font-medium mb-2">
+              Badges <span className="text-zinc-400 font-normal">(comma-separated)</span>
             </label>
             <input
               type="text"
               value={badges}
               onChange={(e) => setBadges(e.target.value)}
               disabled={isPending}
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               placeholder="現貨, 快乾, 透氣"
             />
-            <p className="mt-1 text-white/40 text-xs">Enter badges separated by commas. Duplicates will be removed.</p>
+            <p className="mt-1 text-zinc-400 text-xs">Enter badges separated by commas. Duplicates will be removed.</p>
           </div>
 
           <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">
-              Category <span className="text-white/40 font-normal">(optional)</span>
+            <label className="block text-zinc-700 text-sm font-medium mb-2">
+              Category <span className="text-zinc-400 font-normal">(optional)</span>
             </label>
             <input
               type="text"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               disabled={isPending}
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-50"
+              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               placeholder="sports / accessories / office"
             />
-            <p className="mt-1 text-white/40 text-xs">Used for filtering and home rails later.</p>
+            <p className="mt-1 text-zinc-400 text-xs">Used for filtering and home rails later.</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -204,9 +204,9 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               checked={active}
               onChange={(e) => setActive(e.target.checked)}
               disabled={isPending}
-              className="h-4 w-4 accent-white disabled:opacity-50"
+              className="h-4 w-4 accent-olive-600 disabled:opacity-50"
             />
-            <label htmlFor="active" className="text-white/80 text-sm">
+            <label htmlFor="active" className="text-zinc-700 text-sm">
               Active (visible to customers)
             </label>
           </div>
@@ -216,14 +216,14 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80 hover:bg-white/10 disabled:opacity-50"
+              className="flex-1 rounded-2xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 rounded-2xl bg-white px-4 py-3 text-sm text-black font-semibold hover:bg-white/90 disabled:opacity-50"
+              className="flex-1 rounded-2xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700 disabled:opacity-50"
             >
               {isPending ? "Saving..." : product ? "Update" : "Create"}
             </button>

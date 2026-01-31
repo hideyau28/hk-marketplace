@@ -20,8 +20,8 @@ const ACTIVE_FILTERS = [
 
 function badgeClass(active: boolean) {
   return active
-    ? "bg-emerald-500/15 text-emerald-200 border-emerald-500/20"
-    : "bg-white/10 text-white/70 border-white/10";
+    ? "bg-olive-100 text-olive-700 border-olive-200"
+    : "bg-zinc-100 text-zinc-600 border-zinc-200";
 }
 
 export function ProductsTable({ products, locale, currentActive }: ProductsTableProps) {
@@ -56,7 +56,7 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
           <select
             value={selectedActive}
             onChange={(e) => handleActiveChange(e.target.value)}
-            className="w-full max-w-xs rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+            className="w-full max-w-xs rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
           >
             {ACTIVE_FILTERS.map((f) => (
               <option key={f.value} value={f.value}>
@@ -67,17 +67,17 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
         </div>
         <button
           onClick={handleCreateProduct}
-          className="rounded-2xl bg-white px-4 py-3 text-black font-semibold hover:bg-white/90"
+          className="rounded-2xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700"
         >
           + Add Product
         </button>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+      <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-[900px] w-full text-sm">
             <thead>
-              <tr className="text-white/60 border-b border-white/10">
+              <tr className="text-zinc-500 border-b border-zinc-200">
                 <th className="px-4 py-3 text-left">Product</th>
                 <th className="px-4 py-3 text-left">Category</th>
                 <th className="px-4 py-3 text-right">Price</th>
@@ -90,25 +90,27 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
             <tbody>
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-white/60">
+                  <td colSpan={6} className="px-4 py-12 text-center text-zinc-500">
                     No products found
                   </td>
                 </tr>
               ) : (
                 products.map((product) => (
-                  <tr key={product.id} className="border-t border-white/10 hover:bg-white/5">
+                  <tr key={product.id} className="border-t border-zinc-200 hover:bg-zinc-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {product.imageUrl && (
-                          <div className="h-10 w-10 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                          <div className="h-10 w-10 overflow-hidden rounded-xl border border-zinc-200 bg-white">
                             <img src={product.imageUrl} alt={product.title} className="h-full w-full object-cover" />
                           </div>
                         )}
-                        <div className="text-white font-medium">{product.title}</div>
+                        <div className="text-zinc-900 font-medium">{product.title}</div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-white/70">{product.category || "—"}</td>
-                    <td className="px-4 py-3 text-right text-white font-medium">HK$ {product.price.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-zinc-600">{product.category || "—"}</td>
+                    <td className="px-4 py-3 text-right text-zinc-900 font-medium">
+                      HK$ {product.price.toFixed(2)}
+                    </td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${badgeClass(
@@ -118,11 +120,11 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
                         {product.active ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-white/70">{new Date(product.updatedAt).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-zinc-600">{new Date(product.updatedAt).toLocaleString()}</td>
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => handleEditProduct(product)}
-                        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 hover:bg-white/10"
+                        className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50"
                       >
                         Edit
                       </button>
@@ -134,7 +136,7 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t border-white/10 px-4 py-3 text-white/60 text-sm">
+        <div className="flex items-center justify-between border-t border-zinc-200 px-4 py-3 text-zinc-500 text-sm">
           <div>Showing {products.length} products</div>
         </div>
       </div>
