@@ -61,6 +61,18 @@ PRODUCT_ID="$(echo "$body" | jq -r '.data.products[0].id')"
 PRODUCT_NAME="$(echo "$body" | jq -r '.data.products[0].title')"
 PRODUCT_PRICE="$(echo "$body" | jq -r '.data.products[0].price')"
 
+if [ -z "$PRODUCT_ID" ] || [ "$PRODUCT_ID" = "null" ]; then
+  echo "No product found; seeding demo products..."
+  node scripts/seed-products.ts
+  resp="$(curl_resp "$PRODUCTS_BASE?limit=1")"
+  h="$(echo "$resp" | sed -n "1p")"
+  [[ "$h" =~ " 200 " ]] || die "expected GET products -> 200 but got: $h (URL=$PRODUCTS_BASE)"
+  body="$(resp_body "$resp")"
+  PRODUCT_ID="$(echo "$body" | jq -r '.data.products[0].id')"
+  PRODUCT_NAME="$(echo "$body" | jq -r '.data.products[0].title')"
+  PRODUCT_PRICE="$(echo "$body" | jq -r '.data.products[0].price')"
+fi
+
 [ -n "$PRODUCT_ID" ] && [ "$PRODUCT_ID" != "null" ] || die "expected product id"
 [ -n "$PRODUCT_NAME" ] && [ "$PRODUCT_NAME" != "null" ] || die "expected product name"
 [ -n "$PRODUCT_PRICE" ] && [ "$PRODUCT_PRICE" != "null" ] || die "expected product price"
