@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 import { isWishlisted, toggleWishlist } from "@/lib/wishlist";
 import { Badge } from "./Badge";
+import { useCurrency } from "@/lib/currency";
 
 type ProductCardProps = {
   locale: Locale;
@@ -15,6 +16,7 @@ type ProductCardProps = {
     title?: string; // model/short description
     image?: string;
     price?: number;
+    stock?: number;
     badges?: string[];
     // legacy single badge support
     badge?: string;
@@ -42,6 +44,7 @@ function HeartIcon({ filled }: { filled: boolean }) {
 
 export default function ProductCard({ locale, p }: ProductCardProps) {
   const [wishlisted, setWishlisted] = useState(false);
+  const { format } = useCurrency();
 
   useEffect(() => {
     setWishlisted(isWishlisted(p.id));
@@ -97,6 +100,12 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         >
           <HeartIcon filled={wishlisted} />
         </button>
+
+        {p.stock === 0 && (
+          <div className="absolute left-2 top-2 rounded-full bg-zinc-900/80 px-2 py-1 text-xs font-semibold text-white">
+            Out of Stock
+          </div>
+        )}
       </div>
 
       {/* Content (no frame) — 4 lines: brand / desc / price / badges */}
@@ -115,8 +124,12 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
 
         {/* 3) Price */}
         <div className="mt-1.5 text-base font-bold text-zinc-900 leading-tight">
-          {p.price != null ? `HK$ ${p.price.toLocaleString()}` : "—"}
+          {p.price != null ? format(p.price) : "—"}
         </div>
+
+        {p.stock !== undefined && p.stock > 0 && p.stock < 5 && (
+          <div className="mt-1 text-xs font-semibold text-red-600">Low Stock</div>
+        )}
 
         {/* 4) Badges - show up to 2 */}
         {p.badges && p.badges.length > 0 && (

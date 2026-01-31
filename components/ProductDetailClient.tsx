@@ -4,6 +4,7 @@ import { useState } from "react";
 import { addToCart } from "@/lib/cart";
 import { useToast } from "@/components/Toast";
 import ProductSizeSelector from "@/components/ProductSizeSelector";
+import { useCurrency } from "@/lib/currency";
 
 type ProductDetailClientProps = {
   product: {
@@ -14,6 +15,7 @@ type ProductDetailClientProps = {
     brand: string;
     sizeSystem: string | null;
     sizes: any;
+    stock: number;
   };
   locale: string;
   texts: {
@@ -29,6 +31,7 @@ export default function ProductDetailClient({ product, locale, texts }: ProductD
   const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
   const { showToast } = useToast();
+  const { format } = useCurrency();
 
   const handleSizeSelect = (size: string, system: string) => {
     setSelectedSize(size);
@@ -36,6 +39,10 @@ export default function ProductDetailClient({ product, locale, texts }: ProductD
   };
 
   const handleAddToCart = () => {
+    if (product.stock <= 0) {
+      showToast(locale === "zh-HK" ? "缺貨中" : "Out of stock");
+      return;
+    }
     // Check if size is required
     if (product.sizeSystem && !selectedSize) {
       showToast(texts.pleaseSelectSize);
@@ -66,7 +73,13 @@ export default function ProductDetailClient({ product, locale, texts }: ProductD
       <h1 className="text-2xl font-semibold text-zinc-900">{product.title}</h1>
 
       {/* Price */}
-      <div className="text-xl font-semibold text-zinc-900">HK$ {product.price}</div>
+      <div className="text-xl font-semibold text-zinc-900">{format(product.price)}</div>
+
+      {product.stock <= 0 ? (
+        <div className="text-sm font-semibold text-zinc-500">Out of Stock</div>
+      ) : product.stock < 5 ? (
+        <div className="text-sm font-semibold text-red-600">Low Stock</div>
+      ) : null}
 
       {/* Description */}
       <div className="text-zinc-600 text-sm leading-6">
@@ -89,7 +102,12 @@ export default function ProductDetailClient({ product, locale, texts }: ProductD
       <div className="hidden gap-3 md:flex">
         <button
           onClick={handleAddToCart}
-          className="rounded-2xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700"
+          disabled={product.stock <= 0}
+          className={`rounded-2xl px-4 py-3 font-semibold ${
+            product.stock <= 0
+              ? "bg-zinc-200 text-zinc-500 cursor-not-allowed"
+              : "bg-olive-600 text-white hover:bg-olive-700"
+          }`}
         >
           {added ? texts.addedToCart : texts.addToCart}
         </button>
@@ -101,10 +119,15 @@ export default function ProductDetailClient({ product, locale, texts }: ProductD
       {/* Mobile Fixed Bottom Bar */}
       <div className="fixed bottom-0 left-0 right-0 border-t border-zinc-200 bg-white/90 backdrop-blur md:hidden z-10">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-          <div className="text-zinc-900 font-semibold">HK$ {product.price}</div>
+          <div className="text-zinc-900 font-semibold">{format(product.price)}</div>
           <button
             onClick={handleAddToCart}
-            className="flex-1 rounded-2xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700"
+            disabled={product.stock <= 0}
+            className={`flex-1 rounded-2xl px-4 py-3 font-semibold ${
+              product.stock <= 0
+                ? "bg-zinc-200 text-zinc-500 cursor-not-allowed"
+                : "bg-olive-600 text-white hover:bg-olive-700"
+            }`}
           >
             {added ? texts.addedToCart : texts.addToCart}
           </button>

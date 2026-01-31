@@ -15,17 +15,12 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg(pool),
 });
 
-// Size charts
-const SHOE_SIZES_MULTI = {
-  EU: ["35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46"],
-  "US Men": ["5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5", "10", "10.5", "11", "11.5", "12", "13"],
-  "US Women": ["5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5", "10", "10.5", "11"],
-  UK: ["3", "3.5", "4", "4.5", "5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5", "10", "10.5", "11", "12"],
-};
-
-const UNIVERSAL_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
-const WAIST_SIZES = ["28", "29", "30", "31", "32", "33", "34", "36", "38", "40"];
-const SOCK_SIZES = ["S (35-38)", "M (39-42)", "L (43-46)"];
+// Size defaults for admin sizing system
+const SHOE_SIZES = ["38", "39", "40", "41", "42", "43", "44"];
+const TOP_SIZES = ["S", "M", "L", "XL"];
+const PANT_SIZES = ["28", "30", "32", "34", "36"];
+const SOCK_SIZES = ["S", "M", "L"];
+const ACCESSORY_SIZES = ["One Size"];
 
 const sportsProducts = [
   {
@@ -35,8 +30,8 @@ const sportsProducts = [
     category: "Shoes",
     imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "Multi",
-    sizes: SHOE_SIZES_MULTI,
+    sizeSystem: "shoes",
+    sizes: SHOE_SIZES,
   },
   {
     brand: "Adidas",
@@ -45,8 +40,8 @@ const sportsProducts = [
     category: "Shoes",
     imageUrl: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "Multi",
-    sizes: SHOE_SIZES_MULTI,
+    sizeSystem: "shoes",
+    sizes: SHOE_SIZES,
   },
   {
     brand: "Under Armour",
@@ -55,8 +50,8 @@ const sportsProducts = [
     category: "Tops",
     imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "Universal",
-    sizes: UNIVERSAL_SIZES,
+    sizeSystem: "tops",
+    sizes: TOP_SIZES,
   },
   {
     brand: "Nike",
@@ -65,8 +60,8 @@ const sportsProducts = [
     category: "Pants",
     imageUrl: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "Universal",
-    sizes: UNIVERSAL_SIZES,
+    sizeSystem: "pants",
+    sizes: PANT_SIZES,
   },
   {
     brand: "Adidas",
@@ -75,8 +70,8 @@ const sportsProducts = [
     category: "Jackets",
     imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "Universal",
-    sizes: UNIVERSAL_SIZES,
+    sizeSystem: "tops",
+    sizes: TOP_SIZES,
   },
   {
     brand: "Puma",
@@ -85,7 +80,7 @@ const sportsProducts = [
     category: "Socks",
     imageUrl: "https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "Universal",
+    sizeSystem: "socks",
     sizes: SOCK_SIZES,
   },
   {
@@ -95,8 +90,8 @@ const sportsProducts = [
     category: "Jackets",
     imageUrl: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "Universal",
-    sizes: UNIVERSAL_SIZES,
+    sizeSystem: "tops",
+    sizes: TOP_SIZES,
   },
   {
     brand: "New Balance",
@@ -105,8 +100,8 @@ const sportsProducts = [
     category: "Shoes",
     imageUrl: "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "Multi",
-    sizes: SHOE_SIZES_MULTI,
+    sizeSystem: "shoes",
+    sizes: SHOE_SIZES,
   },
   {
     brand: "Columbia",
@@ -115,8 +110,8 @@ const sportsProducts = [
     category: "Accessories",
     imageUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "Universal",
-    sizes: ["One Size"],
+    sizeSystem: "accessories",
+    sizes: ACCESSORY_SIZES,
   },
   {
     brand: "ASICS",
@@ -125,8 +120,8 @@ const sportsProducts = [
     category: "Pants",
     imageUrl: "https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "Universal",
-    sizes: UNIVERSAL_SIZES,
+    sizeSystem: "pants",
+    sizes: PANT_SIZES,
   },
 ];
 

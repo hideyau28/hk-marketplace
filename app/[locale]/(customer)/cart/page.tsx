@@ -6,12 +6,14 @@ import Link from "next/link";
 import { getCart, removeFromCart, updateCartItemQty, getCartTotal, type CartItem } from "@/lib/cart";
 import { getDict, type Locale } from "@/lib/i18n";
 import { Trash2, Plus, Minus } from "lucide-react";
+import { useCurrency } from "@/lib/currency";
 
 export default function CartPage({ params }: { params: Promise<{ locale: string }> }) {
   const [locale, setLocale] = useState<Locale>("en");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const { format } = useCurrency();
 
   useEffect(() => {
     params.then(({ locale: l }) => {
@@ -84,7 +86,7 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
                       {item.sizeSystem}: {item.size}
                     </p>
                   )}
-                  <p className="mt-1 text-zinc-600 text-sm">HK$ {item.unitPrice}</p>
+                  <p className="mt-1 text-zinc-600 text-sm">{format(item.unitPrice)}</p>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
                   <button
@@ -110,7 +112,7 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
                 >
                   <Trash2 size={20} />
                 </button>
-                <p className="font-semibold">HK$ {(item.unitPrice * item.qty).toFixed(2)}</p>
+                <p className="font-semibold">{format(item.unitPrice * item.qty)}</p>
               </div>
             </div>
           ))}
@@ -119,7 +121,7 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
         <div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-6">
           <div className="flex justify-between text-lg">
             <span>{t.cart.subtotal}</span>
-            <span className="font-semibold">HK$ {subtotal.toFixed(2)}</span>
+            <span className="font-semibold">{format(subtotal)}</span>
           </div>
         </div>
 

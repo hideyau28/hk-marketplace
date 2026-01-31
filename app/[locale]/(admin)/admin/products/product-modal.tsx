@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import type { Product } from "@prisma/client";
 import type { Locale } from "@/lib/i18n";
 import { createProduct, updateProduct } from "./actions";
+import ImageUpload from "@/components/admin/ImageUpload";
 
 type ProductModalProps = {
   product: Product | null;
@@ -24,6 +25,13 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   );
   const [category, setCategory] = useState(product?.category || "");
   const [active, setActive] = useState(product?.active ?? true);
+  const [sizeSystem, setSizeSystem] = useState((product as any)?.sizeSystem || "");
+  const [sizes, setSizes] = useState(
+    (product as any)?.sizes && Array.isArray((product as any).sizes)
+      ? ((product as any).sizes as string[]).join(", ")
+      : ""
+  );
+  const [stock, setStock] = useState((product as any)?.stock?.toString() || "0");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +53,15 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       return;
     }
 
+    const stockNum = parseInt(stock);
+    if (isNaN(stockNum) || stockNum < 0) {
+      setError({ code: "VALIDATION_ERROR", message: "Stock must be a non-negative number" });
+      return;
+    }
+
+    // Parse sizes array
+    const sizesArray = sizes.trim() ? sizes.split(",").map((s) => s.trim()).filter(Boolean) : [];
+
     startTransition(async () => {
       let result;
       if (product) {
@@ -59,6 +76,9 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             badges: badges.trim() || undefined,
             category: category.trim() || null,
             active,
+            sizeSystem: sizeSystem.trim() || null,
+            sizes: sizesArray.length > 0 ? sizesArray : null,
+            stock: stockNum,
           },
           locale
         );
@@ -73,6 +93,9 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             badges: badges.trim() || undefined,
             category: category.trim() || null,
             active,
+            sizeSystem: sizeSystem.trim() || undefined,
+            sizes: sizesArray.length > 0 ? sizesArray : undefined,
+            stock: stockNum,
           },
           locale
         );
@@ -156,14 +179,19 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
           </div>
 
           <div>
-            <label className="block text-zinc-700 text-sm font-medium mb-2">Image URL</label>
+            <label className="block text-zinc-700 text-sm font-medium mb-2">Product Image</label>
+            <ImageUpload
+              currentUrl={imageUrl}
+              onUpload={(url) => setImageUrl(url)}
+              disabled={isPending}
+            />
             <input
               type="url"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               disabled={isPending}
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-              placeholder="https://example.com/image.jpg"
+              className="mt-3 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+              placeholder="Or paste image URL here"
             />
           </div>
 
@@ -192,9 +220,58 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               onChange={(e) => setCategory(e.target.value)}
               disabled={isPending}
               className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-              placeholder="sports / accessories / office"
+              placeholder="Shoes / Tops / Pants / Accessories"
             />
-            <p className="mt-1 text-zinc-400 text-xs">Used for filtering and home rails later.</p>
+            <p className="mt-1 text-zinc-400 text-xs">Used for filtering and home rails.</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-zinc-700 text-sm font-medium mb-2">
+                Size System <span className="text-zinc-400 font-normal">(optional)</span>
+              </label>
+              <select
+                value={sizeSystem}
+                onChange={(e) => setSizeSystem(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+              >
+                <option value="">No sizes</option>
+                <option value="shoes">Shoes (38-44)</option>
+                <option value="tops">Tops (S-XL)</option>
+                <option value="pants">Pants (28-36)</option>
+                <option value="socks">Socks (S-L)</option>
+                <option value="accessories">Accessories (One Size)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-zinc-700 text-sm font-medium mb-2">Stock</label>
+              <input
+                type="number"
+                min="0"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-zinc-700 text-sm font-medium mb-2">
+              Sizes <span className="text-zinc-400 font-normal">(comma-separated)</span>
+            </label>
+            <input
+              type="text"
+              value={sizes}
+              onChange={(e) => setSizes(e.target.value)}
+              disabled={isPending}
+              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+              placeholder="38, 39, 40, 41, 42"
+            />
+            <p className="mt-1 text-zinc-400 text-xs">Available sizes for this product. Leave empty if no size selection needed.</p>
           </div>
 
           <div className="flex items-center gap-3">

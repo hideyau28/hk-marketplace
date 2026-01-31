@@ -144,6 +144,27 @@ export const POST = withApi(async (req) => {
         break;
       }
 
+      case "payment_intent.succeeded": {
+        const pi = event.data.object as Stripe.PaymentIntent;
+        const pid = typeof pi.id === "string" ? pi.id : "";
+        if (!pid) break;
+
+        await updateAttemptByPaymentIntentId(pid, {
+          status: "SUCCEEDED",
+          lastEventId: event.id,
+          lastEventType: event.type,
+          lastEvent: event as unknown as Prisma.InputJsonValue,
+        });
+
+        await updateByPaymentIntent(pid, {
+          status: "PAID",
+          paidAt: new Date(),
+        });
+
+        log("info", "payment_intent.succeeded recorded", { paymentIntentId: pid });
+        break;
+      }
+
       case "payment_intent.payment_failed": {
         const pi = event.data.object as Stripe.PaymentIntent;
         const pid = typeof pi.id === "string" ? pi.id : "";
@@ -161,6 +182,22 @@ export const POST = withApi(async (req) => {
 
         // Keep order as-is; a failed payment attempt is not necessarily an order cancellation.
         log("info", "payment_failed recorded", { paymentIntentId: pid });
+        break;
+      }
+
+      case "payment_intent.canceled": {
+        const pi = event.data.object as Stripe.PaymentIntent;
+        const pid = typeof pi.id === "string" ? pi.id : "";
+        if (!pid) break;
+
+        await updateAttemptByPaymentIntentId(pid, {
+          status: "CANCELLED",
+          lastEventId: event.id,
+          lastEventType: event.type,
+          lastEvent: event as unknown as Prisma.InputJsonValue,
+        });
+
+        log("info", "payment_intent.canceled recorded", { paymentIntentId: pid });
         break;
       }
 

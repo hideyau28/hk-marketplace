@@ -1,9 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSession, setSessionCookie, validateAdminSecret } from "@/lib/admin/session";
+import { withRateLimit } from "@/lib/api/rate-limit-middleware";
+import { RATE_LIMITS } from "@/lib/rate-limit";
+import { logAdminActivity, ADMIN_ACTIONS } from "@/lib/admin/activity-log";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
+  // Apply rate limiting for auth endpoints
+  const rateLimitResponse = withRateLimit(RATE_LIMITS.AUTH, {
+    keyPrefix: "admin-login",
+  })(request);
+
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const body = await request.json();
     const { secret } = body;
@@ -18,6 +30,12 @@ export async function POST(request: NextRequest) {
 
     const token = await createSession();
     await setSessionCookie(token);
+
+    // Log admin login
+    await logAdminActivity({
+      action: ADMIN_ACTIONS.LOGIN,
+      request,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

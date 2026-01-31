@@ -39,6 +39,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     brand: p.brand || "",
     title: p.title,
     price: p.price,
+    stock: (p as any).stock ?? 0,
     image:
       p.imageUrl ||
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",

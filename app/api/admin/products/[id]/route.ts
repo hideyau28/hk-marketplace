@@ -18,10 +18,33 @@ function assertNonNegativeNumber(value: unknown, field: string) {
   }
 }
 
+function assertNonNegativeInt(value: unknown, field: string) {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new ApiError(400, "BAD_REQUEST", `${field} must be a non-negative integer`);
+  }
+}
+
+function parseSizes(value: unknown) {
+  if (value === undefined || value === null) return null;
+  if (Array.isArray(value)) {
+    const list = value.map((v) => (typeof v === "string" ? v.trim() : "")).filter(Boolean);
+    return list.length > 0 ? list : null;
+  }
+  if (typeof value === "string") {
+    const list = value
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+    return list.length > 0 ? list : null;
+  }
+  throw new ApiError(400, "BAD_REQUEST", "sizes must be an array or comma-separated string");
+}
+
 // GET /api/admin/products/:id (admin)
 export const GET = withApi(
   async (_req: Request, { params }: { params: Promise<{ id: string }> }) => {
-    const isAuthenticated = await getSessionFromCookie();
+    const headerSecret = _req.headers.get("x-admin-secret");
+    const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
     if (!isAuthenticated) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
@@ -38,7 +61,8 @@ export const GET = withApi(
 // PATCH /api/admin/products/:id (admin update)
 export const PATCH = withApi(
   async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
-    const isAuthenticated = await getSessionFromCookie();
+    const headerSecret = req.headers.get("x-admin-secret");
+    const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
     if (!isAuthenticated) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
@@ -113,6 +137,24 @@ export const PATCH = withApi(
     if (body.badges !== undefined) {
       const badges = parseBadges(body.badges);
       updateData.badges = badges.length > 0 ? badges : undefined;
+    }
+
+    if (body.sizeSystem !== undefined || body.sizes !== undefined) {
+      const sizeSystem =
+        typeof body.sizeSystem === "string" && body.sizeSystem.trim().length > 0
+          ? body.sizeSystem.trim()
+          : null;
+      const sizes = parseSizes(body.sizes);
+      if ((sizeSystem && !sizes) || (!sizeSystem && sizes)) {
+        throw new ApiError(400, "BAD_REQUEST", "sizeSystem and sizes must both be provided");
+      }
+      updateData.sizeSystem = sizeSystem;
+      updateData.sizes = sizes ?? undefined;
+    }
+
+    if (body.stock !== undefined) {
+      assertNonNegativeInt(body.stock, "stock");
+      updateData.stock = body.stock;
     }
 
     if (Object.keys(updateData).length === 0) {

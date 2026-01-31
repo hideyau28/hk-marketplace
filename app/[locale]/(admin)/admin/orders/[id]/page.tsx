@@ -66,6 +66,14 @@ export default async function OrderDetailPage({ params }: PageProps) {
             Created: {new Date(order.createdAt).toLocaleString()}
           </div>
         </div>
+        <a
+          href={`/api/admin/orders/${order.id}/receipt`}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+        >
+          View Receipt
+        </a>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

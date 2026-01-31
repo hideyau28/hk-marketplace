@@ -35,6 +35,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
     title: p.title,
     image: p.imageUrl || undefined,
     price: p.price,
+    stock: (p as any).stock ?? 0,
     badges: p.badges && Array.isArray(p.badges) ? (p.badges as string[]) : undefined,
   }));
 

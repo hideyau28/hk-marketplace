@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/i18n";
 import { getCartItemCount, getCart } from "@/lib/cart";
 import { ShoppingCart } from "lucide-react";
+import { currencyOptions, useCurrency } from "@/lib/currency";
 
 function swapLocale(pathname: string, nextLocale: Locale) {
   const parts = pathname.split("/").filter(Boolean);
@@ -16,6 +17,7 @@ function swapLocale(pathname: string, nextLocale: Locale) {
 export default function TopNav({ locale, t }: { locale: Locale; t: any }) {
   const pathname = usePathname() || `/${locale}`;
   const [cartCount, setCartCount] = useState(0);
+  const { currency, setCurrency } = useCurrency();
 
   useEffect(() => {
     const updateCartCount = () => {
@@ -66,6 +68,17 @@ export default function TopNav({ locale, t }: { locale: Locale; t: any }) {
           </Link>
         </div>
         <div className="ml-2 flex items-center gap-2">
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as any)}
+            className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+          >
+            {currencyOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
           <Link href={swapLocale(pathname, "zh-HK")} className={`rounded-lg px-2 py-1 text-xs ${locale==="zh-HK"?"bg-zinc-900 text-white":"text-zinc-600 hover:text-zinc-900"}`}>中</Link>
           <Link href={swapLocale(pathname, "en")} className={`rounded-lg px-2 py-1 text-xs ${locale==="en"?"bg-zinc-900 text-white":"text-zinc-600 hover:text-zinc-900"}`}>EN</Link>
         </div>

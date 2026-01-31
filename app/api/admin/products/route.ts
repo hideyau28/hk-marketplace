@@ -45,6 +45,28 @@ function assertNonNegativeNumber(value: unknown, field: string) {
   }
 }
 
+function assertNonNegativeInt(value: unknown, field: string) {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new ApiError(400, "BAD_REQUEST", `${field} must be a non-negative integer`);
+  }
+}
+
+function parseSizes(value: unknown) {
+  if (value === undefined || value === null) return null;
+  if (Array.isArray(value)) {
+    const list = value.map((v) => (typeof v === "string" ? v.trim() : "")).filter(Boolean);
+    return list.length > 0 ? list : null;
+  }
+  if (typeof value === "string") {
+    const list = value
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+    return list.length > 0 ? list : null;
+  }
+  throw new ApiError(400, "BAD_REQUEST", "sizes must be an array or comma-separated string");
+}
+
 function getIdempotencyKey(req: Request) {
   return (req.headers.get("x-idempotency-key") ?? req.headers.get("idempotency-key") ?? "").trim();
 }
@@ -56,6 +78,9 @@ type CreateProductPayload = {
   imageUrl?: string | null;
   category?: string | null;
   badges?: string[];
+  sizeSystem?: string | null;
+  sizes?: string[] | null;
+  stock?: number;
   active?: boolean;
 };
 
@@ -89,6 +114,19 @@ function parseCreatePayload(body: any): CreateProductPayload {
     }
   }
 
+  const sizeSystem =
+    typeof body.sizeSystem === "string" && body.sizeSystem.trim().length > 0
+      ? body.sizeSystem.trim()
+      : null;
+  const sizes = parseSizes(body.sizes);
+  if ((sizeSystem && !sizes) || (!sizeSystem && sizes)) {
+    throw new ApiError(400, "BAD_REQUEST", "sizeSystem and sizes must both be provided");
+  }
+
+  if (body.stock !== undefined) {
+    assertNonNegativeInt(body.stock, "stock");
+  }
+
   return {
     brand,
     title: body.title.trim(),
@@ -96,6 +134,9 @@ function parseCreatePayload(body: any): CreateProductPayload {
     imageUrl: typeof body.imageUrl === "string" && body.imageUrl.trim().length > 0 ? body.imageUrl.trim() : null,
     category,
     badges: badges.length > 0 ? badges : undefined,
+    sizeSystem,
+    sizes: sizes ?? undefined,
+    stock: body.stock !== undefined ? body.stock : undefined,
     active: typeof body.active === "boolean" ? body.active : true,
   };
 }
@@ -186,6 +227,9 @@ export const POST = withApi(
         imageUrl: payload.imageUrl ?? null,
         category: payload.category ?? null,
         badges: payload.badges,
+        sizeSystem: payload.sizeSystem ?? null,
+        sizes: payload.sizes ?? undefined,
+        stock: payload.stock ?? 0,
         active: payload.active ?? true,
       },
     });

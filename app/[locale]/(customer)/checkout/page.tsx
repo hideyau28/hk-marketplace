@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getCart, getCartTotal, clearCart, type CartItem } from "@/lib/cart";
 import { getDict, type Locale } from "@/lib/i18n";
 import { useToast } from "@/components/Toast";
+import { useCurrency } from "@/lib/currency";
 
 type FulfillmentType = "pickup" | "delivery";
 
@@ -27,6 +28,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [district, setDistrict] = useState("");
   const [notes, setNotes] = useState("");
   const [orderNote, setOrderNote] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const { format } = useCurrency();
 
   useEffect(() => {
     params.then(({ locale: l }) => {

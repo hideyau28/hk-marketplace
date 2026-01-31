@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import crypto from "node:crypto";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
+import { saveReceiptHtml } from "@/lib/email";
 
 const ROUTE = "/api/orders";
 const ORDER_STATUSES = [
@@ -336,6 +337,18 @@ export const POST = withApi(async (req) => {
             status: "PENDING",
             note: payload.note ?? null,
         },
+    });
+
+    await saveReceiptHtml({
+        id: order.id,
+        customerName: order.customerName,
+        phone: order.phone,
+        email: order.email,
+        items: Array.isArray(order.items) ? (order.items as any[]) : [],
+        amounts: order.amounts as any,
+        createdAt: order.createdAt,
+    }).catch((error) => {
+        console.error("Failed to save receipt:", error);
     });
 
     await prisma.idempotencyKey.create({

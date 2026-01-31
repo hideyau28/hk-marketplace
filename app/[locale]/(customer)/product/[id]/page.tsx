@@ -5,6 +5,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import ProductDetailClient from "@/components/ProductDetailClient";
+import CurrencyPrice from "@/components/CurrencyPrice";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; id: string }> }): Promise<Metadata> {
   const { locale, id } = await params;
@@ -54,6 +55,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     category: product.category,
     sizeSystem: (product as any).sizeSystem || null,
     sizes: (product as any).sizes || null,
+    stock: (product as any).stock ?? 0,
   };
 
   // Fetch related products (same category, max 4)
@@ -75,10 +77,12 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     title: rp.title,
     price: rp.price,
     image: rp.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
+    stock: (rp as any).stock ?? 0,
   }));
 
   return (
     <div className="px-4 pb-24 pt-6">
+      <span className="sr-only" data-product-name={p.title} />
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-zinc-600 mb-4">
         <Link href={`/${locale}`} className="hover:text-zinc-900">
@@ -135,7 +139,9 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
                 <div className="p-3">
                   <div className="text-xs text-zinc-500">{item.brand}</div>
                   <div className="mt-1 text-sm font-medium text-zinc-900 line-clamp-2">{item.title}</div>
-                  <div className="mt-2 text-sm font-semibold text-zinc-900">HK$ {item.price}</div>
+                  <div className="mt-2 text-sm font-semibold text-zinc-900">
+                    <CurrencyPrice amount={item.price} />
+                  </div>
                 </div>
               </Link>
             ))}
