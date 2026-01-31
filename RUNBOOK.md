@@ -27,6 +27,9 @@ Every Orders-related delivery MUST paste these evidence lines:
   - `status=completed conclusion=success ...`
   - a `SMOKE PASS` log line
 
+## CI verification (after merge)
+- On `main`, `npm run ci:verify` defaults to the `push` event for the current HEAD.
+
 Coverage expectations (must be green in `scripts/smoke-orders.sh`):
 - Admin auth: 401 `ADMIN_AUTH_MISSING`, 403 `ADMIN_AUTH_INVALID`
 - Create validation: missing `x-idempotency-key` -> 400 `BAD_REQUEST`
@@ -84,6 +87,8 @@ orderId=...
 
 ## Local dev
 - Create `.env.local` from `.env.example`
+- First-time local setup (DB + seed):
+  - `npm run dev:bootstrap`
 - Start dev:
   - `npm run dev` (固定跑 http://localhost:3012)
 
