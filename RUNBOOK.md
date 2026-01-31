@@ -103,6 +103,44 @@ Notes:
 - 建議設定 `APP_URL=http://localhost:3012`，避免 success/cancel URL 受 proxy header 影響。
 
 ## Deployment model (single-tenant per instance)
-- This codebase is a single-tenant merchant site template (“B” mode).
+- This codebase is a single-tenant merchant site template ("B" mode).
 - Each merchant gets a separate deployment with its own DB + ADMIN_SECRET.
 - Do NOT expose ADMIN_SECRET via `NEXT_PUBLIC_*`.
+
+## Deploying with Prisma migrations
+
+**IMPORTANT**: Always run database migrations before deploying new application code.
+
+### Pre-deployment checklist
+1. ✅ Verify `DATABASE_URL` is set correctly in production environment
+2. ✅ Backup your database before applying migrations
+3. ✅ Review pending migrations in `prisma/migrations/`
+
+### Production deployment commands
+
+```bash
+# 1) Deploy pending migrations to production database
+npx prisma migrate deploy
+
+# 2) Generate Prisma Client (if not done in build step)
+npx prisma generate
+
+# 3) Build and deploy application
+npm run build
+```
+
+**Quick command** (use in CI/CD or manual deploy):
+```bash
+npm run db:migrate:deploy
+```
+
+### Safety notes
+- `prisma migrate deploy` only runs pending migrations (safe to run multiple times)
+- Always test migrations in staging environment first
+- For rollback, restore database from backup (Prisma does not support automatic rollback)
+- Monitor application logs after deployment for any migration-related errors
+
+### Troubleshooting
+- If migration fails: check `DATABASE_URL` connection and database permissions
+- If schema drift detected: run `npx prisma migrate resolve --applied <migration_name>` to mark as applied
+- For emergency rollback: restore database backup and redeploy previous application version
