@@ -92,6 +92,14 @@ orderId=...
 - Start dev:
   - `npm run dev` (固定跑 http://localhost:3012)
 
+## Seed command
+- Local: `npm run db:seed`
+- CI (or any environment with empty products): `npm run db:seed`
+
+## Healthcheck command
+- Local: `npm run db:health`
+- CI: run before smoke to ensure DB is reachable
+
 ### Stripe local webhook (optional)
 Prereqs: install + login Stripe CLI.
 
