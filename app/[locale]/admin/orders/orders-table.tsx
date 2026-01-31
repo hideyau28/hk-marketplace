@@ -26,12 +26,22 @@ const ORDER_STATUSES = [
 
 function badgeClass(status: string) {
   const s = status.toLowerCase();
-  if (s === "paid" || s === "completed" || s === "succeeded") return "bg-olive-100 text-olive-700 border-olive-200";
-  if (s === "pending" || s === "created") return "bg-zinc-100 text-zinc-700 border-zinc-200";
-  if (s === "fulfilling" || s === "shipped" || s === "processing" || s === "requires_action") return "bg-sky-50 text-sky-700 border-sky-200";
-  if (s === "refunded") return "bg-amber-50 text-amber-700 border-amber-200";
-  if (s === "failed" || s === "disputed") return "bg-rose-50 text-rose-700 border-rose-200";
-  return "bg-zinc-100 text-zinc-700 border-zinc-200";
+  if (s === "paid" || s === "completed" || s === "succeeded") {
+    return "bg-olive-100 text-olive-700 border border-olive-200 rounded-full px-2 py-1 text-xs font-medium";
+  }
+  if (s === "pending" || s === "created") {
+    return "bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-full px-2 py-1 text-xs";
+  }
+  if (s === "fulfilling" || s === "shipped" || s === "processing" || s === "requires_action") {
+    return "bg-blue-100 text-blue-700 border border-blue-200 rounded-full px-2 py-1 text-xs";
+  }
+  if (s === "refunded") {
+    return "bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-2 py-1 text-xs";
+  }
+  if (s === "failed" || s === "disputed") {
+    return "bg-red-100 text-red-700 border border-red-200 rounded-full px-2 py-1 text-xs";
+  }
+  return "bg-zinc-100 text-zinc-600 border border-zinc-200 rounded-full px-2 py-1 text-xs";
 }
 
 function getLastPaymentStatus(order: OrderWithPayments): string | null {
@@ -137,21 +147,13 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
                         {amounts?.currency || "HKD"} {amounts?.total || 0}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${badgeClass(
-                            order.status
-                          )}`}
-                        >
+                        <span className={`inline-flex items-center ${badgeClass(order.status)}`}>
                           {order.status}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         {lastPayment ? (
-                          <span
-                            className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${badgeClass(
-                              lastPayment
-                            )}`}
-                          >
+                          <span className={`inline-flex items-center ${badgeClass(lastPayment)}`}>
                             {lastPayment}
                           </span>
                         ) : (

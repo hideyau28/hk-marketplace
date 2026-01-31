@@ -20,8 +20,8 @@ const ACTIVE_FILTERS = [
 
 function badgeClass(active: boolean) {
   return active
-    ? "bg-olive-100 text-olive-700 border-olive-200"
-    : "bg-zinc-100 text-zinc-600 border-zinc-200";
+    ? "bg-olive-100 text-olive-700 border border-olive-200 rounded-full px-2 py-1 text-xs"
+    : "bg-zinc-100 text-zinc-600 border border-zinc-200 rounded-full px-2 py-1 text-xs";
 }
 
 export function ProductsTable({ products, locale, currentActive }: ProductsTableProps) {
@@ -67,7 +67,7 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
         </div>
         <button
           onClick={handleCreateProduct}
-          className="rounded-xl bg-olive-600 px-4 py-2 text-white font-semibold hover:bg-olive-700"
+          className="rounded-xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700 transition-colors"
         >
           + Add Product
         </button>
@@ -112,11 +112,7 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
                       HK$ {product.price.toFixed(2)}
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${badgeClass(
-                          product.active
-                        )}`}
-                      >
+                      <span className={`inline-flex items-center ${badgeClass(product.active)}`}>
                         {product.active ? "Active" : "Inactive"}
                       </span>
                     </td>
