@@ -4,6 +4,12 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Redirect /admin to /en/admin
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const adminUrl = new URL(`/en${pathname}`, request.url);
+    return NextResponse.redirect(adminUrl);
+  }
+
   const isAdminRoute = pathname.match(/^\/[^/]+\/admin(?:\/|$)/);
   const isLoginRoute = pathname.match(/^\/[^/]+\/admin\/login/);
 
