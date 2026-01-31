@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
+import CsvUpload from "@/components/admin/CsvUpload";
 
 type ProductsTableProps = {
   products: Product[];
@@ -24,6 +25,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
   const [selectedActive, setSelectedActive] = useState(currentActive || "");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isCsvOpen, setIsCsvOpen] = useState(false);
 
   const handleActiveChange = (active: string) => {
     setSelectedActive(active);
@@ -46,11 +48,11 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
 
   return (
     <>
-      <div className="mt-6 flex items-center justify-between gap-3">
+      <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <select
           value={selectedActive}
           onChange={(e) => handleActiveChange(e.target.value)}
-          className="w-full max-w-xs rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+          className="w-full md:max-w-xs rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
         >
           {ACTIVE_FILTERS.map((f) => (
             <option key={f.value} value={f.value}>
@@ -58,14 +60,28 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
             </option>
           ))}
         </select>
-        {showAddButton && (
-          <button
-            onClick={handleCreateProduct}
-            className="rounded-xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700 transition-colors whitespace-nowrap"
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href="/api/admin/products/csv-template"
+            className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50"
           >
-            + Add Product
+            Download Template
+          </a>
+          <button
+            onClick={() => setIsCsvOpen(true)}
+            className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
+          >
+            Import CSV
           </button>
-        )}
+          {showAddButton && (
+            <button
+              onClick={handleCreateProduct}
+              className="rounded-xl border border-olive-600 bg-white px-4 py-3 text-sm text-olive-700 font-semibold hover:bg-olive-50 transition-colors whitespace-nowrap"
+            >
+              + Add Product
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
@@ -140,6 +156,14 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
 
       {(selectedProduct || isCreating) && (
         <ProductModal product={selectedProduct} onClose={handleCloseModal} locale={locale} />
+      )}
+
+      {isCsvOpen && (
+        <CsvUpload
+          open={isCsvOpen}
+          onClose={() => setIsCsvOpen(false)}
+          onImported={() => router.refresh()}
+        />
       )}
     </>
   );
