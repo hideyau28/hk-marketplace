@@ -8,7 +8,7 @@ import { Pool } from "pg";
  * - For Neon Postgres, adapter-pg is sufficient.
  */
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient; pool?: Pool };
+const globalForPrisma = globalThis as unknown as { prisma?: ReturnType<typeof makeClient>; pool?: Pool };
 
 function isLocalhost(hostname: string): boolean {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
@@ -37,6 +37,19 @@ function makeClient() {
   const url = process.env.DATABASE_URL;
   if (!url) {
     throw new Error("DATABASE_URL is not set");
+  }
+
+  const accelerateUrl = process.env.PRISMA_ACCELERATE_URL || process.env.ACCELERATE_URL;
+  if (accelerateUrl) {
+    try {
+      // Use dynamic module name to avoid bundlers resolving it when unused.
+      const moduleName = ["@prisma", "extension-accelerate"].join("/");
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { withAccelerate } = require(moduleName);
+      return new PrismaClient().$extends(withAccelerate());
+    } catch (err) {
+      throw new Error("PRISMA_ACCELERATE_URL is set but @prisma/extension-accelerate is missing.");
+    }
   }
 
   const normalizedUrl = normalizeDbUrl(url);

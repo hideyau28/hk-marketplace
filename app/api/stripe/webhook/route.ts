@@ -46,12 +46,10 @@ export const POST = withApi(async (req) => {
     console[level](`[stripe-webhook] ${msg}`, base);
   };
 
-  const updateByOrderId = async (
-    orderId: string,
-    data: Parameters<typeof prisma.order.update>[0]["data"]
-  ) => {
+  type OrderUpdateData = Prisma.OrderUpdateInput | Prisma.OrderUncheckedUpdateInput;
+  const updateByOrderId = async (orderId: string, data: OrderUpdateData) => {
     try {
-      await prisma.order.update({ where: { id: orderId }, data });
+      await prisma.order.update({ where: { id: orderId }, data: data as Prisma.OrderUpdateArgs["data"] });
       return true;
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);
@@ -60,12 +58,13 @@ export const POST = withApi(async (req) => {
     }
   };
 
-  const updateByPaymentIntent = async (
-    paymentIntentId: string,
-    data: Parameters<typeof prisma.order.updateMany>[0]["data"]
-  ) => {
+  type OrderUpdateManyData = Prisma.OrderUpdateManyMutationInput | Prisma.OrderUncheckedUpdateManyInput;
+  const updateByPaymentIntent = async (paymentIntentId: string, data: OrderUpdateManyData) => {
     try {
-      const res = await prisma.order.updateMany({ where: { stripePaymentIntentId: paymentIntentId }, data });
+      const res = await prisma.order.updateMany({
+        where: { stripePaymentIntentId: paymentIntentId },
+        data: data as Prisma.OrderUpdateManyArgs["data"],
+      });
       return res.count;
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);

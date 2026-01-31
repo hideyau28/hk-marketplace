@@ -1,40 +1,5 @@
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
-
-function normalizeDbUrl(url: string): string {
-  try {
-    const parsed = new URL(url);
-    const isLocal = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
-    if (isLocal || parsed.searchParams.has("sslmode")) {
-      return url;
-    }
-    parsed.searchParams.set("sslmode", "require");
-    return parsed.toString();
-  } catch {
-    return url;
-  }
-}
-
-const url = process.env.DATABASE_URL;
-if (!url) {
-  throw new Error("DATABASE_URL is not set");
-}
-
-const normalizedUrl = normalizeDbUrl(url);
-const parsed = new URL(normalizedUrl);
-const needsSsl = parsed.hostname !== "localhost" && parsed.hostname !== "127.0.0.1";
-
-const poolConfig: any = { connectionString: normalizedUrl };
-if (needsSsl) {
-  poolConfig.ssl = { rejectUnauthorized: true };
-}
-
-const pool = new Pool(poolConfig);
-const prisma = new PrismaClient({
-  adapter: new PrismaPg(pool),
-});
+import { prisma } from "../lib/prisma";
 
 const demoProducts = [
   {
