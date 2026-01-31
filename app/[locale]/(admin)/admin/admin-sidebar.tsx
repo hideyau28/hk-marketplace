@@ -13,7 +13,7 @@ const navItems = [
 ];
 
 export default function AdminSidebar() {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
@@ -27,30 +27,22 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {/* Hamburger button - always visible */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-50 w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-colors shadow-sm"
-      >
-        {isOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
-
       {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/20 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/20 z-30"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full bg-zinc-900 text-white z-40 transition-transform duration-300 ${
+        className={`fixed top-0 left-0 h-full bg-zinc-900 text-white z-40 transition-transform duration-300 w-56 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } w-56`}
+        }`}
       >
         {/* Logo */}
-        <div className="p-4 pt-14 border-b border-zinc-800">
+        <div className="p-4 pt-4 border-b border-zinc-800">
           <h1 className="text-lg font-bold">HK•Market</h1>
           <p className="text-zinc-400 text-sm mt-1">Admin Panel</p>
         </div>
@@ -68,6 +60,7 @@ export default function AdminSidebar() {
               <Link
                 key={item.href}
                 href={fullHref}
+                onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive
                     ? "bg-olive-600 text-white"
@@ -91,10 +84,25 @@ export default function AdminSidebar() {
             <span>Logout</span>
           </button>
         </div>
+
+        {/* Close button inside sidebar */}
+        <button
+          onClick={() => setIsOpen(false)}
+          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+        >
+          <X size={18} />
+        </button>
       </aside>
 
-      {/* Spacer for content */}
-      <div className={`transition-all duration-300 ${isOpen ? "w-56" : "w-0"} flex-shrink-0`} />
+      {/* Menu button - inline with content */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed top-4 left-4 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-colors shadow-sm"
+        >
+          <Menu size={18} />
+        </button>
+      )}
     </>
   );
 }

@@ -56,7 +56,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   const formattedRevenue = `HK$${totalRevenue.toFixed(2)}`;
 
   return (
-    <div className="pl-16 pr-4 pb-16 pt-4">
+    <div className="pl-16 pr-4 pb-16 pt-4 max-w-full overflow-hidden">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
@@ -65,7 +65,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
         <StatCard
           label="Total Products"
           value={totalProducts}
