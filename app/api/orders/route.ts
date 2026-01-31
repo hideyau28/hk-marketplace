@@ -137,6 +137,13 @@ function parseCreatePayload(body: any): CreateOrderPayload {
     if (!/^[A-Z]{3}$/.test(currency)) {
         throw new ApiError(400, "BAD_REQUEST", "amounts.currency must be 3 letters");
     }
+    const defaultCurrencyRaw = process.env.DEFAULT_CURRENCY;
+    if (defaultCurrencyRaw) {
+        const defaultCurrency = defaultCurrencyRaw.trim().toUpperCase();
+        if (defaultCurrency && currency !== defaultCurrency) {
+            throw new ApiError(400, "BAD_REQUEST", `amounts.currency must be ${defaultCurrency}`);
+        }
+    }
 
     if (!body.fulfillment || typeof body.fulfillment !== "object") {
         throw new ApiError(400, "BAD_REQUEST", "Missing or invalid fulfillment");
@@ -164,6 +171,79 @@ function parseCreatePayload(body: any): CreateOrderPayload {
         },
         fulfillment: body.fulfillment,
         note: typeof body.note === "string" && body.note.trim().length > 0 ? body.note.trim() : undefined,
+    };
+}
+
+function amountMatches(actual: number, expected: number) {
+    if (Number.isInteger(actual) && Number.isInteger(expected)) {
+        return actual === expected;
+    }
+    return Math.abs(actual - expected) < 0.0001;
+}
+
+type RepricedOrder = {
+    items: CreateOrderPayload["items"];
+    amounts: CreateOrderPayload["amounts"];
+};
+
+async function repriceOrder(payload: CreateOrderPayload): Promise<RepricedOrder> {
+    const productIds = Array.from(new Set(payload.items.map((item) => item.productId)));
+    const products = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true, title: true, price: true, active: true },
+    });
+
+    const productMap = new Map(products.map((product) => [product.id, product]));
+
+    for (const productId of productIds) {
+        if (!productMap.has(productId)) {
+            throw new ApiError(400, "BAD_REQUEST", "Product not found");
+        }
+    }
+
+    let subtotal = 0;
+    const repricedItems = payload.items.map((item) => {
+        const product = productMap.get(item.productId)!;
+        if (product.active === false) {
+            throw new ApiError(400, "BAD_REQUEST", "Product not available");
+        }
+        const unitPrice = product.price;
+        const lineTotal = unitPrice * item.quantity;
+        subtotal += lineTotal;
+        return {
+            ...item,
+            name: product.title,
+            unitPrice,
+        };
+    });
+
+    const discount = payload.amounts.discount ?? 0;
+    const deliveryFee = payload.amounts.deliveryFee ?? 0;
+    const total = subtotal + deliveryFee - discount;
+
+    const computedAmounts: CreateOrderPayload["amounts"] = {
+        subtotal,
+        total,
+        currency: payload.amounts.currency,
+    };
+
+    if (payload.amounts.discount !== undefined) {
+        computedAmounts.discount = discount;
+    }
+    if (payload.amounts.deliveryFee !== undefined) {
+        computedAmounts.deliveryFee = deliveryFee;
+    }
+
+    if (
+        !amountMatches(payload.amounts.subtotal, computedAmounts.subtotal) ||
+        !amountMatches(payload.amounts.total, computedAmounts.total)
+    ) {
+        throw new ApiError(400, "BAD_REQUEST", "amounts mismatch (repriced)");
+    }
+
+    return {
+        items: repricedItems,
+        amounts: computedAmounts,
     };
 }
 
@@ -219,6 +299,7 @@ export const POST = withApi(async (req) => {
     }
 
     const payload = parseCreatePayload(body);
+    const repriced = await repriceOrder(payload);
 
     const idemKey = getIdempotencyKey(req);
     if (!idemKey) {
@@ -247,8 +328,8 @@ export const POST = withApi(async (req) => {
             customerName: payload.customerName,
             phone: payload.phone,
             email: payload.email ?? null,
-            items: payload.items,
-            amounts: payload.amounts,
+            items: repriced.items,
+            amounts: repriced.amounts,
             fulfillmentType: payload.fulfillment.type === "pickup" ? "PICKUP" : "DELIVERY",
             fulfillmentAddress:
                 payload.fulfillment.type === "delivery" ? (payload.fulfillment.address ?? undefined) : undefined,

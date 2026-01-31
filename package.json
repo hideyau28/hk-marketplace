@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3012",
     "dev:local": "next dev -p 3012",
+    "dev:bootstrap": "bash scripts/dev-db-bootstrap.sh",
     "stripe:listen": "stripe listen --forward-to http://localhost:3012/api/stripe/webhook",
     "stripe:trigger:checkout": "stripe trigger checkout.session.completed",
     "build": "next build",

@@ -50,6 +50,51 @@ fi
 
 ensure_jq
 
+ROOT_BASE="${BASE%/api/orders}"
+PRODUCTS_BASE="${ROOT_BASE%/}/api/products"
+
+resp="$(curl_resp "$PRODUCTS_BASE?limit=1")"
+h="$(echo "$resp" | sed -n "1p")"
+[[ "$h" =~ " 200 " ]] || die "expected GET products -> 200 but got: $h (URL=$PRODUCTS_BASE)"
+body="$(resp_body "$resp")"
+PRODUCT_ID="$(echo "$body" | jq -r '.data.products[0].id')"
+PRODUCT_NAME="$(echo "$body" | jq -r '.data.products[0].title')"
+PRODUCT_PRICE="$(echo "$body" | jq -r '.data.products[0].price')"
+
+[ -n "$PRODUCT_ID" ] && [ "$PRODUCT_ID" != "null" ] || die "expected product id"
+[ -n "$PRODUCT_NAME" ] && [ "$PRODUCT_NAME" != "null" ] || die "expected product name"
+[ -n "$PRODUCT_PRICE" ] && [ "$PRODUCT_PRICE" != "null" ] || die "expected product price"
+
+QTY=2
+DISCOUNT=1
+DELIVERY_FEE=1
+SUBTOTAL="$(awk -v p="$PRODUCT_PRICE" -v q="$QTY" 'BEGIN{print p*q}')"
+TOTAL="$(awk -v s="$SUBTOTAL" -v d="$DISCOUNT" -v f="$DELIVERY_FEE" 'BEGIN{print s+f-d}')"
+
+PAYLOAD="$(jq -n \
+  --arg customerName "Ada Lovelace" \
+  --arg phone "+852-5555-0000" \
+  --arg email "ada@example.com" \
+  --arg productId "$PRODUCT_ID" \
+  --arg productName "$PRODUCT_NAME" \
+  --arg currency "HKD" \
+  --arg note "Leave at counter" \
+  --argjson unitPrice "$PRODUCT_PRICE" \
+  --argjson quantity "$QTY" \
+  --argjson subtotal "$SUBTOTAL" \
+  --argjson discount "$DISCOUNT" \
+  --argjson deliveryFee "$DELIVERY_FEE" \
+  --argjson total "$TOTAL" \
+  '{
+    customerName: $customerName,
+    phone: $phone,
+    email: $email,
+    items: [{productId: $productId, name: $productName, unitPrice: $unitPrice, quantity: $quantity}],
+    amounts: {subtotal: $subtotal, discount: $discount, deliveryFee: $deliveryFee, total: $total, currency: $currency},
+    fulfillment: {type: "pickup"},
+    note: $note
+  }')"
+
 echo "== Orders 1) Admin auth checks (GET list) =="
 
 resp="$(curl_resp "$BASE")"
@@ -74,8 +119,6 @@ echo
 
 echo "== Orders 2) Create validations =="
 
-PAYLOAD='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-1","name":"Product 1","unitPrice":199,"quantity":2}],"amounts":{"subtotal":398,"discount":1,"deliveryFee":1,"total":400,"currency":"HKD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
-
 resp="$(curl_resp -X POST -H "content-type: application/json" --data "${PAYLOAD}" "$BASE")"
 h="$(echo "$resp" | sed -n "1p")"
 [[ "$h" =~ " 400 " ]] || die "expected POST missing idempotency -> 400 but got: $h (URL=$BASE)"
@@ -89,7 +132,29 @@ echo
 
 echo "== Orders 2.1) Payload validation (negative cases) =="
 
-PAYLOAD_BAD_CURRENCY='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-1","name":"Product 1","unitPrice":199,"quantity":2}],"amounts":{"subtotal":398,"discount":1,"deliveryFee":1,"total":400,"currency":"HKDD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
+PAYLOAD_BAD_CURRENCY="$(jq -n \
+  --arg customerName "Ada Lovelace" \
+  --arg phone "+852-5555-0000" \
+  --arg email "ada@example.com" \
+  --arg productId "$PRODUCT_ID" \
+  --arg productName "$PRODUCT_NAME" \
+  --arg currency "HKDD" \
+  --arg note "Leave at counter" \
+  --argjson unitPrice "$PRODUCT_PRICE" \
+  --argjson quantity "$QTY" \
+  --argjson subtotal "$SUBTOTAL" \
+  --argjson discount "$DISCOUNT" \
+  --argjson deliveryFee "$DELIVERY_FEE" \
+  --argjson total "$TOTAL" \
+  '{
+    customerName: $customerName,
+    phone: $phone,
+    email: $email,
+    items: [{productId: $productId, name: $productName, unitPrice: $unitPrice, quantity: $quantity}],
+    amounts: {subtotal: $subtotal, discount: $discount, deliveryFee: $deliveryFee, total: $total, currency: $currency},
+    fulfillment: {type: "pickup"},
+    note: $note
+  }')"
 resp="$(curl_resp -X POST -H "content-type: application/json" -H "x-idempotency-key: bad-currency-$(date +%s)" --data "${PAYLOAD_BAD_CURRENCY}" "$BASE")"
 h="$(echo "$resp" | sed -n "1p")"
 [[ "$h" =~ " 400 " ]] || die "expected POST bad currency -> 400 but got: $h (URL=$BASE)"
@@ -98,7 +163,29 @@ must_have_error_code "$resp" "BAD_REQUEST"
 must_have_header "$resp" "x-request-id"
 must_have_header "$resp" "content-type"
 
-PAYLOAD_BAD_QTY='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-1","name":"Product 1","unitPrice":199,"quantity":0}],"amounts":{"subtotal":398,"discount":1,"deliveryFee":1,"total":400,"currency":"HKD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
+PAYLOAD_BAD_QTY="$(jq -n \
+  --arg customerName "Ada Lovelace" \
+  --arg phone "+852-5555-0000" \
+  --arg email "ada@example.com" \
+  --arg productId "$PRODUCT_ID" \
+  --arg productName "$PRODUCT_NAME" \
+  --arg currency "HKD" \
+  --arg note "Leave at counter" \
+  --argjson unitPrice "$PRODUCT_PRICE" \
+  --argjson quantity 0 \
+  --argjson subtotal "$SUBTOTAL" \
+  --argjson discount "$DISCOUNT" \
+  --argjson deliveryFee "$DELIVERY_FEE" \
+  --argjson total "$TOTAL" \
+  '{
+    customerName: $customerName,
+    phone: $phone,
+    email: $email,
+    items: [{productId: $productId, name: $productName, unitPrice: $unitPrice, quantity: $quantity}],
+    amounts: {subtotal: $subtotal, discount: $discount, deliveryFee: $deliveryFee, total: $total, currency: $currency},
+    fulfillment: {type: "pickup"},
+    note: $note
+  }')"
 resp="$(curl_resp -X POST -H "content-type: application/json" -H "x-idempotency-key: bad-qty-$(date +%s)" --data "${PAYLOAD_BAD_QTY}" "$BASE")"
 h="$(echo "$resp" | sed -n "1p")"
 [[ "$h" =~ " 400 " ]] || die "expected POST bad quantity -> 400 but got: $h (URL=$BASE)"
@@ -107,7 +194,29 @@ must_have_error_code "$resp" "BAD_REQUEST"
 must_have_header "$resp" "x-request-id"
 must_have_header "$resp" "content-type"
 
-PAYLOAD_BAD_AMOUNTS='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-1","name":"Product 1","unitPrice":199,"quantity":2}],"amounts":{"subtotal":398,"discount":1,"deliveryFee":1,"total":0,"currency":"HKD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
+PAYLOAD_BAD_AMOUNTS="$(jq -n \
+  --arg customerName "Ada Lovelace" \
+  --arg phone "+852-5555-0000" \
+  --arg email "ada@example.com" \
+  --arg productId "$PRODUCT_ID" \
+  --arg productName "$PRODUCT_NAME" \
+  --arg currency "HKD" \
+  --arg note "Leave at counter" \
+  --argjson unitPrice "$PRODUCT_PRICE" \
+  --argjson quantity "$QTY" \
+  --argjson subtotal "$SUBTOTAL" \
+  --argjson discount "$DISCOUNT" \
+  --argjson deliveryFee "$DELIVERY_FEE" \
+  --argjson total 0 \
+  '{
+    customerName: $customerName,
+    phone: $phone,
+    email: $email,
+    items: [{productId: $productId, name: $productName, unitPrice: $unitPrice, quantity: $quantity}],
+    amounts: {subtotal: $subtotal, discount: $discount, deliveryFee: $deliveryFee, total: $total, currency: $currency},
+    fulfillment: {type: "pickup"},
+    note: $note
+  }')"
 resp="$(curl_resp -X POST -H "content-type: application/json" -H "x-idempotency-key: bad-amounts-$(date +%s)" --data "${PAYLOAD_BAD_AMOUNTS}" "$BASE")"
 h="$(echo "$resp" | sed -n "1p")"
 [[ "$h" =~ " 400 " ]] || die "expected POST bad amounts -> 400 but got: $h (URL=$BASE)"
@@ -119,6 +228,74 @@ must_have_header "$resp" "content-type"
 echo "OK: POST invalid currency -> 400 + BAD_REQUEST"
 echo "OK: POST invalid quantity -> 400 + BAD_REQUEST"
 echo "OK: POST invalid amounts -> 400 + BAD_REQUEST"
+echo
+
+echo "== Orders 2.2) Repricing checks (negative cases) =="
+
+PAYLOAD_MISMATCH="$(jq -n \
+  --arg customerName "Ada Lovelace" \
+  --arg phone "+852-5555-0000" \
+  --arg email "ada@example.com" \
+  --arg productId "$PRODUCT_ID" \
+  --arg productName "$PRODUCT_NAME" \
+  --arg currency "HKD" \
+  --arg note "Leave at counter" \
+  --argjson unitPrice "$PRODUCT_PRICE" \
+  --argjson quantity "$QTY" \
+  --argjson subtotal "$SUBTOTAL" \
+  --argjson discount "$DISCOUNT" \
+  --argjson deliveryFee "$DELIVERY_FEE" \
+  --argjson total 1 \
+  '{
+    customerName: $customerName,
+    phone: $phone,
+    email: $email,
+    items: [{productId: $productId, name: $productName, unitPrice: $unitPrice, quantity: $quantity}],
+    amounts: {subtotal: $subtotal, discount: $discount, deliveryFee: $deliveryFee, total: $total, currency: $currency},
+    fulfillment: {type: "pickup"},
+    note: $note
+  }')"
+resp="$(curl_resp -X POST -H "content-type: application/json" -H "x-idempotency-key: mismatch-$(date +%s)" --data "${PAYLOAD_MISMATCH}" "$BASE")"
+h="$(echo "$resp" | sed -n "1p")"
+[[ "$h" =~ " 400 " ]] || die "expected POST repricing mismatch -> 400 but got: $h (URL=$BASE)"
+must_have_request_id "$resp"
+must_have_error_code "$resp" "BAD_REQUEST"
+must_have_header "$resp" "x-request-id"
+must_have_header "$resp" "content-type"
+
+PAYLOAD_BAD_PRODUCT="$(jq -n \
+  --arg customerName "Ada Lovelace" \
+  --arg phone "+852-5555-0000" \
+  --arg email "ada@example.com" \
+  --arg productId "missing-product" \
+  --arg productName "$PRODUCT_NAME" \
+  --arg currency "HKD" \
+  --arg note "Leave at counter" \
+  --argjson unitPrice "$PRODUCT_PRICE" \
+  --argjson quantity "$QTY" \
+  --argjson subtotal "$SUBTOTAL" \
+  --argjson discount "$DISCOUNT" \
+  --argjson deliveryFee "$DELIVERY_FEE" \
+  --argjson total "$TOTAL" \
+  '{
+    customerName: $customerName,
+    phone: $phone,
+    email: $email,
+    items: [{productId: $productId, name: $productName, unitPrice: $unitPrice, quantity: $quantity}],
+    amounts: {subtotal: $subtotal, discount: $discount, deliveryFee: $deliveryFee, total: $total, currency: $currency},
+    fulfillment: {type: "pickup"},
+    note: $note
+  }')"
+resp="$(curl_resp -X POST -H "content-type: application/json" -H "x-idempotency-key: bad-product-$(date +%s)" --data "${PAYLOAD_BAD_PRODUCT}" "$BASE")"
+h="$(echo "$resp" | sed -n "1p")"
+[[ "$h" =~ " 400 " ]] || die "expected POST missing product -> 400 but got: $h (URL=$BASE)"
+must_have_request_id "$resp"
+must_have_error_code "$resp" "BAD_REQUEST"
+must_have_header "$resp" "x-request-id"
+must_have_header "$resp" "content-type"
+
+echo "OK: POST repricing mismatch -> 400 + BAD_REQUEST"
+echo "OK: POST missing product -> 400 + BAD_REQUEST"
 echo
 
 echo "== Orders 3) Create with idempotency =="
@@ -142,7 +319,32 @@ body="$(resp_body "$resp")"
 ORDER_ID_REPLAY="$(echo "$body" | jq -r '.data.id')"
 [ "$ORDER_ID_REPLAY" = "$ORDER_ID" ] || die "expected same order id on idempotent replay"
 
-PAYLOAD_ALT='{"customerName":"Ada Lovelace","phone":"+852-5555-0000","email":"ada@example.com","items":[{"productId":"p-2","name":"Product 2","unitPrice":199,"quantity":2}],"amounts":{"subtotal":398,"discount":1,"deliveryFee":1,"total":400,"currency":"HKD"},"fulfillment":{"type":"pickup"},"note":"Leave at counter"}'
+ALT_QTY=1
+ALT_SUBTOTAL="$(awk -v p="$PRODUCT_PRICE" -v q="$ALT_QTY" 'BEGIN{print p*q}')"
+ALT_TOTAL="$(awk -v s="$ALT_SUBTOTAL" -v d="$DISCOUNT" -v f="$DELIVERY_FEE" 'BEGIN{print s+f-d}')"
+PAYLOAD_ALT="$(jq -n \
+  --arg customerName "Ada Lovelace" \
+  --arg phone "+852-5555-0000" \
+  --arg email "ada@example.com" \
+  --arg productId "$PRODUCT_ID" \
+  --arg productName "$PRODUCT_NAME" \
+  --arg currency "HKD" \
+  --arg note "Leave at counter (alt)" \
+  --argjson unitPrice "$PRODUCT_PRICE" \
+  --argjson quantity "$ALT_QTY" \
+  --argjson subtotal "$ALT_SUBTOTAL" \
+  --argjson discount "$DISCOUNT" \
+  --argjson deliveryFee "$DELIVERY_FEE" \
+  --argjson total "$ALT_TOTAL" \
+  '{
+    customerName: $customerName,
+    phone: $phone,
+    email: $email,
+    items: [{productId: $productId, name: $productName, unitPrice: $unitPrice, quantity: $quantity}],
+    amounts: {subtotal: $subtotal, discount: $discount, deliveryFee: $deliveryFee, total: $total, currency: $currency},
+    fulfillment: {type: "pickup"},
+    note: $note
+  }')"
 resp="$(curl_resp -X POST -H "content-type: application/json" -H "x-idempotency-key: ${IDEM}" --data "${PAYLOAD_ALT}" "$BASE")"
 h="$(echo "$resp" | sed -n "1p")"
 [[ "$h" =~ " 409 " ]] || die "expected POST conflict -> 409 but got: $h (URL=$BASE)"

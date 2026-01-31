@@ -40,6 +40,7 @@ Response (guaranteed on all responses, including errors):
 - BAD_REQUEST: validation errors (missing idempotency key, invalid status, malformed JSON)
 - NOT_FOUND: order not found
 - CONFLICT: idempotency conflict (same key, different payload)
+- RATE_LIMITED: too many requests
 - INTERNAL: server error
 - ADMIN_AUTH_MISSING: admin secret missing
 - ADMIN_AUTH_INVALID: admin secret invalid
@@ -49,6 +50,21 @@ Response (guaranteed on all responses, including errors):
 - Same key + same payload -> return original success response (200)
 - Same key + different payload -> 409 CONFLICT
 - Implementation stores key + body hash to compare payload consistency
+
+## Server-Side Repricing (POST /api/orders)
+- Server recalculates item prices from Products (price * quantity) before storing.
+- Client `amounts` must match computed values; otherwise 400 BAD_REQUEST with `amounts mismatch (repriced)`.
+- Missing or inactive products return 400 BAD_REQUEST.
+- Client-sent `amounts` are still required for compatibility but persisted totals are overwritten by computed values.
+- Optional: set DEFAULT_CURRENCY to enforce a single 3-letter currency code (e.g., HKD).
+
+## Rate Limiting (in-memory)
+- Rate limiting is in-memory per instance and keyed by `IP + method + path`.
+- Controlled by env:
+  - RATE_LIMIT_ENABLED (default "1")
+  - RATE_LIMIT_WINDOW_MS (default 60000)
+  - RATE_LIMIT_MAX (default 120)
+  - RATE_LIMIT_ROUTES (default "POST:/api/orders"; comma-separated like "POST:/api/orders,GET:/api/orders")
 
 ## Status Validation
 Allowed values (input normalized to uppercase):
@@ -68,6 +84,7 @@ Admin PATCH can set any valid status directly (no extra workflow constraints).
 See scripts/smoke-orders.sh (wired into smoke-local / prod smoke):
 - Admin auth: list without secret -> 401 + ADMIN_AUTH_MISSING; wrong secret -> 403 + ADMIN_AUTH_INVALID
 - Create validations: POST missing x-idempotency-key -> 400 + BAD_REQUEST
+- Repricing: POST amounts mismatch -> 400 + BAD_REQUEST; product missing -> 400 + BAD_REQUEST
 - Create idempotency: same key same payload -> 200; same key different payload -> 409 + CONFLICT
 - Admin list/get/update: GET list -> 200; GET by id -> 200; PATCH valid status -> 200; PATCH invalid status -> 400 + BAD_REQUEST
 - Error responses assert:

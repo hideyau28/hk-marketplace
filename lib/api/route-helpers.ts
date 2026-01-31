@@ -6,6 +6,7 @@ export type ApiErrorCode =
   | "FORBIDDEN"
   | "NOT_FOUND"
   | "CONFLICT"
+  | "RATE_LIMITED"
   | "INTERNAL"
   | "ADMIN_AUTH_MISSING"
   | "ADMIN_AUTH_INVALID";
@@ -77,6 +78,94 @@ type WithApiOptions = {
   admin?: boolean; // true = require admin secret
 };
 
+const RATE_LIMIT_DEFAULT_ROUTES = "POST:/api/orders";
+const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
+let rateLimitLastSweep = 0;
+
+function isRateLimitEnabled() {
+  const raw = process.env.RATE_LIMIT_ENABLED;
+  if (!raw) return true;
+  const normalized = raw.trim().toLowerCase();
+  return normalized !== "0" && normalized !== "false" && normalized !== "off";
+}
+
+function parseRateLimitNumber(raw: string | undefined, fallback: number) {
+  if (!raw) return fallback;
+  const num = Number(raw);
+  return Number.isFinite(num) && num > 0 ? num : fallback;
+}
+
+function parseRateLimitRoutes(raw: string): Set<string> {
+  const routes = raw
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  const set = new Set<string>();
+  for (const route of routes) {
+    const idx = route.indexOf(":");
+    if (idx <= 0) continue;
+    const method = route.slice(0, idx).trim().toUpperCase();
+    const path = route.slice(idx + 1).trim();
+    if (!method || !path) continue;
+    set.add(`${method}:${path}`);
+  }
+  return set;
+}
+
+function getRateLimitConfig() {
+  const windowMs = parseRateLimitNumber(process.env.RATE_LIMIT_WINDOW_MS, 60_000);
+  const max = parseRateLimitNumber(process.env.RATE_LIMIT_MAX, 120);
+  const routesRaw =
+    process.env.RATE_LIMIT_ROUTES !== undefined
+      ? process.env.RATE_LIMIT_ROUTES
+      : RATE_LIMIT_DEFAULT_ROUTES;
+  const routes = routesRaw && routesRaw.trim().length > 0 ? parseRateLimitRoutes(routesRaw) : new Set<string>();
+  return { windowMs, max, routes };
+}
+
+function getClientIp(req: Request) {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const first = forwarded.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) return realIp.trim();
+  return "unknown";
+}
+
+function enforceRateLimit(req: Request) {
+  if (!isRateLimitEnabled()) return;
+
+  const { windowMs, max, routes } = getRateLimitConfig();
+  if (max <= 0) return;
+
+  const url = new URL(req.url);
+  const routeKey = `${req.method.toUpperCase()}:${url.pathname}`;
+  if (!routes.has(routeKey)) return;
+
+  const now = Date.now();
+  if (now - rateLimitLastSweep > windowMs) {
+    for (const [key, bucket] of rateLimitBuckets.entries()) {
+      if (bucket.resetAt <= now) rateLimitBuckets.delete(key);
+    }
+    rateLimitLastSweep = now;
+  }
+
+  const clientKey = getClientIp(req);
+  const bucketKey = `${clientKey}:${routeKey}`;
+  const bucket = rateLimitBuckets.get(bucketKey);
+  if (!bucket || now > bucket.resetAt) {
+    rateLimitBuckets.set(bucketKey, { count: 1, resetAt: now + windowMs });
+    return;
+  }
+
+  bucket.count += 1;
+  if (bucket.count > max) {
+    throw new ApiError(429, "RATE_LIMITED", "Too many requests");
+  }
+}
+
 function assertAdmin(req: Request) {
   const secret = process.env.ADMIN_SECRET;
   if (!secret) {
@@ -147,12 +236,24 @@ export function withApi<C>(
 ) {
   return async (req: Request, ctx?: C) => {
     try {
+      enforceRateLimit(req);
       if (opts?.admin) assertAdmin(req);
       // Call handler with ctx only if it expects 2 args; keep TS happy via casting.
       return await ((handler as any).length >= 2 ? (handler as any)(req, ctx) : (handler as any)(req));
     } catch (e) {
+      // Temporary debug logging for INTERNAL errors
+      if (!(e instanceof ApiError)) {
+        const requestId = getRequestId(req);
+        console.error("[API_INTERNAL]", {
+          requestId,
+          method: req.method,
+          url: req.url,
+          xForwardedFor: req.headers.get("x-forwarded-for"),
+          xRealIp: req.headers.get("x-real-ip"),
+          err: e,
+        });
+      }
       return fail(req, e);
     }
   };
 }
-

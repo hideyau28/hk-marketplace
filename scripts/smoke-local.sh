@@ -11,6 +11,15 @@ if [ -f .env.local ]; then
   set +a
 fi
 
+echo ""
+echo "0) Database healthcheck"
+if ! node scripts/db-healthcheck.mjs >/dev/null 2>&1; then
+  echo "ERROR: Database healthcheck failed."
+  echo "Run: npm run dev:bootstrap"
+  exit 1
+fi
+echo "Database healthcheck: ok"
+
 PORT="${PORT:-3012}"
 BASE="${BASE:-http://localhost:${PORT}}"
 ADMIN_SECRET="${ADMIN_SECRET:-}"
