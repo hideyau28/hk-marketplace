@@ -2,6 +2,7 @@ import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
 import { OrdersTable } from "./orders-table";
 import { fetchOrders } from "./actions";
+import { LogoutButton } from "../logout-button";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -25,6 +26,7 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
           <h1 className="mt-1 text-2xl font-semibold text-zinc-900">Orders</h1>
           <div className="mt-2 text-zinc-500 text-sm">Track payment, fulfillment, refunds.</div>
         </div>
+        <LogoutButton />
       </div>
 
       {result.ok ? (

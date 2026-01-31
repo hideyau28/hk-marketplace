@@ -1,6 +1,8 @@
 export const runtime = "nodejs";
 
+import { NextResponse } from "next/server";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
+import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
 import { parseBadges } from "@/lib/parse-badges";
 
@@ -19,19 +21,28 @@ function assertNonNegativeNumber(value: unknown, field: string) {
 // GET /api/admin/products/:id (admin)
 export const GET = withApi(
   async (_req: Request, { params }: { params: Promise<{ id: string }> }) => {
+    const isAuthenticated = await getSessionFromCookie();
+    if (!isAuthenticated) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
     const product = await prisma.product.findUnique({ where: { id } });
     if (!product) {
       throw new ApiError(404, "NOT_FOUND", "Product not found");
     }
     return ok(_req, product);
-  },
-  { admin: true }
+  }
 );
 
 // PATCH /api/admin/products/:id (admin update)
 export const PATCH = withApi(
   async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
+    const isAuthenticated = await getSessionFromCookie();
+    if (!isAuthenticated) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
 
     let body: any = null;
@@ -120,6 +131,5 @@ export const PATCH = withApi(
     }
 
     return ok(req, product);
-  },
-  { admin: true }
+  }
 );

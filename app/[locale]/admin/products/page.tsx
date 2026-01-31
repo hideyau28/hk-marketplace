@@ -2,6 +2,7 @@ import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
 import { ProductsTable } from "./products-table";
 import { fetchProducts } from "./actions";
+import { LogoutButton } from "../logout-button";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -33,6 +34,7 @@ export default async function AdminProducts({ params, searchParams }: PageProps)
           <h1 className="mt-1 text-2xl font-semibold text-white">Products</h1>
           <div className="mt-2 text-white/60 text-sm">Manage product catalog and pricing.</div>
         </div>
+        <LogoutButton />
       </div>
 
       {result.ok ? (

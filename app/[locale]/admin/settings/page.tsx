@@ -2,19 +2,8 @@
 
 import type { Locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
-import { getAdminSecret, setAdminSecret, clearAdminSecret } from "@/lib/admin/client-secret";
-import {
-  Save,
-  Shield,
-  ShieldAlert,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  X,
-  Store,
-  Truck,
-  Undo2
-} from "lucide-react";
+import { LogoutButton } from "../logout-button";
+import { Save, Loader2, CheckCircle2, AlertCircle, Store, Truck, Undo2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -49,34 +38,19 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const [errorMessage, setErrorMessage] = useState("");
   const [requestId, setRequestId] = useState("");
 
-  const [secretInput, setSecretInput] = useState("");
-  const [adminSecret, setAdminSecretState] = useState<string | null>(null);
-
   // --- Effects (Preserved) ---
   useEffect(() => {
     params.then((p) => setLocale(p.locale as Locale));
   }, [params]);
 
   useEffect(() => {
-    const secret = getAdminSecret();
-    setAdminSecretState(secret);
+    loadSettings();
   }, []);
-
-  useEffect(() => {
-    if (adminSecret) {
-      loadSettings();
-    }
-  }, [adminSecret]);
 
   // --- Functions (Preserved Logic) ---
   async function loadSettings() {
-    if (!adminSecret) return;
-
     try {
       const res = await fetch("/api/store-settings", {
-        headers: {
-          "x-admin-secret": adminSecret,
-        },
       });
 
       if (!res.ok) {
@@ -94,8 +68,6 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   }
 
   async function handleSave() {
-    if (!adminSecret) return;
-
     setSaveState("saving");
     setErrorMessage("");
     setRequestId("");
@@ -107,7 +79,6 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
         method: "PUT",
         headers: {
           "content-type": "application/json",
-          "x-admin-secret": adminSecret,
           "x-idempotency-key": idempotencyKey,
         },
         body: JSON.stringify(settings),
@@ -141,25 +112,6 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
       setSaveState("error");
       setErrorMessage(`Network error: ${err instanceof Error ? err.message : String(err)}`);
     }
-  }
-
-  function handleSetSecret() {
-    if (!secretInput.trim()) return;
-    setAdminSecret(secretInput.trim());
-    setAdminSecretState(secretInput.trim());
-    setSecretInput("");
-  }
-
-  function handleClearSecret() {
-    clearAdminSecret();
-    setAdminSecretState(null);
-    setSettings({
-      id: "default",
-      storeName: "",
-      tagline: "",
-      returnsPolicy: "",
-      shippingPolicy: "",
-    });
   }
 
   // --- UI Components ---
@@ -232,7 +184,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
             <button
               onClick={handleSave}
-              disabled={!adminSecret || saveState === "saving"}
+              disabled={saveState === "saving"}
               className={cn(
                 "inline-flex items-center justify-center gap-2 rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:pointer-events-none disabled:opacity-50",
                 saveState === "saving" && "opacity-80"
@@ -248,79 +200,14 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 </>
               )}
             </button>
+            <LogoutButton />
           </div>
         </div>
 
         <div className="mt-8 space-y-6">
 
-          {/* Admin Secret Section (Authentication) */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
-            <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-zinc-900 font-semibold">
-                  <Shield className={cn("h-5 w-5", adminSecret ? "text-emerald-600" : "text-amber-600")} />
-                  <h3>Admin Authentication</h3>
-                </div>
-                <p className="text-sm text-zinc-600">
-                  {adminSecret
-                    ? "Session active. You have write access to store settings."
-                    : "Enter your admin secret key to unlock editing capabilities."}
-                </p>
-              </div>
-
-              {!adminSecret ? (
-                <div className="flex w-full md:w-auto items-center gap-2">
-                  <div className="relative flex-1 md:w-64">
-                    <Input
-                      type="password"
-                      value={secretInput}
-                      onChange={(e) => setSecretInput(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSetSecret()}
-                      placeholder="Enter secret key"
-                      className="pr-10"
-                    />
-                  </div>
-                  <button
-                    onClick={handleSetSecret}
-                    disabled={!secretInput.trim()}
-                    className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-50"
-                  >
-                    Unlock
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleClearSecret}
-                  className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-300 bg-white px-4 text-xs font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
-                >
-                  Lock Session
-                </button>
-              )}
-            </div>
-
-            {/* Error Message Display */}
-            <AnimatePresence>
-              {errorMessage && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                  animate={{ height: "auto", opacity: 1, marginTop: 16 }}
-                  exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="rounded-md bg-red-50 border border-red-200 p-3 flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-                    <div className="text-sm">
-                      <p className="text-red-800 font-medium">{errorMessage}</p>
-                      {requestId && <p className="text-red-700/60 text-xs mt-1 font-mono">ID: {requestId}</p>}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
           {/* Main Settings Form */}
-          <div className={cn("grid gap-6 transition-opacity duration-300", !adminSecret && "opacity-50 pointer-events-none grayscale-[0.5]")}>
+          <div className={cn("grid gap-6 transition-opacity duration-300")}>
 
             {/* General Info Card */}
             <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">

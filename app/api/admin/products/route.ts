@@ -1,6 +1,8 @@
 export const runtime = "nodejs";
 
+import { NextResponse } from "next/server";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
+import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
 import { parseBadges } from "@/lib/parse-badges";
 import crypto from "node:crypto";
@@ -101,6 +103,11 @@ function parseCreatePayload(body: any): CreateProductPayload {
 // GET /api/admin/products (admin)
 export const GET = withApi(
   async (req) => {
+    const isAuthenticated = await getSessionFromCookie();
+    if (!isAuthenticated) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const limitParam = searchParams.get("limit");
     const activeParam = searchParams.get("active");
@@ -129,13 +136,17 @@ export const GET = withApi(
     });
 
     return ok(req, { products });
-  },
-  { admin: true }
+  }
 );
 
 // POST /api/admin/products (admin create + idempotency)
 export const POST = withApi(
   async (req) => {
+    const isAuthenticated = await getSessionFromCookie();
+    if (!isAuthenticated) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     let body: any = null;
     try {
       body = await req.json();
@@ -189,6 +200,5 @@ export const POST = withApi(
     });
 
     return ok(req, product);
-  },
-  { admin: true }
+  }
 );
