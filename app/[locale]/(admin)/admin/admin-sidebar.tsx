@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useParams, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Settings, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Settings, LogOut, X } from "lucide-react";
+import { useSidebar } from "@/components/admin/SidebarContext";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -13,7 +13,7 @@ const navItems = [
 ];
 
 export default function AdminSidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, setIsOpen } = useSidebar();
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
@@ -93,16 +93,6 @@ export default function AdminSidebar() {
           <X size={18} />
         </button>
       </aside>
-
-      {/* Menu button - inline with content */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed top-4 left-4 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition-colors shadow-sm"
-        >
-          <Menu size={18} />
-        </button>
-      )}
     </>
   );
 }

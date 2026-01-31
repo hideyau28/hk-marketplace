@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import OrderStatusUpdate from "./order-status-update";
 import type { Locale } from "@/lib/i18n";
+import SidebarToggle from "@/components/admin/SidebarToggle";
 
 type PageProps = {
   params: Promise<{ locale: string; id: string }>;
@@ -45,9 +46,9 @@ export default async function OrderDetailPage({ params }: PageProps) {
   const fulfillmentAddress = order.fulfillmentAddress as any;
 
   return (
-    <div className="pl-16 pr-4 pb-16 pt-4">
-      {/* Header with back button */}
-      <div className="mb-6">
+    <div className="p-4 pb-16">
+      <div className="flex items-center gap-4 mb-6">
+        <SidebarToggle />
         <Link
           href={`/${locale}/admin/orders`}
           className="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-900 transition-colors"

@@ -6,6 +6,7 @@ import { Save, Loader2, CheckCircle2, AlertCircle, Store, Truck, Undo2 } from "l
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import SidebarToggle from "@/components/admin/SidebarToggle";
 
 // --- Utility for Tailwind merging (simulating shadcn cn()) ---
 function cn(...inputs: ClassValue[]) {
@@ -49,11 +50,12 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   // --- Functions (Preserved Logic) ---
   async function loadSettings() {
     try {
-      const res = await fetch("/api/store-settings", {
-      });
+      const res = await fetch("/api/store-settings");
 
       if (!res.ok) {
-        console.error("Failed to load settings:", res.status);
+        if (res.status === 401) {
+          setErrorMessage("Please log in to view settings");
+        }
         return;
       }
 
@@ -62,7 +64,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
         setSettings(data.data);
       }
     } catch (err) {
-      console.error("Error loading settings:", err);
+      // Silent fail on load
     }
   }
 
@@ -150,6 +152,10 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   return (
     <div className="bg-zinc-50 text-zinc-900 pb-20">
       <div className="mx-auto max-w-4xl px-6 py-12">
+        {/* Sidebar Toggle */}
+        <div className="mb-6">
+          <SidebarToggle />
+        </div>
 
         {/* Header Section */}
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">

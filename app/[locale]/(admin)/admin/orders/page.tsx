@@ -2,6 +2,7 @@ import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
 import { OrdersTable } from "./orders-table";
 import { fetchOrders } from "./actions";
+import SidebarToggle from "@/components/admin/SidebarToggle";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -18,12 +19,13 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
   const result = await fetchOrders(status);
 
   return (
-    <div className="pl-16 pr-4 pb-16 pt-4">
-      <div className="flex items-start justify-between gap-4">
+    <div className="p-4 pb-16">
+      <div className="flex items-center gap-4 mb-6">
+        <SidebarToggle />
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="mt-1 text-2xl font-semibold text-zinc-900">Orders</h1>
-          <div className="mt-2 text-zinc-500 text-sm">Track payment, fulfillment, refunds.</div>
+          <h1 className="text-2xl font-semibold text-zinc-900">Orders</h1>
+          <div className="text-zinc-500 text-sm">Track payment, fulfillment, refunds.</div>
         </div>
       </div>
 

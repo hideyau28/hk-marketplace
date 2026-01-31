@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import SidebarToggle from "@/components/admin/SidebarToggle";
 
 type StatCardProps = {
   label: string;
@@ -56,12 +57,13 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   const formattedRevenue = `HK$${totalRevenue.toFixed(2)}`;
 
   return (
-    <div className="pl-16 pr-4 pb-16 pt-4 max-w-full overflow-hidden">
-      <div className="flex items-start justify-between gap-4">
+    <div className="p-4 pb-16 max-w-full overflow-hidden">
+      <div className="flex items-center gap-4 mb-6">
+        <SidebarToggle />
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="mt-1 text-2xl font-semibold text-zinc-900">Dashboard</h1>
-          <div className="mt-2 text-zinc-500 text-sm">Overview of your store performance.</div>
+          <h1 className="text-2xl font-semibold text-zinc-900">Dashboard</h1>
+          <div className="text-zinc-500 text-sm">Overview of your store performance.</div>
         </div>
       </div>
 

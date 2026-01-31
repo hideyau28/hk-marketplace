@@ -2,6 +2,7 @@ import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
 import { ProductsTable } from "./products-table";
 import { fetchProducts } from "./actions";
+import SidebarToggle from "@/components/admin/SidebarToggle";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -26,12 +27,13 @@ export default async function AdminProducts({ params, searchParams }: PageProps)
   const result = await fetchProducts(activeFilter);
 
   return (
-    <div className="px-4 pb-16 pt-4 pl-16">
-      <div className="flex items-start justify-between gap-4">
+    <div className="p-4 pb-16">
+      <div className="flex items-center gap-4 mb-6">
+        <SidebarToggle />
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="mt-1 text-2xl font-semibold text-zinc-900">Products</h1>
-          <div className="mt-2 text-zinc-500 text-sm">Manage product catalog and pricing.</div>
+          <h1 className="text-2xl font-semibold text-zinc-900">Products</h1>
+          <div className="text-zinc-500 text-sm">Manage product catalog and pricing.</div>
         </div>
       </div>
 
