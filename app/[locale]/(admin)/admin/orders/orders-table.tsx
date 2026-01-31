@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
-import { OrderDetailModal } from "./order-detail-modal";
 import type { OrderWithPayments } from "./actions";
 
 type OrdersTableProps = {
@@ -69,20 +69,11 @@ function getKeyTimestamp(order: OrderWithPayments): { label: string; date: strin
 export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps) {
   const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus || "");
-  const [selectedOrder, setSelectedOrder] = useState<OrderWithPayments | null>(null);
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
     const url = status ? `/${locale}/admin/orders?status=${status}` : `/${locale}/admin/orders`;
     router.push(url);
-  };
-
-  const handleViewOrder = (order: OrderWithPayments) => {
-    setSelectedOrder(order);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedOrder(null);
   };
 
   return (
@@ -174,12 +165,12 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
                         {new Date(order.createdAt).toISOString().slice(0, 10)}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() => handleViewOrder(order)}
-                          className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50"
+                        <Link
+                          href={`/${locale}/admin/orders/${order.id}`}
+                          className="inline-block rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50"
                         >
                           View
-                        </button>
+                        </Link>
                       </td>
                     </tr>
                   );
@@ -193,10 +184,6 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
           <div>Showing {orders.length} orders</div>
         </div>
       </div>
-
-      {selectedOrder && (
-        <OrderDetailModal order={selectedOrder} onClose={handleCloseModal} locale={locale} />
-      )}
     </>
   );
 }

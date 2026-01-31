@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useParams, useRouter } from "next/navigation";
-import { Package, ShoppingCart, Settings, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Settings, LogOut, Menu, X } from "lucide-react";
 
 const navItems = [
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/settings", label: "Settings", icon: Settings },
@@ -58,7 +59,9 @@ export default function AdminSidebar() {
         <nav className="p-4 space-y-2">
           {navItems.map((item) => {
             const fullHref = `/${locale}${item.href}`;
-            const isActive = pathname === fullHref || pathname.startsWith(fullHref + "/");
+            const isActive = item.href === "/admin"
+              ? pathname === fullHref
+              : pathname === fullHref || pathname.startsWith(fullHref + "/");
             const Icon = item.icon;
 
             return (

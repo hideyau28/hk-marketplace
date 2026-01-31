@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { Package, CheckCircle, ShoppingCart, DollarSign } from "lucide-react";
+import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 type StatCardProps = {
   label: string;
@@ -21,15 +22,28 @@ function StatCard({ label, value, icon }: StatCardProps) {
   );
 }
 
-export default async function AdminDashboard() {
-  // Fetch dashboard stats
-  const [totalProducts, activeProducts, totalOrders, ordersWithAmounts] = await Promise.all([
+export default async function AdminDashboard({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+
+  // Fetch dashboard stats and recent orders
+  const [totalProducts, activeProducts, totalOrders, ordersWithAmounts, recentOrders] = await Promise.all([
     prisma.product.count(),
     prisma.product.count({ where: { active: true } }),
     prisma.order.count(),
     prisma.order.findMany({
       where: { status: { in: ["PAID", "FULFILLING", "SHIPPED", "COMPLETED"] } },
       select: { amounts: true },
+    }),
+    prisma.order.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        customerName: true,
+        status: true,
+        amounts: true,
+        createdAt: true,
+      },
     }),
   ]);
 
@@ -72,6 +86,97 @@ export default async function AdminDashboard() {
           value={formattedRevenue}
           icon={<DollarSign size={24} />}
         />
+      </div>
+
+      {/* Quick Links */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+        <Link
+          href={`/${locale}/admin/products`}
+          className="flex items-center justify-between bg-white rounded-2xl border border-zinc-200 p-4 hover:bg-zinc-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Package size={20} className="text-zinc-400" />
+            <span className="font-medium text-zinc-900">View All Products</span>
+          </div>
+          <ArrowRight size={20} className="text-zinc-400" />
+        </Link>
+        <Link
+          href={`/${locale}/admin/orders`}
+          className="flex items-center justify-between bg-white rounded-2xl border border-zinc-200 p-4 hover:bg-zinc-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <ShoppingCart size={20} className="text-zinc-400" />
+            <span className="font-medium text-zinc-900">View All Orders</span>
+          </div>
+          <ArrowRight size={20} className="text-zinc-400" />
+        </Link>
+      </div>
+
+      {/* Recent Orders */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-zinc-900">Recent Orders</h2>
+          <Link
+            href={`/${locale}/admin/orders`}
+            className="text-sm text-olive-600 hover:text-olive-700 font-medium"
+          >
+            View All
+          </Link>
+        </div>
+        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+          {recentOrders.length === 0 ? (
+            <div className="p-8 text-center text-zinc-500">No orders yet</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-[800px] w-full text-sm">
+                <thead>
+                  <tr className="text-zinc-600 border-b border-zinc-200">
+                    <th className="px-4 py-3 text-left">Order ID</th>
+                    <th className="px-4 py-3 text-left">Customer</th>
+                    <th className="px-4 py-3 text-left">Status</th>
+                    <th className="px-4 py-3 text-right">Total</th>
+                    <th className="px-4 py-3 text-left">Date</th>
+                    <th className="px-4 py-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order) => {
+                    const amounts = order.amounts as any;
+                    return (
+                      <tr key={order.id} className="border-t border-zinc-200 hover:bg-zinc-50">
+                        <td className="px-4 py-3">
+                          <div className="text-zinc-900 font-mono text-xs">
+                            {order.id.slice(0, 12)}...
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-zinc-700">{order.customerName}</td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center bg-zinc-100 text-zinc-600 border border-zinc-200 rounded-full px-2 py-1 text-xs">
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right text-zinc-900 font-medium">
+                          HK${(amounts?.total || 0).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 text-zinc-600 text-xs">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Link
+                            href={`/${locale}/admin/orders/${order.id}`}
+                            className="text-olive-600 hover:text-olive-700 text-xs font-medium"
+                          >
+                            View
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
