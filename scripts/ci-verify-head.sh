@@ -6,6 +6,7 @@ set -euo pipefail
 # - BRANCH=main
 # - EVENT=push on main, otherwise pull_request
 # Smoke markers: "SMOKE PASS" or "=== Production Smoke Complete ===" or "=== Local Smoke Complete ==="
+# (bash -n verified)
 
 WF="${WF:-CI}"
 BRANCH="${BRANCH:-main}"
