@@ -26,7 +26,7 @@ export default async function AdminProducts({ params, searchParams }: PageProps)
   const result = await fetchProducts(activeFilter);
 
   return (
-    <div className="px-4 pb-16 pt-8">
+    <div className="px-4 pb-16 pt-4 pl-16">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>

@@ -18,7 +18,7 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
   const result = await fetchOrders(status);
 
   return (
-    <div className="px-4 pb-16 pt-8">
+    <div className="pl-16 pr-4 pb-16 pt-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
