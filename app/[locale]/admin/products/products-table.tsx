@@ -67,7 +67,7 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
         </div>
         <button
           onClick={handleCreateProduct}
-          className="rounded-2xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700"
+          className="rounded-xl bg-olive-600 px-4 py-2 text-white font-semibold hover:bg-olive-700"
         >
           + Add Product
         </button>
