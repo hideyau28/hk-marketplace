@@ -12,6 +12,26 @@ fi
 
 die() { echo "FAIL: $*" >&2; exit 1; }
 
+seed_products() {
+  if command -v tsx >/dev/null 2>&1; then
+    tsx scripts/seed-products.ts
+    return
+  fi
+  if npx --yes --quiet tsx --version >/dev/null 2>&1; then
+    npx --yes tsx scripts/seed-products.ts
+    return
+  fi
+  if node -e "require.resolve('ts-node/register')" >/dev/null 2>&1; then
+    node -r ts-node/register scripts/seed-products.ts
+    return
+  fi
+  if command -v ts-node >/dev/null 2>&1; then
+    ts-node scripts/seed-products.ts
+    return
+  fi
+  die "seed runner missing: install tsx or ts-node to run scripts/seed-products.ts"
+}
+
 curl_head() {
   # prints first status line only
   curl -sS -i "$@" | sed -n "1p"
@@ -63,7 +83,7 @@ PRODUCT_PRICE="$(echo "$body" | jq -r '.data.products[0].price')"
 
 if [ -z "$PRODUCT_ID" ] || [ "$PRODUCT_ID" = "null" ]; then
   echo "No product found; seeding demo products..."
-  node scripts/seed-products.ts
+  seed_products
   resp="$(curl_resp "$PRODUCTS_BASE?limit=1")"
   h="$(echo "$resp" | sed -n "1p")"
   [[ "$h" =~ " 200 " ]] || die "expected GET products -> 200 but got: $h (URL=$PRODUCTS_BASE)"
@@ -394,5 +414,3 @@ echo "OK: GET list -> 200"
 echo "OK: GET by id -> 200"
 echo "OK: PATCH status -> 200"
 echo
-
-echo "SMOKE PASS"

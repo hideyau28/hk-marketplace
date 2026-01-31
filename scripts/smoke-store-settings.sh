@@ -184,5 +184,3 @@ echo "OK: PUT(basic) first -> 200"
 echo "OK: PUT(basic) replay same key+payload -> 200"
 echo "OK: PUT(basic) same key different payload -> 409 + CONFLICT"
 echo
-
-echo "SMOKE PASS"

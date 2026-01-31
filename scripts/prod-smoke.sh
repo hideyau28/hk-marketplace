@@ -82,4 +82,5 @@ bash scripts/smoke-store-settings.sh
 bash scripts/smoke-orders.sh
 
 echo ""
+echo "SMOKE PASS"
 echo "=== Production Smoke Complete ==="
