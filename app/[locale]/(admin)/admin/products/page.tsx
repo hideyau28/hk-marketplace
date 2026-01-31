@@ -36,7 +36,7 @@ export default async function AdminProducts({ params, searchParams }: PageProps)
       </div>
 
       {result.ok ? (
-        <ProductsTable products={result.data} locale={l} currentActive={active} />
+        <ProductsTable products={result.data} locale={l} currentActive={active} showAddButton />
       ) : (
         <div className="mt-6 rounded-3xl border border-red-500/20 bg-red-500/10 p-6">
           <div className="text-red-400 font-semibold">Error loading products</div>

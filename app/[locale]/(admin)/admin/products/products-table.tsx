@@ -10,6 +10,7 @@ type ProductsTableProps = {
   products: Product[];
   locale: Locale;
   currentActive?: string;
+  showAddButton?: boolean;
 };
 
 const ACTIVE_FILTERS = [
@@ -18,13 +19,7 @@ const ACTIVE_FILTERS = [
   { value: "false", label: "Inactive" },
 ];
 
-function badgeClass(active: boolean) {
-  return active
-    ? "bg-olive-100 text-olive-700 border border-olive-200 rounded-full px-2 py-1 text-xs"
-    : "bg-zinc-100 text-zinc-600 border border-zinc-200 rounded-full px-2 py-1 text-xs";
-}
-
-export function ProductsTable({ products, locale, currentActive }: ProductsTableProps) {
+export function ProductsTable({ products, locale, currentActive, showAddButton }: ProductsTableProps) {
   const router = useRouter();
   const [selectedActive, setSelectedActive] = useState(currentActive || "");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -52,25 +47,25 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
   return (
     <>
       <div className="mt-6 flex items-center justify-between gap-3">
-        <div className="flex-1">
-          <select
-            value={selectedActive}
-            onChange={(e) => handleActiveChange(e.target.value)}
-            className="w-full max-w-xs rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-          >
-            {ACTIVE_FILTERS.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          onClick={handleCreateProduct}
-          className="rounded-xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700 transition-colors"
+        <select
+          value={selectedActive}
+          onChange={(e) => handleActiveChange(e.target.value)}
+          className="w-full max-w-xs rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
         >
-          + Add Product
-        </button>
+          {ACTIVE_FILTERS.map((f) => (
+            <option key={f.value} value={f.value}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+        {showAddButton && (
+          <button
+            onClick={handleCreateProduct}
+            className="rounded-xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700 transition-colors whitespace-nowrap"
+          >
+            + Add Product
+          </button>
+        )}
       </div>
 
       <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
@@ -100,7 +95,7 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {product.imageUrl && (
-                          <div className="h-10 w-10 overflow-hidden rounded-xl border border-zinc-200 bg-white">
+                          <div className="h-10 w-10 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
                             <img src={product.imageUrl} alt={product.title} className="h-full w-full object-cover" />
                           </div>
                         )}
@@ -108,15 +103,21 @@ export function ProductsTable({ products, locale, currentActive }: ProductsTable
                       </div>
                     </td>
                     <td className="px-4 py-3 text-zinc-600">{product.category || "—"}</td>
-                    <td className="px-4 py-3 text-right text-zinc-900 font-medium">
-                      HK$ {product.price.toFixed(2)}
-                    </td>
+                    <td className="px-4 py-3 text-right text-zinc-900 font-medium">HK$ {product.price.toFixed(2)}</td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center ${badgeClass(product.active)}`}>
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${
+                          product.active
+                            ? "bg-olive-100 text-olive-700 border-olive-200"
+                            : "bg-zinc-100 text-zinc-600 border-zinc-200"
+                        }`}
+                      >
                         {product.active ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-zinc-600">{new Date(product.updatedAt).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-zinc-600">
+                      {new Date(product.updatedAt).toISOString().slice(0, 16).replace("T", " ")}
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => handleEditProduct(product)}
