@@ -13,6 +13,8 @@
     "lint": "eslint",
     "prebuild": "node scripts/assert-single-app-root.mjs",
     "db:migrate:deploy": "npx prisma migrate deploy",
+    "db:seed": "npx --yes tsx scripts/seed-products.ts",
+    "db:health": "node scripts/db-healthcheck.mjs",
     "smoke": "bash scripts/smoke-store-settings.sh && bash scripts/smoke-orders.sh",
     "smoke:payments": "bash scripts/smoke-payments.sh",
     "smoke:prod": "bash scripts/prod-smoke.sh",
@@ -23,7 +25,8 @@
     "ci:smoke": "BASE=http://localhost:3012 bash scripts/smoke-store-settings.sh && BASE=http://localhost:3012 bash scripts/smoke-orders.sh",
     "ci:verify": "bash scripts/ci-verify-head.sh",
     "verify:local": "bash scripts/verify-local.sh",
-    "verify:all": "npm run verify:local && npm run ci:verify"
+    "verify:all": "npm run verify:local && npm run ci:verify",
+    "db:seed": "npx --yes tsx scripts/seed-products.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
