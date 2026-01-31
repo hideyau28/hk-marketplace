@@ -1,93 +1,32 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
-import ProductRail from "@/components/ProductRail";
 import CategoryGrid from "@/components/CategoryGrid";
 import BrandRail from "@/components/BrandRail";
 import HeroCarousel from "@/components/HeroCarousel";
+import HomeClient from "@/components/HomeClient";
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const l = locale as Locale;
   const t = getDict(l);
 
-  // Fetch products with category-based strategy
-  // Use exclusion set to avoid duplication across rails
-  const excludedIds = new Set<string>();
-
-  // Rail 1: Recent (newest 8 products)
-  const recentProducts = await prisma.product.findMany({
+  // Fetch all active products
+  const allProductsRaw = await prisma.product.findMany({
     where: { active: true },
     orderBy: { createdAt: "desc" },
-    take: 8,
-  });
-  recentProducts.forEach((p) => excludedIds.add(p.id));
-
-  // Rail 2: For You (newest excluding recent)
-  const forYouProducts = await prisma.product.findMany({
-    where: {
-      active: true,
-      id: { notIn: Array.from(excludedIds) },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 8,
-  });
-  forYouProducts.forEach((p) => excludedIds.add(p.id));
-
-  // Rail 3: Trending (prefer category='sports', fallback to newest excluding previous)
-  const trendingProducts = await prisma.product.findMany({
-    where: {
-      active: true,
-      id: { notIn: Array.from(excludedIds) },
-      category: "sports",
-    },
-    orderBy: { createdAt: "desc" },
-    take: 8,
-  });
-
-  // If not enough sports products, fill with newest
-  if (trendingProducts.length < 8) {
-    const fillCount = 8 - trendingProducts.length;
-    const fillProducts = await prisma.product.findMany({
-      where: {
-        active: true,
-        id: {
-          notIn: Array.from([...excludedIds, ...trendingProducts.map((p) => p.id)]),
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: fillCount,
-    });
-    trendingProducts.push(...fillProducts);
-  }
-  trendingProducts.forEach((p) => excludedIds.add(p.id));
-
-  // Rail 4: New Arrivals (newest excluding all previous)
-  const newArrivalsProducts = await prisma.product.findMany({
-    where: {
-      active: true,
-      id: { notIn: Array.from(excludedIds) },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 8,
   });
 
   // Map products to expected format
-  const mapProducts = (products: any[]) =>
-    products.map((p) => ({
-      id: p.id,
-      brand: p.brand || "",
-      title: p.title,
-      price: p.price,
-      image:
-        p.imageUrl ||
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
-      badges: Array.isArray(p.badges) ? (p.badges as any[]) : [],
-    }));
-
-  const rail1 = mapProducts(recentProducts);
-  const rail2 = mapProducts(forYouProducts);
-  const rail3 = mapProducts(trendingProducts);
-  const rail4 = mapProducts(newArrivalsProducts);
+  const allProducts = allProductsRaw.map((p) => ({
+    id: p.id,
+    brand: p.brand || "",
+    title: p.title,
+    price: p.price,
+    image:
+      p.imageUrl ||
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
+    badges: Array.isArray(p.badges) ? (p.badges as any[]) : [],
+  }));
 
   return (
     <div className="pb-[calc(96px+env(safe-area-inset-bottom))]">
@@ -96,44 +35,28 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <HeroCarousel
           slides={[
             {
-              title: t.home.heroTitle,
-              subtitle: t.home.heroSubtitle,
-              cta: t.home.viewAll,
-              href: `/${l}?section=featured`,
+              title: l === "zh-HK" ? "裝備勝利" : "Gear Up for Victory",
+              subtitle: l === "zh-HK" ? "頂級運動裝備，助你突破極限" : "Premium sports gear for peak performance",
+              cta: l === "zh-HK" ? "立即選購" : "Shop Now",
+              href: `/${l}`,
               imageUrl:
-                "https://images.unsplash.com/photo-1518441902117-f0aee0b2fbd9?auto=format&fit=crop&w=1400&q=70",
+                "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1400&q=70",
             },
             {
-              title: l === "zh-HK" ? "精選運動裝備" : "Sports essentials",
-              subtitle: l === "zh-HK" ? "跑步／健身／球類" : "Run / gym / ball sports",
-              cta: l === "zh-HK" ? "查看" : "View",
-              href: `/${l}?category=sports`,
+              title: l === "zh-HK" ? "跑得更遠，更快" : "Run Further, Go Faster",
+              subtitle: l === "zh-HK" ? "專業跑步裝備系列" : "Professional running gear collection",
+              cta: l === "zh-HK" ? "查看跑步系列" : "View Running",
+              href: `/${l}?category=Shoes`,
               imageUrl:
-                "https://images.unsplash.com/photo-1526401485004-2fda9f6a7fdc?auto=format&fit=crop&w=1400&q=70",
+                "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1400&q=70",
             },
             {
-              title: l === "zh-HK" ? "潮流配件" : "Accessories",
-              subtitle: l === "zh-HK" ? "每日穿搭加分" : "Upgrade your daily fit",
-              cta: l === "zh-HK" ? "查看" : "View",
-              href: `/${l}?category=accessories`,
+              title: l === "zh-HK" ? "像冠軍般訓練" : "Train Like a Champion",
+              subtitle: l === "zh-HK" ? "專業訓練服飾，提升表現" : "Pro training apparel for better results",
+              cta: l === "zh-HK" ? "探索訓練裝備" : "Explore Training",
+              href: `/${l}?category=Tops`,
               imageUrl:
-                "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=1400&q=70",
-            },
-            {
-              title: l === "zh-HK" ? "居家辦公" : "Home office",
-              subtitle: l === "zh-HK" ? "桌面整理好物" : "Desk setup picks",
-              cta: l === "zh-HK" ? "查看" : "View",
-              href: `/${l}?category=office`,
-              imageUrl:
-                "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1400&q=70",
-            },
-            {
-              title: l === "zh-HK" ? "新品上架" : "New arrivals",
-              subtitle: l === "zh-HK" ? "每日更新" : "Updated daily",
-              cta: l === "zh-HK" ? "查看" : "View",
-              href: `/${l}?sort=new`,
-              imageUrl:
-                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1400&q=70",
+                "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1400&q=70",
             },
           ]}
         />
@@ -145,14 +68,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       {/* 2) Shop by Category (icon grid) */}
       <CategoryGrid locale={l} title={t.home.shopByCategory} />
 
-      {/* 3) Product rails (4 rows, alternating sizes sm/lg/sm/lg) — always show all 4 */}
-      <ProductRail locale={l} title={t.home.recentlyViewed} products={rail1} size="sm" />
-
-      <ProductRail locale={l} title={t.home.forYou} products={rail2} size="lg" />
-
-      <ProductRail locale={l} title={l === "zh-HK" ? "熱門" : "Trending"} products={rail3} size="sm" />
-
-      <ProductRail locale={l} title={l === "zh-HK" ? "新品上架" : "New arrivals"} products={rail4} size="lg" />
+      {/* 3) Brand Filter + Product Rails */}
+      <HomeClient locale={l} allProducts={allProducts} t={t} />
 
       {/* 4) Popular Brands (rail + "See all") */}
       <BrandRail locale={l} title={t.home.popularBrands} seeAllText={t.home.seeAll} />

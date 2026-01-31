@@ -1,14 +1,14 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
-import { Shirt, PersonStanding, Footprints, Snowflake, Watch } from "lucide-react";
+import { Shirt, Activity, Footprints, CircleDot, Layers, Watch } from "lucide-react";
 
 const categories = [
-  { name: "Tops", slug: "tops", icon: Shirt },
-  { name: "Pants", slug: "pants", icon: PersonStanding },
-  { name: "Shoes", slug: "shoes", icon: Footprints },
-  { name: "Socks", slug: "socks", icon: Footprints },
-  { name: "Jackets", slug: "jackets", icon: Snowflake },
-  { name: "Accessories", slug: "accessories", icon: Watch },
+  { name: "Tops", slug: "Tops", icon: Shirt },
+  { name: "Pants", slug: "Pants", icon: Activity },
+  { name: "Shoes", slug: "Shoes", icon: Footprints },
+  { name: "Socks", slug: "Socks", icon: CircleDot },
+  { name: "Jackets", slug: "Jackets", icon: Layers },
+  { name: "Accessories", slug: "Accessories", icon: Watch },
 ];
 
 export default function CategoryGrid({ locale, title }: { locale: Locale; title: string }) {

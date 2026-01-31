@@ -5,6 +5,7 @@ import { getDict } from "@/lib/i18n";
 import TopNav from "@/components/TopNav";
 import BottomTab from "@/components/BottomTab";
 import FloatingSearchPill from "@/components/FloatingSearchPill";
+import Footer from "@/components/Footer";
 
 export default async function CustomerLayout({
   children,
@@ -26,6 +27,7 @@ export default async function CustomerLayout({
     <>
       <TopNav locale={l} t={t} />
       <main className="pb-16">{children}</main>
+      <Footer locale={l} />
       <FloatingSearchPill />
       <BottomTab />
     </>
