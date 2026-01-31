@@ -6,6 +6,8 @@ export type CartItem = {
   unitPrice: number;
   qty: number;
   imageUrl?: string;
+  size?: string;
+  sizeSystem?: string;
 };
 
 const CART_KEY = "hk-marketplace-cart";
@@ -28,7 +30,13 @@ export function setCart(items: CartItem[]): void {
 
 export function addToCart(item: Omit<CartItem, "qty"> & { qty?: number }): void {
   const cart = getCart();
-  const existing = cart.find((x) => x.productId === item.productId);
+  // Match by productId AND size (if size is provided)
+  const existing = cart.find(
+    (x) =>
+      x.productId === item.productId &&
+      x.size === item.size &&
+      x.sizeSystem === item.sizeSystem
+  );
   if (existing) {
     existing.qty += item.qty ?? 1;
   } else {
@@ -37,17 +45,31 @@ export function addToCart(item: Omit<CartItem, "qty"> & { qty?: number }): void 
   setCart(cart);
 }
 
-export function removeFromCart(productId: string): void {
+export function removeFromCart(productId: string, size?: string, sizeSystem?: string): void {
   const cart = getCart();
-  setCart(cart.filter((x) => x.productId !== productId));
+  setCart(
+    cart.filter(
+      (x) =>
+        !(
+          x.productId === productId &&
+          x.size === size &&
+          x.sizeSystem === sizeSystem
+        )
+    )
+  );
 }
 
-export function updateCartItemQty(productId: string, qty: number): void {
+export function updateCartItemQty(productId: string, qty: number, size?: string, sizeSystem?: string): void {
   const cart = getCart();
-  const item = cart.find((x) => x.productId === productId);
+  const item = cart.find(
+    (x) =>
+      x.productId === productId &&
+      x.size === size &&
+      x.sizeSystem === sizeSystem
+  );
   if (item) {
     if (qty <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, size, sizeSystem);
     } else {
       item.qty = qty;
       setCart(cart);

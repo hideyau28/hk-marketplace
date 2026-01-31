@@ -21,13 +21,13 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
     });
   }, [params]);
 
-  const handleRemove = (productId: string) => {
-    removeFromCart(productId);
+  const handleRemove = (productId: string, size?: string, sizeSystem?: string) => {
+    removeFromCart(productId, size, sizeSystem);
     setCart(getCart());
   };
 
-  const handleUpdateQty = (productId: string, qty: number) => {
-    updateCartItemQty(productId, qty);
+  const handleUpdateQty = (productId: string, qty: number, size?: string, sizeSystem?: string) => {
+    updateCartItemQty(productId, qty, size, sizeSystem);
     setCart(getCart());
   };
 
@@ -69,8 +69,8 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
         <h1 className="text-2xl font-semibold">{t.cart.title}</h1>
 
         <div className="mt-6 space-y-4">
-          {cart.map((item) => (
-            <div key={item.productId} className="flex gap-4 rounded-2xl border border-zinc-200 bg-white p-4">
+          {cart.map((item, index) => (
+            <div key={`${item.productId}-${item.size || 'no-size'}-${index}`} className="flex gap-4 rounded-2xl border border-zinc-200 bg-white p-4">
               {item.imageUrl && (
                 <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl">
                   <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover" />
@@ -79,18 +79,23 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
               <div className="flex flex-1 flex-col justify-between">
                 <div>
                   <h3 className="font-semibold">{item.title}</h3>
+                  {item.size && item.sizeSystem && (
+                    <p className="mt-0.5 text-zinc-500 text-xs">
+                      {item.sizeSystem}: {item.size}
+                    </p>
+                  )}
                   <p className="mt-1 text-zinc-600 text-sm">HK$ {item.unitPrice}</p>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
                   <button
-                    onClick={() => handleUpdateQty(item.productId, item.qty - 1)}
+                    onClick={() => handleUpdateQty(item.productId, item.qty - 1, item.size, item.sizeSystem)}
                     className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50"
                   >
                     <Minus size={16} />
                   </button>
                   <span className="w-8 text-center">{item.qty}</span>
                   <button
-                    onClick={() => handleUpdateQty(item.productId, item.qty + 1)}
+                    onClick={() => handleUpdateQty(item.productId, item.qty + 1, item.size, item.sizeSystem)}
                     className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50"
                   >
                     <Plus size={16} />
@@ -99,7 +104,7 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
               </div>
               <div className="flex flex-col items-end justify-between">
                 <button
-                  onClick={() => handleRemove(item.productId)}
+                  onClick={() => handleRemove(item.productId, item.size, item.sizeSystem)}
                   className="text-zinc-500 hover:text-red-600"
                   title={t.cart.remove}
                 >

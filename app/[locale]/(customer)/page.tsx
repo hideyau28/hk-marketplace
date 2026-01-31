@@ -4,6 +4,7 @@ import CategoryGrid from "@/components/CategoryGrid";
 import BrandRail from "@/components/BrandRail";
 import HeroCarousel from "@/components/HeroCarousel";
 import HomeClient from "@/components/HomeClient";
+import PromoBanner from "@/components/PromoBanner";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -76,6 +77,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             },
           ]}
         />
+      </div>
+
+      <div className="px-4">
+        <PromoBanner />
       </div>
 
       {/* Sentinel: used to hide floating search once user scrolls past hero */}

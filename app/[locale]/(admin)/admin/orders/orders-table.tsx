@@ -79,7 +79,7 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
   return (
     <>
       <div className="mt-6 grid gap-3 md:grid-cols-12">
-        <div className="md:col-span-10">
+        <div className="md:col-span-9">
           <select
             value={selectedStatus}
             onChange={(e) => handleStatusChange(e.target.value)}
@@ -91,6 +91,14 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
               </option>
             ))}
           </select>
+        </div>
+        <div className="md:col-span-3">
+          <a
+            href="/api/admin/orders/export"
+            className="inline-flex w-full items-center justify-center rounded-2xl bg-olive-600 px-4 py-3 text-sm font-semibold text-white hover:bg-olive-700"
+          >
+            Export CSV
+          </a>
         </div>
       </div>
 
