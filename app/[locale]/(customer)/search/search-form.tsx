@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import type { Locale } from "@/lib/i18n";
 
 export default function SearchForm({
@@ -16,9 +16,41 @@ export default function SearchForm({
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [isPending, startTransition] = useTransition();
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced search effect
+  useEffect(() => {
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set new timer
+    debounceTimerRef.current = setTimeout(() => {
+      const trimmed = query.trim();
+      startTransition(() => {
+        if (trimmed) {
+          router.push(`/${locale}/search?q=${encodeURIComponent(trimmed)}`);
+        } else {
+          router.push(`/${locale}/search`);
+        }
+      });
+    }, 300);
+
+    // Cleanup on unmount
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [query, locale, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Clear debounce timer and search immediately
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
     const trimmed = query.trim();
     startTransition(() => {
       if (trimmed) {
@@ -31,9 +63,7 @@ export default function SearchForm({
 
   const handleClear = () => {
     setQuery("");
-    startTransition(() => {
-      router.push(`/${locale}/search`);
-    });
+    // The useEffect will handle the redirect
   };
 
   return (

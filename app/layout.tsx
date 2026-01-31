@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "HK•Market - Sports Gear for Hong Kong",
   description: "Shop the latest sports apparel and gear from Nike, Adidas, Puma and more.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

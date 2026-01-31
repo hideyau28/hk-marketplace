@@ -4,6 +4,22 @@ import CategoryGrid from "@/components/CategoryGrid";
 import BrandRail from "@/components/BrandRail";
 import HeroCarousel from "@/components/HeroCarousel";
 import HomeClient from "@/components/HomeClient";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+
+  return {
+    title: "HK•Market - Sports Gear for Hong Kong",
+    description: "Shop the latest sports apparel and gear from Nike, Adidas, Puma and more.",
+    openGraph: {
+      title: "HK•Market - Sports Gear for Hong Kong",
+      description: "Shop the latest sports apparel and gear from Nike, Adidas, Puma and more.",
+      type: "website",
+      locale: locale === "zh-HK" ? "zh_HK" : "en_US",
+    },
+  };
+}
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

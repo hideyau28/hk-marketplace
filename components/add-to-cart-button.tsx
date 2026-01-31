@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { addToCart, type CartItem } from "@/lib/cart";
+import { useToast } from "@/components/Toast";
 
 type AddToCartButtonProps = {
   product: {
@@ -17,6 +18,7 @@ type AddToCartButtonProps = {
 
 export function AddToCartButton({ product, label, addedLabel, className }: AddToCartButtonProps) {
   const [added, setAdded] = useState(false);
+  const { showToast } = useToast();
   const buttonClass =
     className ??
     "rounded-2xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700";
@@ -29,6 +31,7 @@ export function AddToCartButton({ product, label, addedLabel, className }: AddTo
       imageUrl: product.image,
     });
     setAdded(true);
+    showToast("Added to cart!");
     setTimeout(() => setAdded(false), 2000);
   };
 

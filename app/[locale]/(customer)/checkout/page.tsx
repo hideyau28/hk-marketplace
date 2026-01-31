@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCart, getCartTotal, clearCart, type CartItem } from "@/lib/cart";
 import { getDict, type Locale } from "@/lib/i18n";
+import { useToast } from "@/components/Toast";
 
 type FulfillmentType = "pickup" | "delivery";
 
@@ -15,6 +16,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [mounted, setMounted] = useState(false);
   const [processing, setProcessing] = useState(false);
   const router = useRouter();
+  const { showToast } = useToast();
 
   // Form state
   const [customerName, setCustomerName] = useState("");
@@ -96,6 +98,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
 
       if (result.ok) {
         const orderId = result.data.id as string;
+        showToast("Order placed successfully!");
 
         // Create Stripe Checkout session
         const res2 = await fetch("/api/checkout/session", {

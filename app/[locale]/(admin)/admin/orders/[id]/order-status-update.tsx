@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { OrderStatus } from "@prisma/client";
 import type { Locale } from "@/lib/i18n";
 import { updateOrderStatus } from "../actions";
+import { useToast } from "@/components/Toast";
 
 const ORDER_STATUSES: OrderStatus[] = [
   "PENDING",
@@ -28,7 +29,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(order.status);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const { showToast } = useToast();
 
   const handleUpdateStatus = async () => {
     if (selectedStatus === order.status) {
@@ -37,17 +38,13 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
 
     setIsUpdating(true);
     setError("");
-    setSuccess(false);
 
     const result = await updateOrderStatus(order.id, selectedStatus, locale);
 
     setIsUpdating(false);
 
     if (result.ok) {
-      setSuccess(true);
-      setTimeout(() => {
-        setSuccess(false);
-      }, 2000);
+      showToast("Status updated!");
     } else {
       setError(`${result.code}: ${result.message}`);
     }
@@ -80,12 +77,6 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
       >
         {isUpdating ? "Updating..." : "Update Status"}
       </button>
-
-      {success && (
-        <div className="rounded-lg bg-green-50 border border-green-200 p-3">
-          <p className="text-green-700 text-sm text-center font-medium">Status updated successfully!</p>
-        </div>
-      )}
 
       {error && (
         <div className="rounded-lg bg-red-50 border border-red-200 p-3">

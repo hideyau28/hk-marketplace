@@ -1,5 +1,21 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+
+  return {
+    title: "My Orders - HK•Market",
+    description: "View and track your orders at HK•Market.",
+    openGraph: {
+      title: "My Orders - HK•Market",
+      description: "View and track your orders at HK•Market.",
+      type: "website",
+      locale: locale === "zh-HK" ? "zh_HK" : "en_US",
+    },
+  };
+}
 
 export default async function OrdersListPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
