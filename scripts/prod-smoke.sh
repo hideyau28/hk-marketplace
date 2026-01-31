@@ -78,6 +78,56 @@ fi
 
 echo ""
 echo "5) Run smoke tests"
+echo "5a) Ensure products exist"
+ensure_jq() {
+  command -v jq >/dev/null 2>&1 || { echo "ERROR: jq is required for prod-smoke.sh"; exit 1; }
+}
+die() { echo "FAIL: $*" >&2; exit 1; }
+curl_resp() { curl -sS -i "$@" || true; }
+resp_body() {
+  echo "$1" | awk 'BEGIN{body=0} /^[[:space:]]*$/{body=1; next} {if(body) print}'
+}
+seed_products() {
+  if command -v tsx >/dev/null 2>&1; then
+    tsx scripts/seed-products.ts
+    return
+  fi
+  if npx --yes --quiet tsx --version >/dev/null 2>&1; then
+    npx --yes tsx scripts/seed-products.ts
+    return
+  fi
+  if node -e "require.resolve('ts-node/register')" >/dev/null 2>&1; then
+    node -r ts-node/register scripts/seed-products.ts
+    return
+  fi
+  if command -v ts-node >/dev/null 2>&1; then
+    ts-node scripts/seed-products.ts
+    return
+  fi
+  die "seed runner missing: install tsx or ts-node to run scripts/seed-products.ts"
+}
+
+ensure_jq
+PRODUCTS_BASE="${BASE%/}/api/products"
+resp="$(curl_resp "$PRODUCTS_BASE?limit=1")"
+h="$(echo "$resp" | sed -n "1p")"
+[[ "$h" =~ " 200 " ]] || die "expected GET products -> 200 but got: $h (URL=$PRODUCTS_BASE)"
+body="$(resp_body "$resp")"
+PRODUCT_ID="$(echo "$body" | jq -r '.data.products[0].id')"
+
+if [ -z "$PRODUCT_ID" ] || [ "$PRODUCT_ID" = "null" ]; then
+  echo "No product found; seeding demo products..."
+  seed_products
+  resp="$(curl_resp "$PRODUCTS_BASE?limit=1")"
+  h="$(echo "$resp" | sed -n "1p")"
+  [[ "$h" =~ " 200 " ]] || die "expected GET products -> 200 but got: $h (URL=$PRODUCTS_BASE)"
+  body="$(resp_body "$resp")"
+  PRODUCT_ID="$(echo "$body" | jq -r '.data.products[0].id')"
+fi
+
+[ -n "$PRODUCT_ID" ] && [ "$PRODUCT_ID" != "null" ] || die "expected product id"
+
+echo ""
 bash scripts/smoke-store-settings.sh
 bash scripts/smoke-orders.sh
 
