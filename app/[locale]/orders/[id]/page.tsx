@@ -21,7 +21,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
             </div>
             <Link
               href={`/${locale}`}
-              className="mt-6 inline-block rounded-2xl bg-zinc-900 px-6 py-3 text-white font-semibold hover:bg-zinc-800"
+              className="mt-6 inline-block rounded-2xl bg-olive-600 px-6 py-3 text-white font-semibold hover:bg-olive-700"
             >
               {t.order.backToHome}
             </Link>
@@ -127,7 +127,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
 
           <Link
             href={`/${locale}`}
-            className="mt-8 block w-full rounded-2xl bg-zinc-900 py-4 text-center text-white font-semibold hover:bg-zinc-800"
+            className="mt-8 block w-full rounded-2xl bg-olive-600 py-4 text-center text-white font-semibold hover:bg-olive-700"
           >
             {t.order.backToHome}
           </Link>

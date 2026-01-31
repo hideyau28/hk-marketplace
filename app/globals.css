@@ -11,6 +11,19 @@
   --text: #111111;
   --muted: #6B7280;
   --border: #E5E7EB;
+
+  /* Olive palette */
+  --color-olive-50: #f7f9f3;
+  --color-olive-100: #ecf4e2;
+  --color-olive-200: #d9e8c5;
+  --color-olive-300: #bdd69e;
+  --color-olive-400: #9ec074;
+  --color-olive-500: #7fa74f;
+  --color-olive-600: #5c7c3a;
+  --color-olive-700: #4a6530;
+  --color-olive-800: #3d512a;
+  --color-olive-900: #344526;
+  --color-olive-950: #1a2512;
 }
 
 @theme inline {

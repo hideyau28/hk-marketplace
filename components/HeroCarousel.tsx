@@ -112,7 +112,7 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
 
                     {s.cta && href ? (
                       <div className="mt-4">
-                        <span className="inline-flex rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-zinc-900">
+                        <span className="inline-flex rounded-full bg-olive-600 px-4 py-2 text-sm font-semibold text-white">
                           {s.cta}
                         </span>
                       </div>
@@ -142,7 +142,7 @@ export default function HeroCarousel({ slides }: { slides: Slide[] }) {
                 key={i}
                 className={
                   "h-1.5 rounded-full transition-all " +
-                  (i === active ? "w-5 bg-zinc-900" : "w-1.5 bg-zinc-300")
+                  (i === active ? "w-5 bg-olive-600" : "w-1.5 bg-zinc-300")
                 }
               />
             ))}

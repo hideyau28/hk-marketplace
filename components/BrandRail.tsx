@@ -2,14 +2,14 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 
 const brands = [
-  { id: "apple", name: "Apple", logo: "🍎" },
-  { id: "samsung", name: "Samsung", logo: "📱" },
-  { id: "sony", name: "Sony", logo: "🎮" },
-  { id: "nike", name: "Nike", logo: "👟" },
-  { id: "adidas", name: "Adidas", logo: "⚽" },
-  { id: "muji", name: "MUJI", logo: "🏠" },
-  { id: "uniqlo", name: "Uniqlo", logo: "👕" },
-  { id: "dyson", name: "Dyson", logo: "🌀" },
+  { name: "Nike", slug: "nike" },
+  { name: "Adidas", slug: "adidas" },
+  { name: "Puma", slug: "puma" },
+  { name: "Under Armour", slug: "under-armour" },
+  { name: "New Balance", slug: "new-balance" },
+  { name: "The North Face", slug: "the-north-face" },
+  { name: "Columbia", slug: "columbia" },
+  { name: "ASICS", slug: "asics" },
 ];
 
 export default function BrandRail({
@@ -35,12 +35,12 @@ export default function BrandRail({
       <div className="flex gap-4 overflow-x-auto px-4 pb-2">
         {brands.map((brand) => (
           <Link
-            key={brand.id}
-            href={`/${locale}?brand=${brand.id}`}
-            className="flex flex-col items-center gap-2 min-w-[80px]"
+            key={brand.slug}
+            href={`/${locale}/search?brand=${brand.slug}`}
+            className="flex flex-col items-center gap-2"
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-zinc-200 bg-white text-2xl hover:border-[#4a5d23] transition">
-              {brand.logo}
+            <div className="w-16 h-16 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-xl font-bold text-zinc-900 hover:border-olive-600 hover:text-olive-600 transition-colors">
+              {brand.name.charAt(0)}
             </div>
             <span className="text-xs text-zinc-600 text-center">{brand.name}</span>
           </Link>

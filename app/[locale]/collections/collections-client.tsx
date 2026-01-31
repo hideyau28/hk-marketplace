@@ -56,7 +56,7 @@ export function CollectionsClient({ locale, allProducts }: CollectionsClientProp
         </p>
         <Link
           href={`/${locale}`}
-          className="mt-6 inline-block rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white hover:bg-zinc-800 transition"
+          className="mt-6 inline-block rounded-full bg-olive-600 px-6 py-3 text-sm font-medium text-white hover:bg-olive-700 transition"
         >
           {locale === "zh-HK" ? "去逛逛" : "Browse products"}
         </Link>

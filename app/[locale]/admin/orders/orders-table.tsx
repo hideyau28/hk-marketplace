@@ -169,7 +169,7 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
                         )}
                       </td>
                       <td className="px-4 py-3 text-zinc-600 text-xs">
-                        {new Date(order.createdAt).toLocaleDateString()}
+                        {new Date(order.createdAt).toISOString().slice(0, 10)}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <button

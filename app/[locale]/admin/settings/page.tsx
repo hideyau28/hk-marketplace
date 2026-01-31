@@ -2,7 +2,6 @@
 
 import type { Locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
-import { LogoutButton } from "../logout-button";
 import { Save, Loader2, CheckCircle2, AlertCircle, Store, Truck, Undo2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
@@ -149,7 +148,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   );
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900 pb-20">
+    <div className="bg-zinc-50 text-zinc-900 pb-20">
       <div className="mx-auto max-w-4xl px-6 py-12">
 
         {/* Header Section */}
@@ -200,7 +199,6 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 </>
               )}
             </button>
-            <LogoutButton />
           </div>
         </div>
 

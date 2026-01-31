@@ -17,6 +17,9 @@ type AddToCartButtonProps = {
 
 export function AddToCartButton({ product, label, addedLabel, className }: AddToCartButtonProps) {
   const [added, setAdded] = useState(false);
+  const buttonClass =
+    className ??
+    "rounded-2xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700";
 
   const handleAddToCart = () => {
     addToCart({
@@ -30,7 +33,7 @@ export function AddToCartButton({ product, label, addedLabel, className }: AddTo
   };
 
   return (
-    <button onClick={handleAddToCart} className={className}>
+    <button onClick={handleAddToCart} className={buttonClass}>
       {added ? addedLabel : label}
     </button>
   );

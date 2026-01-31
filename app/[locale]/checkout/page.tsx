@@ -197,7 +197,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                         onClick={() => setFulfillmentType("pickup")}
                         className={`flex-1 rounded-xl border px-4 py-3 font-semibold ${
                           fulfillmentType === "pickup"
-                            ? "border-zinc-900 bg-zinc-900 text-white"
+                            ? "border-olive-600 bg-olive-600 text-white"
                             : "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50"
                         }`}
                       >
@@ -208,7 +208,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                         onClick={() => setFulfillmentType("delivery")}
                         className={`flex-1 rounded-xl border px-4 py-3 font-semibold ${
                           fulfillmentType === "delivery"
-                            ? "border-zinc-900 bg-zinc-900 text-white"
+                            ? "border-olive-600 bg-olive-600 text-white"
                             : "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50"
                         }`}
                       >
@@ -297,7 +297,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                 <button
                   type="submit"
                   disabled={processing}
-                  className="mt-6 w-full rounded-2xl bg-zinc-900 py-4 text-white font-semibold hover:bg-zinc-800 disabled:opacity-50"
+                  className="mt-6 w-full rounded-2xl bg-olive-600 py-4 text-white font-semibold hover:bg-olive-700 disabled:opacity-50"
                 >
                   {processing ? t.checkout.processing : t.checkout.placeOrder}
                 </button>

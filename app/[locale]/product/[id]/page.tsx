@@ -41,7 +41,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
               product={{ id: p.id, title: p.title, price: p.price, image: p.image }}
               label={t.product.addToCart}
               addedLabel={t.product.addedToCart}
-              className="rounded-2xl bg-black px-4 py-3 text-white font-semibold hover:bg-zinc-900"
+            className="rounded-2xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700"
             />
             <button className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 hover:bg-zinc-50">{t.product.buyNow}</button>
           </div>
@@ -55,7 +55,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
             product={{ id: p.id, title: p.title, price: p.price, image: p.image }}
             label={t.product.addToCart}
             addedLabel={t.product.addedToCart}
-            className="flex-1 rounded-2xl bg-black px-4 py-3 text-white font-semibold hover:bg-zinc-900"
+            className="flex-1 rounded-2xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700"
           />
         </div>
       </div>

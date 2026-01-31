@@ -53,7 +53,7 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
             <p className="text-zinc-600">{t.cart.empty}</p>
             <Link
               href={`/${locale}`}
-              className="mt-4 inline-block rounded-2xl bg-black px-6 py-3 text-white font-semibold hover:bg-zinc-900"
+              className="mt-4 inline-block rounded-2xl bg-olive-600 px-6 py-3 text-white font-semibold hover:bg-olive-700"
             >
               {t.cart.continueShopping}
             </Link>
@@ -121,7 +121,7 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
         <div className="mt-6">
           <Link
             href={`/${locale}/checkout`}
-            className="block w-full rounded-2xl bg-black py-4 text-center text-white font-semibold hover:bg-zinc-900"
+            className="block w-full rounded-2xl bg-olive-600 py-4 text-center text-white font-semibold hover:bg-olive-700"
           >
             {t.cart.checkout}
           </Link>
