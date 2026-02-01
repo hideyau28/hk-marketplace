@@ -138,19 +138,20 @@ model PaymentAttempt {
 }
 
 model Product {
-  id         String   @id @default(cuid())
-  brand      String? // optional for backward compatibility
-  title      String
-  price      Float
-  imageUrl   String?
-  category   String? // optional: categorize products for rails/hero links
-  badges     Json?
-  sizeSystem String? // "EU", "US", "UK", "Universal", "Multi"
-  sizes      Json? // JSON array of available sizes
-  stock      Int      @default(0)
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id            String   @id @default(cuid())
+  brand         String? // optional for backward compatibility
+  title         String
+  price         Float
+  originalPrice Float? // for sale items
+  imageUrl      String?
+  category      String? // optional: categorize products for rails/hero links
+  badges        Json?
+  sizeSystem    String? // "EU", "US", "UK", "Universal", "Multi"
+  sizes         Json? // JSON array of available sizes
+  stock         Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([active])
   @@index([brand])
@@ -184,4 +185,25 @@ model AdminLog {
   @@index([createdAt])
   @@index([action])
   @@index([resource])
+}
+
+model SiteContent {
+  id           String   @id @default(cuid())
+  key          String   @unique
+  type         String // "hero" | "promo" | "banner" | "announcement"
+  titleEn      String
+  titleZh      String
+  subtitleEn   String?
+  subtitleZh   String?
+  buttonTextEn String?
+  buttonTextZh String?
+  buttonLink   String?
+  imageUrl     String?
+  active       Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([type, active])
+  @@index([sortOrder])
 }

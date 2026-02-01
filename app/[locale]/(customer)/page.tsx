@@ -1,11 +1,12 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
-import HeroCarousel from "@/components/HeroCarousel";
+import HeroCarouselCMS from "@/components/home/HeroCarouselCMS";
 import RecommendedGrid from "@/components/home/RecommendedGrid";
 import FeaturedSneakers from "@/components/home/FeaturedSneakers";
 import PromoBannerFull from "@/components/home/PromoBannerFull";
 import SportsApparel from "@/components/home/SportsApparel";
 import RecentlyViewed from "@/components/home/RecentlyViewed";
+import SaleZone from "@/components/home/SaleZone";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -37,6 +38,26 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const l = locale as Locale;
   const t = getDict(l);
 
+  // Fetch hero slides from CMS
+  const heroSlides = await prisma.siteContent.findMany({
+    where: { type: "hero", active: true },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  const heroSlidesFormatted = heroSlides.map((slide) => ({
+    key: slide.key,
+    title: l === "zh-HK" ? slide.titleZh : slide.titleEn,
+    subtitle: (l === "zh-HK" ? slide.subtitleZh : slide.subtitleEn) || undefined,
+    buttonText: (l === "zh-HK" ? slide.buttonTextZh : slide.buttonTextEn) || undefined,
+    buttonLink: slide.buttonLink || undefined,
+    imageUrl: slide.imageUrl || undefined,
+  }));
+
+  // Fetch promo banner from CMS
+  const promoBanner = await prisma.siteContent.findFirst({
+    where: { key: "mid-banner", active: true },
+  });
+
   // Fetch all active products
   const allProductsRaw = await prisma.product.findMany({
     where: { active: true },
@@ -49,6 +70,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     brand: p.brand || "",
     title: p.title,
     price: p.price,
+    originalPrice: p.originalPrice,
     category: (p as any).category || "",
     image:
       p.imageUrl ||
@@ -66,41 +88,23 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     .filter((p) => ["Tops", "Pants", "Jackets"].includes(p.category))
     .slice(0, 10);
 
+  // Sale products: originalPrice > price (8 products)
+  const saleProducts = allProducts
+    .filter((p) => p.originalPrice && p.originalPrice > p.price)
+    .slice(0, 8)
+    .map((p) => ({
+      ...p,
+      originalPrice: p.originalPrice!,
+    }));
+
   // Fallback for Recently Viewed / You Might Like (8 products)
   const fallbackProducts = shuffleArray(allProducts).slice(0, 8);
 
   return (
     <div className="pb-[calc(96px+env(safe-area-inset-bottom))]">
-      {/* 1) Hero Banner */}
+      {/* 1) Hero Banner from CMS */}
       <div className="px-4 pt-4">
-        <HeroCarousel
-          slides={[
-            {
-              title: t.home.hero1Title,
-              subtitle: t.home.hero1Subtitle,
-              cta: t.home.hero1Cta,
-              href: `/${l}`,
-              imageUrl:
-                "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1400&q=70",
-            },
-            {
-              title: t.home.hero2Title,
-              subtitle: t.home.hero2Subtitle,
-              cta: t.home.hero2Cta,
-              href: `/${l}?category=Shoes`,
-              imageUrl:
-                "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1400&q=70",
-            },
-            {
-              title: t.home.hero3Title,
-              subtitle: t.home.hero3Subtitle,
-              cta: t.home.hero3Cta,
-              href: `/${l}?category=Tops`,
-              imageUrl:
-                "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1400&q=70",
-            },
-          ]}
-        />
+        <HeroCarouselCMS slides={heroSlidesFormatted} locale={l} />
       </div>
 
       {/* Sentinel: used for floating search pill (if needed) */}
@@ -122,13 +126,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         viewAllText={t.home.viewAll}
       />
 
-      {/* 4) Promotional Banner (full-width) */}
-      <PromoBannerFull
-        locale={l}
-        headline={t.home.winterGear}
-        subtext={t.home.upTo30Off}
-        ctaText={t.home.shopNow}
-      />
+      {/* 4) Promotional Banner from CMS (full-width) */}
+      {promoBanner && (
+        <PromoBannerFull
+          locale={l}
+          headline={l === "zh-HK" ? promoBanner.titleZh : promoBanner.titleEn}
+          subtext={
+            (l === "zh-HK" ? promoBanner.subtitleZh : promoBanner.subtitleEn) || ""
+          }
+          ctaText={
+            (l === "zh-HK" ? promoBanner.buttonTextZh : promoBanner.buttonTextEn) || t.home.shopNow
+          }
+        />
+      )}
 
       {/* 5) 運動服裝 Sports Apparel (small horizontal scroll) */}
       <SportsApparel
@@ -138,7 +148,17 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         viewAllText={t.home.viewAll}
       />
 
-      {/* 6) 最近瀏覽 / 你可能鍾意 (mini horizontal scroll) */}
+      {/* 6) 🔥 特價專區 Sale Zone (2-column grid) */}
+      {saleProducts.length > 0 && (
+        <SaleZone
+          locale={l}
+          products={saleProducts}
+          title={t.home.onSale}
+          viewAllText={t.home.viewAll}
+        />
+      )}
+
+      {/* 7) 最近瀏覽 / 你可能鍾意 (mini horizontal scroll) */}
       <RecentlyViewed
         locale={l}
         fallbackProducts={fallbackProducts}
