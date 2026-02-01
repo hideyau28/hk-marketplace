@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { getCart, removeFromCart, updateCartItemQty, getCartTotal, type CartItem } from "@/lib/cart";
 import { getDict, type Locale } from "@/lib/i18n";
 import { Trash2, Plus, Minus } from "lucide-react";
@@ -74,8 +75,8 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
           {cart.map((item, index) => (
             <div key={`${item.productId}-${item.size || 'no-size'}-${index}`} className="flex gap-4 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
               {item.imageUrl && (
-                <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl">
-                  <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover" />
+                <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl">
+                  <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="80px" />
                 </div>
               )}
               <div className="flex flex-1 flex-col justify-between">

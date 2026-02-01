@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import OrderStatusUpdate from "./order-status-update";
@@ -173,11 +174,15 @@ export default async function OrderDetailPage({ params }: PageProps) {
             <div key={index} className="flex items-center justify-between py-3 border-b border-zinc-100 last:border-0">
               <div className="flex items-center gap-4">
                 {item.imageUrl && (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    className="w-16 h-16 object-cover rounded-lg"
-                  />
+                  <div className="relative w-16 h-16 rounded-lg overflow-hidden">
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.title}
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                    />
+                  </div>
                 )}
                 <div>
                   <div className="font-medium text-zinc-900">{item.title}</div>

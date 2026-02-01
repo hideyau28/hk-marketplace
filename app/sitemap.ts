@@ -1,7 +1,9 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://hk-market.com'
+  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_VERCEL_URL
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+    : 'https://hk-market.com'
 
   return [
     {

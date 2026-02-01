@@ -8,6 +8,7 @@
     "dev:bootstrap": "bash scripts/dev-db-bootstrap.sh",
     "stripe:listen": "stripe listen --forward-to http://localhost:3012/api/stripe/webhook",
     "stripe:trigger:checkout": "stripe trigger checkout.session.completed",
+    "postinstall": "prisma generate",
     "build": "next build",
     "start": "next start -p 3012",
     "lint": "eslint",

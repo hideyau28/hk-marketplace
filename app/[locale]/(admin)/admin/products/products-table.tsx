@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import type { Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
@@ -112,8 +113,8 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {product.imageUrl && (
-                          <div className="h-10 w-10 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
-                            <img src={product.imageUrl} alt={product.title} className="h-full w-full object-cover" />
+                          <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
+                            <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="40px" />
                           </div>
                         )}
                         <div className="text-zinc-900 font-medium">{product.title}</div>

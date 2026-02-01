@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import ProductDetailClient from "@/components/ProductDetailClient";
 import CurrencyPrice from "@/components/CurrencyPrice";
@@ -101,8 +102,8 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white aspect-square dark:border-zinc-800 dark:bg-zinc-900">
-          <img src={p.image} alt={p.title} className="h-full w-full object-cover" />
+        <div className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white aspect-square dark:border-zinc-800 dark:bg-zinc-900">
+          <Image src={p.image} alt={p.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" priority />
         </div>
         <ProductDetailClient
           product={p}
@@ -124,11 +125,13 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
                 href={`/${locale}/product/${item.id}`}
                 className="group rounded-2xl border border-zinc-200 bg-white overflow-hidden hover:border-zinc-300 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
               >
-                <div className="aspect-square overflow-hidden">
-                  <img
+                <div className="relative aspect-square overflow-hidden">
+                  <Image
                     src={item.image}
                     alt={item.title}
-                    className="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform"
+                    sizes="(max-width: 768px) 50vw, 25vw"
                   />
                 </div>
                 <div className="p-3">
