@@ -34,7 +34,7 @@ export default async function CustomerLayout({
         <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
           <Analytics />
           <TopNav locale={l} t={t} />
-          <main className="pb-16">{children}</main>
+          <main className="pb-24">{children}</main>
           <Footer locale={l} t={t} />
           <FloatingSearchPill t={t} />
           <BottomTab t={t} />

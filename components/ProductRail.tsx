@@ -15,9 +15,9 @@ export default function ProductRail({
   if (products.length === 0) return null;
 
   return (
-    <section className="mt-8">
+    <section className="py-8">
       <div className="px-4">
-        <h2 className="text-zinc-900 text-lg font-semibold mb-3">{title}</h2>
+        <h2 className="text-zinc-900 text-lg font-semibold mb-3 dark:text-zinc-100">{title}</h2>
       </div>
 
       {/* <= md: always horizontal rail. Desktop (lg+): grid. */}
@@ -32,7 +32,7 @@ export default function ProductRail({
             </div>
           ))}
           {/* End spacer: allow last card to scroll fully into view on mobile */}
-          <div className="w-10 shrink-0 lg:hidden" aria-hidden="true" />
+          <div className="w-4 shrink-0 lg:hidden" aria-hidden="true" />
         </div>
       </div>
     </section>

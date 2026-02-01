@@ -50,13 +50,13 @@ export default function FloatingSearchPill({ t }: { t: Translations }) {
   if (!isHome || !show) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-[calc(80px+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 pointer-events-none">
+    <div className="fixed inset-x-0 bottom-[calc(88px+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 pointer-events-none">
       <Link
         href={`/${locale}/search`}
-        className="flex w-full max-w-sm items-center gap-2 rounded-full border border-zinc-200 bg-white/90 px-4 py-3 text-sm text-zinc-600 shadow-sm backdrop-blur pointer-events-auto dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-200"
+        className="flex w-full max-w-sm items-center justify-center gap-2 rounded-full border border-zinc-200 bg-white/90 px-4 py-3 text-sm text-zinc-600 shadow-sm backdrop-blur pointer-events-auto dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-200"
       >
-        <Search size={18} className="text-zinc-500 dark:text-zinc-400" />
-        <span>{t.search.floating}</span>
+        <Search size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+        <span className="leading-none">{t.search.floating}</span>
       </Link>
     </div>
   );
