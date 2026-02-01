@@ -30,7 +30,7 @@ export default function SaleZone({
   const { format: formatPrice } = useCurrency();
 
   const calculateDiscount = (original: number, sale: number) => {
-    return Math.round(((original - sale) / original) * 100);
+    return Math.round((1 - sale / original) * 100);
   };
 
   if (products.length === 0) return null;
@@ -38,42 +38,46 @@ export default function SaleZone({
   return (
     <section className="py-6">
       <SectionTitle title={title} viewAllText={viewAllText} viewAllHref={`/${locale}/products?sale=true`} />
-      <div className="px-4">
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          {products.slice(0, 8).map((product) => {
+      <div className="overflow-x-auto scrollbar-hide snap-x [-webkit-overflow-scrolling:touch]">
+        <div className="flex gap-3">
+          {products.slice(0, 8).map((product, idx) => {
             const discount = calculateDiscount(product.originalPrice, product.price);
             return (
               <Link
                 key={product.id}
                 href={`/${locale}/product/${product.id}`}
-                className="group relative overflow-hidden rounded-2xl bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800"
+                className={`group shrink-0 snap-start ${idx === 0 ? "pl-4" : ""} ${
+                  idx === products.length - 1 || idx === 7 ? "pr-4" : ""
+                }`}
               >
-                <div className="relative aspect-square overflow-hidden">
-                  {/* Discount Badge */}
-                  <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    -{discount}%
+                <div className="w-[200px] md:w-[240px] overflow-hidden rounded-2xl bg-white border border-zinc-100 dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="relative aspect-square overflow-hidden">
+                    {/* Discount Badge */}
+                    <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      -{discount}%
+                    </div>
+                    <Image
+                      src={product.image}
+                      alt={product.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform"
+                      sizes="(max-width: 768px) 200px, 240px"
+                    />
+                    <WishlistHeart productId={product.id} size="md" />
                   </div>
-                  <Image
-                    src={product.image}
-                    alt={product.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform"
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                  />
-                  <WishlistHeart productId={product.id} size="md" />
-                </div>
-                <div className="p-3">
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p>
-                  <h3 className="text-sm font-medium text-zinc-900 line-clamp-1 dark:text-zinc-100">
-                    {product.title}
-                  </h3>
-                  <div className="mt-1 flex items-center gap-2">
-                    <p className="text-sm text-zinc-400 line-through dark:text-zinc-500">
-                      {formatPrice(product.originalPrice)}
-                    </p>
-                    <p className="text-sm font-bold text-red-600 dark:text-red-500">
-                      {formatPrice(product.price)}
-                    </p>
+                  <div className="p-3">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p>
+                    <h3 className="text-sm font-medium text-zinc-900 line-clamp-1 dark:text-zinc-100">
+                      {product.title}
+                    </h3>
+                    <div className="mt-1 flex items-center gap-2">
+                      <p className="text-sm text-zinc-400 line-through dark:text-zinc-500">
+                        {formatPrice(product.originalPrice)}
+                      </p>
+                      <p className="text-sm font-bold text-red-600 dark:text-red-500">
+                        {formatPrice(product.price)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </Link>
