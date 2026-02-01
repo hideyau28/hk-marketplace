@@ -107,7 +107,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   }));
 
   return (
-    <div className="pb-36 pt-4">
+    <div className="pb-40 pt-4">
       <span className="sr-only" data-product-name={p.title} />
       {/* Breadcrumb - hidden on mobile, shown on desktop */}
       <div className="hidden md:flex items-center gap-2 text-sm text-zinc-500 mb-4 px-4">
@@ -126,7 +126,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
         <span className="text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">{p.title}</span>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {/* Image Carousel with floating effect */}
         <ProductImageCarousel images={p.images} alt={p.title} />
         <div className="px-4 md:px-0">
@@ -140,16 +140,16 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
 
       {/* Related Products */}
       {related.length > 0 && (
-        <div className="mt-12">
+        <div className="mt-6 px-4">
           <h2 className="text-xl font-semibold text-zinc-900 mb-4 dark:text-zinc-100">
             {t.product.relatedProducts}
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {related.map((item) => (
               <Link
                 key={item.id}
                 href={`/${locale}/product/${item.id}`}
-                className="group rounded-2xl border border-zinc-200 bg-white overflow-hidden hover:border-zinc-300 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                className="group rounded-xl border border-zinc-200 bg-white overflow-hidden hover:border-zinc-300 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
               >
                 <div className="relative aspect-square overflow-hidden">
                   <Image
@@ -160,10 +160,10 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
                     sizes="(max-width: 768px) 50vw, 25vw"
                   />
                 </div>
-                <div className="p-3">
+                <div className="p-2.5">
                   <div className="text-xs text-zinc-500 dark:text-zinc-400">{item.brand}</div>
-                  <div className="mt-1 text-sm font-medium text-zinc-900 line-clamp-2 dark:text-zinc-100">{item.title}</div>
-                  <div className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <div className="mt-0.5 text-sm font-medium text-zinc-900 line-clamp-2 dark:text-zinc-100">{item.title}</div>
+                  <div className="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     <CurrencyPrice amount={item.price} />
                   </div>
                 </div>
