@@ -54,7 +54,7 @@ export default function RecommendedGrid({
             <Link
               key={product.id}
               href={`/${locale}/product/${product.id}`}
-              className="group relative overflow-hidden rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900"
+              className="group relative overflow-hidden rounded-2xl bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800"
             >
               <div className="relative aspect-square overflow-hidden">
                 <Image
@@ -79,7 +79,7 @@ export default function RecommendedGrid({
                   e.preventDefault();
                   handleWishlistToggle(product.id);
                 }}
-                className="absolute top-2 right-2 rounded-full bg-white/90 p-1.5 backdrop-blur-sm dark:bg-zinc-900/90"
+                className="absolute top-2 right-2 rounded-full bg-white/90 p-3.5 backdrop-blur-sm dark:bg-zinc-900/90"
               >
                 <svg
                   className={`h-4 w-4 ${

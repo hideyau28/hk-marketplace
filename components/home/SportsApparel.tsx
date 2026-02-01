@@ -42,7 +42,7 @@ export default function SportsApparel({
                 idx === products.length - 1 ? "mr-4" : ""
               }`}
             >
-              <div className="w-[160px] md:w-[200px] overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900">
+              <div className="w-[160px] md:w-[200px] overflow-hidden rounded-xl bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
                 <div className="relative aspect-square overflow-hidden">
                   <Image
                     src={product.image}

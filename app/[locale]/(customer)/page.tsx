@@ -7,6 +7,7 @@ import PromoBannerFull from "@/components/home/PromoBannerFull";
 import SportsApparel from "@/components/home/SportsApparel";
 import RecentlyViewed from "@/components/home/RecentlyViewed";
 import SaleZone from "@/components/home/SaleZone";
+import PromoBanner from "@/components/PromoBanner";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -58,6 +59,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     where: { key: "mid-banner", active: true },
   });
 
+  // Fetch top promo bar from CMS
+  const promoBar = await prisma.siteContent.findFirst({
+    where: { type: "promo", active: true },
+    orderBy: { sortOrder: "asc" },
+  });
+
   // Fetch all active products
   const allProductsRaw = await prisma.product.findMany({
     where: { active: true },
@@ -102,6 +109,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="pb-[calc(96px+env(safe-area-inset-bottom))]">
+      {/* Top Promo Bar */}
+      {promoBar && (
+        <PromoBanner
+          promoKey={promoBar.key}
+          message={l === "zh-HK" ? promoBar.titleZh : promoBar.titleEn}
+        />
+      )}
+
       {/* 1) Hero Banner from CMS */}
       <div className="px-4 pt-4">
         <HeroCarouselCMS slides={heroSlidesFormatted} locale={l} />

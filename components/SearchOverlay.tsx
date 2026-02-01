@@ -38,8 +38,17 @@ export default function SearchOverlay({
       }
       // Auto-focus the input
       inputRef.current?.focus();
+
+      // Close on ESC key
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          onClose();
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
     }
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   const handleSearch = (searchQuery: string) => {
     if (!searchQuery.trim()) return;

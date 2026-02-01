@@ -58,22 +58,22 @@ export default function BottomTab({ t }: { t: Translations }) {
   const locale = params?.locale || "zh-HK";
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white/90 backdrop-blur pb-[env(safe-area-inset-bottom)] dark:border-zinc-800 dark:bg-zinc-950/90">
       <div className="mx-auto grid max-w-3xl grid-cols-5 px-2 pt-3 pb-2">
         {tabs.map((tab) => {
           const href = tab.href(locale);
           const active = isActive(pathname, href);
-          const color = active ? "text-[var(--primary)]" : "text-zinc-500 dark:text-zinc-400";
+          const color = active ? "text-olive-600 dark:text-olive-500" : "text-zinc-500 dark:text-zinc-400";
           const label = t.nav[tab.labelKey];
 
           return (
             <Link
               key={tab.key}
               href={href}
-              className={`flex flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2.5 ${color}`}
+              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2.5 min-h-[48px] ${color}`}
               aria-current={active ? "page" : undefined}
             >
-              <tab.Icon size={20} className={color} />
+              <tab.Icon size={20} />
               <span className="text-[10px] leading-tight font-medium">{label}</span>
             </Link>
           );

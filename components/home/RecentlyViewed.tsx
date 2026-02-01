@@ -63,7 +63,7 @@ export default function RecentlyViewed({
                 idx === products.length - 1 ? "mr-4" : ""
               }`}
             >
-              <div className="w-[120px] overflow-hidden rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900">
+              <div className="w-[120px] overflow-hidden rounded-lg bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
                 <div className="relative aspect-square overflow-hidden">
                   <Image
                     src={product.image}

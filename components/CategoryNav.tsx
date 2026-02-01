@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
 import type { Locale } from "@/lib/i18n";
 
 type Category = {
@@ -23,6 +24,25 @@ export default function CategoryNav({ locale }: { locale: Locale }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentCategory = searchParams?.get("category") || "all";
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const activeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Smooth scroll to active category on mount or category change
+  useEffect(() => {
+    if (activeButtonRef.current && scrollContainerRef.current) {
+      const button = activeButtonRef.current;
+      const container = scrollContainerRef.current;
+      const buttonLeft = button.offsetLeft;
+      const buttonWidth = button.offsetWidth;
+      const containerWidth = container.offsetWidth;
+      const scrollLeft = buttonLeft - containerWidth / 2 + buttonWidth / 2;
+
+      container.scrollTo({
+        left: scrollLeft,
+        behavior: "smooth",
+      });
+    }
+  }, [currentCategory]);
 
   const handleCategoryClick = (category: Category) => {
     if (category.key === "all") {
@@ -35,7 +55,10 @@ export default function CategoryNav({ locale }: { locale: Locale }) {
   return (
     <div className="sticky top-[57px] z-40 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
       <div className="mx-auto max-w-6xl">
-        <div className="flex gap-2 overflow-x-auto px-4 py-3 [-webkit-overflow-scrolling:touch] scrollbar-hide">
+        <div
+          ref={scrollContainerRef}
+          className="flex gap-2 overflow-x-auto px-4 py-3 [-webkit-overflow-scrolling:touch] scrollbar-hide"
+        >
           {categories.map((cat) => {
             const isActive = currentCategory === cat.key;
             const label = locale === "zh-HK" ? cat.label : cat.labelEn;
@@ -43,8 +66,9 @@ export default function CategoryNav({ locale }: { locale: Locale }) {
             return (
               <button
                 key={cat.key}
+                ref={isActive ? activeButtonRef : null}
                 onClick={() => handleCategoryClick(cat)}
-                className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-medium min-h-[44px] transition-all ${
                   isActive
                     ? "bg-olive-600 text-white"
                     : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"

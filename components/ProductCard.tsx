@@ -93,7 +93,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         {/* Wishlist heart button */}
         <button
           onClick={handleWishlistClick}
-          className={`absolute top-2 right-2 p-1 rounded-full bg-white/70 backdrop-blur shadow-sm hover:bg-white transition-colors dark:bg-zinc-800/70 dark:hover:bg-zinc-800 ${
+          className={`absolute top-2 right-2 p-3 rounded-full bg-white/70 backdrop-blur shadow-sm hover:bg-white transition-colors dark:bg-zinc-800/70 dark:hover:bg-zinc-800 ${
             wishlisted ? "text-red-500" : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100"
           }`}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}

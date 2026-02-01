@@ -49,7 +49,7 @@ export default function SaleZone({
                   idx === products.length - 1 ? "mr-4" : ""
                 }`}
               >
-                <div className="w-[200px] md:w-[240px] overflow-hidden rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900">
+                <div className="w-[200px] md:w-[240px] overflow-hidden rounded-2xl bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
                   {/* Discount Badge */}
                   <div className="relative">
                     <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">

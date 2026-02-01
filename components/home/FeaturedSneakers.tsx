@@ -46,7 +46,7 @@ export default function FeaturedSneakers({
                 idx === products.length - 1 ? "mr-4" : ""
               }`}
             >
-              <div className="w-[280px] md:w-[320px] overflow-hidden rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900">
+              <div className="w-[280px] md:w-[320px] overflow-hidden rounded-2xl bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <Image
                     src={product.image}
