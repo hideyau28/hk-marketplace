@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, Globe, DollarSign, Moon, Sun, Monitor, ChevronRight, Package, Heart, Search } from "lucide-react";
+import { X, Globe, DollarSign, Moon, Sun, ChevronDown, Package, Heart, Search, Check } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { Translations } from "@/lib/translations";
 import { currencyOptions, useCurrency } from "@/lib/currency";
@@ -14,6 +15,12 @@ function swapLocale(pathname: string, nextLocale: Locale) {
   parts[0] = nextLocale;
   return "/" + parts.join("/");
 }
+
+const currencyLabels: Record<string, { zh: string; en: string }> = {
+  HKD: { zh: "港幣", en: "Hong Kong Dollar" },
+  CNY: { zh: "人民幣", en: "Chinese Yuan" },
+  USD: { zh: "美元", en: "US Dollar" },
+};
 
 export default function MobileMenu({
   locale,
@@ -28,40 +35,30 @@ export default function MobileMenu({
 }) {
   const pathname = usePathname() || `/${locale}`;
   const { currency, setCurrency } = useCurrency();
-  const { mode, resolved, cycleMode } = useTheme();
+  const { resolved, setMode } = useTheme();
+  const [currencyExpanded, setCurrencyExpanded] = useState(false);
 
   const handleLanguageToggle = () => {
     const nextLocale = locale === "zh-HK" ? "en" : "zh-HK";
     window.location.href = swapLocale(pathname, nextLocale);
   };
 
-  const handleCurrencyCycle = () => {
-    const currentIndex = currencyOptions.indexOf(currency);
-    const nextIndex = (currentIndex + 1) % currencyOptions.length;
-    setCurrency(currencyOptions[nextIndex]);
+  const handleThemeToggle = () => {
+    setMode(resolved === "light" ? "dark" : "light");
+  };
+
+  const handleCurrencySelect = (curr: string) => {
+    setCurrency(curr as any);
+    setCurrencyExpanded(false);
   };
 
   const getLanguageLabel = () => {
-    return locale === "zh-HK" ? "繁體中文" : "English";
-  };
-
-  const getLanguageHint = () => {
-    return locale === "zh-HK" ? "EN" : "中";
+    return locale === "zh-HK" ? "繁中" : "English";
   };
 
   const getThemeLabel = () => {
-    if (mode === "light") return t.mobileMenu.lightMode;
-    if (mode === "dark") return t.mobileMenu.darkMode;
-    return t.mobileMenu.systemMode;
+    return resolved === "light" ? t.mobileMenu.lightMode : t.mobileMenu.darkMode;
   };
-
-  const getThemeIcon = () => {
-    if (mode === "light") return Sun;
-    if (mode === "dark") return Moon;
-    return Monitor;
-  };
-
-  const ThemeIcon = getThemeIcon();
 
   if (!isOpen) return null;
 
@@ -76,7 +73,7 @@ export default function MobileMenu({
 
       {/* Drawer */}
       <div
-        className={`fixed right-0 top-0 bottom-0 z-50 w-64 bg-white shadow-2xl md:hidden dark:bg-zinc-950 transition-transform duration-300 ease-in-out ${
+        className={`fixed right-0 top-0 bottom-0 z-50 w-52 bg-white shadow-2xl md:hidden dark:bg-zinc-950 transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -108,32 +105,70 @@ export default function MobileMenu({
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {getLanguageLabel()}
                 </span>
-                <span className="text-sm text-zinc-400">{getLanguageHint()}</span>
-              </button>
-
-              {/* Currency Row */}
-              <button
-                onClick={handleCurrencyCycle}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              >
-                <DollarSign size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
-                <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
-                  {currency}
-                </span>
-                <ChevronRight size={16} className="text-zinc-400" />
               </button>
 
               {/* Theme Row */}
               <button
-                onClick={cycleMode}
+                onClick={handleThemeToggle}
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
-                <ThemeIcon size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                {resolved === "light" ? (
+                  <Sun size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                ) : (
+                  <Moon size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                )}
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {getThemeLabel()}
                 </span>
-                <ChevronRight size={16} className="text-zinc-400" />
               </button>
+
+              {/* Currency Row */}
+              <div>
+                <button
+                  onClick={() => setCurrencyExpanded(!currencyExpanded)}
+                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                >
+                  <DollarSign size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                  <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
+                    {currency}
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    className={`text-zinc-400 transition-transform ${
+                      currencyExpanded ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Currency Dropdown */}
+                {currencyExpanded && (
+                  <div className="mt-1 space-y-0.5 px-2">
+                    {currencyOptions.map((curr) => (
+                      <button
+                        key={curr}
+                        onClick={() => handleCurrencySelect(curr)}
+                        className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      >
+                        <div className="w-5 flex-shrink-0">
+                          {currency === curr && (
+                            <Check size={16} className="text-zinc-700 dark:text-zinc-300" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                              {curr}
+                            </span>
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                              {currencyLabels[curr][locale === "zh-HK" ? "zh" : "en"]}
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Divider */}
