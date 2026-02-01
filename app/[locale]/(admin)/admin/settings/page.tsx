@@ -1,6 +1,6 @@
 "use client";
 
-import type { Locale } from "@/lib/i18n";
+import { getDict, type Locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { Save, Loader2, CheckCircle2, AlertCircle, Store, Truck, Undo2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -37,6 +37,8 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [requestId, setRequestId] = useState("");
+
+  const t = getDict(locale);
 
   // --- Effects (Preserved) ---
   useEffect(() => {
@@ -160,9 +162,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
         {/* Header Section */}
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-1.5">
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Store Settings</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">{t.admin.settings.storeSettings}</h1>
             <p className="text-zinc-600 text-base max-w-lg">
-              Manage your storefront identity, policies, and global configurations.
+              {t.admin.products.subtitle}
             </p>
           </div>
 
@@ -197,11 +199,11 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
             >
               {saveState === "saving" ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving...
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t.admin.common.loading}
                 </>
               ) : (
                 <>
-                  <Save className="h-4 w-4" /> Save Changes
+                  <Save className="h-4 w-4" /> {t.admin.common.save}
                 </>
               )}
             </button>
@@ -227,7 +229,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-3">
-                  <Label>Store Name</Label>
+                  <Label>{t.admin.settings.storeName}</Label>
                   <Input
                     value={settings.storeName || ""}
                     onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
@@ -237,7 +239,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Tagline</Label>
+                  <Label>{t.admin.settings.tagline}</Label>
                   <Input
                     value={settings.tagline || ""}
                     onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
@@ -262,7 +264,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
               <div className="grid gap-8">
                 <div className="space-y-3">
-                  <Label>Returns Policy</Label>
+                  <Label>{t.admin.settings.returnsPolicy}</Label>
                   <Textarea
                     value={settings.returnsPolicy || ""}
                     onChange={(e) => setSettings({ ...settings, returnsPolicy: e.target.value })}
@@ -274,7 +276,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Shipping Policy</Label>
+                  <Label>{t.admin.settings.shippingPolicy}</Label>
                   <Textarea
                     value={settings.shippingPolicy || ""}
                     onChange={(e) => setSettings({ ...settings, shippingPolicy: e.target.value })}

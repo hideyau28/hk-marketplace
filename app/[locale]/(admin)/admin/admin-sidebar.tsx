@@ -4,15 +4,7 @@ import Link from "next/link";
 import { usePathname, useParams, useRouter } from "next/navigation";
 import { LayoutDashboard, Package, ShoppingCart, Settings, LogOut, X, ScrollText, Ticket } from "lucide-react";
 import { useSidebar } from "@/components/admin/SidebarContext";
-
-const navItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/admin/coupons", label: "Coupons", icon: Ticket },
-  { href: "/admin/logs", label: "Activity Logs", icon: ScrollText },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
-];
+import { getDict, type Locale } from "@/lib/i18n";
 
 export default function AdminSidebar() {
   const { isOpen, setIsOpen } = useSidebar();
@@ -20,6 +12,16 @@ export default function AdminSidebar() {
   const params = useParams();
   const router = useRouter();
   const locale = (params.locale as string) || "en";
+  const t = getDict(locale as Locale);
+
+  const navItems = [
+    { href: "/admin", label: t.admin.sidebar.dashboard, icon: LayoutDashboard },
+    { href: "/admin/products", label: t.admin.sidebar.products, icon: Package },
+    { href: "/admin/orders", label: t.admin.sidebar.orders, icon: ShoppingCart },
+    { href: "/admin/coupons", label: t.admin.sidebar.coupons, icon: Ticket },
+    { href: "/admin/logs", label: t.admin.sidebar.logs, icon: ScrollText },
+    { href: "/admin/settings", label: t.admin.sidebar.settings, icon: Settings },
+  ];
 
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -83,7 +85,7 @@ export default function AdminSidebar() {
             className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
           >
             <LogOut size={20} />
-            <span>Logout</span>
+            <span>{t.admin.sidebar.logout}</span>
           </button>
         </div>
 

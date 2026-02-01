@@ -3,6 +3,7 @@ import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "luci
 import Link from "next/link";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import DashboardCharts from "@/components/admin/DashboardCharts";
+import { getDict, type Locale } from "@/lib/i18n";
 
 type StatCardProps = {
   label: string;
@@ -16,7 +17,7 @@ function StatCard({ label, value, icon }: StatCardProps) {
       <div className="flex items-start justify-between">
         <div>
           <div className="text-sm text-zinc-500">{label}</div>
-          <div className="text-3xl font-bold text-zinc-900 mt-2">{value}</div>
+          <div className="text-2xl font-bold text-zinc-900 mt-2 truncate">{value}</div>
         </div>
         <div className="text-zinc-400">{icon}</div>
       </div>
@@ -26,6 +27,7 @@ function StatCard({ label, value, icon }: StatCardProps) {
 
 export default async function AdminDashboard({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = getDict(locale as Locale);
   const now = new Date();
   const start30 = new Date(now);
   start30.setDate(now.getDate() - 29);
@@ -70,7 +72,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
     return sum + (amounts?.total || 0);
   }, 0);
 
-  const formattedRevenue = `HK$${totalRevenue.toFixed(2)}`;
+  const formattedRevenue = `HK$${totalRevenue.toFixed(1)}`;
 
   const paidStatuses = new Set(["PAID", "FULFILLING", "SHIPPED", "COMPLETED"]);
 
@@ -133,34 +135,34 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         <SidebarToggle />
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Dashboard</h1>
-          <div className="text-zinc-500 text-sm">Overview of your store performance.</div>
+          <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.dashboard.title}</h1>
+          <div className="text-zinc-500 text-sm">{t.admin.dashboard.subtitle}</div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
         <StatCard
-          label="Total Products"
+          label={t.admin.dashboard.totalProducts}
           value={totalProducts}
           icon={<Package size={24} />}
         />
         <StatCard
-          label="Active Products"
+          label={t.admin.dashboard.activeProducts}
           value={activeProducts}
           icon={<CheckCircle size={24} />}
         />
         <StatCard
-          label="Total Orders"
+          label={t.admin.dashboard.totalOrders}
           value={totalOrders}
           icon={<ShoppingCart size={24} />}
         />
         <StatCard
-          label="Total Revenue"
+          label={t.admin.dashboard.totalRevenue}
           value={formattedRevenue}
           icon={<DollarSign size={24} />}
         />
         <StatCard
-          label="Avg Order (30d)"
+          label={t.admin.dashboard.averageOrder}
           value={`HK$${avgOrderAmount.toFixed(2)}`}
           icon={<DollarSign size={24} />}
         />
@@ -240,7 +242,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right text-zinc-900 font-medium">
-                          HK${(amounts?.total || 0).toFixed(2)}
+                          HK${(amounts?.total || 0).toFixed(1)}
                         </td>
                         <td className="px-4 py-3 text-zinc-600 text-xs">
                           {new Date(order.createdAt).toLocaleDateString()}

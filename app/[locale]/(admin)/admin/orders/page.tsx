@@ -24,8 +24,8 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
         <SidebarToggle />
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Orders</h1>
-          <div className="text-zinc-500 text-sm">Track payment, fulfillment, refunds.</div>
+          <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.orders.title}</h1>
+          <div className="text-zinc-500 text-sm">{t.admin.orders.subtitle}</div>
         </div>
       </div>
 
@@ -33,7 +33,7 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
         <OrdersTable orders={result.data} locale={l} currentStatus={status} />
       ) : (
         <div className="mt-6 rounded-3xl border border-red-500/20 bg-red-500/10 p-6">
-          <div className="text-red-400 font-semibold">Error loading orders</div>
+          <div className="text-red-400 font-semibold">{t.common.error}</div>
           <div className="mt-2 text-red-300 text-sm">
             <div className="font-mono">{result.code}</div>
             <div className="mt-1">{result.message}</div>

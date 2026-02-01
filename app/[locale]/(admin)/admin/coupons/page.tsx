@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import CouponsTable from "./coupons-table";
+import { getDict, type Locale } from "@/lib/i18n";
 
 export default async function AdminCoupons({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = getDict(locale as Locale);
 
   const coupons = await prisma.coupon.findMany({
     orderBy: { createdAt: "desc" },
@@ -15,8 +17,8 @@ export default async function AdminCoupons({ params }: { params: Promise<{ local
         <SidebarToggle />
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Coupons</h1>
-          <div className="text-zinc-500 text-sm">Manage discount codes and promotions.</div>
+          <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.coupons.title}</h1>
+          <div className="text-zinc-500 text-sm">{t.admin.products.subtitle}</div>
         </div>
       </div>
 

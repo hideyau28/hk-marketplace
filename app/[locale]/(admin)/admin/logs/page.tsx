@@ -1,4 +1,4 @@
-import type { Locale } from "@/lib/i18n";
+import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import { formatDistanceToNow } from "date-fns";
@@ -14,6 +14,7 @@ export default async function AdminLogsPage({ params, searchParams }: PageProps)
   const { locale } = await params;
   const { page: pageParam } = await searchParams;
   const l = locale as Locale;
+  const t = getDict(l);
 
   const page = parseInt(pageParam || "1");
   const skip = (page - 1) * ITEMS_PER_PAGE;
@@ -36,8 +37,8 @@ export default async function AdminLogsPage({ params, searchParams }: PageProps)
         <SidebarToggle />
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Activity Logs</h1>
-          <div className="text-zinc-500 text-sm">View all admin actions and changes.</div>
+          <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.logs.title}</h1>
+          <div className="text-zinc-500 text-sm">{t.admin.products.subtitle}</div>
         </div>
       </div>
 
@@ -46,11 +47,11 @@ export default async function AdminLogsPage({ params, searchParams }: PageProps)
           <table className="min-w-[900px] w-full text-sm">
             <thead>
               <tr className="text-zinc-500 border-b border-zinc-200">
-                <th className="px-4 py-3 text-left">Time</th>
-                <th className="px-4 py-3 text-left">Action</th>
-                <th className="px-4 py-3 text-left">Resource</th>
-                <th className="px-4 py-3 text-left">Details</th>
-                <th className="px-4 py-3 text-left">IP Address</th>
+                <th className="px-4 py-3 text-left">{t.admin.logs.timestamp}</th>
+                <th className="px-4 py-3 text-left">{t.admin.logs.action}</th>
+                <th className="px-4 py-3 text-left">{t.admin.logs.resource}</th>
+                <th className="px-4 py-3 text-left">{t.admin.logs.details}</th>
+                <th className="px-4 py-3 text-left">{t.admin.logs.ipAddress}</th>
               </tr>
             </thead>
 
@@ -58,7 +59,7 @@ export default async function AdminLogsPage({ params, searchParams }: PageProps)
               {logs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-12 text-center text-zinc-500">
-                    No activity logs found
+                    {t.admin.common.noData}
                   </td>
                 </tr>
               ) : (

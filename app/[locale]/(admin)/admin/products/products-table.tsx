@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import type { Locale } from "@/lib/i18n";
+import { getDict, type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
@@ -15,18 +15,19 @@ type ProductsTableProps = {
   showAddButton?: boolean;
 };
 
-const ACTIVE_FILTERS = [
-  { value: "", label: "All Products" },
-  { value: "true", label: "Active" },
-  { value: "false", label: "Inactive" },
-];
-
 export function ProductsTable({ products, locale, currentActive, showAddButton }: ProductsTableProps) {
   const router = useRouter();
+  const t = getDict(locale);
   const [selectedActive, setSelectedActive] = useState(currentActive || "");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isCsvOpen, setIsCsvOpen] = useState(false);
+
+  const ACTIVE_FILTERS = [
+    { value: "", label: t.admin.products.allProducts },
+    { value: "true", label: t.admin.common.active },
+    { value: "false", label: t.admin.common.inactive },
+  ];
 
   const handleActiveChange = (active: string) => {
     setSelectedActive(active);
@@ -64,22 +65,22 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
         <div className="flex flex-wrap items-center gap-2">
           <a
             href="/api/admin/products/csv-template"
-            className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50"
+            className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
           >
-            Download Template
+            {t.admin.products.downloadTemplate}
           </a>
           <button
             onClick={() => setIsCsvOpen(true)}
             className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
           >
-            Import CSV
+            {t.admin.products.importCsv}
           </button>
           {showAddButton && (
             <button
               onClick={handleCreateProduct}
-              className="rounded-xl border border-olive-600 bg-white px-4 py-3 text-sm text-olive-700 font-semibold hover:bg-olive-50 transition-colors whitespace-nowrap"
+              className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700 transition-colors whitespace-nowrap"
             >
-              + Add Product
+              + {t.admin.products.addProduct}
             </button>
           )}
         </div>
@@ -90,13 +91,13 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
           <table className="min-w-[900px] w-full text-sm">
             <thead>
               <tr className="text-zinc-500 border-b border-zinc-200">
-                <th className="px-4 py-3 text-left">Product</th>
-                <th className="px-4 py-3 text-left">Category</th>
-                <th className="px-4 py-3 text-right">Price</th>
-                <th className="px-4 py-3 text-right">Stock</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Updated</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3 text-left">{t.admin.products.product}</th>
+                <th className="px-4 py-3 text-left">{t.admin.products.category}</th>
+                <th className="px-4 py-3 text-right">{t.admin.products.price}</th>
+                <th className="px-4 py-3 text-right">{t.admin.products.stock}</th>
+                <th className="px-4 py-3 text-left">{t.admin.products.status}</th>
+                <th className="px-4 py-3 text-left">{t.admin.products.updatedAt}</th>
+                <th className="px-4 py-3 text-right">{t.admin.common.actions}</th>
               </tr>
             </thead>
 
@@ -104,7 +105,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
               {products.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center text-zinc-500">
-                    No products found
+                    {t.admin.common.noData}
                   </td>
                 </tr>
               ) : (
@@ -131,7 +132,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                             : "bg-zinc-100 text-zinc-600 border-zinc-200"
                         }`}
                       >
-                        {product.active ? "Active" : "Inactive"}
+                        {product.active ? t.admin.common.active : t.admin.common.inactive}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-zinc-600">
@@ -142,7 +143,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                         onClick={() => handleEditProduct(product)}
                         className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50"
                       >
-                        Edit
+                        {t.admin.common.edit}
                       </button>
                     </td>
                   </tr>
