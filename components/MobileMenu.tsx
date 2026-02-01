@@ -16,12 +16,6 @@ function swapLocale(pathname: string, nextLocale: Locale) {
   return "/" + parts.join("/");
 }
 
-const currencyLabels: Record<string, { zh: string; en: string }> = {
-  HKD: { zh: "港幣", en: "Hong Kong Dollar" },
-  CNY: { zh: "人民幣", en: "Chinese Yuan" },
-  USD: { zh: "美元", en: "US Dollar" },
-};
-
 export default function MobileMenu({
   locale,
   t,
@@ -73,16 +67,13 @@ export default function MobileMenu({
 
       {/* Drawer */}
       <div
-        className={`fixed right-0 top-0 bottom-0 z-50 w-52 bg-white shadow-2xl md:hidden dark:bg-zinc-950 transition-transform duration-300 ease-in-out ${
+        className={`fixed right-0 top-0 bottom-0 z-50 w-48 bg-white shadow-2xl md:hidden dark:bg-zinc-950 transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex h-full flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-4 dark:border-zinc-800">
-            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              {t.nav.profileTab}
-            </h2>
+          {/* Header - Just close button */}
+          <div className="flex items-center justify-end border-b border-zinc-200 px-3 py-3 dark:border-zinc-800">
             <button
               onClick={onClose}
               className="rounded-lg p-1.5 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
@@ -99,9 +90,9 @@ export default function MobileMenu({
               {/* Language Row */}
               <button
                 onClick={handleLanguageToggle}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
-                <Globe size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                <Globe size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {getLanguageLabel()}
                 </span>
@@ -110,12 +101,12 @@ export default function MobileMenu({
               {/* Theme Row */}
               <button
                 onClick={handleThemeToggle}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
                 {resolved === "light" ? (
-                  <Sun size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                  <Sun size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
                 ) : (
-                  <Moon size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                  <Moon size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
                 )}
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {getThemeLabel()}
@@ -126,9 +117,9 @@ export default function MobileMenu({
               <div>
                 <button
                   onClick={() => setCurrencyExpanded(!currencyExpanded)}
-                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 >
-                  <DollarSign size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                  <DollarSign size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
                   <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                     {currency}
                   </span>
@@ -140,30 +131,23 @@ export default function MobileMenu({
                   />
                 </button>
 
-                {/* Currency Dropdown */}
+                {/* Currency Dropdown - Only currency codes */}
                 {currencyExpanded && (
                   <div className="mt-1 space-y-0.5 px-2">
                     {currencyOptions.map((curr) => (
                       <button
                         key={curr}
                         onClick={() => handleCurrencySelect(curr)}
-                        className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800"
                       >
-                        <div className="w-5 flex-shrink-0">
+                        <div className="w-4 flex-shrink-0">
                           {currency === curr && (
-                            <Check size={16} className="text-zinc-700 dark:text-zinc-300" />
+                            <Check size={14} className="text-zinc-700 dark:text-zinc-300" />
                           )}
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                              {curr}
-                            </span>
-                            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                              {currencyLabels[curr][locale === "zh-HK" ? "zh" : "en"]}
-                            </span>
-                          </div>
-                        </div>
+                        <span className="text-sm text-zinc-900 dark:text-zinc-100">
+                          {curr}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -180,9 +164,9 @@ export default function MobileMenu({
               <Link
                 href={`/${locale}/orders`}
                 onClick={onClose}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
-                <Package size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                <Package size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {t.mobileMenu.myOrders}
                 </span>
@@ -192,9 +176,9 @@ export default function MobileMenu({
               <Link
                 href={`/${locale}/collections`}
                 onClick={onClose}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
-                <Heart size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                <Heart size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {t.mobileMenu.myWishlist}
                 </span>
@@ -204,9 +188,9 @@ export default function MobileMenu({
               <Link
                 href={`/${locale}/track`}
                 onClick={onClose}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
-                <Search size={20} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                <Search size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {t.mobileMenu.trackOrder}
                 </span>
