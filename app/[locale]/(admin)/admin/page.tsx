@@ -163,7 +163,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         />
         <StatCard
           label={t.admin.dashboard.averageOrder}
-          value={`HK$${avgOrderAmount.toFixed(2)}`}
+          value={`HK$${avgOrderAmount.toFixed(1)}`}
           icon={<DollarSign size={24} />}
         />
       </div>
