@@ -1,87 +1,99 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { SlidersHorizontal, ChevronDown } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
+import FilterPanel from "./FilterPanel";
 
-type Category = {
+type QuickPill = {
   key: string;
   label: string;
   labelEn: string;
+  href: string;
 };
 
-const categories: Category[] = [
-  { key: "all", label: "全部", labelEn: "All" },
-  { key: "Shoes", label: "鞋款", labelEn: "Shoes" },
-  { key: "Tops", label: "上衣", labelEn: "Tops" },
-  { key: "Pants", label: "褲裝", labelEn: "Pants" },
-  { key: "Jackets", label: "外套", labelEn: "Jackets" },
-  { key: "Socks", label: "襪", labelEn: "Socks" },
-  { key: "Accessories", label: "配件", labelEn: "Accessories" },
+const quickPills: QuickPill[] = [
+  { key: "Shoes", label: "鞋款", labelEn: "Shoes", href: "/products?category=Shoes" },
+  { key: "Tops", label: "上衣", labelEn: "Tops", href: "/products?category=Tops" },
+  { key: "Pants", label: "褲裝", labelEn: "Pants", href: "/products?category=Pants" },
+  { key: "Jackets", label: "外套", labelEn: "Jackets", href: "/products?category=Jackets" },
+  { key: "sale", label: "特價", labelEn: "On Sale", href: "/products?sale=true" },
 ];
 
-export default function CategoryNav({ locale }: { locale: Locale }) {
+type CategoryNavProps = {
+  locale: Locale;
+  filterTranslations?: {
+    title: string;
+    brand: string;
+    category: string;
+    reset: string;
+    showResults: string;
+  };
+};
+
+export default function CategoryNav({ locale, filterTranslations }: CategoryNavProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const currentCategory = searchParams?.get("category") || "all";
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const activeButtonRef = useRef<HTMLButtonElement>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Smooth scroll to active category on mount or category change
-  useEffect(() => {
-    if (activeButtonRef.current && scrollContainerRef.current) {
-      const button = activeButtonRef.current;
-      const container = scrollContainerRef.current;
-      const buttonLeft = button.offsetLeft;
-      const buttonWidth = button.offsetWidth;
-      const containerWidth = container.offsetWidth;
-      const scrollLeft = buttonLeft - containerWidth / 2 + buttonWidth / 2;
-
-      container.scrollTo({
-        left: scrollLeft,
-        behavior: "smooth",
-      });
-    }
-  }, [currentCategory]);
-
-  const handleCategoryClick = (category: Category) => {
-    if (category.key === "all") {
-      router.push(`/${locale}`);
-    } else {
-      router.push(`/${locale}?category=${category.key}`);
-    }
+  const handlePillClick = (pill: QuickPill) => {
+    router.push(`/${locale}${pill.href}`);
   };
 
-  return (
-    <div className="sticky top-[57px] z-40 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
-      <div className="mx-auto max-w-6xl">
-        <div
-          ref={scrollContainerRef}
-          className="flex gap-2 overflow-x-auto px-4 py-3 [-webkit-overflow-scrolling:touch] scrollbar-hide"
-        >
-          {categories.map((cat) => {
-            const isActive = currentCategory === cat.key;
-            const label = locale === "zh-HK" ? cat.label : cat.labelEn;
+  const filterLabel = locale === "zh-HK" ? "篩選" : "Filter";
 
-            return (
-              <button
-                key={cat.key}
-                ref={isActive ? activeButtonRef : null}
-                onClick={() => handleCategoryClick(cat)}
-                className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-medium min-h-[44px] transition-all ${
-                  isActive
-                    ? "bg-olive-600 text-white"
-                    : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-          {/* Peek spacer */}
-          <div className="w-4 shrink-0" aria-hidden="true" />
+  const defaultFilterTranslations = {
+    title: locale === "zh-HK" ? "篩選" : "Filter",
+    brand: locale === "zh-HK" ? "品牌" : "Brand",
+    category: locale === "zh-HK" ? "種類" : "Category",
+    reset: locale === "zh-HK" ? "重置" : "Reset",
+    showResults: locale === "zh-HK" ? "顯示 {count} 件結果" : "Show {count} results",
+  };
+
+  const t = filterTranslations || defaultFilterTranslations;
+
+  return (
+    <>
+      <div className="sticky top-[57px] z-40 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex items-center gap-2 overflow-x-auto px-4 py-3 [-webkit-overflow-scrolling:touch] scrollbar-hide">
+            {/* Filter Button */}
+            <button
+              onClick={() => setIsFilterOpen(true)}
+              className="shrink-0 flex items-center gap-1.5 bg-olive-600 text-white rounded-full px-4 py-1.5 text-sm font-medium"
+            >
+              <SlidersHorizontal size={16} />
+              <span>{filterLabel}</span>
+              <ChevronDown size={14} />
+            </button>
+
+            {/* Quick Pills */}
+            {quickPills.map((pill) => {
+              const label = locale === "zh-HK" ? pill.label : pill.labelEn;
+              return (
+                <button
+                  key={pill.key}
+                  onClick={() => handlePillClick(pill)}
+                  className="shrink-0 rounded-full px-4 py-1.5 text-sm bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                >
+                  {label}
+                </button>
+              );
+            })}
+
+            {/* Peek spacer */}
+            <div className="w-4 shrink-0" aria-hidden="true" />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Filter Panel */}
+      <FilterPanel
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        locale={locale}
+        t={t}
+      />
+    </>
   );
 }

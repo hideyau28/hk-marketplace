@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 import { useCurrency } from "@/lib/currency";
 import SectionTitle from "./SectionTitle";
+import WishlistHeart from "@/components/WishlistHeart";
 
 type Product = {
   id: string;
@@ -55,6 +56,7 @@ export default function FeaturedSneakers({
                     className="object-cover group-hover:scale-105 transition-transform"
                     sizes="(max-width: 768px) 280px, 320px"
                   />
+                  <WishlistHeart productId={product.id} size="md" />
                 </div>
                 <div className="p-4">
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p>

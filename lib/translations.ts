@@ -143,6 +143,14 @@ export const translations = {
       results: "{n} products found",
       floating: "Search",
     },
+    filter: {
+      title: "Filter",
+      brand: "Brand",
+      category: "Category",
+      reset: "Reset",
+      showResults: "Show {count} results",
+      onSale: "On Sale",
+    },
     orders: {
       title: "My Orders",
       tempNote: "(Temporary: order list TBD)",
@@ -465,6 +473,14 @@ export const translations = {
       tryAnother: "試試其他關鍵字",
       results: "找到 {n} 件商品",
       floating: "搜尋",
+    },
+    filter: {
+      title: "篩選",
+      brand: "品牌",
+      category: "種類",
+      reset: "重置",
+      showResults: "顯示 {count} 件結果",
+      onSale: "特價",
     },
     orders: {
       title: "我的訂單",

@@ -12,26 +12,29 @@ export default function Footer({ locale, t }: { locale: Locale; t: Translations 
         {/* Brand */}
         <h3 className="text-lg font-bold mb-3">HK•Market</h3>
 
-        {/* Links - No section titles */}
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-sm pr-16">
+        {/* Links - Single line with · separator */}
+        <div className="flex justify-center items-center gap-1 mb-4 text-[11px]">
           <Link
             href={`/${locale}/about`}
             className="text-zinc-400 hover:text-olive-400 transition-colors"
           >
             {t.footer.about}
           </Link>
+          <span className="text-zinc-600">·</span>
           <Link
             href={`/${locale}/contact`}
             className="text-zinc-400 hover:text-olive-400 transition-colors"
           >
             {t.footer.contact}
           </Link>
+          <span className="text-zinc-600">·</span>
           <Link
             href={`/${locale}/privacy`}
             className="text-zinc-400 hover:text-olive-400 transition-colors"
           >
             {t.footer.privacy}
           </Link>
+          <span className="text-zinc-600">·</span>
           <Link
             href={`/${locale}/terms`}
             className="text-zinc-400 hover:text-olive-400 transition-colors"

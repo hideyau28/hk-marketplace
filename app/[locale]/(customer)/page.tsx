@@ -108,7 +108,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const fallbackProducts = shuffleArray(allProducts).slice(0, 8);
 
   return (
-    <div className="pb-20">
+    <div className="pb-16">
       {/* Top Promo Bar */}
       {promoBar && (
         <PromoBanner

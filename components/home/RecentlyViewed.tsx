@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 import { useCurrency } from "@/lib/currency";
 import SectionTitle from "./SectionTitle";
+import WishlistHeart from "@/components/WishlistHeart";
 
 type Product = {
   id: string;
@@ -72,6 +73,7 @@ export default function RecentlyViewed({
                     className="object-cover group-hover:scale-105 transition-transform"
                     sizes="120px"
                   />
+                  <WishlistHeart productId={product.id} size="sm" />
                 </div>
                 <div className="p-2">
                   <h3 className="text-xs text-zinc-900 line-clamp-1 dark:text-zinc-100">
