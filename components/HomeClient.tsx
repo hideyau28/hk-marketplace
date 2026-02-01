@@ -38,22 +38,22 @@ export default function HomeClient({
 
   return (
     <>
-      <BrandFilter locale={locale} onBrandChange={setSelectedBrand} />
+      <BrandFilter locale={locale} t={t} onBrandChange={setSelectedBrand} />
 
       {selectedBrand && (
         <div className="px-4 mt-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-zinc-600">
-              {locale === "zh-HK" ? "篩選：" : "Filtering by:"}
+            <span className="text-sm text-zinc-600 dark:text-zinc-400">
+              {t.home.filteringBy}
             </span>
             <span className="px-3 py-1 bg-olive-100 text-olive-700 rounded-full text-sm font-medium">
               {selectedBrand}
             </span>
             <button
               onClick={() => setSelectedBrand(null)}
-              className="text-sm text-zinc-500 hover:text-zinc-700 underline"
+              className="text-sm text-zinc-500 hover:text-zinc-700 underline dark:text-zinc-400 dark:hover:text-zinc-200"
             >
-              {locale === "zh-HK" ? "清除" : "Clear"}
+              {t.home.clear}
             </button>
           </div>
         </div>
@@ -75,7 +75,7 @@ export default function HomeClient({
       {rail3.length > 0 && (
         <ProductRail
           locale={locale}
-          title={locale === "zh-HK" ? "熱門" : "Trending"}
+          title={t.home.trending}
           products={rail3}
           size="sm"
         />
@@ -84,7 +84,7 @@ export default function HomeClient({
       {rail4.length > 0 && (
         <ProductRail
           locale={locale}
-          title={locale === "zh-HK" ? "新品上架" : "New arrivals"}
+          title={t.home.newArrivals}
           products={rail4}
           size="lg"
         />

@@ -1,10 +1,9 @@
-import zhHK from "@/messages/zh-HK.json";
-import en from "@/messages/en.json";
+import { translations } from "@/lib/translations";
 
 export type Locale = "zh-HK" | "en";
 export const locales: Locale[] = ["zh-HK", "en"];
 
-const dict = { "zh-HK": zhHK, "en": en } as const;
-export function getDict(locale: Locale) {
+const dict = { "zh-HK": translations["zh-HK"], en: translations.en };
+export function getDict(locale: Locale): typeof translations.en {
   return dict[locale] ?? dict["en"];
 }

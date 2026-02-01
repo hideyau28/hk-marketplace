@@ -8,6 +8,9 @@ import FloatingSearchPill from "@/components/FloatingSearchPill";
 import Footer from "@/components/Footer";
 import { CurrencyProvider } from "@/lib/currency";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { ThemeProvider } from "@/lib/theme-context";
+import Analytics from "@/components/Analytics";
+import PushNotificationBanner from "@/components/PushNotificationBanner";
 
 export default async function CustomerLayout({
   children,
@@ -26,13 +29,19 @@ export default async function CustomerLayout({
   const t = getDict(l);
 
   return (
-    <CurrencyProvider>
-      <TopNav locale={l} t={t} />
-      <main className="pb-16">{children}</main>
-      <Footer locale={l} />
-      <FloatingSearchPill />
-      <BottomTab />
-      <WhatsAppButton />
-    </CurrencyProvider>
+    <ThemeProvider>
+      <CurrencyProvider>
+        <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+          <Analytics />
+          <TopNav locale={l} t={t} />
+          <main className="pb-16">{children}</main>
+          <Footer locale={l} t={t} />
+          <FloatingSearchPill t={t} />
+          <BottomTab t={t} />
+          <PushNotificationBanner t={t} />
+          <WhatsAppButton t={t} />
+        </div>
+      </CurrencyProvider>
+    </ThemeProvider>
   );
 }

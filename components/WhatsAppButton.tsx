@@ -2,15 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import type { Translations } from "@/lib/translations";
 
-function getMessage(productName?: string | null) {
-  if (productName) {
-    return `我想查詢呢個產品：${productName}`;
-  }
-  return "你好！我想查詢";
-}
-
-export default function WhatsAppButton() {
+export default function WhatsAppButton({ t }: { t: Translations }) {
   const pathname = usePathname();
   const [productName, setProductName] = useState<string | null>(null);
 
@@ -24,7 +18,9 @@ export default function WhatsAppButton() {
     setProductName(name || null);
   }, [pathname]);
 
-  const message = getMessage(productName);
+  const message = productName
+    ? t.whatsapp.productMessage.replace("{name}", productName)
+    : t.whatsapp.defaultMessage;
   const href = `https://wa.me/?text=${encodeURIComponent(message)}`;
 
   return (

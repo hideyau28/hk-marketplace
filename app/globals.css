@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #FAFAF7;
   --foreground: #111111;
@@ -24,6 +26,14 @@
   --color-olive-800: #3d512a;
   --color-olive-900: #344526;
   --color-olive-950: #1a2512;
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --text: #f4f4f5;
+  --muted: #a1a1aa;
+  --border: #27272a;
 }
 
 @theme inline {

@@ -84,9 +84,9 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     <div className="px-4 pb-24 pt-6">
       <span className="sr-only" data-product-name={p.title} />
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-zinc-600 mb-4">
-        <Link href={`/${locale}`} className="hover:text-zinc-900">
-          {locale === "zh-HK" ? "首頁" : "Home"}
+      <div className="flex items-center gap-2 text-sm text-zinc-600 mb-4 dark:text-zinc-400">
+        <Link href={`/${locale}`} className="hover:text-zinc-900 dark:hover:text-zinc-100">
+          {t.product.home}
         </Link>
         {p.category && (
           <>
@@ -97,37 +97,32 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
           </>
         )}
         <ChevronRight className="h-4 w-4" />
-        <span className="text-zinc-900">{p.title}</span>
+        <span className="text-zinc-900 dark:text-zinc-100">{p.title}</span>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white aspect-square">
+        <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white aspect-square dark:border-zinc-800 dark:bg-zinc-900">
           <img src={p.image} alt={p.title} className="h-full w-full object-cover" />
         </div>
         <ProductDetailClient
           product={p}
           locale={locale}
-          texts={{
-            addToCart: t.product.addToCart,
-            addedToCart: t.product.addedToCart,
-            buyNow: t.product.buyNow,
-            pleaseSelectSize: locale === "zh-HK" ? "請選擇尺碼" : "Please select a size",
-          }}
+          t={t}
         />
       </div>
 
       {/* Related Products */}
       {related.length > 0 && (
         <div className="mt-12">
-          <h2 className="text-xl font-semibold text-zinc-900 mb-4">
-            {locale === "zh-HK" ? "相關產品" : "Related Products"}
+          <h2 className="text-xl font-semibold text-zinc-900 mb-4 dark:text-zinc-100">
+            {t.product.relatedProducts}
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {related.map((item) => (
               <Link
                 key={item.id}
                 href={`/${locale}/product/${item.id}`}
-                className="group rounded-2xl border border-zinc-200 bg-white overflow-hidden hover:border-zinc-300 transition-colors"
+                className="group rounded-2xl border border-zinc-200 bg-white overflow-hidden hover:border-zinc-300 transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
               >
                 <div className="aspect-square overflow-hidden">
                   <img
@@ -137,9 +132,9 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
                   />
                 </div>
                 <div className="p-3">
-                  <div className="text-xs text-zinc-500">{item.brand}</div>
-                  <div className="mt-1 text-sm font-medium text-zinc-900 line-clamp-2">{item.title}</div>
-                  <div className="mt-2 text-sm font-semibold text-zinc-900">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">{item.brand}</div>
+                  <div className="mt-1 text-sm font-medium text-zinc-900 line-clamp-2 dark:text-zinc-100">{item.title}</div>
+                  <div className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     <CurrencyPrice amount={item.price} />
                   </div>
                 </div>

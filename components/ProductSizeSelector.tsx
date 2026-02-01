@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import type { Translations } from "@/lib/translations";
 
 type SizeSystem = "EU" | "US Men" | "US Women" | "UK" | "Universal";
 
@@ -13,6 +14,7 @@ type SizeSelectorProps = {
   onSizeSelect: (size: string, system: string) => void;
   selectedSize: string | null;
   selectedSystem: string | null;
+  t: Translations;
 };
 
 const SHOE_SIZE_CHART = {
@@ -29,6 +31,7 @@ export default function ProductSizeSelector({
   onSizeSelect,
   selectedSize,
   selectedSystem,
+  t,
 }: SizeSelectorProps) {
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [activeTab, setActiveTab] = useState<SizeSystem>("EU");
@@ -47,17 +50,12 @@ export default function ProductSizeSelector({
   const currentSystem = isMultiSystem ? activeTab : sizeSystem;
   const currentSizes = availableSizes[currentSystem] || [];
 
-  const texts = {
-    selectSize: locale === "zh-HK" ? "選擇尺碼" : "Select Size",
-    sizeGuide: locale === "zh-HK" ? "尺碼指南" : "Size Guide",
-    sizeChart: locale === "zh-HK" ? "尺碼對照表" : "Size Chart",
-    close: locale === "zh-HK" ? "關閉" : "Close",
-  };
+  const texts = t.size;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-zinc-900">{texts.selectSize}</label>
+        <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{texts.selectSize}</label>
         {isMultiSystem && (
           <button
             type="button"
@@ -80,7 +78,7 @@ export default function ProductSizeSelector({
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === system
                   ? "border-b-2 border-olive-600 text-olive-600"
-                  : "text-zinc-600 hover:text-zinc-900"
+                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
               }`}
             >
               {system}
@@ -101,7 +99,7 @@ export default function ProductSizeSelector({
               className={`rounded-lg border px-3 py-3 text-sm font-medium transition-colors ${
                 isSelected
                   ? "border-olive-600 bg-olive-600 text-white"
-                  : "border-zinc-200 bg-white text-zinc-900 hover:border-zinc-400"
+                  : "border-zinc-200 bg-white text-zinc-900 hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
               }`}
             >
               {size}
@@ -125,35 +123,35 @@ export default function ProductSizeSelector({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl rounded-2xl bg-white p-6"
+              className="w-full max-w-2xl rounded-2xl bg-white p-6 dark:bg-zinc-900"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-zinc-900">{texts.sizeChart}</h3>
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{texts.sizeChart}</h3>
                 <button
                   onClick={() => setShowSizeGuide(false)}
-                  className="rounded-full p-2 hover:bg-zinc-100"
+                  className="rounded-full p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 >
-                  <X className="h-5 w-5 text-zinc-600" />
+                  <X className="h-5 w-5 text-zinc-600 dark:text-zinc-300" />
                 </button>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-200">
-                      <th className="py-2 px-3 text-left font-medium text-zinc-900">EU</th>
-                      <th className="py-2 px-3 text-left font-medium text-zinc-900">US Men</th>
-                      <th className="py-2 px-3 text-left font-medium text-zinc-900">US Women</th>
-                      <th className="py-2 px-3 text-left font-medium text-zinc-900">UK</th>
+                    <tr className="border-b border-zinc-200 dark:border-zinc-800">
+                      <th className="py-2 px-3 text-left font-medium text-zinc-900 dark:text-zinc-100">EU</th>
+                      <th className="py-2 px-3 text-left font-medium text-zinc-900 dark:text-zinc-100">US Men</th>
+                      <th className="py-2 px-3 text-left font-medium text-zinc-900 dark:text-zinc-100">US Women</th>
+                      <th className="py-2 px-3 text-left font-medium text-zinc-900 dark:text-zinc-100">UK</th>
                     </tr>
                   </thead>
                   <tbody>
                     {SHOE_SIZE_CHART.EU.map((euSize, idx) => (
-                      <tr key={euSize} className="border-b border-zinc-100">
-                        <td className="py-2 px-3 text-zinc-700">{euSize}</td>
-                        <td className="py-2 px-3 text-zinc-700">{SHOE_SIZE_CHART["US Men"][idx] || "—"}</td>
-                        <td className="py-2 px-3 text-zinc-700">{SHOE_SIZE_CHART["US Women"][idx] || "—"}</td>
-                        <td className="py-2 px-3 text-zinc-700">{SHOE_SIZE_CHART.UK[idx] || "—"}</td>
+                      <tr key={euSize} className="border-b border-zinc-100 dark:border-zinc-800">
+                        <td className="py-2 px-3 text-zinc-700 dark:text-zinc-300">{euSize}</td>
+                        <td className="py-2 px-3 text-zinc-700 dark:text-zinc-300">{SHOE_SIZE_CHART["US Men"][idx] || "—"}</td>
+                        <td className="py-2 px-3 text-zinc-700 dark:text-zinc-300">{SHOE_SIZE_CHART["US Women"][idx] || "—"}</td>
+                        <td className="py-2 px-3 text-zinc-700 dark:text-zinc-300">{SHOE_SIZE_CHART.UK[idx] || "—"}</td>
                       </tr>
                     ))}
                   </tbody>

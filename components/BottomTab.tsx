@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import { Heart, Home, Search, ShoppingBag, User } from "lucide-react";
+import type { Translations } from "@/lib/translations";
 
 type Tab = {
   key: string;
   href: (locale: string) => string;
-  labelZh: string;
-  labelEn: string;
+  labelKey: keyof Translations["nav"];
   Icon: React.ComponentType<{ size?: number; className?: string }>;
 };
 
@@ -16,36 +16,31 @@ const tabs: Tab[] = [
   {
     key: "home",
     href: (l) => `/${l}`,
-    labelZh: "首頁",
-    labelEn: "Home",
+    labelKey: "home",
     Icon: Home,
   },
   {
     key: "search",
     href: (l) => `/${l}/search`,
-    labelZh: "搜尋",
-    labelEn: "Search",
+    labelKey: "searchTab",
     Icon: Search,
   },
   {
     key: "wishlist",
     href: (l) => `/${l}/collections`,
-    labelZh: "清單",
-    labelEn: "Saved",
+    labelKey: "wishlistTab",
     Icon: Heart,
   },
   {
     key: "orders",
     href: (l) => `/${l}/orders`,
-    labelZh: "訂單",
-    labelEn: "Orders",
+    labelKey: "ordersTab",
     Icon: ShoppingBag,
   },
   {
     key: "profile",
     href: (l) => `/${l}/profile`,
-    labelZh: "我的",
-    labelEn: "Me",
+    labelKey: "profileTab",
     Icon: User,
   },
 ];
@@ -57,28 +52,28 @@ function isActive(pathname: string, href: string) {
   return false;
 }
 
-export default function BottomTab() {
+export default function BottomTab({ t }: { t: Translations }) {
   const pathname = usePathname() || "";
   const params = useParams() as { locale?: string };
   const locale = params?.locale || "zh-HK";
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white/90 backdrop-blur">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
       <div className="mx-auto grid max-w-3xl grid-cols-5 px-2 py-2">
-        {tabs.map((t) => {
-          const href = t.href(locale);
+        {tabs.map((tab) => {
+          const href = tab.href(locale);
           const active = isActive(pathname, href);
-          const color = active ? "text-[var(--primary)]" : "text-zinc-500";
-          const label = locale === "zh-HK" ? t.labelZh : t.labelEn;
+          const color = active ? "text-[var(--primary)]" : "text-zinc-500 dark:text-zinc-400";
+          const label = t.nav[tab.labelKey];
 
           return (
             <Link
-              key={t.key}
+              key={tab.key}
               href={href}
               className={`flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 ${color}`}
               aria-current={active ? "page" : undefined}
             >
-              <t.Icon size={20} className={color} />
+              <tab.Icon size={20} className={color} />
               <span className="text-[11px] leading-none">{label}</span>
             </Link>
           );

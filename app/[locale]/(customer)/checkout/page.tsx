@@ -51,7 +51,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const applyCoupon = async (code?: string) => {
     const finalCode = (code ?? couponCode).trim();
     if (!finalCode) {
-      setCouponError("Please enter a coupon code.");
+      setCouponError(t.checkout.enterCoupon);
       return;
     }
 
@@ -68,7 +68,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       });
       const json = await res.json();
       if (!res.ok || !json.ok) {
-        setCouponError(json?.error?.message || "Invalid coupon.");
+        setCouponError(json?.error?.message || t.checkout.invalidCoupon);
         setDiscount(0);
         setCouponApplied(false);
       } else {
@@ -76,7 +76,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
         setCouponApplied(true);
       }
     } catch {
-      setCouponError("Failed to validate coupon.");
+      setCouponError(t.checkout.validateFailed);
       setDiscount(0);
       setCouponApplied(false);
     } finally {
@@ -152,7 +152,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
 
       if (result.ok) {
         const orderId = result.data.id as string;
-        showToast("Order placed successfully!");
+        showToast(t.checkout.orderPlaced);
 
         // Create Stripe Checkout session
         const res2 = await fetch("/api/checkout/session", {
@@ -172,27 +172,27 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
         clearCart();
         router.push(`/${locale}/orders/${orderId}`);
       } else {
-        alert(`Error: ${result.error?.code || "ERROR"}: ${result.error?.message || "Unknown error"}`);
+        alert(`${t.common.error}: ${result.error?.code || "ERROR"}: ${result.error?.message || t.common.unknownError}`);
         setProcessing(false);
       }
     } catch (error) {
       console.error("Order creation failed:", error);
-      alert("Failed to create order. Please try again.");
+      alert(t.checkout.orderFailed);
       setProcessing(false);
     }
   };
+
+  const t = getDict(locale);
 
   if (!mounted) {
     return (
       <div className="px-4 py-6">
         <div className="mx-auto max-w-4xl">
-          <h1 className="text-2xl font-semibold text-zinc-900">Loading...</h1>
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Loading...</h1>
         </div>
       </div>
     );
   }
-
-  const t = getDict(locale);
   const subtotal = getCartTotal(cart);
   const deliveryFee = fulfillmentType === "delivery" ? DELIVERY_FEE : 0;
   const total = Math.max(0, subtotal + deliveryFee - discount);
@@ -200,54 +200,54 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   return (
     <div className="px-4 py-6 pb-32">
       <div className="mx-auto max-w-4xl">
-        <h1 className="text-2xl font-semibold text-zinc-900">{t.checkout.title}</h1>
+        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{t.checkout.title}</h1>
 
         <form onSubmit={handleSubmit} className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Left column: Form */}
             <div className="space-y-6">
               {/* Customer Info */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6">
-                <h2 className="text-lg font-semibold text-zinc-900">{t.checkout.customerInfo}</h2>
+              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{t.checkout.customerInfo}</h2>
                 <div className="mt-4 space-y-4">
                   <div>
-                    <label className="block text-zinc-700 text-sm">{t.checkout.customerName}</label>
+                    <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.customerName}</label>
                     <input
                       type="text"
                       required
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none"
+                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-zinc-700 text-sm">{t.checkout.phone}</label>
+                    <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.phone}</label>
                     <input
                       type="tel"
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none"
+                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-zinc-700 text-sm">{t.checkout.email}</label>
+                    <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.email}</label>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none"
+                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Fulfillment */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6">
-                <h2 className="text-lg font-semibold text-zinc-900">{t.checkout.fulfillment}</h2>
+              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{t.checkout.fulfillment}</h2>
                 <div className="mt-4 space-y-4">
                   <div>
-                    <label className="block text-zinc-700 text-sm">{t.checkout.fulfillmentType}</label>
+                    <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.fulfillmentType}</label>
                     <div className="mt-2 flex gap-3">
                       <button
                         type="button"
@@ -255,7 +255,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                         className={`flex-1 rounded-xl border px-4 py-3 font-semibold ${
                           fulfillmentType === "pickup"
                             ? "border-olive-600 bg-olive-600 text-white"
-                            : "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50"
+                            : "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
                         }`}
                       >
                         {t.checkout.pickup}
@@ -266,7 +266,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                         className={`flex-1 rounded-xl border px-4 py-3 font-semibold ${
                           fulfillmentType === "delivery"
                             ? "border-olive-600 bg-olive-600 text-white"
-                            : "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50"
+                            : "border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
                         }`}
                       >
                         {t.checkout.delivery}
@@ -275,46 +275,46 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                   </div>
 
                   {fulfillmentType === "delivery" && (
-                    <div className="space-y-4 border-t border-zinc-200 pt-4">
-                      <h3 className="font-semibold text-sm text-zinc-900">{t.checkout.deliveryAddress}</h3>
+                    <div className="space-y-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                      <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">{t.checkout.deliveryAddress}</h3>
                       <div>
-                        <label className="block text-zinc-700 text-sm">{t.checkout.addressLine1}</label>
+                        <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.addressLine1}</label>
                         <input
                           type="text"
                           required
                           value={addressLine1}
                           onChange={(e) => setAddressLine1(e.target.value)}
-                          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-zinc-700 text-sm">{t.checkout.district}</label>
+                        <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.district}</label>
                         <input
                           type="text"
                           value={district}
                           onChange={(e) => setDistrict(e.target.value)}
-                          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-zinc-700 text-sm">{t.checkout.notes}</label>
+                        <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.notes}</label>
                         <textarea
                           value={notes}
                           onChange={(e) => setNotes(e.target.value)}
                           rows={2}
-                          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none"
+                          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
                         />
                       </div>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-zinc-700 text-sm">{t.checkout.orderNote}</label>
+                    <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.orderNote}</label>
                     <textarea
                       value={orderNote}
                       onChange={(e) => setOrderNote(e.target.value)}
                       rows={2}
-                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none"
+                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
                     />
                   </div>
                 </div>

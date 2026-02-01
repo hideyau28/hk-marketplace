@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useCurrency } from "@/lib/currency";
+import type { Translations } from "@/lib/translations";
 
-export default function PromoBanner() {
+export default function PromoBanner({ t }: { t: Translations }) {
   const [open, setOpen] = useState(true);
   const { format } = useCurrency();
 
@@ -12,7 +13,9 @@ export default function PromoBanner() {
   return (
     <div className="mt-4 rounded-2xl bg-olive-600 px-4 py-3 text-white">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-sm font-semibold">🎉 Free Shipping on orders over {format(500)}!</p>
+        <p className="text-sm font-semibold">
+          🎉 {t.home.freeShipping.replace("{amount}", format(500))}
+        </p>
         <button
           type="button"
           onClick={() => setOpen(false)}

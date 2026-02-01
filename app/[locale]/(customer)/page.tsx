@@ -53,25 +53,25 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <HeroCarousel
           slides={[
             {
-              title: l === "zh-HK" ? "裝備勝利" : "Gear Up for Victory",
-              subtitle: l === "zh-HK" ? "頂級運動裝備，助你突破極限" : "Premium sports gear for peak performance",
-              cta: l === "zh-HK" ? "立即選購" : "Shop Now",
+              title: t.home.hero1Title,
+              subtitle: t.home.hero1Subtitle,
+              cta: t.home.hero1Cta,
               href: `/${l}`,
               imageUrl:
                 "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1400&q=70",
             },
             {
-              title: l === "zh-HK" ? "跑得更遠，更快" : "Run Further, Go Faster",
-              subtitle: l === "zh-HK" ? "專業跑步裝備系列" : "Professional running gear collection",
-              cta: l === "zh-HK" ? "查看跑步系列" : "View Running",
+              title: t.home.hero2Title,
+              subtitle: t.home.hero2Subtitle,
+              cta: t.home.hero2Cta,
               href: `/${l}?category=Shoes`,
               imageUrl:
                 "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&w=1400&q=70",
             },
             {
-              title: l === "zh-HK" ? "像冠軍般訓練" : "Train Like a Champion",
-              subtitle: l === "zh-HK" ? "專業訓練服飾，提升表現" : "Pro training apparel for better results",
-              cta: l === "zh-HK" ? "探索訓練裝備" : "Explore Training",
+              title: t.home.hero3Title,
+              subtitle: t.home.hero3Subtitle,
+              cta: t.home.hero3Cta,
               href: `/${l}?category=Tops`,
               imageUrl:
                 "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1400&q=70",
@@ -81,7 +81,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </div>
 
       <div className="px-4">
-        <PromoBanner />
+        <PromoBanner t={t} />
       </div>
 
       {/* Sentinel: used to hide floating search once user scrolls past hero */}

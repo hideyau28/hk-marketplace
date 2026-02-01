@@ -74,7 +74,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
     >
       {/* Image container */}
       <div
-        className="relative overflow-hidden rounded-2xl bg-zinc-100 aspect-square"
+        className="relative overflow-hidden rounded-2xl bg-zinc-100 aspect-square dark:bg-zinc-800"
       >
         {p.image ? (
           <img
@@ -93,8 +93,8 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         {/* Wishlist heart button */}
         <button
           onClick={handleWishlistClick}
-          className={`absolute top-2 right-2 p-1 rounded-full bg-white/70 backdrop-blur shadow-sm hover:bg-white transition-colors ${
-            wishlisted ? "text-red-500" : "text-zinc-500 hover:text-zinc-700"
+          className={`absolute top-2 right-2 p-1 rounded-full bg-white/70 backdrop-blur shadow-sm hover:bg-white transition-colors dark:bg-zinc-800/70 dark:hover:bg-zinc-800 ${
+            wishlisted ? "text-red-500" : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100"
           }`}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
@@ -112,18 +112,18 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
       <div className="pt-2.5">
         {/* 1) Brand (only show if present) */}
         {p.brand ? (
-          <div className="text-xs font-medium tracking-wide text-zinc-700 truncate">
+          <div className="text-xs font-medium tracking-wide text-zinc-700 truncate dark:text-zinc-300">
             {p.brand}
           </div>
         ) : null}
 
         {/* 2) Model / short description (2 lines) */}
-        <h3 className={"text-sm text-zinc-900 font-medium line-clamp-2 leading-snug " + (p.brand ? "mt-0.5" : "")}>
+        <h3 className={"text-sm text-zinc-900 dark:text-zinc-100 font-medium line-clamp-2 leading-snug " + (p.brand ? "mt-0.5" : "")}>
           {p.title || "—"}
         </h3>
 
         {/* 3) Price */}
-        <div className="mt-1.5 text-base font-bold text-zinc-900 leading-tight">
+        <div className="mt-1.5 text-base font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
           {p.price != null ? format(p.price) : "—"}
         </div>
 

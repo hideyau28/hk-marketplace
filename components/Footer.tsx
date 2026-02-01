@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
+import type { Translations } from "@/lib/translations";
 import { Instagram, Facebook } from "lucide-react";
 
-export default function Footer({ locale }: { locale: Locale }) {
+export default function Footer({ locale, t }: { locale: Locale; t: Translations }) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -12,25 +13,19 @@ export default function Footer({ locale }: { locale: Locale }) {
           {/* Company Info */}
           <div>
             <h3 className="text-xl font-bold mb-4">HK•Market</h3>
-            <p className="text-zinc-400 text-sm">
-              {locale === "zh-HK"
-                ? "香港優質運動產品專門店"
-                : "Premium sports products in Hong Kong"}
-            </p>
+            <p className="text-zinc-400 text-sm">{t.footer.desc}</p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-semibold mb-4">
-              {locale === "zh-HK" ? "快速連結" : "Quick Links"}
-            </h4>
+            <h4 className="font-semibold mb-4">{t.footer.quickLinks}</h4>
             <ul className="space-y-2">
               <li>
                 <Link
                   href={`/${locale}/about`}
                   className="text-zinc-400 hover:text-olive-400 text-sm transition-colors"
                 >
-                  {locale === "zh-HK" ? "關於我們" : "About"}
+                  {t.footer.about}
                 </Link>
               </li>
               <li>
@@ -38,7 +33,7 @@ export default function Footer({ locale }: { locale: Locale }) {
                   href={`/${locale}/contact`}
                   className="text-zinc-400 hover:text-olive-400 text-sm transition-colors"
                 >
-                  {locale === "zh-HK" ? "聯絡我們" : "Contact"}
+                  {t.footer.contact}
                 </Link>
               </li>
               <li>
@@ -46,7 +41,7 @@ export default function Footer({ locale }: { locale: Locale }) {
                   href={`/${locale}/privacy`}
                   className="text-zinc-400 hover:text-olive-400 text-sm transition-colors"
                 >
-                  {locale === "zh-HK" ? "私隱政策" : "Privacy"}
+                  {t.footer.privacy}
                 </Link>
               </li>
               <li>
@@ -54,7 +49,7 @@ export default function Footer({ locale }: { locale: Locale }) {
                   href={`/${locale}/terms`}
                   className="text-zinc-400 hover:text-olive-400 text-sm transition-colors"
                 >
-                  {locale === "zh-HK" ? "條款及細則" : "Terms"}
+                  {t.footer.terms}
                 </Link>
               </li>
             </ul>
@@ -62,9 +57,7 @@ export default function Footer({ locale }: { locale: Locale }) {
 
           {/* Social Media */}
           <div>
-            <h4 className="font-semibold mb-4">
-              {locale === "zh-HK" ? "關注我們" : "Follow Us"}
-            </h4>
+            <h4 className="font-semibold mb-4">{t.footer.follow}</h4>
             <div className="flex gap-4">
               <a
                 href="https://instagram.com"
@@ -92,7 +85,7 @@ export default function Footer({ locale }: { locale: Locale }) {
         <div className="border-t border-zinc-800 mt-8 pt-8 text-center">
           <p className="text-zinc-500 text-sm">
             © {currentYear} HK•Market.{" "}
-            {locale === "zh-HK" ? "版權所有。" : "All rights reserved."}
+            {t.footer.rights}
           </p>
         </div>
       </div>
