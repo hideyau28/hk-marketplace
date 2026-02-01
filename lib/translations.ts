@@ -24,6 +24,9 @@ export const translations = {
       trackOrder: "Track Order",
       lightMode: "Light Mode",
       darkMode: "Dark Mode",
+      systemMode: "System",
+      myOrders: "My Orders",
+      myWishlist: "My Wishlist",
     },
     home: {
       featured: "Featured",
@@ -316,6 +319,9 @@ export const translations = {
       trackOrder: "追蹤訂單",
       lightMode: "淺色模式",
       darkMode: "深色模式",
+      systemMode: "系統",
+      myOrders: "我的訂單",
+      myWishlist: "我的收藏",
     },
     home: {
       featured: "今日精選",
