@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/i18n";
 
 type Slide = {
@@ -13,14 +14,6 @@ type Slide = {
   imageUrl?: string;
 };
 
-const gradients = [
-  "from-olive-700 to-olive-900",
-  "from-zinc-800 to-zinc-950",
-  "from-blue-700 to-blue-900",
-  "from-zinc-900 to-black",
-  "from-teal-700 to-teal-900",
-];
-
 export default function HeroCarouselCMS({
   slides,
   locale,
@@ -28,80 +21,60 @@ export default function HeroCarouselCMS({
   slides: Slide[];
   locale: Locale;
 }) {
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
-  const [active, setActive] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el || slides.length === 0) return;
-
-    const items = Array.from(el.querySelectorAll<HTMLElement>("[data-hero-slide]"));
-    if (items.length === 0) return;
-
-    const obs = new IntersectionObserver(
-      (entries) => {
-        const best = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => (b.intersectionRatio ?? 0) - (a.intersectionRatio ?? 0))[0];
-        if (!best) return;
-        const idx = Number((best.target as HTMLElement).dataset.index || 0);
-        setActive(idx);
-      },
-      { root: el, threshold: [0.5, 0.75] }
-    );
-
-    items.forEach((it) => obs.observe(it));
-    return () => obs.disconnect();
-  }, [slides.length]);
-
-  // Auto-rotate every 5 seconds
+  // Auto-rotate every 5 seconds - NO scrollIntoView, just update index
   useEffect(() => {
     if (slides.length <= 1) return;
     const interval = setInterval(() => {
-      const el = scrollerRef.current;
-      if (!el) return;
-      const nextIndex = (active + 1) % slides.length;
-      const items = Array.from(el.querySelectorAll<HTMLElement>("[data-hero-slide]"));
-      if (items[nextIndex]) {
-        items[nextIndex].scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
-      }
+      setActiveIndex((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [active, slides.length]);
+  }, [slides.length]);
 
   if (slides.length === 0) return null;
 
   return (
     <section className="mt-4">
-      <div className="overflow-hidden">
+      <div className="relative overflow-hidden rounded-3xl">
+        {/* Slides Container - NO scroll-snap, use transform instead */}
         <div
-          ref={scrollerRef}
-          className="flex w-full overflow-x-auto [-webkit-overflow-scrolling:touch] snap-x snap-mandatory scrollbar-hide"
+          className="flex transition-transform duration-500 ease-out"
+          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
         >
-          {slides.map((slide, i) => {
-            const gradient = gradients[i % gradients.length];
+          {slides.map((slide) => {
             const Inner = (
-              <div
-                data-hero-slide
-                data-index={i}
-                className="relative w-full snap-start"
-              >
-                <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${gradient}`}>
-                  <div className="relative h-48 md:h-72 w-full flex flex-col items-center justify-center p-6 text-center">
-                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                      {slide.title}
-                    </h2>
-                    {slide.subtitle && (
-                      <p className="text-sm md:text-base text-white/80 mb-4">
-                        {slide.subtitle}
-                      </p>
-                    )}
-                    {slide.buttonText && slide.buttonLink && (
-                      <span className="inline-flex rounded-full bg-white px-6 py-2 text-sm font-semibold text-zinc-900 hover:bg-white/90 transition-colors">
-                        {slide.buttonText}
-                      </span>
-                    )}
-                  </div>
+              <div className="relative w-full shrink-0 h-48 md:h-72">
+                {/* Background Image */}
+                {slide.imageUrl && (
+                  <Image
+                    src={slide.imageUrl}
+                    alt={slide.title}
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                    priority={activeIndex === 0}
+                  />
+                )}
+
+                {/* Dark Overlay for Text Readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/30" />
+
+                {/* Content */}
+                <div className="relative flex h-full flex-col items-center justify-center p-6 text-center">
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                    {slide.title}
+                  </h2>
+                  {slide.subtitle && (
+                    <p className="text-sm md:text-base text-white/90 mb-4">
+                      {slide.subtitle}
+                    </p>
+                  )}
+                  {slide.buttonText && slide.buttonLink && (
+                    <span className="inline-flex rounded-full bg-white px-6 py-2 text-sm font-semibold text-zinc-900 hover:bg-white/90 transition-colors">
+                      {slide.buttonText}
+                    </span>
+                  )}
                 </div>
               </div>
             );
@@ -120,13 +93,15 @@ export default function HeroCarouselCMS({
 
         {/* Dot Indicators */}
         {slides.length > 1 && (
-          <div className="mt-3 flex justify-center gap-2 px-4">
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4">
             {slides.map((_, i) => (
-              <div
+              <button
                 key={i}
+                onClick={() => setActiveIndex(i)}
                 className={`h-2 w-2 rounded-full transition-all ${
-                  i === active ? "bg-white" : "bg-white/50"
+                  i === activeIndex ? "bg-white" : "bg-white/50"
                 }`}
+                aria-label={`Go to slide ${i + 1}`}
               />
             ))}
           </div>
