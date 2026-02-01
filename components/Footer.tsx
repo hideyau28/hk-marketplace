@@ -7,13 +7,13 @@ export default function Footer({ locale, t }: { locale: Locale; t: Translations 
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-zinc-900 text-zinc-100 dark:bg-zinc-950 dark:text-zinc-100">
+    <footer className="bg-zinc-900 text-zinc-100 pb-24 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="px-6 py-8 text-center">
         {/* Brand */}
         <h3 className="text-lg font-bold mb-3">HK•Market</h3>
 
         {/* Links - No section titles */}
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-sm">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-sm pr-16">
           <Link
             href={`/${locale}/about`}
             className="text-zinc-400 hover:text-olive-400 transition-colors"

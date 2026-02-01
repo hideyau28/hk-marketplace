@@ -95,7 +95,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
                     {item.name} × {item.quantity}
                   </span>
                   <span className="text-zinc-900">
-                    {amounts.currency} ${(item.unitPrice * item.quantity).toFixed(2)}
+                    {amounts.currency}${Math.round(item.unitPrice * item.quantity).toLocaleString()}
                   </span>
                 </div>
               ))}
@@ -106,21 +106,21 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
             <div className="flex justify-between">
               <span className="text-zinc-700">{t.order.subtotal}</span>
               <span className="text-zinc-900">
-                {amounts.currency} ${amounts.subtotal.toFixed(2)}
+                {amounts.currency}${Math.round(amounts.subtotal).toLocaleString()}
               </span>
             </div>
             {amounts.deliveryFee && (
               <div className="flex justify-between">
                 <span className="text-zinc-700">{t.order.deliveryFee}</span>
                 <span className="text-zinc-900">
-                  {amounts.currency} ${amounts.deliveryFee.toFixed(2)}
+                  {amounts.currency}${Math.round(amounts.deliveryFee).toLocaleString()}
                 </span>
               </div>
             )}
             <div className="flex justify-between border-t border-zinc-200 pt-2 text-lg font-semibold">
               <span className="text-zinc-900">{t.order.total}</span>
               <span className="text-zinc-900">
-                {amounts.currency} ${amounts.total.toFixed(2)}
+                {amounts.currency}${Math.round(amounts.total).toLocaleString()}
               </span>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-config({ path: ".env.local" });
+// Load .env for production Neon database
 config({ path: ".env" });
 
 import { prisma } from "../lib/prisma";
