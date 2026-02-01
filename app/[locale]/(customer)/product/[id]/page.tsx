@@ -52,6 +52,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     brand: product.brand || "—",
     title: product.title,
     price: product.price,
+    originalPrice: product.originalPrice,
     image: product.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
     category: product.category,
     sizeSystem: (product as any).sizeSystem || null,

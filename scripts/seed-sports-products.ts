@@ -16,10 +16,12 @@ const prisma = new PrismaClient({
 });
 
 // Size defaults for admin sizing system
+// Shoes use EU number sizes
 const SHOE_SIZES = ["38", "39", "40", "41", "42", "43", "44"];
-const TOP_SIZES = ["S", "M", "L", "XL"];
-const PANT_SIZES = ["28", "30", "32", "34", "36"];
-const SOCK_SIZES = ["S", "M", "L"];
+// Tops, Pants, Jackets use letter sizes
+const CLOTHING_SIZES = ["S", "M", "L", "XL", "XXL"];
+// Socks and Accessories use simpler options
+const SOCK_SIZES = ["One Size", "S", "M", "L"];
 const ACCESSORY_SIZES = ["One Size"];
 
 const sportsProducts = [
@@ -50,8 +52,8 @@ const sportsProducts = [
     category: "Tops",
     imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "tops",
-    sizes: TOP_SIZES,
+    sizeSystem: "clothing",
+    sizes: CLOTHING_SIZES,
   },
   {
     brand: "Nike",
@@ -60,8 +62,8 @@ const sportsProducts = [
     category: "Pants",
     imageUrl: "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "pants",
-    sizes: PANT_SIZES,
+    sizeSystem: "clothing",
+    sizes: CLOTHING_SIZES,
   },
   {
     brand: "Adidas",
@@ -70,8 +72,8 @@ const sportsProducts = [
     category: "Jackets",
     imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "tops",
-    sizes: TOP_SIZES,
+    sizeSystem: "clothing",
+    sizes: CLOTHING_SIZES,
   },
   {
     brand: "Puma",
@@ -90,8 +92,8 @@ const sportsProducts = [
     category: "Jackets",
     imageUrl: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "tops",
-    sizes: TOP_SIZES,
+    sizeSystem: "clothing",
+    sizes: CLOTHING_SIZES,
   },
   {
     brand: "New Balance",
@@ -120,8 +122,8 @@ const sportsProducts = [
     category: "Pants",
     imageUrl: "https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=800&q=60",
     active: true,
-    sizeSystem: "pants",
-    sizes: PANT_SIZES,
+    sizeSystem: "clothing",
+    sizes: CLOTHING_SIZES,
   },
 ];
 

@@ -70,6 +70,9 @@ export const translations = {
       relatedProducts: "Related Products",
       home: "Home",
       originalPrice: "Was",
+      selectSize: "Select Size",
+      quantity: "Quantity",
+      off: "off",
     },
     cart: {
       title: "Shopping Cart",
@@ -401,6 +404,9 @@ export const translations = {
       relatedProducts: "相關產品",
       home: "首頁",
       originalPrice: "原價",
+      selectSize: "選擇尺碼",
+      quantity: "數量",
+      off: "折",
     },
     cart: {
       title: "購物車",

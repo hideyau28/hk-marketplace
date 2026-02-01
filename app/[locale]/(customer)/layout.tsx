@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
 import TopNav from "@/components/TopNav";
-import CategoryNav from "@/components/CategoryNav";
+import CategoryNavWrapper from "@/components/CategoryNavWrapper";
 import BottomTab from "@/components/BottomTab";
 import Footer from "@/components/Footer";
 import { CurrencyProvider } from "@/lib/currency";
@@ -34,7 +34,7 @@ export default async function CustomerLayout({
         <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
           <Analytics />
           <TopNav locale={l} t={t} />
-          <CategoryNav locale={l} />
+          <CategoryNavWrapper locale={l} />
           <main>{children}</main>
           <Footer locale={l} t={t} />
           <BottomTab t={t} />
