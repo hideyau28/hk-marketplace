@@ -17,6 +17,14 @@ export const translations = {
       ordersTab: "Orders",
       profileTab: "Me",
     },
+    mobileMenu: {
+      language: "Language",
+      currency: "Currency",
+      appearance: "Appearance",
+      trackOrder: "Track Order",
+      lightMode: "Light Mode",
+      darkMode: "Dark Mode",
+    },
     home: {
       featured: "Featured",
       trending: "Trending",
@@ -300,6 +308,14 @@ export const translations = {
       wishlistTab: "清單",
       ordersTab: "訂單",
       profileTab: "我的",
+    },
+    mobileMenu: {
+      language: "語言",
+      currency: "貨幣",
+      appearance: "外觀",
+      trackOrder: "追蹤訂單",
+      lightMode: "淺色模式",
+      darkMode: "深色模式",
     },
     home: {
       featured: "今日精選",
