@@ -11,11 +11,11 @@ async function main() {
   console.log("Updating products with originalPrice...");
 
   const productUpdates = [
-    { title: "Nike Air Max 270", originalPrice: 1599 },
-    { title: "Adidas Ultraboost 22", originalPrice: 1899 },
-    { title: "Under Armour Tech Tee", originalPrice: 399 },
-    { title: "Nike Dri-FIT Shorts", originalPrice: 499 },
-    { title: "The North Face Windbreaker", originalPrice: 1199 },
+    { title: "Nike Air Max 270", price: 1299, originalPrice: 1599 },
+    { title: "Adidas Ultraboost 22", price: 1499, originalPrice: 1899 },
+    { title: "Under Armour Tech Tee", price: 299, originalPrice: 399 },
+    { title: "Nike Dri-FIT Shorts", price: 399, originalPrice: 499 },
+    { title: "The North Face Windbreaker", price: 899, originalPrice: 1199 },
   ];
 
   for (const update of productUpdates) {
@@ -26,9 +26,12 @@ async function main() {
     if (product) {
       await prisma.product.update({
         where: { id: product.id },
-        data: { originalPrice: update.originalPrice },
+        data: {
+          price: update.price,
+          originalPrice: update.originalPrice
+        },
       });
-      console.log(`✓ Updated ${update.title} with originalPrice ${update.originalPrice}`);
+      console.log(`✓ Updated ${update.title} with price ${update.price} and originalPrice ${update.originalPrice}`);
     } else {
       console.log(`⚠ Product not found: ${update.title}`);
     }

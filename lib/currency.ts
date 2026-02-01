@@ -51,7 +51,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       convert: (amountHKD: number) => amountHKD * RATES[currency],
       format: (amountHKD: number) => {
         const converted = amountHKD * RATES[currency];
-        return `${SYMBOLS[currency]} ${converted.toFixed(2)}`;
+        return `${SYMBOLS[currency]}${Math.round(converted).toLocaleString()}`;
       },
     };
   }, [currency]);

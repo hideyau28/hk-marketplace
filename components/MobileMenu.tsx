@@ -67,7 +67,7 @@ export default function MobileMenu({
 
       {/* Drawer */}
       <div
-        className={`fixed right-0 top-0 bottom-0 z-50 w-48 bg-white shadow-2xl md:hidden dark:bg-zinc-950 transition-transform duration-300 ease-in-out ${
+        className={`fixed right-0 top-0 bottom-0 z-50 w-44 bg-white shadow-2xl md:hidden dark:bg-zinc-950 transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -120,7 +120,7 @@ export default function MobileMenu({
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 >
                   <DollarSign size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
-                  <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
+                  <span className="text-sm text-zinc-900 dark:text-zinc-100">
                     {currency}
                   </span>
                   <ChevronDown

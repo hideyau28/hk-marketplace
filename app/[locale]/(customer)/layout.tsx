@@ -35,7 +35,7 @@ export default async function CustomerLayout({
           <Analytics />
           <TopNav locale={l} t={t} />
           <CategoryNav locale={l} />
-          <main className="pb-24">{children}</main>
+          <main>{children}</main>
           <Footer locale={l} t={t} />
           <BottomTab t={t} />
           <PushNotificationBanner t={t} />

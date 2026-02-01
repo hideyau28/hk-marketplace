@@ -59,7 +59,7 @@ export default function BottomTab({ t }: { t: Translations }) {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white/90 backdrop-blur pb-[env(safe-area-inset-bottom)] dark:border-zinc-800 dark:bg-zinc-950/90">
-      <div className="mx-auto grid max-w-3xl grid-cols-5 px-2 pt-3 pb-2">
+      <div className="mx-auto grid max-w-3xl grid-cols-5 px-2 py-2">
         {tabs.map((tab) => {
           const href = tab.href(locale);
           const active = isActive(pathname, href);
@@ -70,11 +70,11 @@ export default function BottomTab({ t }: { t: Translations }) {
             <Link
               key={tab.key}
               href={href}
-              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2.5 min-h-[48px] ${color}`}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 ${color}`}
               aria-current={active ? "page" : undefined}
             >
-              <tab.Icon size={20} />
-              <span className="text-[10px] leading-tight font-medium">{label}</span>
+              <tab.Icon size={18} />
+              <span className="text-[9px] leading-tight font-medium">{label}</span>
             </Link>
           );
         })}
