@@ -7,7 +7,6 @@ import CategoryNavWrapper from "@/components/CategoryNavWrapper";
 import BottomTab from "@/components/BottomTab";
 import Footer from "@/components/Footer";
 import { CurrencyProvider } from "@/lib/currency";
-import WhatsAppButton from "@/components/WhatsAppButton";
 import { ThemeProvider } from "@/lib/theme-context";
 import Analytics from "@/components/Analytics";
 import PushNotificationBanner from "@/components/PushNotificationBanner";
@@ -39,7 +38,6 @@ export default async function CustomerLayout({
           <Footer locale={l} t={t} />
           <BottomTab t={t} />
           <PushNotificationBanner t={t} />
-          <WhatsAppButton t={t} />
         </div>
       </CurrencyProvider>
     </ThemeProvider>

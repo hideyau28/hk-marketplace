@@ -49,19 +49,30 @@ export default function Footer({ locale, t }: { locale: Locale; t: Translations 
             href="https://instagram.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-olive-600 transition-colors dark:bg-zinc-900"
+            className="w-10 h-10 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-olive-600 transition-colors"
             aria-label="Instagram"
           >
-            <Instagram size={18} />
+            <Instagram size={20} className="text-white" />
           </a>
           <a
             href="https://facebook.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-olive-600 transition-colors dark:bg-zinc-900"
+            className="w-10 h-10 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-olive-600 transition-colors"
             aria-label="Facebook"
           >
-            <Facebook size={18} />
+            <Facebook size={20} className="text-white" />
+          </a>
+          <a
+            href="https://wa.me/85212345678"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-10 h-10 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-[#25D366] transition-colors"
+            aria-label="WhatsApp"
+          >
+            <svg viewBox="0 0 32 32" className="h-5 w-5 text-white" fill="currentColor" aria-hidden="true">
+              <path d="M16 2.4c-7.5 0-13.6 6.1-13.6 13.6 0 2.4.6 4.8 1.8 6.9L2 30l7.3-2.1c2 1.1 4.3 1.7 6.7 1.7 7.5 0 13.6-6.1 13.6-13.6S23.5 2.4 16 2.4zm7.9 19.1c-.3.9-1.5 1.6-2.5 1.8-.7.1-1.6.2-4.7-.9-4.2-1.5-6.8-5.2-7-5.5-.2-.3-1.7-2.2-1.7-4.2s1-3 1.3-3.4c.3-.4.7-.5 1-.5h.7c.2 0 .5 0 .7.6.3.7.9 2.4 1 2.6.1.2.1.4 0 .6-.1.2-.2.4-.4.6-.2.2-.4.4-.5.5-.2.2-.4.4-.2.7.2.3.9 1.5 1.9 2.4 1.3 1.2 2.5 1.6 2.9 1.8.4.2.6.2.8 0 .2-.2 1-1.1 1.3-1.5.3-.4.5-.3.9-.2.4.1 2.5 1.2 2.9 1.4.4.2.7.3.8.5.1.2.1.9-.2 1.8z" />
+            </svg>
           </a>
         </div>
 

@@ -15,6 +15,7 @@ type ProductDetailClientProps = {
     price: number;
     originalPrice?: number | null;
     image: string;
+    images?: string[];
     brand: string;
     sizeSystem: string | null;
     sizes: any;
@@ -79,21 +80,24 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
   const needsSize = !!product.sizeSystem;
   const isDisabled = product.stock <= 0 || (needsSize && !selectedSize);
 
+  // Get translated button text for disabled state
+  const selectSizeFirstText = locale === "zh-HK" ? "請先選擇尺碼" : "Select a size";
+
   return (
-    <div className="space-y-6 pb-32 md:pb-0">
+    <div className="space-y-4">
       {/* Brand */}
-      <div className="text-zinc-600 text-sm dark:text-zinc-400">{product.brand}</div>
+      <div className="text-zinc-500 text-sm dark:text-zinc-400">{product.brand}</div>
 
       {/* Title */}
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{product.title}</h1>
+      <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{product.title}</h1>
 
       {/* Price */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 flex-wrap">
         {isOnSale ? (
           <>
-            <span className="text-lg text-zinc-400 line-through">{format(product.originalPrice!)}</span>
+            <span className="text-lg text-zinc-400 line-through mr-2">{format(product.originalPrice!)}</span>
             <span className="text-2xl font-bold text-red-600">{format(product.price)}</span>
-            <span className="bg-red-500 text-white text-sm px-2 py-0.5 rounded-full">-{discountPercent}%</span>
+            <span className="bg-red-500 text-white text-sm font-medium px-2 py-0.5 rounded-full ml-2">-{discountPercent}%</span>
           </>
         ) : (
           <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{format(product.price)}</span>
@@ -151,35 +155,33 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
       </div>
 
       {/* Desktop Add to Cart Button */}
-      <div className="hidden md:block">
+      <div className="hidden md:block pt-2">
         <button
           onClick={handleAddToCart}
           disabled={isDisabled}
-          className={`w-full rounded-full py-3 text-lg font-semibold ${
+          className={`w-full rounded-full py-3 text-base font-semibold ${
             isDisabled
               ? "bg-zinc-300 text-zinc-500 cursor-not-allowed"
               : "bg-olive-600 text-white hover:bg-olive-700"
           }`}
         >
-          {added ? t.product.addedToCart : t.product.addToCart}
+          {added ? t.product.addedToCart : (isDisabled && needsSize ? selectSizeFirstText : t.product.addToCart)}
         </button>
       </div>
 
-      {/* Mobile Fixed Bottom Bar */}
-      <div className="fixed bottom-16 left-0 right-0 border-t border-zinc-200 bg-white/95 backdrop-blur md:hidden z-10 dark:border-zinc-800 dark:bg-zinc-950/95">
-        <div className="mx-auto max-w-6xl px-4 py-3">
-          <button
-            onClick={handleAddToCart}
-            disabled={isDisabled}
-            className={`w-full rounded-full py-3 text-lg font-semibold ${
-              isDisabled
-                ? "bg-zinc-300 text-zinc-500 cursor-not-allowed"
-                : "bg-olive-600 text-white hover:bg-olive-700"
-            }`}
-          >
-            {added ? t.product.addedToCart : t.product.addToCart}
-          </button>
-        </div>
+      {/* Mobile Fixed Bottom Bar - positioned above bottom nav (56px) */}
+      <div className="fixed bottom-[56px] left-0 right-0 border-t border-zinc-200 bg-white dark:bg-zinc-950 dark:border-zinc-800 md:hidden z-40 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <button
+          onClick={handleAddToCart}
+          disabled={isDisabled}
+          className={`w-full rounded-full py-3 text-base font-semibold ${
+            isDisabled
+              ? "bg-zinc-300 text-zinc-500 cursor-not-allowed"
+              : "bg-olive-600 text-white hover:bg-olive-700"
+          }`}
+        >
+          {added ? t.product.addedToCart : (isDisabled && needsSize ? selectSizeFirstText : t.product.addToCart)}
+        </button>
       </div>
     </div>
   );

@@ -144,6 +144,7 @@ model Product {
   price         Float
   originalPrice Float? // for sale items
   imageUrl      String?
+  images        String[] // array of image URLs for carousel
   category      String? // optional: categorize products for rails/hero links
   badges        Json?
   sizeSystem    String? // "EU", "US", "UK", "Universal", "Multi"

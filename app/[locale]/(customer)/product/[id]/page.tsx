@@ -6,7 +6,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import ProductDetailClient from "@/components/ProductDetailClient";
+import ProductImageCarousel from "@/components/ProductImageCarousel";
 import CurrencyPrice from "@/components/CurrencyPrice";
+
+// Category translations for breadcrumb
+const categoryTranslations: Record<string, { en: string; "zh-HK": string }> = {
+  Shoes: { en: "Shoes", "zh-HK": "鞋款" },
+  Tops: { en: "Tops", "zh-HK": "上衣" },
+  Pants: { en: "Pants", "zh-HK": "褲裝" },
+  Jackets: { en: "Jackets", "zh-HK": "外套" },
+  Socks: { en: "Socks", "zh-HK": "襪子" },
+  Accessories: { en: "Accessories", "zh-HK": "配飾" },
+};
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; id: string }> }): Promise<Metadata> {
   const { locale, id } = await params;
@@ -47,6 +58,13 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     notFound();
   }
 
+  // Get images array, fallback to single imageUrl
+  const productImages = product.images && product.images.length > 0
+    ? product.images
+    : product.imageUrl
+      ? [product.imageUrl]
+      : ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60"];
+
   const p = {
     id: product.id,
     brand: product.brand || "—",
@@ -54,11 +72,17 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     price: product.price,
     originalPrice: product.originalPrice,
     image: product.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
+    images: productImages,
     category: product.category,
     sizeSystem: (product as any).sizeSystem || null,
     sizes: (product as any).sizes || null,
     stock: (product as any).stock ?? 0,
   };
+
+  // Get translated category name
+  const categoryName = p.category && categoryTranslations[p.category]
+    ? categoryTranslations[p.category][locale as "en" | "zh-HK"] || p.category
+    : p.category;
 
   // Fetch related products (same category, max 4)
   const relatedProducts = product.category
@@ -83,34 +107,35 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   }));
 
   return (
-    <div className="px-4 pb-24 pt-6">
+    <div className="pb-36 pt-4">
       <span className="sr-only" data-product-name={p.title} />
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-zinc-600 mb-4 dark:text-zinc-400">
+      {/* Breadcrumb - hidden on mobile, shown on desktop */}
+      <div className="hidden md:flex items-center gap-2 text-sm text-zinc-500 mb-4 px-4">
         <Link href={`/${locale}`} className="hover:text-zinc-900 dark:hover:text-zinc-100">
           {t.product.home}
         </Link>
         {p.category && (
           <>
             <ChevronRight className="h-4 w-4" />
-            <Link href={`/${locale}?category=${p.category}`} className="hover:text-zinc-900">
-              {p.category}
+            <Link href={`/${locale}?category=${p.category}`} className="hover:text-zinc-900 dark:hover:text-zinc-100">
+              {categoryName}
             </Link>
           </>
         )}
         <ChevronRight className="h-4 w-4" />
-        <span className="text-zinc-900 dark:text-zinc-100">{p.title}</span>
+        <span className="text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">{p.title}</span>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white aspect-square dark:border-zinc-800 dark:bg-zinc-900">
-          <Image src={p.image} alt={p.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" priority />
+        {/* Image Carousel with floating effect */}
+        <ProductImageCarousel images={p.images} alt={p.title} />
+        <div className="px-4 md:px-0">
+          <ProductDetailClient
+            product={p}
+            locale={locale}
+            t={t}
+          />
         </div>
-        <ProductDetailClient
-          product={p}
-          locale={locale}
-          t={t}
-        />
       </div>
 
       {/* Related Products */}

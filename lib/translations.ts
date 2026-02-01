@@ -67,12 +67,16 @@ export const translations = {
       outOfStock: "Out of stock",
       lowStock: "Low Stock",
       pleaseSelectSize: "Please select a size",
+      selectSizeFirst: "Select a size",
       relatedProducts: "Related Products",
       home: "Home",
       originalPrice: "Was",
       selectSize: "Select Size",
       quantity: "Quantity",
       off: "off",
+    },
+    breadcrumb: {
+      home: "Home",
     },
     cart: {
       title: "Shopping Cart",
@@ -401,12 +405,16 @@ export const translations = {
       outOfStock: "缺貨中",
       lowStock: "存貨緊張",
       pleaseSelectSize: "請選擇尺碼",
+      selectSizeFirst: "請先選擇尺碼",
       relatedProducts: "相關產品",
       home: "首頁",
       originalPrice: "原價",
       selectSize: "選擇尺碼",
       quantity: "數量",
       off: "折",
+    },
+    breadcrumb: {
+      home: "首頁",
     },
     cart: {
       title: "購物車",

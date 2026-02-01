@@ -87,19 +87,23 @@ export default function ProductSizeSelector({
         </div>
       )}
 
-      {/* Size grid */}
+      {/* Size grid - 4 columns on mobile for UK sizes, adjust for others */}
       <div className="grid grid-cols-4 gap-2">
         {currentSizes.map((size) => {
           const isSelected = selectedSize === size && selectedSystem === currentSystem;
+          // Check if it's a UK size (starts with "UK ")
+          const isUKSize = size.startsWith("UK ");
           return (
             <button
               key={size}
               type="button"
               onClick={() => onSizeSelect(size, currentSystem)}
-              className={`rounded-lg border px-3 py-3 text-sm font-medium transition-colors ${
+              className={`rounded-lg border py-2 font-medium transition-colors ${
+                isUKSize ? "text-xs px-1" : "text-sm px-3"
+              } ${
                 isSelected
                   ? "border-olive-600 bg-olive-600 text-white"
-                  : "border-zinc-200 bg-white text-zinc-900 hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                  : "border-zinc-200 bg-white text-zinc-900 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               }`}
             >
               {size}
