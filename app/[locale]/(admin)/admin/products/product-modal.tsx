@@ -6,6 +6,14 @@ import type { Locale } from "@/lib/i18n";
 import { createProduct, updateProduct } from "./actions";
 import ImageUpload from "@/components/admin/ImageUpload";
 
+const SIZE_DEFAULTS: Record<string, string[]> = {
+  shoes: ["38", "39", "40", "41", "42", "43", "44"],
+  tops: ["S", "M", "L", "XL"],
+  pants: ["28", "30", "32", "34", "36"],
+  socks: ["S", "M", "L"],
+  accessories: ["One Size"],
+};
+
 type ProductModalProps = {
   product: Product | null;
   onClose: () => void;
@@ -53,14 +61,18 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       return;
     }
 
-    const stockNum = parseInt(stock);
-    if (isNaN(stockNum) || stockNum < 0) {
-      setError({ code: "VALIDATION_ERROR", message: "Stock must be a non-negative number" });
+    const stockNum = Number(stock);
+    if (!Number.isInteger(stockNum) || stockNum < 0) {
+      setError({ code: "VALIDATION_ERROR", message: "Stock must be a non-negative integer" });
       return;
     }
 
     // Parse sizes array
     const sizesArray = sizes.trim() ? sizes.split(",").map((s) => s.trim()).filter(Boolean) : [];
+    if (sizeSystem.trim() && sizesArray.length === 0) {
+      setError({ code: "VALIDATION_ERROR", message: "Sizes are required when size system is selected" });
+      return;
+    }
 
     startTransition(async () => {
       let result;
@@ -232,7 +244,15 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               </label>
               <select
                 value={sizeSystem}
-                onChange={(e) => setSizeSystem(e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setSizeSystem(next);
+                  if (!next) {
+                    setSizes("");
+                  } else {
+                    setSizes(SIZE_DEFAULTS[next]?.join(", ") || "");
+                  }
+                }}
                 disabled={isPending}
                 className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               >
@@ -258,6 +278,21 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               />
             </div>
           </div>
+
+          {sizeSystem && (
+            <div>
+              <label className="block text-zinc-700 text-sm font-medium mb-2">Sizes</label>
+              <input
+                type="text"
+                value={sizes}
+                onChange={(e) => setSizes(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                placeholder="Comma-separated sizes"
+              />
+              <p className="mt-1 text-zinc-400 text-xs">You can customize sizes by editing this list.</p>
+            </div>
+          )}
 
           <div>
             <label className="block text-zinc-700 text-sm font-medium mb-2">

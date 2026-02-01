@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import SidebarToggle from "@/components/admin/SidebarToggle";
+import DashboardCharts from "@/components/admin/DashboardCharts";
 
 type StatCardProps = {
   label: string;
@@ -25,9 +26,14 @@ function StatCard({ label, value, icon }: StatCardProps) {
 
 export default async function AdminDashboard({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const now = new Date();
+  const start30 = new Date(now);
+  start30.setDate(now.getDate() - 29);
+  const start7 = new Date(now);
+  start7.setDate(now.getDate() - 6);
 
   // Fetch dashboard stats and recent orders
-  const [totalProducts, activeProducts, totalOrders, ordersWithAmounts, recentOrders] = await Promise.all([
+  const [totalProducts, activeProducts, totalOrders, ordersWithAmounts, recentOrders, recentOrdersForCharts] = await Promise.all([
     prisma.product.count(),
     prisma.product.count({ where: { active: true } }),
     prisma.order.count(),
@@ -46,6 +52,16 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         createdAt: true,
       },
     }),
+    prisma.order.findMany({
+      where: { createdAt: { gte: start30 } },
+      orderBy: { createdAt: "asc" },
+      select: {
+        createdAt: true,
+        status: true,
+        amounts: true,
+        items: true,
+      },
+    }),
   ]);
 
   // Calculate total revenue from paid orders
@@ -55,6 +71,61 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   }, 0);
 
   const formattedRevenue = `HK$${totalRevenue.toFixed(2)}`;
+
+  const paidStatuses = new Set(["PAID", "FULFILLING", "SHIPPED", "COMPLETED"]);
+
+  const ordersLast7Map = new Map<string, number>();
+  const revenueLast30Map = new Map<string, number>();
+  const productCounts = new Map<string, number>();
+
+  for (const order of recentOrdersForCharts) {
+    const dateKey = order.createdAt.toISOString().slice(0, 10);
+    if (order.createdAt >= start7) {
+      ordersLast7Map.set(dateKey, (ordersLast7Map.get(dateKey) || 0) + 1);
+    }
+    if (paidStatuses.has(order.status)) {
+      const amounts = order.amounts as any;
+      const total = amounts?.total || 0;
+      revenueLast30Map.set(dateKey, (revenueLast30Map.get(dateKey) || 0) + total);
+
+      const items = Array.isArray(order.items) ? (order.items as any[]) : [];
+      for (const item of items) {
+        const name = String(item?.name || item?.title || "Item");
+        const qty = Number(item?.quantity ?? item?.qty ?? 0);
+        if (!Number.isFinite(qty) || qty <= 0) continue;
+        productCounts.set(name, (productCounts.get(name) || 0) + qty);
+      }
+    }
+  }
+
+  const ordersLast7 = Array.from({ length: 7 }).map((_, idx) => {
+    const d = new Date(start7);
+    d.setDate(start7.getDate() + idx);
+    const key = d.toISOString().slice(0, 10);
+    return {
+      date: d.toLocaleDateString("en-HK", { month: "short", day: "numeric" }),
+      orders: ordersLast7Map.get(key) || 0,
+    };
+  });
+
+  const revenueLast30 = Array.from({ length: 30 }).map((_, idx) => {
+    const d = new Date(start30);
+    d.setDate(start30.getDate() + idx);
+    const key = d.toISOString().slice(0, 10);
+    return {
+      date: d.toLocaleDateString("en-HK", { month: "short", day: "numeric" }),
+      revenue: revenueLast30Map.get(key) || 0,
+    };
+  });
+
+  const topProducts = Array.from(productCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, quantity]) => ({ name, quantity }));
+
+  const paidOrdersCount = recentOrdersForCharts.filter((order) => paidStatuses.has(order.status)).length;
+  const revenueLast30Total = revenueLast30.reduce((sum, entry) => sum + entry.revenue, 0);
+  const avgOrderAmount = paidOrdersCount > 0 ? revenueLast30Total / paidOrdersCount : 0;
 
   return (
     <div className="p-4 pb-16 max-w-full overflow-hidden">
@@ -67,7 +138,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
         <StatCard
           label="Total Products"
           value={totalProducts}
@@ -88,7 +159,18 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           value={formattedRevenue}
           icon={<DollarSign size={24} />}
         />
+        <StatCard
+          label="Avg Order (30d)"
+          value={`HK$${avgOrderAmount.toFixed(2)}`}
+          icon={<DollarSign size={24} />}
+        />
       </div>
+
+      <DashboardCharts
+        ordersLast7={ordersLast7}
+        revenueLast30={revenueLast30}
+        topProducts={topProducts}
+      />
 
       {/* Quick Links */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">

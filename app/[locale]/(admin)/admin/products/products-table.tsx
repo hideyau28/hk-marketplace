@@ -92,6 +92,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                 <th className="px-4 py-3 text-left">Product</th>
                 <th className="px-4 py-3 text-left">Category</th>
                 <th className="px-4 py-3 text-right">Price</th>
+                <th className="px-4 py-3 text-right">Stock</th>
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-left">Updated</th>
                 <th className="px-4 py-3 text-right">Actions</th>
@@ -101,7 +102,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
             <tbody>
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-zinc-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-zinc-500">
                     No products found
                   </td>
                 </tr>
@@ -120,6 +121,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                     </td>
                     <td className="px-4 py-3 text-zinc-600">{product.category || "—"}</td>
                     <td className="px-4 py-3 text-right text-zinc-900 font-medium">HK$ {product.price.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-zinc-700">{product.stock ?? 0}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${

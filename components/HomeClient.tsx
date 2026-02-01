@@ -11,6 +11,7 @@ type Product = {
   title: string;
   price: number;
   image: string;
+  stock?: number;
   badges: any[];
 };
 

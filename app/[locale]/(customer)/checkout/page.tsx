@@ -48,6 +48,48 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     });
   }, [params, router]);
 
+  const applyCoupon = async (code?: string) => {
+    const finalCode = (code ?? couponCode).trim();
+    if (!finalCode) {
+      setCouponError("Please enter a coupon code.");
+      return;
+    }
+
+    setApplyingCoupon(true);
+    setCouponError(null);
+
+    try {
+      const subtotal = getCartTotal(cart);
+      const deliveryFee = fulfillmentType === "delivery" ? DELIVERY_FEE : 0;
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: finalCode, subtotal, deliveryFee }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setCouponError(json?.error?.message || "Invalid coupon.");
+        setDiscount(0);
+        setCouponApplied(false);
+      } else {
+        setDiscount(json.data.discount || 0);
+        setCouponApplied(true);
+      }
+    } catch {
+      setCouponError("Failed to validate coupon.");
+      setDiscount(0);
+      setCouponApplied(false);
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!couponApplied) return;
+    void applyCoupon();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fulfillmentType, cart]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (processing) return;
@@ -57,7 +99,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     try {
       const subtotal = getCartTotal(cart);
       const deliveryFee = fulfillmentType === "delivery" ? DELIVERY_FEE : 0;
-      const total = subtotal + deliveryFee;
+      const total = Math.max(0, subtotal + deliveryFee - discount);
 
       const payload = {
         customerName,
@@ -68,12 +110,17 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
           name: item.title,
           unitPrice: item.unitPrice,
           quantity: item.qty,
+          size: item.size,
+          sizeSystem: item.sizeSystem,
+          imageUrl: item.imageUrl,
         })),
         amounts: {
           subtotal,
+          discount: discount > 0 ? discount : undefined,
           deliveryFee: deliveryFee > 0 ? deliveryFee : undefined,
           total,
           currency: "HKD",
+          couponCode: couponApplied ? couponCode.trim().toUpperCase() : undefined,
         },
         fulfillment: {
           type: fulfillmentType,
@@ -148,7 +195,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const t = getDict(locale);
   const subtotal = getCartTotal(cart);
   const deliveryFee = fulfillmentType === "delivery" ? DELIVERY_FEE : 0;
-  const total = subtotal + deliveryFee;
+  const total = Math.max(0, subtotal + deliveryFee - discount);
 
   return (
     <div className="px-4 py-6 pb-32">
@@ -284,24 +331,54 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                       <span className="text-zinc-600">
                         {item.title} × {item.qty}
                       </span>
-                      <span className="text-zinc-900">HK$ {(item.unitPrice * item.qty).toFixed(2)}</span>
+                      <span className="text-zinc-900">{format(item.unitPrice * item.qty)}</span>
                     </div>
                   ))}
+                </div>
+                <div className="mt-4 border-t border-zinc-200 pt-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="Coupon code"
+                      className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => applyCoupon()}
+                      disabled={applyingCoupon}
+                      className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
+                    >
+                      {applyingCoupon ? "Applying..." : "Apply"}
+                    </button>
+                  </div>
+                  {couponError && (
+                    <div className="mt-2 text-xs text-red-600">{couponError}</div>
+                  )}
+                  {couponApplied && discount > 0 && (
+                    <div className="mt-2 text-xs text-olive-700">Coupon applied</div>
+                  )}
                 </div>
                 <div className="mt-4 space-y-2 border-t border-zinc-200 pt-4">
                   <div className="flex justify-between">
                     <span className="text-zinc-600">{t.cart.subtotal}</span>
-                    <span className="text-zinc-900">HK$ {subtotal.toFixed(2)}</span>
+                    <span className="text-zinc-900">{format(subtotal)}</span>
                   </div>
                   {deliveryFee > 0 && (
                     <div className="flex justify-between">
                       <span className="text-zinc-600">{t.cart.deliveryFee}</span>
-                      <span className="text-zinc-900">HK$ {deliveryFee.toFixed(2)}</span>
+                      <span className="text-zinc-900">{format(deliveryFee)}</span>
+                    </div>
+                  )}
+                  {discount > 0 && (
+                    <div className="flex justify-between text-olive-700">
+                      <span>Discount</span>
+                      <span>-{format(discount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between border-t border-zinc-200 pt-2 text-lg font-semibold">
                     <span className="text-zinc-900">{t.cart.total}</span>
-                    <span className="text-zinc-900">HK$ {total.toFixed(2)}</span>
+                    <span className="text-zinc-900">{format(total)}</span>
                   </div>
                 </div>
                 <button
