@@ -1,10 +1,11 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
-import CategoryGrid from "@/components/CategoryGrid";
-import BrandRail from "@/components/BrandRail";
 import HeroCarousel from "@/components/HeroCarousel";
-import HomeClient from "@/components/HomeClient";
-import PromoBanner from "@/components/PromoBanner";
+import RecommendedGrid from "@/components/home/RecommendedGrid";
+import FeaturedSneakers from "@/components/home/FeaturedSneakers";
+import PromoBannerFull from "@/components/home/PromoBannerFull";
+import SportsApparel from "@/components/home/SportsApparel";
+import RecentlyViewed from "@/components/home/RecentlyViewed";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -20,6 +21,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       locale: locale === "zh-HK" ? "zh_HK" : "en_US",
     },
   };
+}
+
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
@@ -39,16 +49,29 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     brand: p.brand || "",
     title: p.title,
     price: p.price,
-    stock: (p as any).stock ?? 0,
+    category: (p as any).category || "",
     image:
       p.imageUrl ||
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
-    badges: Array.isArray(p.badges) ? (p.badges as any[]) : [],
   }));
+
+  // Randomized products for Recommended section (6 products)
+  const recommendedProducts = shuffleArray(allProducts).slice(0, 6);
+
+  // Featured Sneakers: category = "Shoes" (8 products)
+  const shoesProducts = allProducts.filter((p) => p.category === "Shoes").slice(0, 8);
+
+  // Sports Apparel: category IN ("Tops", "Pants", "Jackets") (10 products)
+  const apparelProducts = allProducts
+    .filter((p) => ["Tops", "Pants", "Jackets"].includes(p.category))
+    .slice(0, 10);
+
+  // Fallback for Recently Viewed / You Might Like (8 products)
+  const fallbackProducts = shuffleArray(allProducts).slice(0, 8);
 
   return (
     <div className="pb-[calc(96px+env(safe-area-inset-bottom))]">
-      {/* 1) Hero carousel (4–5 slides) */}
+      {/* 1) Hero Banner */}
       <div className="px-4 pt-4">
         <HeroCarousel
           slides={[
@@ -80,21 +103,48 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       </div>
 
-      <div className="px-4">
-        <PromoBanner t={t} />
-      </div>
-
-      {/* Sentinel: used to hide floating search once user scrolls past hero */}
+      {/* Sentinel: used for floating search pill (if needed) */}
       <div id="home-search-sentinel" className="h-px w-full" />
 
-      {/* 2) Shop by Category (icon grid) */}
-      <CategoryGrid locale={l} title={t.home.shopByCategory} />
+      {/* 2) 為你推薦 Recommended (2-column grid) */}
+      <RecommendedGrid
+        locale={l}
+        products={recommendedProducts}
+        title={t.home.recommended}
+        viewAllText={t.home.viewAll}
+      />
 
-      {/* 3) Brand Filter + Product Rails */}
-      <HomeClient locale={l} allProducts={allProducts} t={t} />
+      {/* 3) 精選鞋款 Featured Sneakers (large horizontal scroll) */}
+      <FeaturedSneakers
+        locale={l}
+        products={shoesProducts}
+        title={t.home.featuredSneakers}
+        viewAllText={t.home.viewAll}
+      />
 
-      {/* 4) Popular Brands (rail + "See all") */}
-      <BrandRail locale={l} title={t.home.popularBrands} seeAllText={t.home.seeAll} />
+      {/* 4) Promotional Banner (full-width) */}
+      <PromoBannerFull
+        locale={l}
+        headline={t.home.winterGear}
+        subtext={t.home.upTo30Off}
+        ctaText={t.home.shopNow}
+      />
+
+      {/* 5) 運動服裝 Sports Apparel (small horizontal scroll) */}
+      <SportsApparel
+        locale={l}
+        products={apparelProducts}
+        title={t.home.sportsApparel}
+        viewAllText={t.home.viewAll}
+      />
+
+      {/* 6) 最近瀏覽 / 你可能鍾意 (mini horizontal scroll) */}
+      <RecentlyViewed
+        locale={l}
+        fallbackProducts={fallbackProducts}
+        recentTitle={t.home.recentlyViewed}
+        fallbackTitle={t.home.youMightLike}
+      />
     </div>
   );
 }
