@@ -2,6 +2,7 @@ import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { notFound } from "next/navigation";
+import { AnimatedProductBadges } from "./ProductDetailClient";
 
 export default async function ProductPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
@@ -16,6 +17,10 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     notFound();
   }
 
+  // Compute badges to display
+  const promotionBadges = product.promotionBadges || [];
+  const isLowStock = product.stock !== undefined && product.stock !== null && product.stock > 0 && product.stock <= 5;
+
   const p = {
     id: product.id,
     brand: product.brand || "—",
@@ -23,13 +28,18 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     price: product.price,
     stock: product.stock,
     image: product.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
+    promotionBadges,
+    isLowStock,
+    sizes: product.sizes as Record<string, number> | null,
   };
 
   return (
     <div className="px-4 pb-24 pt-6">
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white">
+        <div className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white">
           <img src={p.image} alt={p.title} className="h-full w-full object-cover" />
+          {/* Animated promotion badges */}
+          <AnimatedProductBadges promotionBadges={p.promotionBadges} isLowStock={p.isLowStock} />
         </div>
         <div>
           <div className="text-zinc-600 text-sm">{p.brand}</div>
@@ -51,7 +61,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-green-600">✓</span>
-              <span>訂單滿 $500 免運費</span>
+              <span>訂單滿 $600 免運費</span>
             </div>
           </div>
 

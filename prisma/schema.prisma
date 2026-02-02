@@ -133,17 +133,19 @@ model PaymentAttempt {
 }
 
 model Product {
-  id        String   @id @default(cuid())
-  brand     String? // optional for backward compatibility
-  title     String
-  price     Float
-  imageUrl  String?
-  category  String? // optional: categorize products for rails/hero links
-  badges    Json?
-  stock     Int? // optional: product inventory count
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(cuid())
+  brand            String? // optional for backward compatibility
+  title            String
+  price            Float
+  imageUrl         String?
+  category         String? // optional: categorize products for rails/hero links
+  badges           Json?
+  promotionBadges  String[] // Admin-selectable: 店長推介, 今期熱賣, 新品上架, 限時優惠, 人氣之選
+  sizes            Json? // Size-to-stock mapping e.g. {"US 8": 5, "US 9": 3}
+  stock            Int? // optional: product inventory count
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([active])
   @@index([brand])

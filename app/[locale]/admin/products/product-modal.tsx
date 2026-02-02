@@ -11,6 +11,15 @@ type ProductModalProps = {
   locale: Locale;
 };
 
+// Available promotion badge options
+const PROMOTION_BADGE_OPTIONS = [
+  "店長推介",
+  "今期熱賣",
+  "新品上架",
+  "限時優惠",
+  "人氣之選",
+];
+
 export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
@@ -22,8 +31,19 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [badges, setBadges] = useState(
     product?.badges && Array.isArray(product.badges) ? (product.badges as string[]).join(", ") : ""
   );
+  const [promotionBadges, setPromotionBadges] = useState<string[]>(
+    product?.promotionBadges || []
+  );
   const [category, setCategory] = useState(product?.category || "");
   const [active, setActive] = useState(product?.active ?? true);
+
+  const togglePromotionBadge = (badge: string) => {
+    setPromotionBadges((prev) =>
+      prev.includes(badge)
+        ? prev.filter((b) => b !== badge)
+        : [...prev, badge]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +77,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             price: priceNum,
             imageUrl: imageUrl.trim() || null,
             badges: badges.trim() || undefined,
+            promotionBadges,
             category: category.trim() || null,
             active,
           },
@@ -71,6 +92,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             price: priceNum,
             imageUrl: imageUrl.trim() || undefined,
             badges: badges.trim() || undefined,
+            promotionBadges,
             category: category.trim() || null,
             active,
           },
@@ -195,6 +217,32 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               placeholder="sports / accessories / office"
             />
             <p className="mt-1 text-white/40 text-xs">Used for filtering and home rails later.</p>
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-2">
+              Promotion Badges <span className="text-white/40 font-normal">(shown on product image)</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {PROMOTION_BADGE_OPTIONS.map((badge) => (
+                <button
+                  key={badge}
+                  type="button"
+                  onClick={() => togglePromotionBadge(badge)}
+                  disabled={isPending}
+                  className={`px-3 py-1.5 text-sm rounded-full transition-colors disabled:opacity-50 ${
+                    promotionBadges.includes(badge)
+                      ? "bg-olive-600 text-white"
+                      : "bg-white/10 text-white/70 hover:bg-white/20"
+                  }`}
+                >
+                  {badge}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-white/40 text-xs">
+              Note: "快將售罄" is auto-added when stock ≤ 5
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
