@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
+import { prisma } from "@/lib/prisma";
 import TopNav from "@/components/TopNav";
 import CategoryNavWrapper from "@/components/CategoryNavWrapper";
 import BottomTab from "@/components/BottomTab";
@@ -27,6 +28,19 @@ export default async function CustomerLayout({
   const l = locale as Locale;
   const t = getDict(l);
 
+  // Fetch welcome popup settings
+  const storeSettings = await prisma.storeSettings.findUnique({
+    where: { id: "default" },
+  }).catch(() => null);
+
+  const welcomePopupConfig = {
+    enabled: storeSettings?.welcomePopupEnabled ?? true,
+    title: storeSettings?.welcomePopupTitle || "歡迎來到 HK•Market",
+    subtitle: storeSettings?.welcomePopupSubtitle || "探索最新波鞋及運動裝備，正品保證！",
+    promoText: storeSettings?.welcomePopupPromoText || "🎉 訂單滿 $600 免運費！",
+    buttonText: storeSettings?.welcomePopupButtonText || "開始購物",
+  };
+
   return (
     <ThemeProvider>
       <CurrencyProvider>
@@ -37,7 +51,7 @@ export default async function CustomerLayout({
           <main>{children}</main>
           <Footer locale={l} t={t} />
           <BottomTab t={t} />
-          <WelcomePopup />
+          <WelcomePopup config={welcomePopupConfig} />
         </div>
       </CurrencyProvider>
     </ThemeProvider>

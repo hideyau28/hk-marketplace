@@ -7,7 +7,6 @@ import PromoBannerFull from "@/components/home/PromoBannerFull";
 import SportsApparel from "@/components/home/SportsApparel";
 import RecentlyViewed from "@/components/home/RecentlyViewed";
 import SaleZone from "@/components/home/SaleZone";
-import PromoBanner from "@/components/PromoBanner";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -59,10 +58,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     where: { key: "mid-banner", active: true },
   });
 
-  // Fetch top promo bar from CMS
-  const promoBar = await prisma.siteContent.findFirst({
-    where: { type: "promo", active: true },
-    orderBy: { sortOrder: "asc" },
+  // Fetch second promo banner from CMS (for between Running/Basketball)
+  const promoBanner2 = await prisma.siteContent.findFirst({
+    where: { key: "mid-banner-2", active: true },
   });
 
   // Fetch all active products
@@ -84,22 +82,28 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
   }));
 
-  // 為你推薦 — random 6 products
-  const recommendedProducts = shuffleArray(allProducts).slice(0, 6);
+  // 為你推薦 — random 8 products (horizontal scroll)
+  const recommendedProducts = shuffleArray(allProducts).slice(0, 8);
 
-  // Air Jordan section (horizontal scroll, large cards)
+  // Air Jordan section (large cards)
   const jordanProducts = shuffleArray(allProducts.filter((p) => p.category === "Air Jordan")).slice(0, 8);
 
-  // Dunk / SB section (horizontal scroll, small cards)
+  // Dunk / SB section (small cards)
   const dunkProducts = shuffleArray(allProducts.filter((p) => p.category === "Dunk / SB")).slice(0, 10);
 
-  // Air Max section (horizontal scroll, large cards)
+  // Air Max section (large cards)
   const airMaxProducts = shuffleArray(allProducts.filter((p) => p.category === "Air Max")).slice(0, 8);
 
-  // Air Force section (horizontal scroll, small cards)
+  // Air Force section (small cards)
   const airForceProducts = shuffleArray(allProducts.filter((p) => p.category === "Air Force")).slice(0, 10);
 
-  // Sale products: originalPrice > price (8 products)
+  // Running section (large cards)
+  const runningProducts = shuffleArray(allProducts.filter((p) => p.category === "Running")).slice(0, 8);
+
+  // Basketball section (small cards)
+  const basketballProducts = shuffleArray(allProducts.filter((p) => p.category === "Basketball")).slice(0, 10);
+
+  // Sale products: originalPrice > price
   const saleProducts = allProducts
     .filter((p) => p.originalPrice && p.originalPrice > p.price)
     .slice(0, 8)
@@ -113,23 +117,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <div className="pb-16">
-      {/* Top Promo Bar */}
-      {promoBar && (
-        <PromoBanner
-          promoKey={promoBar.key}
-          message={l === "zh-HK" ? promoBar.titleZh : promoBar.titleEn}
-        />
-      )}
-
       {/* 1) Hero Banner from CMS */}
       <div className="px-4 pt-4">
         <HeroCarouselCMS slides={heroSlidesFormatted} locale={l} />
       </div>
 
-      {/* Sentinel: used for floating search pill (if needed) */}
+      {/* Sentinel */}
       <div id="home-search-sentinel" className="h-px w-full" />
 
-      {/* 2) 為你推薦 Recommended (2-column grid) */}
+      {/* 2) 為你推薦 Recommended (horizontal scroll) */}
       <RecommendedGrid
         locale={l}
         products={recommendedProducts}
@@ -138,24 +134,28 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       />
 
       {/* 3) Air Jordan (large horizontal scroll) */}
-      <FeaturedSneakers
-        locale={l}
-        products={jordanProducts}
-        title={l === "zh-HK" ? "Air Jordan 系列" : "Air Jordan"}
-        viewAllText={t.home.viewAll}
-        viewAllHref={`/${locale}/products?category=Air+Jordan`}
-      />
+      {jordanProducts.length > 0 && (
+        <FeaturedSneakers
+          locale={l}
+          products={jordanProducts}
+          title={l === "zh-HK" ? "Air Jordan 系列" : "Air Jordan"}
+          viewAllText={t.home.viewAll}
+          viewAllHref={`/${locale}/products?category=Air+Jordan`}
+        />
+      )}
 
       {/* 4) Dunk / SB (small horizontal scroll) */}
-      <SportsApparel
-        locale={l}
-        products={dunkProducts}
-        title={l === "zh-HK" ? "Dunk / SB 系列" : "Dunk / SB"}
-        viewAllText={t.home.viewAll}
-        viewAllHref={`/${locale}/products?category=Dunk+%2F+SB`}
-      />
+      {dunkProducts.length > 0 && (
+        <SportsApparel
+          locale={l}
+          products={dunkProducts}
+          title={l === "zh-HK" ? "Dunk / SB 系列" : "Dunk / SB"}
+          viewAllText={t.home.viewAll}
+          viewAllHref={`/${locale}/products?category=Dunk+%2F+SB`}
+        />
+      )}
 
-      {/* 5) Promotional Banner from CMS (full-width) */}
+      {/* 5) Promotional Banner #1 from CMS */}
       {promoBanner && (
         <PromoBannerFull
           locale={l}
@@ -170,24 +170,64 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       )}
 
       {/* 6) Air Max (large horizontal scroll) */}
-      <FeaturedSneakers
-        locale={l}
-        products={airMaxProducts}
-        title={l === "zh-HK" ? "Air Max 系列" : "Air Max"}
-        viewAllText={t.home.viewAll}
-        viewAllHref={`/${locale}/products?category=Air+Max`}
-      />
+      {airMaxProducts.length > 0 && (
+        <FeaturedSneakers
+          locale={l}
+          products={airMaxProducts}
+          title={l === "zh-HK" ? "Air Max 系列" : "Air Max"}
+          viewAllText={t.home.viewAll}
+          viewAllHref={`/${locale}/products?category=Air+Max`}
+        />
+      )}
 
       {/* 7) Air Force (small horizontal scroll) */}
-      <SportsApparel
-        locale={l}
-        products={airForceProducts}
-        title={l === "zh-HK" ? "Air Force 系列" : "Air Force"}
-        viewAllText={t.home.viewAll}
-        viewAllHref={`/${locale}/products?category=Air+Force`}
-      />
+      {airForceProducts.length > 0 && (
+        <SportsApparel
+          locale={l}
+          products={airForceProducts}
+          title={l === "zh-HK" ? "Air Force 系列" : "Air Force"}
+          viewAllText={t.home.viewAll}
+          viewAllHref={`/${locale}/products?category=Air+Force`}
+        />
+      )}
 
-      {/* 6) 🔥 特價專區 Sale Zone (2-column grid) */}
+      {/* 8) Promotional Banner #2 from CMS (optional) */}
+      {promoBanner2 && (
+        <PromoBannerFull
+          locale={l}
+          headline={l === "zh-HK" ? promoBanner2.titleZh : promoBanner2.titleEn}
+          subtext={
+            (l === "zh-HK" ? promoBanner2.subtitleZh : promoBanner2.subtitleEn) || ""
+          }
+          ctaText={
+            (l === "zh-HK" ? promoBanner2.buttonTextZh : promoBanner2.buttonTextEn) || t.home.shopNow
+          }
+        />
+      )}
+
+      {/* 9) Running (large horizontal scroll) */}
+      {runningProducts.length > 0 && (
+        <FeaturedSneakers
+          locale={l}
+          products={runningProducts}
+          title={l === "zh-HK" ? "Running 系列" : "Running"}
+          viewAllText={t.home.viewAll}
+          viewAllHref={`/${locale}/products?category=Running`}
+        />
+      )}
+
+      {/* 10) Basketball (small horizontal scroll) */}
+      {basketballProducts.length > 0 && (
+        <SportsApparel
+          locale={l}
+          products={basketballProducts}
+          title={l === "zh-HK" ? "Basketball 系列" : "Basketball"}
+          viewAllText={t.home.viewAll}
+          viewAllHref={`/${locale}/products?category=Basketball`}
+        />
+      )}
+
+      {/* 11) 🔥 特價專區 Sale Zone */}
       {saleProducts.length > 0 && (
         <SaleZone
           locale={l}
@@ -197,7 +237,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       )}
 
-      {/* 7) 最近瀏覽 / 你可能鍾意 (mini horizontal scroll) */}
+      {/* 12) 最近瀏覽 / 你可能鍾意 */}
       <RecentlyViewed
         locale={l}
         fallbackProducts={fallbackProducts}

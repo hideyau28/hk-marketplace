@@ -5,16 +5,26 @@ import { X } from "lucide-react";
 
 const STORAGE_KEY = "hk-market-welcome-shown";
 
-export default function WelcomePopup() {
+type WelcomePopupConfig = {
+  enabled: boolean;
+  title: string;
+  subtitle: string;
+  promoText: string;
+  buttonText: string;
+};
+
+export default function WelcomePopup({ config }: { config: WelcomePopupConfig }) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    if (!config.enabled) return;
+
     const hasShown = localStorage.getItem(STORAGE_KEY);
     if (!hasShown) {
       const timer = setTimeout(() => setShow(true), 500);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [config.enabled]);
 
   const handleClose = () => {
     localStorage.setItem(STORAGE_KEY, "true");
@@ -37,21 +47,21 @@ export default function WelcomePopup() {
         <div className="text-center">
           <div className="mb-4 text-4xl">👟</div>
           <h2 className="mb-2 text-xl font-bold text-zinc-900 dark:text-zinc-100">
-            歡迎來到 HK•Market
+            {config.title}
           </h2>
           <p className="mb-4 text-sm text-zinc-600 dark:text-zinc-400">
-            探索最新波鞋及運動裝備，正品保證！
+            {config.subtitle}
           </p>
           <div className="mb-4 rounded-lg bg-olive-50 px-4 py-3 dark:bg-olive-900/20">
             <p className="text-sm font-medium text-olive-700 dark:text-olive-300">
-              🎉 訂單滿 $600 免運費！
+              {config.promoText}
             </p>
           </div>
           <button
             onClick={handleClose}
             className="w-full rounded-lg bg-olive-600 py-3 font-semibold text-white hover:bg-olive-700"
           >
-            開始購物
+            {config.buttonText}
           </button>
         </div>
       </div>

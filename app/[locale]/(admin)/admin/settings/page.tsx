@@ -2,7 +2,7 @@
 
 import { getDict, type Locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
-import { Save, Loader2, CheckCircle2, AlertCircle, Store, Truck, Undo2 } from "lucide-react";
+import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -20,6 +20,11 @@ type StoreSettings = {
   tagline: string | null;
   returnsPolicy: string | null;
   shippingPolicy: string | null;
+  welcomePopupEnabled: boolean;
+  welcomePopupTitle: string | null;
+  welcomePopupSubtitle: string | null;
+  welcomePopupPromoText: string | null;
+  welcomePopupButtonText: string | null;
 };
 
 type SaveState = "idle" | "saving" | "success" | "error";
@@ -33,6 +38,11 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
     tagline: "",
     returnsPolicy: "",
     shippingPolicy: "",
+    welcomePopupEnabled: true,
+    welcomePopupTitle: "",
+    welcomePopupSubtitle: "",
+    welcomePopupPromoText: "",
+    welcomePopupButtonText: "",
   });
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -285,6 +295,85 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                     className="font-mono text-sm resize-y min-h-[120px]"
                   />
                   <Description>Inform customers about delivery times and costs.</Description>
+                </div>
+              </div>
+            </div>
+
+            {/* Welcome Popup Card */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-zinc-600" />
+                  Welcome Popup
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  Configure the welcome popup shown to first-time visitors.
+                </p>
+              </div>
+
+              <div className="grid gap-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Welcome Popup Enabled</Label>
+                    <Description>Show welcome popup to first-time visitors.</Description>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={settings.welcomePopupEnabled}
+                    onClick={() => setSettings({ ...settings, welcomePopupEnabled: !settings.welcomePopupEnabled })}
+                    className={cn(
+                      "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
+                      settings.welcomePopupEnabled ? "bg-olive-600" : "bg-zinc-300"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform",
+                        settings.welcomePopupEnabled ? "translate-x-5" : "translate-x-0"
+                      )}
+                    />
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Welcome Popup Title</Label>
+                  <Input
+                    value={settings.welcomePopupTitle || ""}
+                    onChange={(e) => setSettings({ ...settings, welcomePopupTitle: e.target.value })}
+                    placeholder="歡迎來到 HK•Market"
+                  />
+                  <Description>Main heading of the welcome popup.</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Welcome Popup Subtitle</Label>
+                  <Input
+                    value={settings.welcomePopupSubtitle || ""}
+                    onChange={(e) => setSettings({ ...settings, welcomePopupSubtitle: e.target.value })}
+                    placeholder="探索最新波鞋及運動裝備，正品保證！"
+                  />
+                  <Description>Subheading displayed below the title.</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Welcome Popup Promo Text</Label>
+                  <Input
+                    value={settings.welcomePopupPromoText || ""}
+                    onChange={(e) => setSettings({ ...settings, welcomePopupPromoText: e.target.value })}
+                    placeholder="🎉 訂單滿 $600 免運費！"
+                  />
+                  <Description>Promotional text shown in the highlighted box.</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Welcome Popup Button Text</Label>
+                  <Input
+                    value={settings.welcomePopupButtonText || ""}
+                    onChange={(e) => setSettings({ ...settings, welcomePopupButtonText: e.target.value })}
+                    placeholder="開始購物"
+                  />
+                  <Description>Text on the call-to-action button.</Description>
                 </div>
               </div>
             </div>
