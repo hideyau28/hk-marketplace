@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { addToCart } from "@/lib/cart";
 
 // Badge color mapping
 const BADGE_COLORS: Record<string, string> = {
@@ -67,6 +68,91 @@ export function AnimatedProductBadges({ promotionBadges, isLowStock }: ProductBa
       >
         {currentBadge}
       </div>
+    </div>
+  );
+}
+
+// Size selector component for product detail page
+type SizeSelectorProps = {
+  sizes: Record<string, number>;
+  productId: string;
+  productTitle: string;
+  productPrice: number;
+  productImage: string;
+};
+
+export function SizeSelector({ sizes, productId, productTitle, productPrice, productImage }: SizeSelectorProps) {
+  const [selectedSize, setSelectedSize] = useState<string>("");
+  const [showMessage, setShowMessage] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
+
+  const sizeKeys = Object.keys(sizes);
+
+  const handleSizeClick = (size: string) => {
+    setSelectedSize(size);
+    setShowMessage(false);
+    setAddedToCart(false);
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      setShowMessage(true);
+      return;
+    }
+
+    addToCart({
+      productId,
+      title: `${productTitle} - ${selectedSize}`,
+      unitPrice: productPrice,
+      imageUrl: productImage,
+    });
+
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
+  };
+
+  return (
+    <div className="mt-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-zinc-900">尺碼</span>
+        {showMessage && !selectedSize && (
+          <span className="text-sm text-red-500">請先選擇尺碼</span>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {sizeKeys.map((size) => {
+          const stock = sizes[size];
+          const isSelected = selectedSize === size;
+          const isOutOfStock = stock === 0;
+
+          return (
+            <button
+              key={size}
+              onClick={() => !isOutOfStock && handleSizeClick(size)}
+              disabled={isOutOfStock}
+              className={`px-4 py-2 text-sm font-medium rounded-xl border transition-all ${
+                isSelected
+                  ? "bg-zinc-900 text-white border-zinc-900"
+                  : isOutOfStock
+                  ? "bg-zinc-100 text-zinc-300 border-zinc-200 cursor-not-allowed line-through"
+                  : "bg-white text-zinc-700 border-zinc-300 hover:border-zinc-900"
+              }`}
+            >
+              {size}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Add to cart button for mobile - shows below sizes */}
+      <button
+        onClick={handleAddToCart}
+        className={`mt-4 w-full py-3 px-4 rounded-2xl font-semibold text-white transition-colors md:hidden ${
+          addedToCart ? "bg-green-600" : "bg-zinc-900 hover:bg-zinc-800"
+        }`}
+      >
+        {addedToCart ? "✓ 已加入購物車" : selectedSize ? `加入購物車 - ${selectedSize}` : "加入購物車"}
+      </button>
     </div>
   );
 }

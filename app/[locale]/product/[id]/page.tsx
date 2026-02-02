@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import SizeChartButton from "@/components/SizeChartButton";
 import { notFound } from "next/navigation";
-import { AnimatedProductBadges } from "./ProductDetailClient";
+import { AnimatedProductBadges, SizeSelector } from "./ProductDetailClient";
 
 export default async function ProductPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
@@ -75,7 +75,10 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
             <SizeChartButton isKids={isKids} locale={locale as "zh-HK" | "en"} />
           </div>
 
-          <div className="mt-4 text-zinc-600 text-sm leading-6">Placeholder description. Shipping calculated at checkout.</div>
+          {/* Size selector */}
+          {p.sizes && Object.keys(p.sizes).length > 0 && (
+            <SizeSelector sizes={p.sizes} productId={p.id} productTitle={p.title} productPrice={p.price} productImage={p.image} />
+          )}
 
           <div className="mt-6 hidden gap-3 md:flex">
             <AddToCartButton

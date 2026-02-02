@@ -42,8 +42,10 @@ export default async function SearchPage({
       brand: p.brand || "",
       title: p.title,
       price: p.price,
+      stock: p.stock,
       image: p.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
       badges: Array.isArray(p.badges) ? (p.badges as any[]) : [],
+      sizes: p.sizes || null,
     }));
   }
 

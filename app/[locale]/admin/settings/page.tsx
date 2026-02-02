@@ -28,6 +28,39 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// --- UI Components (defined outside component to prevent re-creation) ---
+const Label = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-900", className)}>
+    {children}
+  </label>
+);
+
+const Description = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-[0.8rem] text-zinc-600 mt-1.5">
+    {children}
+  </p>
+);
+
+const Input = ({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
+  <input
+    className={cn(
+      "flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
+      className
+    )}
+    {...props}
+  />
+);
+
+const Textarea = ({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
+  <textarea
+    className={cn(
+      "flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
+      className
+    )}
+    {...props}
+  />
+);
+
 // --- Types ---
 type StoreSettings = {
   id: string;
@@ -198,40 +231,6 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const updateSetting = <K extends keyof StoreSettings>(key: K, value: StoreSettings[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   };
-
-  // --- UI Components ---
-
-  const Label = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-900", className)}>
-      {children}
-    </label>
-  );
-
-  const Description = ({ children }: { children: React.ReactNode }) => (
-    <p className="text-[0.8rem] text-zinc-600 mt-1.5">
-      {children}
-    </p>
-  );
-
-  const Input = ({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
-    <input
-      className={cn(
-        "flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      {...props}
-    />
-  );
-
-  const Textarea = ({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
-    <textarea
-      className={cn(
-        "flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      {...props}
-    />
-  );
 
   return (
     <div className="min-h-screen bg-white text-zinc-900 pb-20">
