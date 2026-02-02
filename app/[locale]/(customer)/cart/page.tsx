@@ -1,18 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getCart, removeFromCart, updateCartItemQty, getCartTotal, type CartItem } from "@/lib/cart";
 import { getDict, type Locale } from "@/lib/i18n";
-import { Trash2, Plus, Minus } from "lucide-react";
+import { Trash2, Plus, Minus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCurrency } from "@/lib/currency";
+
+type RecommendedProduct = {
+  id: string;
+  title: string;
+  price: number;
+  imageUrl: string | null;
+  brand: string | null;
+};
 
 export default function CartPage({ params }: { params: Promise<{ locale: string }> }) {
   const [locale, setLocale] = useState<Locale>("en");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [recommendedProducts, setRecommendedProducts] = useState<RecommendedProduct[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { format } = useCurrency();
 
@@ -23,6 +33,32 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
       setCart(getCart());
     });
   }, [params]);
+
+  // Fetch recommended products when cart is empty
+  useEffect(() => {
+    if (mounted && cart.length === 0) {
+      fetch("/api/products?limit=12")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.ok && data.data?.products) {
+            // Shuffle and pick 6 random products
+            const shuffled = data.data.products.sort(() => Math.random() - 0.5);
+            setRecommendedProducts(shuffled.slice(0, 6));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [mounted, cart.length]);
+
+  const scrollRecommendations = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const handleRemove = (productId: string, size?: string, sizeSystem?: string) => {
     removeFromCart(productId, size, sizeSystem);
@@ -49,7 +85,7 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
 
   if (cart.length === 0) {
     return (
-      <div className="px-4 py-6">
+      <div className="px-4 py-6 pb-32">
         <div className="mx-auto max-w-4xl">
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{t.cart.title}</h1>
           <div className="mt-8 text-center">
@@ -58,9 +94,76 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
               href={`/${locale}`}
               className="mt-4 inline-block rounded-2xl bg-olive-600 px-6 py-3 text-white font-semibold hover:bg-olive-700"
             >
-              {t.cart.continueShopping}
+              繼續購物
             </Link>
           </div>
+
+          {/* Recommended Products Section */}
+          {recommendedProducts.length > 0 && (
+            <div className="mt-12">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">你可能鍾意</h2>
+              <div className="relative">
+                {/* Scroll buttons - hidden on mobile */}
+                <button
+                  onClick={() => scrollRecommendations("left")}
+                  className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 items-center justify-center rounded-full bg-white shadow-md border border-zinc-200 hover:bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700"
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                </button>
+                <button
+                  onClick={() => scrollRecommendations("right")}
+                  className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 items-center justify-center rounded-full bg-white shadow-md border border-zinc-200 hover:bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                </button>
+
+                {/* Scrollable container */}
+                <div
+                  ref={scrollContainerRef}
+                  className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4"
+                  style={{ scrollSnapType: "x mandatory" }}
+                >
+                  {recommendedProducts.map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/${locale}/product/${product.id}`}
+                      className="flex-shrink-0 w-36 rounded-xl border border-zinc-200 bg-white overflow-hidden hover:shadow-md transition-shadow dark:border-zinc-800 dark:bg-zinc-900"
+                      style={{ scrollSnapAlign: "start" }}
+                    >
+                      <div className="relative aspect-square bg-zinc-100 dark:bg-zinc-800">
+                        {product.imageUrl ? (
+                          <Image
+                            src={product.imageUrl}
+                            alt={product.title}
+                            fill
+                            className="object-cover"
+                            sizes="144px"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-zinc-400">
+                            <span className="text-xs">No image</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2">
+                        {product.brand && (
+                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">{product.brand}</p>
+                        )}
+                        <h3 className="text-xs font-medium text-zinc-900 dark:text-zinc-100 line-clamp-2 leading-tight">
+                          {product.title}
+                        </h3>
+                        <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                          {format(product.price)}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

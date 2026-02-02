@@ -2,7 +2,7 @@
 
 import { getDict, type Locale } from "@/lib/i18n";
 import { useEffect, useState } from "react";
-import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare } from "lucide-react";
+import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare, Phone, Clock, MapPin, Truck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -58,6 +58,18 @@ type StoreSettings = {
   welcomePopupSubtitle: string | null;
   welcomePopupPromoText: string | null;
   welcomePopupButtonText: string | null;
+  // Contact info
+  whatsappNumber: string | null;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  // Business hours
+  openingHours: string | null;
+  pickupHours: string | null;
+  // Pickup address
+  pickupAddress: string | null;
+  // Shipping
+  shippingFee: number;
+  freeShippingThreshold: number;
 };
 
 type SaveState = "idle" | "saving" | "success" | "error";
@@ -76,6 +88,14 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
     welcomePopupSubtitle: "",
     welcomePopupPromoText: "",
     welcomePopupButtonText: "",
+    whatsappNumber: "",
+    instagramUrl: "",
+    facebookUrl: "",
+    openingHours: "",
+    pickupHours: "",
+    pickupAddress: "",
+    shippingFee: 40,
+    freeShippingThreshold: 600,
   });
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -373,6 +393,153 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                     placeholder="開始購物"
                   />
                   <Description>Text on the call-to-action button.</Description>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Info Card */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-zinc-600" />
+                  Contact Information
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  Social media and contact details for customers.
+                </p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-3">
+                <div className="space-y-3">
+                  <Label>WhatsApp Number</Label>
+                  <Input
+                    value={settings.whatsappNumber || ""}
+                    onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
+                    placeholder="+852 1234 5678"
+                  />
+                  <Description>Include country code (+852).</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Instagram URL</Label>
+                  <Input
+                    value={settings.instagramUrl || ""}
+                    onChange={(e) => setSettings({ ...settings, instagramUrl: e.target.value })}
+                    placeholder="https://instagram.com/yourstore"
+                  />
+                  <Description>Full Instagram profile URL.</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Facebook URL</Label>
+                  <Input
+                    value={settings.facebookUrl || ""}
+                    onChange={(e) => setSettings({ ...settings, facebookUrl: e.target.value })}
+                    placeholder="https://facebook.com/yourstore"
+                  />
+                  <Description>Full Facebook page URL.</Description>
+                </div>
+              </div>
+            </div>
+
+            {/* Business Hours Card */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-zinc-600" />
+                  Business Hours
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  Store opening hours and pickup availability.
+                </p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-3">
+                  <Label>Opening Hours</Label>
+                  <Textarea
+                    value={settings.openingHours || ""}
+                    onChange={(e) => setSettings({ ...settings, openingHours: e.target.value })}
+                    placeholder="星期一至五: 10:00 - 20:00&#10;星期六日: 12:00 - 18:00"
+                    rows={3}
+                  />
+                  <Description>General store operating hours.</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Pickup Hours</Label>
+                  <Textarea
+                    value={settings.pickupHours || ""}
+                    onChange={(e) => setSettings({ ...settings, pickupHours: e.target.value })}
+                    placeholder="星期一至五: 14:00 - 19:00&#10;星期六: 14:00 - 17:00"
+                    rows={3}
+                  />
+                  <Description>Hours when customers can pick up orders.</Description>
+                </div>
+              </div>
+            </div>
+
+            {/* Pickup Address Card */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-zinc-600" />
+                  Pickup Address
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  Location where customers can collect their orders.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Pickup Address</Label>
+                <Textarea
+                  value={settings.pickupAddress || ""}
+                  onChange={(e) => setSettings({ ...settings, pickupAddress: e.target.value })}
+                  placeholder="九龍旺角彌敦道XXX號&#10;XX大廈XX樓XX室"
+                  rows={3}
+                />
+                <Description>Full address for order pickup location.</Description>
+              </div>
+            </div>
+
+            {/* Shipping Settings Card */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Truck className="h-5 w-5 text-zinc-600" />
+                  Shipping Settings
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  Configure shipping fees and free shipping threshold.
+                </p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-3">
+                  <Label>Shipping Fee ($)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={settings.shippingFee}
+                    onChange={(e) => setSettings({ ...settings, shippingFee: Number(e.target.value) || 0 })}
+                    placeholder="40"
+                  />
+                  <Description>Standard shipping fee in HKD. Default: $40</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Free Shipping Threshold ($)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={settings.freeShippingThreshold}
+                    onChange={(e) => setSettings({ ...settings, freeShippingThreshold: Number(e.target.value) || 0 })}
+                    placeholder="600"
+                  />
+                  <Description>Orders above this amount get free shipping. Default: $600</Description>
                 </div>
               </div>
             </div>

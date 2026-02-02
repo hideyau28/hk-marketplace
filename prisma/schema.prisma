@@ -17,6 +17,18 @@ model StoreSettings {
   welcomePopupSubtitle    String?
   welcomePopupPromoText   String?
   welcomePopupButtonText  String?
+  // Contact info
+  whatsappNumber          String?
+  instagramUrl            String?
+  facebookUrl             String?
+  // Business hours
+  openingHours            String?
+  pickupHours             String?
+  // Pickup address
+  pickupAddress           String?
+  // Shipping
+  shippingFee             Float    @default(40)
+  freeShippingThreshold   Float    @default(600)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }

@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/lib/theme-context";
 import Analytics from "@/components/Analytics";
 import WelcomePopup from "@/components/WelcomePopup";
 import ScrollToTop from "@/components/ScrollToTop";
+import SocialProofPopup from "@/components/SocialProofPopup";
 
 export default async function CustomerLayout({
   children,
@@ -34,6 +35,13 @@ export default async function CustomerLayout({
     where: { id: "default" },
   }).catch(() => null);
 
+  // Fetch products for social proof popup
+  const socialProofProducts = await prisma.product.findMany({
+    where: { active: true, stock: { gt: 0 } },
+    select: { id: true, title: true },
+    take: 50,
+  }).catch(() => []);
+
   const welcomePopupConfig = {
     enabled: storeSettings?.welcomePopupEnabled ?? true,
     title: storeSettings?.welcomePopupTitle || "歡迎來到 HK•Market",
@@ -53,6 +61,7 @@ export default async function CustomerLayout({
           <Footer locale={l} t={t} />
           <BottomTab t={t} />
           <WelcomePopup config={welcomePopupConfig} />
+          <SocialProofPopup products={socialProofProducts} />
           <ScrollToTop />
         </div>
       </CurrencyProvider>
