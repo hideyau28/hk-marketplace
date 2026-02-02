@@ -96,7 +96,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         p.imageUrl ||
         "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
       badges: Array.isArray(p.badges) ? (p.badges as any[]) : [],
-      promotionBadges: p.promotionBadges || [],
+      promotionBadges: [], // Not available in current schema
       sizes: p.sizes || null,
     }));
 

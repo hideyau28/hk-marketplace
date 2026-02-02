@@ -150,23 +150,26 @@ model PaymentAttempt {
 }
 
 model Product {
-  id               String   @id @default(cuid())
-  brand            String? // optional for backward compatibility
-  title            String
-  price            Float
-  imageUrl         String?
-  category         String? // optional: categorize products for rails/hero links
-  badges           Json?
-  promotionBadges  String[] // Admin-selectable: 店長推介, 今期熱賣, 新品上架, 限時優惠, 人氣之選
-  sizes            Json? // Size-to-stock mapping e.g. {"US 8": 5, "US 9": 3}
-  stock            Int? // optional: product inventory count
-  shoeType         String? // adult, womens, grade_school, preschool, toddler
-  active           Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id            String   @id @default(cuid())
+  title         String
+  price         Float
+  imageUrl      String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  badges        Json?
+  brand         String?
+  category      String?
+  sizeSystem    String?
+  sizes         Json?
+  stock         Int      @default(0)
+  originalPrice Float?
+  images        String[]
+  color         String?
+  shoeType      String?
+  sku           String?  @unique
 
   @@index([active])
   @@index([brand])
   @@index([category])
-  @@index([shoeType])
 }

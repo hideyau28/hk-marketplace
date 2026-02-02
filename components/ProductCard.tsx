@@ -17,7 +17,6 @@ type ProductCardProps = {
     price?: number;
     stock?: number;
     badges?: string[];
-    promotionBadges?: string[];
     sizes?: Record<string, number> | null;
     badge?: string;
   };
@@ -108,14 +107,9 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
   const [showAddButton, setShowAddButton] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  // Compute all badges to display (promotionBadges + auto "快將售罄")
+  // Compute all badges to display (auto "快將售罄" for low stock)
   const displayBadges = useMemo(() => {
     const badges: string[] = [];
-
-    // Add promotion badges
-    if (p.promotionBadges && p.promotionBadges.length > 0) {
-      badges.push(...p.promotionBadges);
-    }
 
     // Add auto badge for low stock
     const isLowStock = p.stock !== undefined && p.stock !== null && p.stock > 0 && p.stock <= 5;
@@ -124,7 +118,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
     }
 
     return badges;
-  }, [p.promotionBadges, p.stock]);
+  }, [p.stock]);
 
   // Get available sizes from the sizes object
   const availableSizes = useMemo(() => {

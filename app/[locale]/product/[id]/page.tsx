@@ -19,7 +19,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   }
 
   // Compute badges to display
-  const promotionBadges = product.promotionBadges || [];
+  const promotionBadges: string[] = []; // Not available in current schema
   const isLowStock = product.stock !== undefined && product.stock !== null && product.stock > 0 && product.stock <= 5;
 
   // Determine if product is kids based on shoeType
