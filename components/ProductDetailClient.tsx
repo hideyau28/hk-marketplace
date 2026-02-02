@@ -5,6 +5,7 @@ import { Heart } from "lucide-react";
 import { addToCart } from "@/lib/cart";
 import { useToast } from "@/components/Toast";
 import ProductSizeSelector from "@/components/ProductSizeSelector";
+import SizeChartButton from "@/components/SizeChartButton";
 import { useCurrency } from "@/lib/currency";
 import type { Translations } from "@/lib/translations";
 
@@ -21,6 +22,7 @@ type ProductDetailClientProps = {
     sizeSystem: string | null;
     sizes: any;
     stock: number;
+    isKids?: boolean;
   };
   locale: string;
   t: Translations;
@@ -153,6 +155,9 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
       <div className="text-zinc-600 text-sm leading-6 dark:text-zinc-400">
         Placeholder description. Shipping calculated at checkout.
       </div>
+
+      {/* Size Chart Button */}
+      <SizeChartButton isKids={product.isKids || false} locale={locale} />
 
       {/* Size Selector */}
       {product.sizes && (

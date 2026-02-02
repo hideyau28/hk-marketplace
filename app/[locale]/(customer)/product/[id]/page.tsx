@@ -65,6 +65,10 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
       ? [product.imageUrl]
       : ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60"];
 
+  // Determine if product is kids based on shoeType
+  const kidsShoeTypes = ["grade_school", "preschool", "toddler"];
+  const isKids = product.shoeType ? kidsShoeTypes.includes(product.shoeType) : false;
+
   const p = {
     id: product.id,
     brand: product.brand || "—",
@@ -77,6 +81,8 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     sizeSystem: (product as any).sizeSystem || null,
     sizes: (product as any).sizes || null,
     stock: (product as any).stock ?? 0,
+    shoeType: product.shoeType || null,
+    isKids,
   };
 
   // Get translated category name

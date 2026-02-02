@@ -27,7 +27,11 @@ export default async function ProductsPage({
   const where: any = { active: true };
   if (category) where.category = category;
   if (shoeType) {
-    if (shoeType === "kids") {
+    // Support comma-separated shoeType values (e.g., "grade_school,preschool,toddler")
+    const types = shoeType.split(",").map((t) => t.trim());
+    if (types.length > 1) {
+      where.shoeType = { in: types };
+    } else if (shoeType === "kids") {
       where.shoeType = { in: ["grade_school", "preschool", "toddler"] };
     } else {
       where.shoeType = shoeType;
@@ -47,6 +51,7 @@ export default async function ProductsPage({
     price: p.price,
     stock: (p as any).stock ?? 0,
     badges: p.badges && Array.isArray(p.badges) ? (p.badges as string[]) : undefined,
+    sizes: p.sizes as Record<string, number> | null,
   }));
 
   // Page title

@@ -7,6 +7,7 @@ import PromoBannerFull from "@/components/home/PromoBannerFull";
 import SportsApparel from "@/components/home/SportsApparel";
 import RecentlyViewed from "@/components/home/RecentlyViewed";
 import SaleZone from "@/components/home/SaleZone";
+import KidsSection from "@/components/home/KidsSection";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -111,6 +112,23 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       ...p,
       originalPrice: p.originalPrice!,
     }));
+
+  // Kids products (shoeType: grade_school, preschool, toddler)
+  const kidsProductsRaw = await prisma.product.findMany({
+    where: {
+      active: true,
+      shoeType: { in: ["grade_school", "preschool", "toddler"] },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  });
+  const kidsProducts = kidsProductsRaw.map((p) => ({
+    id: p.id,
+    brand: p.brand || "",
+    title: p.title,
+    price: p.price,
+    image: p.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
+  }));
 
   // 你可能鍾意 — random 8 products
   const fallbackProducts = shuffleArray(allProducts).slice(0, 8);
@@ -227,7 +245,18 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       )}
 
-      {/* 11) 🔥 特價專區 Sale Zone */}
+      {/* 11) 童裝專區 Kids Section */}
+      {kidsProducts.length > 0 && (
+        <KidsSection
+          locale={l}
+          products={kidsProducts}
+          title={l === "zh-HK" ? "童裝專區" : "Kids"}
+          viewAllText={t.home.viewAll}
+          viewAllHref={`/${locale}/products?shoeType=grade_school,preschool,toddler`}
+        />
+      )}
+
+      {/* 12) 🔥 特價專區 Sale Zone */}
       {saleProducts.length > 0 && (
         <SaleZone
           locale={l}
@@ -237,7 +266,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       )}
 
-      {/* 12) 最近瀏覽 / 你可能鍾意 */}
+      {/* 13) 最近瀏覽 / 你可能鍾意 */}
       <RecentlyViewed
         locale={l}
         fallbackProducts={fallbackProducts}
