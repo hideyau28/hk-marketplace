@@ -13,7 +13,11 @@ import {
   X,
   Store,
   Truck,
-  Undo2
+  Undo2,
+  Phone,
+  Clock,
+  MapPin,
+  DollarSign,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
@@ -24,13 +28,25 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// --- Types (Preserved) ---
+// --- Types ---
 type StoreSettings = {
   id: string;
   storeName: string | null;
   tagline: string | null;
   returnsPolicy: string | null;
   shippingPolicy: string | null;
+  // Contact Information
+  whatsappNumber: string | null;
+  instagramUrl: string | null;
+  facebookUrl: string | null;
+  // Business Hours
+  businessHours: string | null;
+  pickupHours: string | null;
+  // Pickup Address
+  pickupAddress: string | null;
+  // Shipping Settings
+  shippingFee: number | null;
+  freeShippingThreshold: number | null;
 };
 
 type SaveState = "idle" | "saving" | "success" | "error";
@@ -44,6 +60,14 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
     tagline: "",
     returnsPolicy: "",
     shippingPolicy: "",
+    whatsappNumber: "",
+    instagramUrl: "",
+    facebookUrl: "",
+    businessHours: "",
+    pickupHours: "",
+    pickupAddress: "",
+    shippingFee: 40,
+    freeShippingThreshold: 600,
   });
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -159,8 +183,21 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
       tagline: "",
       returnsPolicy: "",
       shippingPolicy: "",
+      whatsappNumber: "",
+      instagramUrl: "",
+      facebookUrl: "",
+      businessHours: "",
+      pickupHours: "",
+      pickupAddress: "",
+      shippingFee: 40,
+      freeShippingThreshold: 600,
     });
   }
+
+  // Helper for updating settings with proper typing
+  const updateSetting = <K extends keyof StoreSettings>(key: K, value: StoreSettings[K]) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
+  };
 
   // --- UI Components ---
 
@@ -339,7 +376,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                   <Label>Store Name</Label>
                   <Input
                     value={settings.storeName || ""}
-                    onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
+                    onChange={(e) => updateSetting("storeName", e.target.value)}
                     placeholder="e.g. Yau Store"
                   />
                   <Description>Visible in the navigation bar and browser title.</Description>
@@ -349,7 +386,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                   <Label>Tagline</Label>
                   <Input
                     value={settings.tagline || ""}
-                    onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
+                    onChange={(e) => updateSetting("tagline", e.target.value)}
                     placeholder="e.g. Premium Tech & Lifestyle"
                   />
                   <Description>Featured prominently on the homepage hero section.</Description>
@@ -374,7 +411,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                   <Label>Returns Policy</Label>
                   <Textarea
                     value={settings.returnsPolicy || ""}
-                    onChange={(e) => setSettings({ ...settings, returnsPolicy: e.target.value })}
+                    onChange={(e) => updateSetting("returnsPolicy", e.target.value)}
                     rows={4}
                     placeholder="e.g. Items can be returned within 30 days of delivery..."
                     className="font-mono text-sm resize-y min-h-[120px]"
@@ -386,12 +423,172 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                   <Label>Shipping Policy</Label>
                   <Textarea
                     value={settings.shippingPolicy || ""}
-                    onChange={(e) => setSettings({ ...settings, shippingPolicy: e.target.value })}
+                    onChange={(e) => updateSetting("shippingPolicy", e.target.value)}
                     rows={4}
                     placeholder="e.g. Standard shipping takes 3-5 business days..."
                     className="font-mono text-sm resize-y min-h-[120px]"
                   />
                   <Description>Inform customers about delivery times and costs.</Description>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Information Card */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-zinc-600" />
+                  Contact Information
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  How customers can reach you.
+                </p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-3 md:col-span-2">
+                  <Label>WhatsApp Number</Label>
+                  <div className="flex gap-2">
+                    <span className="flex h-10 items-center rounded-md border border-zinc-300 bg-zinc-100 px-3 text-sm text-zinc-600">
+                      +852
+                    </span>
+                    <Input
+                      value={settings.whatsappNumber?.replace(/^\+852/, "") || ""}
+                      onChange={(e) => {
+                        const num = e.target.value.replace(/\D/g, "");
+                        updateSetting("whatsappNumber", num ? `+852${num}` : "");
+                      }}
+                      placeholder="91234567"
+                      className="flex-1"
+                      maxLength={8}
+                    />
+                  </div>
+                  <Description>Used for customer support and WhatsApp button.</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Instagram URL</Label>
+                  <Input
+                    value={settings.instagramUrl || ""}
+                    onChange={(e) => updateSetting("instagramUrl", e.target.value)}
+                    placeholder="https://instagram.com/yourstore"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Facebook URL</Label>
+                  <Input
+                    value={settings.facebookUrl || ""}
+                    onChange={(e) => updateSetting("facebookUrl", e.target.value)}
+                    placeholder="https://facebook.com/yourstore"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Business Hours Card */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-zinc-600" />
+                  Business Hours
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  When customers can reach you or pick up orders.
+                </p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-3">
+                  <Label>Opening Hours</Label>
+                  <Input
+                    value={settings.businessHours || ""}
+                    onChange={(e) => updateSetting("businessHours", e.target.value)}
+                    placeholder="e.g. 星期一至五 10:00-19:00"
+                  />
+                  <Description>General business hours for customer service.</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Pickup Hours</Label>
+                  <Input
+                    value={settings.pickupHours || ""}
+                    onChange={(e) => updateSetting("pickupHours", e.target.value)}
+                    placeholder="e.g. 星期一至六 12:00-18:00"
+                  />
+                  <Description>When customers can collect orders in person.</Description>
+                </div>
+              </div>
+            </div>
+
+            {/* Pickup Address Card */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-zinc-600" />
+                  Pickup Address
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  Location for self-pickup orders.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Address</Label>
+                <Textarea
+                  value={settings.pickupAddress || ""}
+                  onChange={(e) => updateSetting("pickupAddress", e.target.value)}
+                  rows={2}
+                  placeholder="e.g. 旺角彌敦道123號XX大廈5樓A室"
+                  className="resize-y min-h-[80px]"
+                />
+                <Description>Shown during checkout for pickup orders.</Description>
+              </div>
+            </div>
+
+            {/* Shipping Settings Card */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-zinc-600" />
+                  Shipping Settings
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  Configure delivery fees and free shipping thresholds.
+                </p>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-3">
+                  <Label>Shipping Fee (HKD)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
+                    <Input
+                      type="number"
+                      value={settings.shippingFee ?? 40}
+                      onChange={(e) => updateSetting("shippingFee", parseFloat(e.target.value) || 0)}
+                      placeholder="40"
+                      className="pl-7"
+                      min={0}
+                    />
+                  </div>
+                  <Description>Standard delivery fee per order.</Description>
+                </div>
+
+                <div className="space-y-3">
+                  <Label>Free Shipping Threshold (HKD)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
+                    <Input
+                      type="number"
+                      value={settings.freeShippingThreshold ?? 600}
+                      onChange={(e) => updateSetting("freeShippingThreshold", parseFloat(e.target.value) || 0)}
+                      placeholder="600"
+                      className="pl-7"
+                      min={0}
+                    />
+                  </div>
+                  <Description>Orders above this amount get free shipping.</Description>
                 </div>
               </div>
             </div>

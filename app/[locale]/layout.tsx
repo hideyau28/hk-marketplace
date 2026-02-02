@@ -9,6 +9,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import ScrollToTop from "@/components/ScrollToTop";
 import WelcomePopup from "@/components/WelcomePopup";
 import PromoBanner from "@/components/PromoBanner";
+import SocialProofPopup from "@/components/SocialProofPopup";
 
 export default async function LocaleLayout({
   children,
@@ -36,6 +37,7 @@ export default async function LocaleLayout({
       <WhatsAppButton />
       <BottomTab />
       <WelcomePopup />
+      <SocialProofPopup />
     </>
   );
 }
