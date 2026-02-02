@@ -11,9 +11,15 @@ type QuickPill = {
   label: string;
   labelEn: string;
   href: string;
+  style?: "type" | "category";
 };
 
 const quickPills: QuickPill[] = [
+  // 人群分類
+  { key: "men", label: "男裝", labelEn: "Men", href: "/products?shoeType=adult", style: "type" },
+  { key: "women", label: "女裝", labelEn: "Women", href: "/products?shoeType=womens", style: "type" },
+  { key: "kids", label: "童裝", labelEn: "Kids", href: "/products?shoeType=kids", style: "type" },
+  // 系列分類
   { key: "Air Jordan", label: "Air Jordan", labelEn: "Air Jordan", href: "/products?category=Air+Jordan" },
   { key: "Dunk", label: "Dunk / SB", labelEn: "Dunk / SB", href: "/products?category=Dunk+%2F+SB" },
   { key: "Air Force", label: "Air Force", labelEn: "Air Force", href: "/products?category=Air+Force" },
@@ -68,14 +74,22 @@ export default function CategoryNav({ locale, filterTranslations }: CategoryNavP
               <ChevronDown size={14} />
             </button>
 
+            {/* Divider before type pills */}
+            <div className="shrink-0 w-px h-5 bg-zinc-300 dark:bg-zinc-700" />
+
             {/* Quick Pills */}
             {quickPills.map((pill) => {
               const label = locale === "zh-HK" ? pill.label : pill.labelEn;
+              const isTypePill = pill.style === "type";
               return (
                 <button
                   key={pill.key}
                   onClick={() => handlePillClick(pill)}
-                  className="shrink-0 rounded-full px-4 py-1.5 text-sm bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm ${
+                    isTypePill
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-medium"
+                      : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                  }`}
                 >
                   {label}
                 </button>
