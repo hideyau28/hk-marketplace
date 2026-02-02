@@ -154,8 +154,8 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
           )}
         </div>
 
-        {p.stock !== undefined && p.stock > 0 && p.stock < 5 && (
-          <div className="mt-1 text-xs font-semibold text-red-600">Low Stock</div>
+        {p.stock !== undefined && p.stock > 0 && p.stock <= 5 && (
+          <div className="mt-1 text-xs font-semibold text-orange-600">快將售罄</div>
         )}
 
         {/* 4) Badges - show up to 2 */}

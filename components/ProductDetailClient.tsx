@@ -137,10 +137,16 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
         )}
       </div>
 
+      {/* Trust badges */}
+      <div className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-400">
+        <div>✓ 正品保證</div>
+        <div>✓ 訂單滿 $600 免運費</div>
+      </div>
+
       {product.stock <= 0 ? (
         <div className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{t.product.outOfStock}</div>
-      ) : product.stock < 5 ? (
-        <div className="text-sm font-semibold text-red-600">{t.product.lowStock}</div>
+      ) : product.stock <= 5 ? (
+        <div className="text-sm font-semibold text-orange-600">🔥 快將售罄 - 僅剩 {product.stock} 件</div>
       ) : null}
 
       {/* Description */}
