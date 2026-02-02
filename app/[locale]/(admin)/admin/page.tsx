@@ -72,7 +72,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
     return sum + (amounts?.total || 0);
   }, 0);
 
-  const formattedRevenue = `HK$${totalRevenue.toFixed(1)}`;
+  const formattedRevenue = `$${totalRevenue.toFixed(0)}`;
 
   const paidStatuses = new Set(["PAID", "FULFILLING", "SHIPPED", "COMPLETED"]);
 
@@ -163,7 +163,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         />
         <StatCard
           label={t.admin.dashboard.averageOrder}
-          value={`HK$${avgOrderAmount.toFixed(1)}`}
+          value={`$${avgOrderAmount.toFixed(0)}`}
           icon={<DollarSign size={24} />}
         />
       </div>
@@ -242,7 +242,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right text-zinc-900 font-medium">
-                          HK${(amounts?.total || 0).toFixed(1)}
+                          ${Math.round(amounts?.total || 0)}
                         </td>
                         <td className="px-4 py-3 text-zinc-600 text-xs">
                           {new Date(order.createdAt).toLocaleDateString()}

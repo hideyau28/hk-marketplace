@@ -16,6 +16,7 @@ type ProductCardProps = {
     title?: string; // model/short description
     image?: string;
     price?: number;
+    originalPrice?: number | null;
     stock?: number;
     badges?: string[];
     // legacy single badge support
@@ -46,6 +47,12 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
   const [wishlisted, setWishlisted] = useState(false);
   const { format } = useCurrency();
 
+  // Calculate sale status
+  const isOnSale = p.originalPrice != null && p.price != null && p.originalPrice > p.price;
+  const discountPercent = isOnSale
+    ? Math.round((1 - p.price! / p.originalPrice!) * 100)
+    : 0;
+
   useEffect(() => {
     setWishlisted(isWishlisted(p.id));
 
@@ -70,7 +77,11 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
   return (
     <Link
       href={`/${locale}/product/${p.id}`}
-      className="group block"
+      className={`group flex flex-col h-full rounded-2xl ${
+        isOnSale
+          ? "ring-1 ring-red-200 bg-red-50/30 dark:ring-red-900/50 dark:bg-red-950/20"
+          : ""
+      }`}
     >
       {/* Image container */}
       <div
@@ -106,6 +117,13 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
             Out of Stock
           </div>
         )}
+
+        {/* Discount badge */}
+        {isOnSale && p.stock !== 0 && (
+          <div className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white">
+            -{discountPercent}%
+          </div>
+        )}
       </div>
 
       {/* Content (no frame) — 4 lines: brand / desc / price / badges */}
@@ -123,8 +141,17 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         </h3>
 
         {/* 3) Price */}
-        <div className="mt-1.5 text-base font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
-          {p.price != null ? format(p.price) : "—"}
+        <div className="mt-1.5 flex items-center gap-2 leading-tight">
+          {isOnSale ? (
+            <>
+              <span className="text-sm text-zinc-400 line-through">{format(p.originalPrice!)}</span>
+              <span className="text-base font-bold text-red-600">{format(p.price!)}</span>
+            </>
+          ) : (
+            <span className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+              {p.price != null ? format(p.price) : "—"}
+            </span>
+          )}
         </div>
 
         {p.stock !== undefined && p.stock > 0 && p.stock < 5 && (

@@ -12,7 +12,7 @@ type OrdersTableProps = {
   currentStatus?: string;
 };
 
-const ORDER_STATUSES = [
+const ORDER_STATUSES_EN = [
   { value: "", label: "All Statuses" },
   { value: "PENDING", label: "Pending" },
   { value: "PAID", label: "Paid" },
@@ -23,6 +23,51 @@ const ORDER_STATUSES = [
   { value: "REFUNDED", label: "Refunded" },
   { value: "DISPUTED", label: "Disputed" },
 ];
+
+const ORDER_STATUSES_ZH = [
+  { value: "", label: "所有狀態" },
+  { value: "PENDING", label: "待付款" },
+  { value: "PAID", label: "已付款" },
+  { value: "FULFILLING", label: "配送中" },
+  { value: "SHIPPED", label: "已發貨" },
+  { value: "COMPLETED", label: "已完成" },
+  { value: "CANCELLED", label: "已取消" },
+  { value: "REFUNDED", label: "已退款" },
+  { value: "DISPUTED", label: "爭議中" },
+];
+
+const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
+  PENDING: { en: "Pending", zh: "待付款" },
+  PAID: { en: "Paid", zh: "已付款" },
+  CREATED: { en: "Created", zh: "已建立" },
+  FULFILLING: { en: "Fulfilling", zh: "配送中" },
+  SHIPPED: { en: "Shipped", zh: "已發貨" },
+  COMPLETED: { en: "Completed", zh: "已完成" },
+  CANCELLED: { en: "Cancelled", zh: "已取消" },
+  REFUNDED: { en: "Refunded", zh: "已退款" },
+  DISPUTED: { en: "Disputed", zh: "爭議中" },
+  succeeded: { en: "Succeeded", zh: "成功" },
+  processing: { en: "Processing", zh: "處理中" },
+  requires_action: { en: "Requires Action", zh: "需操作" },
+  failed: { en: "Failed", zh: "失敗" },
+};
+
+const FULFILLMENT_DISPLAY: Record<string, { en: string; zh: string }> = {
+  PICKUP: { en: "Pickup", zh: "自取" },
+  DELIVERY: { en: "Delivery", zh: "送貨" },
+  pickup: { en: "Pickup", zh: "自取" },
+  delivery: { en: "Delivery", zh: "送貨" },
+};
+
+function translateStatus(status: string, locale: Locale): string {
+  const t = STATUS_DISPLAY[status];
+  return t ? (locale === "zh-HK" ? t.zh : t.en) : status;
+}
+
+function translateFulfillment(type: string, locale: Locale): string {
+  const t = FULFILLMENT_DISPLAY[type];
+  return t ? (locale === "zh-HK" ? t.zh : t.en) : type;
+}
 
 function badgeClass(status: string) {
   const s = status.toLowerCase();
@@ -69,6 +114,7 @@ function getKeyTimestamp(order: OrderWithPayments): { label: string; date: strin
 export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps) {
   const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus || "");
+  const ORDER_STATUSES = locale === "zh-HK" ? ORDER_STATUSES_ZH : ORDER_STATUSES_EN;
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
@@ -141,19 +187,19 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
                       </td>
                       <td className="px-4 py-3 text-zinc-700">{order.customerName}</td>
                       <td className="px-4 py-3 text-zinc-700">{order.phone}</td>
-                      <td className="px-4 py-3 text-zinc-700">{order.fulfillmentType}</td>
+                      <td className="px-4 py-3 text-zinc-700">{translateFulfillment(order.fulfillmentType, locale)}</td>
                       <td className="px-4 py-3 text-right text-zinc-900 font-medium">
-                        {amounts?.currency || "HKD"} {amounts?.total || 0}
+                        ${amounts?.total || 0}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center ${badgeClass(order.status)}`}>
-                          {order.status}
+                          {translateStatus(order.status, locale)}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         {lastPayment ? (
                           <span className={`inline-flex items-center ${badgeClass(lastPayment)}`}>
-                            {lastPayment}
+                            {translateStatus(lastPayment, locale)}
                           </span>
                         ) : (
                           <span className="text-zinc-400 text-xs">—</span>

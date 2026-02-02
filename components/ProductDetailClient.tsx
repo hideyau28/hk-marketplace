@@ -73,7 +73,7 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
       return;
     }
     // Check if size is required
-    if (product.sizeSystem && !selectedSize) {
+    if (product.sizes && !selectedSize) {
       showToast(t.product.pleaseSelectSize);
       return;
     }
@@ -110,7 +110,7 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
   };
 
   // Determine if Add to Cart should be disabled (no size selected when required)
-  const needsSize = !!product.sizeSystem;
+  const needsSize = !!product.sizes;
   const isDisabled = product.stock <= 0 || (needsSize && !selectedSize);
 
   // Get translated button text for disabled state
@@ -149,7 +149,7 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
       </div>
 
       {/* Size Selector */}
-      {product.sizeSystem && (
+      {product.sizes && (
         <ProductSizeSelector
           sizeSystem={product.sizeSystem}
           sizes={product.sizes}

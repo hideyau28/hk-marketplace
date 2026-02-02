@@ -7,7 +7,6 @@ import type { Locale } from "@/lib/i18n";
 import type { Translations } from "@/lib/translations";
 import { getCartItemCount, getCart } from "@/lib/cart";
 import { Moon, ShoppingCart, Sun, Menu, Search } from "lucide-react";
-import { currencyOptions, useCurrency } from "@/lib/currency";
 import { useTheme } from "@/lib/theme-context";
 import MobileMenu from "./MobileMenu";
 import SearchOverlay from "./SearchOverlay";
@@ -25,7 +24,7 @@ export default function TopNav({ locale, t }: { locale: Locale; t: Translations 
   const [cartCount, setCartCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { currency, setCurrency } = useCurrency();
+  // Currency context still available if needed elsewhere
   const { resolved, cycleMode } = useTheme();
 
   useEffect(() => {
@@ -89,17 +88,6 @@ export default function TopNav({ locale, t }: { locale: Locale; t: Translations 
 
           {/* Desktop controls */}
           <div className="hidden md:flex items-center gap-2">
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value as any)}
-              className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-            >
-              {currencyOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
             <button
               type="button"
               onClick={cycleMode}

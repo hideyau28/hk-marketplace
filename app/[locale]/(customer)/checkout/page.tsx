@@ -211,7 +211,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                 <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{t.checkout.customerInfo}</h2>
                 <div className="mt-4 space-y-4">
                   <div>
-                    <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.customerName}</label>
+                    <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.customerName} <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       required
@@ -221,7 +221,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                     />
                   </div>
                   <div>
-                    <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.phone}</label>
+                    <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.phone} <span className="text-red-500">*</span></label>
                     <input
                       type="tel"
                       required
@@ -340,7 +340,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                     <input
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      placeholder="Coupon code"
+                      placeholder={t.checkout.couponCode}
                       className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
                     />
                     <button
@@ -349,7 +349,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                       disabled={applyingCoupon}
                       className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-50"
                     >
-                      {applyingCoupon ? "Applying..." : "Apply"}
+                      {applyingCoupon ? t.checkout.applying : t.checkout.apply}
                     </button>
                   </div>
                   {couponError && (

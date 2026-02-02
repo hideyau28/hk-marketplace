@@ -11,7 +11,7 @@ const RATES: Record<Currency, number> = {
 };
 
 const SYMBOLS: Record<Currency, string> = {
-  HKD: "HK$",
+  HKD: "$",
   CNY: "¥",
   USD: "$",
 };

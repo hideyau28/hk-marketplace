@@ -2,6 +2,23 @@ import { getDict, type Locale } from "@/lib/i18n";
 import { getOrderById } from "./actions";
 import Link from "next/link";
 
+const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
+  PENDING: { en: "Pending", zh: "待付款" },
+  PAID: { en: "Paid", zh: "已付款" },
+  CREATED: { en: "Created", zh: "已建立" },
+  FULFILLING: { en: "Fulfilling", zh: "配送中" },
+  SHIPPED: { en: "Shipped", zh: "已發貨" },
+  COMPLETED: { en: "Completed", zh: "已完成" },
+  CANCELLED: { en: "Cancelled", zh: "已取消" },
+  REFUNDED: { en: "Refunded", zh: "已退款" },
+  DISPUTED: { en: "Disputed", zh: "爭議中" },
+};
+
+function translateStatus(status: string, locale: string): string {
+  const t = STATUS_DISPLAY[status];
+  return t ? (locale === "zh-HK" ? t.zh : t.en) : status;
+}
+
 export default async function OrderPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
   const t = getDict(locale as Locale);
@@ -57,7 +74,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
             </div>
             <div>
               <p className="text-zinc-500 text-sm">{t.order.status}</p>
-              <p className="mt-1 font-semibold text-zinc-900">{order.status}</p>
+              <p className="mt-1 font-semibold text-zinc-900">{translateStatus(order.status, locale)}</p>
             </div>
             <div>
               <p className="text-zinc-500 text-sm">{t.order.customerName}</p>
@@ -95,7 +112,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
                     {item.name} × {item.quantity}
                   </span>
                   <span className="text-zinc-900">
-                    {amounts.currency}${Math.round(item.unitPrice * item.quantity).toLocaleString()}
+                    ${Math.round(item.unitPrice * item.quantity).toLocaleString()}
                   </span>
                 </div>
               ))}
@@ -106,21 +123,21 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
             <div className="flex justify-between">
               <span className="text-zinc-700">{t.order.subtotal}</span>
               <span className="text-zinc-900">
-                {amounts.currency}${Math.round(amounts.subtotal).toLocaleString()}
+                ${Math.round(amounts.subtotal).toLocaleString()}
               </span>
             </div>
             {amounts.deliveryFee && (
               <div className="flex justify-between">
                 <span className="text-zinc-700">{t.order.deliveryFee}</span>
                 <span className="text-zinc-900">
-                  {amounts.currency}${Math.round(amounts.deliveryFee).toLocaleString()}
+                  ${Math.round(amounts.deliveryFee).toLocaleString()}
                 </span>
               </div>
             )}
             <div className="flex justify-between border-t border-zinc-200 pt-2 text-lg font-semibold">
               <span className="text-zinc-900">{t.order.total}</span>
               <span className="text-zinc-900">
-                {amounts.currency}${Math.round(amounts.total).toLocaleString()}
+                ${Math.round(amounts.total).toLocaleString()}
               </span>
             </div>
           </div>

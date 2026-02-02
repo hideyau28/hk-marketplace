@@ -164,7 +164,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
           <div className="space-y-1.5">
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900">{t.admin.settings.storeSettings}</h1>
             <p className="text-zinc-600 text-base max-w-lg">
-              {t.admin.products.subtitle}
+              {locale === "zh-HK" ? "管理商店設定" : "Manage store settings"}
             </p>
           </div>
 
