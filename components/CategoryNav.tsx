@@ -14,11 +14,12 @@ type QuickPill = {
 };
 
 const quickPills: QuickPill[] = [
-  { key: "Shoes", label: "鞋款", labelEn: "Shoes", href: "/products?category=Shoes" },
-  { key: "Tops", label: "上衣", labelEn: "Tops", href: "/products?category=Tops" },
-  { key: "Pants", label: "褲裝", labelEn: "Pants", href: "/products?category=Pants" },
-  { key: "Jackets", label: "外套", labelEn: "Jackets", href: "/products?category=Jackets" },
-  { key: "sale", label: "特價", labelEn: "On Sale", href: "/products?sale=true" },
+  { key: "Air Jordan", label: "Air Jordan", labelEn: "Air Jordan", href: "/products?category=Air+Jordan" },
+  { key: "Dunk", label: "Dunk / SB", labelEn: "Dunk / SB", href: "/products?category=Dunk+%2F+SB" },
+  { key: "Air Force", label: "Air Force", labelEn: "Air Force", href: "/products?category=Air+Force" },
+  { key: "Air Max", label: "Air Max", labelEn: "Air Max", href: "/products?category=Air+Max" },
+  { key: "Running", label: "跑步", labelEn: "Running", href: "/products?category=Running" },
+  { key: "Basketball", label: "籃球", labelEn: "Basketball", href: "/products?category=Basketball" },
 ];
 
 type CategoryNavProps = {
