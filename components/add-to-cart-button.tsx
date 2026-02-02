@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { addToCart, type CartItem } from "@/lib/cart";
+import Toast from "@/components/Toast";
 
 type AddToCartButtonProps = {
   product: {
@@ -17,6 +18,7 @@ type AddToCartButtonProps = {
 
 export function AddToCartButton({ product, label, addedLabel, className }: AddToCartButtonProps) {
   const [added, setAdded] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const handleAddToCart = () => {
     addToCart({
@@ -26,12 +28,16 @@ export function AddToCartButton({ product, label, addedLabel, className }: AddTo
       imageUrl: product.image,
     });
     setAdded(true);
+    setShowToast(true);
     setTimeout(() => setAdded(false), 2000);
   };
 
   return (
-    <button onClick={handleAddToCart} className={className}>
-      {added ? addedLabel : label}
-    </button>
+    <>
+      <button onClick={handleAddToCart} className={className}>
+        {added ? addedLabel : label}
+      </button>
+      <Toast message="✓ 已加入購物車" show={showToast} onClose={() => setShowToast(false)} />
+    </>
   );
 }

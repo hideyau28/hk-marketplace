@@ -15,6 +15,7 @@ type ProductCardProps = {
     title?: string; // model/short description
     image?: string;
     price?: number;
+    stock?: number;
     badges?: string[];
     // legacy single badge support
     badge?: string;
@@ -67,7 +68,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
   return (
     <Link
       href={`/${locale}/product/${p.id}`}
-      className="group block"
+      className="group block transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
     >
       {/* Image container */}
       <div
@@ -117,6 +118,13 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         <div className="mt-1.5 text-base font-bold text-zinc-900 leading-tight">
           {p.price != null ? `HK$ ${p.price.toLocaleString()}` : "—"}
         </div>
+
+        {/* Stock urgency indicator */}
+        {p.stock !== undefined && p.stock !== null && p.stock > 0 && p.stock <= 5 && (
+          <div className="mt-1 text-xs font-semibold text-orange-600">
+            快將售罄
+          </div>
+        )}
 
         {/* 4) Badges - show up to 2 */}
         {p.badges && p.badges.length > 0 && (

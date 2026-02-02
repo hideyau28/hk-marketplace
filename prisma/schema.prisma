@@ -140,6 +140,7 @@ model Product {
   imageUrl  String?
   category  String? // optional: categorize products for rails/hero links
   badges    Json?
+  stock     Int? // optional: product inventory count
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

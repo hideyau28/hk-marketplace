@@ -35,6 +35,10 @@ export function addToCart(item: Omit<CartItem, "qty"> & { qty?: number }): void 
     cart.push({ ...item, qty: item.qty ?? 1 });
   }
   setCart(cart);
+  // Trigger cart updated event
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("cartUpdated"));
+  }
 }
 
 export function removeFromCart(productId: string): void {

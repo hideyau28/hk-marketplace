@@ -5,6 +5,8 @@ import { getDict } from "@/lib/i18n";
 import TopNav from "@/components/TopNav";
 import BottomTab from "@/components/BottomTab";
 import FloatingSearchPill from "@/components/FloatingSearchPill";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import ScrollToTop from "@/components/ScrollToTop";
 
 export default async function LocaleLayout({
   children,
@@ -27,6 +29,8 @@ export default async function LocaleLayout({
       <TopNav locale={l} t={t} />
       {children}
       <FloatingSearchPill />
+      <ScrollToTop />
+      <WhatsAppButton />
       <BottomTab />
     </>
   );

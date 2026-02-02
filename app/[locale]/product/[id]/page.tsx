@@ -21,6 +21,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     brand: product.brand || "—",
     title: product.title,
     price: product.price,
+    stock: product.stock,
     image: product.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
   };
 
@@ -34,6 +35,26 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
           <div className="text-zinc-600 text-sm">{p.brand}</div>
           <h1 className="mt-2 text-2xl font-semibold text-zinc-900">{p.title}</h1>
           <div className="mt-3 text-xl font-semibold text-zinc-900">HK$ {p.price}</div>
+
+          {/* Stock urgency indicator */}
+          {p.stock !== undefined && p.stock !== null && p.stock > 0 && p.stock <= 5 && (
+            <div className="mt-2 text-sm font-semibold text-orange-600">
+              🔥 快將售罄 - 僅剩 {p.stock} 件
+            </div>
+          )}
+
+          {/* Trust badges */}
+          <div className="mt-3 flex flex-col gap-1.5 text-sm text-zinc-600">
+            <div className="flex items-center gap-1.5">
+              <span className="text-green-600">✓</span>
+              <span>正品保證</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-green-600">✓</span>
+              <span>訂單滿 $500 免運費</span>
+            </div>
+          </div>
+
           <div className="mt-4 text-zinc-600 text-sm leading-6">Placeholder description. Shipping calculated at checkout.</div>
 
           <div className="mt-6 hidden gap-3 md:flex">

@@ -75,11 +75,14 @@ export default function BottomTab() {
             <Link
               key={t.key}
               href={href}
-              className={`flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 ${color}`}
+              className={`relative flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 ${color}`}
               aria-current={active ? "page" : undefined}
             >
               <t.Icon size={20} className={color} />
               <span className="text-[11px] leading-none">{label}</span>
+              {active && (
+                <div className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-[var(--primary)] transition-all" />
+              )}
             </Link>
           );
         })}

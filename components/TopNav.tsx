@@ -16,14 +16,23 @@ function swapLocale(pathname: string, nextLocale: Locale) {
 export default function TopNav({ locale, t }: { locale: Locale; t: any }) {
   const pathname = usePathname() || `/${locale}`;
   const [cartCount, setCartCount] = useState(0);
+  const [bounce, setBounce] = useState(false);
 
   useEffect(() => {
     const updateCartCount = () => {
       const cart = getCart();
       setCartCount(getCartItemCount(cart));
+      // Trigger bounce animation
+      setBounce(true);
+      setTimeout(() => setBounce(false), 500);
     };
 
-    updateCartCount();
+    const initialLoad = () => {
+      const cart = getCart();
+      setCartCount(getCartItemCount(cart));
+    };
+
+    initialLoad();
 
     // Listen for storage events (cart updates from other tabs)
     window.addEventListener("storage", updateCartCount);
@@ -57,7 +66,7 @@ export default function TopNav({ locale, t }: { locale: Locale; t: any }) {
         {/* Cart stays visible on mobile */}
         <div className="flex items-center">
           <Link className="relative text-zinc-600 hover:text-zinc-900 flex items-center gap-1" href={`/${locale}/cart`}>
-            <ShoppingCart size={18} />
+            <ShoppingCart size={18} className={bounce ? "animate-bounce" : ""} />
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-zinc-900 text-white text-xs">
                 {cartCount > 9 ? "9+" : cartCount}
