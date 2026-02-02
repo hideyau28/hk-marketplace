@@ -23,6 +23,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+
+  // Validation state
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
   const [fulfillmentType, setFulfillmentType] = useState<FulfillmentType>("pickup");
   const [addressLine1, setAddressLine1] = useState("");
   const [district, setDistrict] = useState("");
@@ -47,6 +55,55 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       }
     });
   }, [params, router]);
+
+  // Validation functions
+  const validateName = (value: string): string | null => {
+    if (value.trim().length < 2) {
+      return "請輸入姓名（至少2個字）";
+    }
+    return null;
+  };
+
+  const validatePhone = (value: string): string | null => {
+    const digitsOnly = value.replace(/\D/g, "");
+    if (digitsOnly.length !== 8) {
+      return "請輸入有效嘅8位電話號碼";
+    }
+    return null;
+  };
+
+  const validateEmail = (value: string): string | null => {
+    if (!value.trim()) return null; // Email is optional
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value.trim())) {
+      return "請輸入有效嘅電郵地址";
+    }
+    return null;
+  };
+
+  const handleNameBlur = () => {
+    setNameTouched(true);
+    setNameError(validateName(customerName));
+  };
+
+  const handlePhoneBlur = () => {
+    setPhoneTouched(true);
+    setPhoneError(validatePhone(phone));
+  };
+
+  const handleEmailBlur = () => {
+    setEmailTouched(true);
+    setEmailError(validateEmail(email));
+  };
+
+  // Check if form is valid for submission
+  const isFormValid = () => {
+    const nameValid = validateName(customerName) === null;
+    const phoneValid = validatePhone(phone) === null;
+    const emailValid = validateEmail(email) === null;
+    const addressValid = fulfillmentType === "pickup" || addressLine1.trim().length > 0;
+    return nameValid && phoneValid && emailValid && addressValid;
+  };
 
   const applyCoupon = async (code?: string) => {
     const finalCode = (code ?? couponCode).trim();
@@ -216,9 +273,20 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                       type="text"
                       required
                       value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+                      onChange={(e) => {
+                        setCustomerName(e.target.value);
+                        if (nameTouched) setNameError(validateName(e.target.value));
+                      }}
+                      onBlur={handleNameBlur}
+                      className={`mt-1 w-full rounded-xl border bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 ${
+                        nameTouched && nameError
+                          ? "border-red-500 focus:border-red-500"
+                          : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
+                      }`}
                     />
+                    {nameTouched && nameError && (
+                      <p className="mt-1 text-xs text-red-500">{nameError}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.phone} <span className="text-red-500">*</span></label>
@@ -226,18 +294,40 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                       type="tel"
                       required
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+                      onChange={(e) => {
+                        setPhone(e.target.value);
+                        if (phoneTouched) setPhoneError(validatePhone(e.target.value));
+                      }}
+                      onBlur={handlePhoneBlur}
+                      className={`mt-1 w-full rounded-xl border bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 ${
+                        phoneTouched && phoneError
+                          ? "border-red-500 focus:border-red-500"
+                          : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
+                      }`}
                     />
+                    {phoneTouched && phoneError && (
+                      <p className="mt-1 text-xs text-red-500">{phoneError}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-zinc-700 text-sm dark:text-zinc-300">{t.checkout.email}</label>
                     <input
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (emailTouched) setEmailError(validateEmail(e.target.value));
+                      }}
+                      onBlur={handleEmailBlur}
+                      className={`mt-1 w-full rounded-xl border bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 ${
+                        emailTouched && emailError
+                          ? "border-red-500 focus:border-red-500"
+                          : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
+                      }`}
                     />
+                    {emailTouched && emailError && (
+                      <p className="mt-1 text-xs text-red-500">{emailError}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -383,8 +473,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                 </div>
                 <button
                   type="submit"
-                  disabled={processing}
-                  className="mt-6 w-full rounded-2xl bg-olive-600 py-4 text-white font-semibold hover:bg-olive-700 disabled:opacity-50"
+                  disabled={processing || !isFormValid()}
+                  className="mt-6 w-full rounded-2xl bg-olive-600 py-4 text-white font-semibold hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {processing ? t.checkout.processing : t.checkout.placeOrder}
                 </button>

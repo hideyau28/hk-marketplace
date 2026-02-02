@@ -37,6 +37,7 @@ model IdempotencyKey {
 
 model Order {
   id                      String           @id @default(cuid())
+  orderNumber             String?          @unique
   customerName            String
   phone                   String
   email                   String?
@@ -63,6 +64,8 @@ model Order {
   @@index([createdAt])
   @@index([stripeCheckoutSessionId])
   @@index([stripePaymentIntentId])
+  @@index([phone])
+  @@index([orderNumber])
 }
 
 model PaymentAttempt {

@@ -182,7 +182,7 @@ export function OrdersTable({ orders, locale, currentStatus }: OrdersTableProps)
                     <tr key={order.id} className="border-t border-zinc-200 hover:bg-zinc-50">
                       <td className="px-4 py-3">
                         <div className="text-zinc-900 font-medium font-mono text-xs">
-                          {order.id.slice(0, 12)}...
+                          {order.orderNumber || order.id.slice(0, 12) + "..."}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-zinc-700">{order.customerName}</td>

@@ -62,7 +62,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
           <div className="text-zinc-500 text-sm">Order Details</div>
-          <h1 className="mt-1 text-2xl font-semibold text-zinc-900">{order.id}</h1>
+          <h1 className="mt-1 text-2xl font-semibold text-zinc-900">{order.orderNumber || order.id}</h1>
           <div className="mt-2 text-zinc-500 text-sm">
             Created: {new Date(order.createdAt).toLocaleString()}
           </div>

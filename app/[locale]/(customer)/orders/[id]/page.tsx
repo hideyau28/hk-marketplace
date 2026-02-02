@@ -70,7 +70,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div>
               <p className="text-zinc-500 text-sm">{t.order.orderId}</p>
-              <p className="mt-1 font-mono text-zinc-900">{order.id}</p>
+              <p className="mt-1 font-mono text-zinc-900">{order.orderNumber || order.id}</p>
             </div>
             <div>
               <p className="text-zinc-500 text-sm">{t.order.status}</p>

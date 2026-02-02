@@ -6,6 +6,38 @@ import { prisma } from "@/lib/prisma";
 import { saveReceiptHtml } from "@/lib/email";
 
 const ROUTE = "/api/orders";
+
+async function generateOrderNumber(): Promise<string> {
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
+    const prefix = `HK-${dateStr}-`;
+
+    // Find the highest sequence number for today
+    const lastOrder = await prisma.order.findFirst({
+        where: {
+            orderNumber: {
+                startsWith: prefix,
+            },
+        },
+        orderBy: {
+            orderNumber: "desc",
+        },
+        select: {
+            orderNumber: true,
+        },
+    });
+
+    let sequence = 1;
+    if (lastOrder?.orderNumber) {
+        const lastSeq = parseInt(lastOrder.orderNumber.slice(-3), 10);
+        if (!isNaN(lastSeq)) {
+            sequence = lastSeq + 1;
+        }
+    }
+
+    return `${prefix}${sequence.toString().padStart(3, "0")}`;
+}
+
 const ORDER_STATUSES = [
     "PENDING",
     "PAID",
@@ -324,8 +356,11 @@ export const POST = withApi(async (req) => {
         return ok(req, existing.responseJson);
     }
 
+    const orderNumber = await generateOrderNumber();
+
     const order = await prisma.order.create({
         data: {
+            orderNumber,
             customerName: payload.customerName,
             phone: payload.phone,
             email: payload.email ?? null,
