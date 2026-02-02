@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, Globe, DollarSign, Moon, Sun, ChevronDown, Package, Heart, Search, Check } from "lucide-react";
+import { X, Globe, Moon, Sun, Package, Heart, Search } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { Translations } from "@/lib/translations";
-import { currencyOptions, useCurrency } from "@/lib/currency";
 import { useTheme } from "@/lib/theme-context";
 
 function swapLocale(pathname: string, nextLocale: Locale) {
@@ -28,9 +26,7 @@ export default function MobileMenu({
   onClose: () => void;
 }) {
   const pathname = usePathname() || `/${locale}`;
-  const { currency, setCurrency } = useCurrency();
   const { resolved, setMode } = useTheme();
-  const [currencyExpanded, setCurrencyExpanded] = useState(false);
 
   const handleLanguageToggle = () => {
     const nextLocale = locale === "zh-HK" ? "en" : "zh-HK";
@@ -39,11 +35,6 @@ export default function MobileMenu({
 
   const handleThemeToggle = () => {
     setMode(resolved === "light" ? "dark" : "light");
-  };
-
-  const handleCurrencySelect = (curr: string) => {
-    setCurrency(curr as any);
-    setCurrencyExpanded(false);
   };
 
   const getLanguageLabel = () => {
@@ -113,46 +104,6 @@ export default function MobileMenu({
                 </span>
               </button>
 
-              {/* Currency Row */}
-              <div>
-                <button
-                  onClick={() => setCurrencyExpanded(!currencyExpanded)}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                >
-                  <DollarSign size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
-                  <span className="text-sm text-zinc-900 dark:text-zinc-100">
-                    {currency}
-                  </span>
-                  <ChevronDown
-                    size={16}
-                    className={`text-zinc-400 transition-transform ${
-                      currencyExpanded ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {/* Currency Dropdown - Only currency codes */}
-                {currencyExpanded && (
-                  <div className="mt-1 space-y-0.5 px-2">
-                    {currencyOptions.map((curr) => (
-                      <button
-                        key={curr}
-                        onClick={() => handleCurrencySelect(curr)}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      >
-                        <div className="w-4 flex-shrink-0">
-                          {currency === curr && (
-                            <Check size={14} className="text-zinc-700 dark:text-zinc-300" />
-                          )}
-                        </div>
-                        <span className="text-sm text-zinc-900 dark:text-zinc-100">
-                          {curr}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Divider */}

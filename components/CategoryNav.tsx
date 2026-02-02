@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import FilterPanel from "./FilterPanel";
@@ -46,17 +45,13 @@ export default function CategoryNav({ locale, filterTranslations }: CategoryNavP
       <div className="sticky top-[57px] z-40 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
         <div className="mx-auto max-w-6xl px-4 py-2.5">
           <div className="flex items-center gap-2">
-            {/* Filter button */}
+            {/* Filter pill - same style as other pills */}
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="flex items-center gap-1.5 bg-olive-600 text-white rounded-full px-4 py-1.5 text-sm font-medium hover:bg-olive-700 transition-colors shrink-0"
+              className="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             >
-              <SlidersHorizontal size={14} />
-              <span>{isZh ? "篩選" : "Filter"}</span>
+              {isZh ? "篩選" : "Filter"}
             </button>
-
-            {/* Divider */}
-            <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-700 shrink-0" />
 
             {/* Quick pills */}
             {quickPills.map((pill) => (
