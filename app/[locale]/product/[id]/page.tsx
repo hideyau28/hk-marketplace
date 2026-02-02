@@ -1,6 +1,7 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import SizeChartButton from "@/components/SizeChartButton";
 import { notFound } from "next/navigation";
 import { AnimatedProductBadges } from "./ProductDetailClient";
 
@@ -20,6 +21,10 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   // Compute badges to display
   const promotionBadges = product.promotionBadges || [];
   const isLowStock = product.stock !== undefined && product.stock !== null && product.stock > 0 && product.stock <= 5;
+
+  // Determine if product is kids based on shoeType
+  const kidsShoeTypes = ["grade_school", "preschool", "toddler"];
+  const isKids = product.shoeType ? kidsShoeTypes.includes(product.shoeType) : false;
 
   const p = {
     id: product.id,
@@ -63,6 +68,11 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
               <span className="text-green-600">✓</span>
               <span>訂單滿 $600 免運費</span>
             </div>
+          </div>
+
+          {/* Size chart button */}
+          <div className="mt-3">
+            <SizeChartButton isKids={isKids} locale={locale as "zh-HK" | "en"} />
           </div>
 
           <div className="mt-4 text-zinc-600 text-sm leading-6">Placeholder description. Shipping calculated at checkout.</div>

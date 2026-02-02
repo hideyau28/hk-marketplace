@@ -1,6 +1,7 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import ProductRail from "@/components/ProductRail";
+import ProductCard from "@/components/ProductCard";
 import CategoryGrid from "@/components/CategoryGrid";
 import BrandRail from "@/components/BrandRail";
 import HeroCarousel from "@/components/HeroCarousel";
@@ -70,6 +71,18 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     orderBy: { createdAt: "desc" },
     take: 8,
   });
+  newArrivalsProducts.forEach((p) => excludedIds.add(p.id));
+
+  // Rail 5: Kids (shoeType: grade_school, preschool, toddler)
+  const kidsProducts = await prisma.product.findMany({
+    where: {
+      active: true,
+      id: { notIn: Array.from(excludedIds) },
+      shoeType: { in: ["grade_school", "preschool", "toddler"] },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 8,
+  });
 
   // Map products to expected format
   const mapProducts = (products: any[]) =>
@@ -91,6 +104,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const rail2 = mapProducts(forYouProducts);
   const rail3 = mapProducts(trendingProducts);
   const rail4 = mapProducts(newArrivalsProducts);
+  const rail5 = mapProducts(kidsProducts);
 
   return (
     <div className="pb-[calc(96px+env(safe-area-inset-bottom))]">
@@ -157,7 +171,34 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       <ProductRail locale={l} title={l === "zh-HK" ? "新品上架" : "New arrivals"} products={rail4} size="lg" />
 
-      {/* 4) Popular Brands (rail + "See all") */}
+      {/* 5) Kids section */}
+      {rail5.length > 0 && (
+        <section className="mt-8">
+          <div className="px-4 flex items-center justify-between mb-3">
+            <h2 className="text-zinc-900 text-lg font-semibold">
+              {l === "zh-HK" ? "童裝專區" : "Kids"}
+            </h2>
+            <a
+              href={`/${l}/products?shoeType=grade_school,preschool,toddler`}
+              className="text-sm text-olive-600 hover:text-olive-700 font-medium"
+            >
+              {t.home.viewAll}
+            </a>
+          </div>
+          <div className="lg:px-4">
+            <div className="flex gap-3 overflow-x-auto pb-2 [-webkit-overflow-scrolling:touch] snap-x snap-mandatory pl-4 pr-4 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:gap-3 lg:overflow-visible lg:pl-0 lg:pr-0">
+              {rail5.map((p) => (
+                <div key={p.id} className="w-[160px] shrink-0 snap-start lg:w-auto">
+                  <ProductCard locale={l} p={p} />
+                </div>
+              ))}
+              <div className="w-10 shrink-0 lg:hidden" aria-hidden="true" />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 6) Popular Brands (rail + "See all") */}
       <BrandRail locale={l} title={t.home.popularBrands} seeAllText={t.home.seeAll} />
     </div>
   );

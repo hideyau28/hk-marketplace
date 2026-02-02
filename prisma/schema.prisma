@@ -13,8 +13,25 @@ model StoreSettings {
   tagline        String?
   returnsPolicy  String?
   shippingPolicy String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+
+  // Contact Information
+  whatsappNumber String? // e.g. "+85291234567"
+  instagramUrl   String?
+  facebookUrl    String?
+
+  // Business Hours
+  businessHours String? // e.g. "星期一至五 10:00-19:00"
+  pickupHours   String?
+
+  // Pickup Address
+  pickupAddress String?
+
+  // Shipping Settings
+  shippingFee           Float? @default(40)
+  freeShippingThreshold Float? @default(600)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model IdempotencyKey {
@@ -143,6 +160,7 @@ model Product {
   promotionBadges  String[] // Admin-selectable: 店長推介, 今期熱賣, 新品上架, 限時優惠, 人氣之選
   sizes            Json? // Size-to-stock mapping e.g. {"US 8": 5, "US 9": 3}
   stock            Int? // optional: product inventory count
+  shoeType         String? // adult, womens, grade_school, preschool, toddler
   active           Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -150,4 +168,5 @@ model Product {
   @@index([active])
   @@index([brand])
   @@index([category])
+  @@index([shoeType])
 }
