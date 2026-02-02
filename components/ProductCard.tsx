@@ -233,7 +233,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
       </Link>
 
       {/* Price row with size selector - outside Link to prevent navigation on select */}
-      <div className="mt-1.5 flex items-center justify-between gap-2">
+      <div className="mt-auto pt-1.5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 leading-tight">
           {isOnSale ? (
             <>

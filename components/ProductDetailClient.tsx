@@ -151,10 +151,6 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
         <div className="text-sm font-semibold text-orange-600">🔥 快將售罄 - 僅剩 {product.stock} 件</div>
       ) : null}
 
-      {/* Description */}
-      <div className="text-zinc-600 text-sm leading-6 dark:text-zinc-400">
-        Placeholder description. Shipping calculated at checkout.
-      </div>
 
       {/* Size Chart Button */}
       <SizeChartButton isKids={product.isKids || false} locale={locale} />

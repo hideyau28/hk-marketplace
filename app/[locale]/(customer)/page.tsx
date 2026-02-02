@@ -81,6 +81,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     image:
       p.imageUrl ||
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
+    sizes: (p as any).sizes || null,
+    stock: (p as any).stock ?? 0,
   }));
 
   // 為你推薦 — random 8 products (horizontal scroll)
@@ -109,8 +111,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     .filter((p) => p.originalPrice && p.originalPrice > p.price)
     .slice(0, 8)
     .map((p) => ({
-      ...p,
+      id: p.id,
+      brand: p.brand,
+      title: p.title,
+      price: p.price,
       originalPrice: p.originalPrice!,
+      image: p.image,
+      sizes: p.sizes,
+      stock: p.stock,
     }));
 
   // Kids products (shoeType: grade_school, preschool, toddler)
@@ -128,10 +136,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     title: p.title,
     price: p.price,
     image: p.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
+    sizes: (p as any).sizes || null,
+    stock: (p as any).stock ?? 0,
   }));
 
-  // 你可能鍾意 — random 8 products
-  const fallbackProducts = shuffleArray(allProducts).slice(0, 8);
+  // 你可能鍾意 — random 8 products (include sizes for dropdown)
+  const fallbackProducts = shuffleArray(allProducts).slice(0, 8).map((p) => ({
+    id: p.id,
+    title: p.title,
+    price: p.price,
+    image: p.image,
+    sizes: p.sizes,
+    stock: p.stock,
+  }));
 
   return (
     <div className="pb-16">
