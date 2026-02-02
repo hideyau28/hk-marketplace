@@ -53,3 +53,4 @@ PROJECT_AUDIT_SUPPLEMENT.md
 TASKS/CLAUDE/
 TASKS/TASK_ADMIN_AUTH.md
 generate_supplement.sh
+.env*.local
