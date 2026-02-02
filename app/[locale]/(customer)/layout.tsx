@@ -9,7 +9,7 @@ import Footer from "@/components/Footer";
 import { CurrencyProvider } from "@/lib/currency";
 import { ThemeProvider } from "@/lib/theme-context";
 import Analytics from "@/components/Analytics";
-import PushNotificationBanner from "@/components/PushNotificationBanner";
+import WelcomePopup from "@/components/WelcomePopup";
 
 export default async function CustomerLayout({
   children,
@@ -37,7 +37,7 @@ export default async function CustomerLayout({
           <main>{children}</main>
           <Footer locale={l} t={t} />
           <BottomTab t={t} />
-          <PushNotificationBanner t={t} />
+          <WelcomePopup />
         </div>
       </CurrencyProvider>
     </ThemeProvider>

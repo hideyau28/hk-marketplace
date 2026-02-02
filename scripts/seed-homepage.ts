@@ -114,8 +114,8 @@ async function main() {
     {
       key: "promo-bar",
       type: "promo",
-      titleEn: "🎉 Free Shipping on orders over HK$500!",
-      titleZh: "🎉 訂單滿 HK$500 免運費！",
+      titleEn: "🎉 Free Shipping on orders over $600!",
+      titleZh: "🎉 訂單滿 $600 免運費！",
       active: true,
       sortOrder: 1,
     },
