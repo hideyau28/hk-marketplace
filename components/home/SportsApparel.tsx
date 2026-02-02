@@ -20,11 +20,13 @@ export default function SportsApparel({
   products,
   title,
   viewAllText,
+  viewAllHref,
 }: {
   locale: Locale;
   products: Product[];
   title: string;
   viewAllText: string;
+  viewAllHref?: string;
 }) {
   const { format: formatPrice } = useCurrency();
 
@@ -32,7 +34,7 @@ export default function SportsApparel({
 
   return (
     <section className="py-6">
-      <SectionTitle title={title} viewAllText={viewAllText} viewAllHref={`/${locale}`} />
+      <SectionTitle title={title} viewAllText={viewAllText} viewAllHref={viewAllHref || `/${locale}/products`} />
       <div className="overflow-x-auto scrollbar-hide [-webkit-overflow-scrolling:touch]">
         <div className="flex gap-3 snap-x snap-mandatory">
           {products.map((product, idx) => (

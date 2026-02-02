@@ -84,16 +84,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
   }));
 
-  // Randomized products for Recommended section (6 products)
+  // 為你推薦 — random 6 products
   const recommendedProducts = shuffleArray(allProducts).slice(0, 6);
 
-  // Featured Sneakers: category = "Shoes" (8 products)
-  const shoesProducts = allProducts.filter((p) => p.category === "Shoes").slice(0, 8);
+  // Air Jordan section (horizontal scroll, large cards)
+  const jordanProducts = shuffleArray(allProducts.filter((p) => p.category === "Air Jordan")).slice(0, 8);
 
-  // Sports Apparel: category IN ("Tops", "Pants", "Jackets") (10 products)
-  const apparelProducts = allProducts
-    .filter((p) => ["Tops", "Pants", "Jackets"].includes(p.category))
-    .slice(0, 10);
+  // Dunk / SB section (horizontal scroll, small cards)
+  const dunkProducts = shuffleArray(allProducts.filter((p) => p.category === "Dunk / SB")).slice(0, 10);
+
+  // Air Max section (horizontal scroll, large cards)
+  const airMaxProducts = shuffleArray(allProducts.filter((p) => p.category === "Air Max")).slice(0, 8);
+
+  // Air Force section (horizontal scroll, small cards)
+  const airForceProducts = shuffleArray(allProducts.filter((p) => p.category === "Air Force")).slice(0, 10);
 
   // Sale products: originalPrice > price (8 products)
   const saleProducts = allProducts
@@ -104,7 +108,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       originalPrice: p.originalPrice!,
     }));
 
-  // Fallback for Recently Viewed / You Might Like (8 products)
+  // 你可能鍾意 — random 8 products
   const fallbackProducts = shuffleArray(allProducts).slice(0, 8);
 
   return (
@@ -133,15 +137,25 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         viewAllText={t.home.viewAll}
       />
 
-      {/* 3) 精選鞋款 Featured Sneakers (large horizontal scroll) */}
+      {/* 3) Air Jordan (large horizontal scroll) */}
       <FeaturedSneakers
         locale={l}
-        products={shoesProducts}
-        title={t.home.featuredSneakers}
+        products={jordanProducts}
+        title={l === "zh-HK" ? "Air Jordan 系列" : "Air Jordan"}
         viewAllText={t.home.viewAll}
+        viewAllHref={`/${locale}/products?category=Air+Jordan`}
       />
 
-      {/* 4) Promotional Banner from CMS (full-width) */}
+      {/* 4) Dunk / SB (small horizontal scroll) */}
+      <SportsApparel
+        locale={l}
+        products={dunkProducts}
+        title={l === "zh-HK" ? "Dunk / SB 系列" : "Dunk / SB"}
+        viewAllText={t.home.viewAll}
+        viewAllHref={`/${locale}/products?category=Dunk+%2F+SB`}
+      />
+
+      {/* 5) Promotional Banner from CMS (full-width) */}
       {promoBanner && (
         <PromoBannerFull
           locale={l}
@@ -155,12 +169,22 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       )}
 
-      {/* 5) 運動服裝 Sports Apparel (small horizontal scroll) */}
+      {/* 6) Air Max (large horizontal scroll) */}
+      <FeaturedSneakers
+        locale={l}
+        products={airMaxProducts}
+        title={l === "zh-HK" ? "Air Max 系列" : "Air Max"}
+        viewAllText={t.home.viewAll}
+        viewAllHref={`/${locale}/products?category=Air+Max`}
+      />
+
+      {/* 7) Air Force (small horizontal scroll) */}
       <SportsApparel
         locale={l}
-        products={apparelProducts}
-        title={t.home.sportsApparel}
+        products={airForceProducts}
+        title={l === "zh-HK" ? "Air Force 系列" : "Air Force"}
         viewAllText={t.home.viewAll}
+        viewAllHref={`/${locale}/products?category=Air+Force`}
       />
 
       {/* 6) 🔥 特價專區 Sale Zone (2-column grid) */}

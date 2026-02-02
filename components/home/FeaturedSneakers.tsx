@@ -20,11 +20,13 @@ export default function FeaturedSneakers({
   products,
   title,
   viewAllText,
+  viewAllHref,
 }: {
   locale: Locale;
   products: Product[];
   title: string;
   viewAllText: string;
+  viewAllHref?: string;
 }) {
   const { format: formatPrice } = useCurrency();
 
@@ -35,7 +37,7 @@ export default function FeaturedSneakers({
       <SectionTitle
         title={title}
         viewAllText={viewAllText}
-        viewAllHref={`/${locale}?category=Shoes`}
+        viewAllHref={viewAllHref || `/${locale}/products`}
       />
       <div className="overflow-x-auto scrollbar-hide [-webkit-overflow-scrolling:touch]">
         <div className="flex gap-4 snap-x snap-mandatory">
