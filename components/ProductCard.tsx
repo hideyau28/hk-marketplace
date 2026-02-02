@@ -118,8 +118,20 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
           </div>
         )}
 
-        {/* Discount badge */}
-        {isOnSale && p.stock !== 0 && (
+        {/* Low stock badge with pulse animation */}
+        {p.stock !== undefined && p.stock > 0 && p.stock <= 5 && (
+          <div
+            className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white"
+            style={{
+              animation: "lowStockPulse 4s ease-in-out infinite",
+            }}
+          >
+            🔥 快將售罄
+          </div>
+        )}
+
+        {/* Discount badge - only show when not low stock */}
+        {isOnSale && p.stock !== 0 && !(p.stock !== undefined && p.stock > 0 && p.stock <= 5) && (
           <div className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white">
             -{discountPercent}%
           </div>

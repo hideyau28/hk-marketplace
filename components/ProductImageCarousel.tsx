@@ -6,9 +6,10 @@ import Image from "next/image";
 type ProductImageCarouselProps = {
   images: string[];
   alt: string;
+  stock?: number;
 };
 
-export default function ProductImageCarousel({ images, alt }: ProductImageCarouselProps) {
+export default function ProductImageCarousel({ images, alt, stock }: ProductImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -88,6 +89,17 @@ export default function ProductImageCarousel({ images, alt }: ProductImageCarous
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
         >
+          {/* Low stock badge */}
+          {stock !== undefined && stock > 0 && stock <= 5 && (
+            <div
+              className="absolute left-2 top-2 z-10 rounded-full bg-red-500 px-3 py-1.5 text-sm font-semibold text-white"
+              style={{
+                animation: "lowStockPulse 4s ease-in-out infinite",
+              }}
+            >
+              🔥 快將售罄
+            </div>
+          )}
           <div
             className="flex h-full transition-transform duration-300 ease-out"
             style={{

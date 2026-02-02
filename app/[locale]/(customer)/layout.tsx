@@ -11,6 +11,7 @@ import { CurrencyProvider } from "@/lib/currency";
 import { ThemeProvider } from "@/lib/theme-context";
 import Analytics from "@/components/Analytics";
 import WelcomePopup from "@/components/WelcomePopup";
+import ScrollToTop from "@/components/ScrollToTop";
 
 export default async function CustomerLayout({
   children,
@@ -52,6 +53,7 @@ export default async function CustomerLayout({
           <Footer locale={l} t={t} />
           <BottomTab t={t} />
           <WelcomePopup config={welcomePopupConfig} />
+          <ScrollToTop />
         </div>
       </CurrencyProvider>
     </ThemeProvider>
