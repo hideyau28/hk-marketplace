@@ -68,7 +68,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
   return (
     <Link
       href={`/${locale}/product/${p.id}`}
-      className="group block transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
+      className="group flex h-full flex-col transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
     >
       {/* Image container */}
       <div
@@ -101,7 +101,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
       </div>
 
       {/* Content (no frame) — 4 lines: brand / desc / price / badges */}
-      <div className="pt-2.5">
+      <div className="flex flex-1 flex-col pt-2.5">
         {/* 1) Brand (only show if present) */}
         {p.brand ? (
           <div className="text-xs font-medium tracking-wide text-zinc-700 truncate">
@@ -115,7 +115,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         </h3>
 
         {/* 3) Price */}
-        <div className="mt-1.5 text-base font-bold text-zinc-900 leading-tight">
+        <div className="mt-auto pt-1.5 text-base font-bold text-zinc-900 leading-tight">
           {p.price != null ? `HK$ ${p.price.toLocaleString()}` : "—"}
         </div>
 

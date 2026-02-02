@@ -63,7 +63,7 @@ export default function BottomTab() {
   const locale = params?.locale || "zh-HK";
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white/90 backdrop-blur">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white/90 backdrop-blur md:hidden">
       <div className="mx-auto grid max-w-3xl grid-cols-5 px-2 py-2">
         {tabs.map((t) => {
           const href = t.href(locale);

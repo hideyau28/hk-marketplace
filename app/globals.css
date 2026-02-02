@@ -44,7 +44,7 @@ body {
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translate(-50%, 10px);
+    transform: translate(-50%, -10px);
   }
   to {
     opacity: 1;

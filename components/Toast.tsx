@@ -20,7 +20,7 @@ export default function Toast({ message, show, onClose, duration = 2000 }: Toast
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 transform animate-fade-in md:bottom-8">
+    <div className="fixed top-4 left-1/2 z-50 -translate-x-1/2 transform animate-fade-in">
       <div className="rounded-lg bg-zinc-900 px-4 py-3 text-white shadow-lg">
         <div className="flex items-center gap-2">
           <span className="text-green-400">✓</span>
