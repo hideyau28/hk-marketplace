@@ -122,7 +122,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                       </div>
                     </td>
                     <td className="px-4 py-3 text-zinc-600">{product.category || "—"}</td>
-                    <td className="px-4 py-3 text-right text-zinc-900 font-medium">HK$ {product.price.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-zinc-900 font-medium">${Math.round(product.price)}</td>
                     <td className="px-4 py-3 text-right text-zinc-700">{product.stock ?? 0}</td>
                     <td className="px-4 py-3">
                       <span

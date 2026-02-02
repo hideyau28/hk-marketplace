@@ -139,19 +139,19 @@ export default async function OrderDetailPage({ params }: PageProps) {
             <div>
               <div className="text-sm text-zinc-500">Subtotal</div>
               <div className="text-zinc-900 font-medium">
-                HK${(amounts.subtotal || 0).toFixed(2)}
+                ${Math.round(amounts.subtotal || 0)}
               </div>
             </div>
             <div>
               <div className="text-sm text-zinc-500">Delivery Fee</div>
               <div className="text-zinc-900 font-medium">
-                HK${(amounts.deliveryFee || 0).toFixed(2)}
+                ${Math.round(amounts.deliveryFee || 0)}
               </div>
             </div>
             <div className="pt-3 border-t border-zinc-200">
               <div className="text-sm text-zinc-500">Total</div>
               <div className="text-xl font-bold text-zinc-900">
-                HK${(amounts.total || 0).toFixed(2)}
+                ${Math.round(amounts.total || 0)}
               </div>
             </div>
             {order.paidAt && (
@@ -191,10 +191,10 @@ export default async function OrderDetailPage({ params }: PageProps) {
               </div>
               <div className="text-right">
                 <div className="font-medium text-zinc-900">
-                  HK${(item.price || 0).toFixed(2)} × {item.quantity}
+                  ${Math.round(item.price || 0)} × {item.quantity}
                 </div>
                 <div className="text-sm text-zinc-500">
-                  HK${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                  ${Math.round((item.price || 0) * (item.quantity || 1))}
                 </div>
               </div>
             </div>

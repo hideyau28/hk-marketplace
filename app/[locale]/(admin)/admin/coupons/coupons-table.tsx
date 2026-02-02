@@ -68,7 +68,7 @@ export default function CouponsTable({ coupons, locale }: CouponsTableProps) {
                     <td className="px-4 py-3 text-zinc-700">{coupon.discountType}</td>
                     <td className="px-4 py-3 text-right text-zinc-900">{coupon.discountValue}</td>
                     <td className="px-4 py-3 text-right text-zinc-700">
-                      {coupon.minOrder ? `HK$ ${coupon.minOrder}` : "—"}
+                      {coupon.minOrder ? `$${coupon.minOrder}` : "—"}
                     </td>
                     <td className="px-4 py-3">
                       <span
