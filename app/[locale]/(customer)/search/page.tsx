@@ -1,13 +1,12 @@
 import type { Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
-import SearchForm from "./search-form";
 import Link from "next/link";
 
 // Quick suggestion chips (static)
 const suggestions = {
-  "zh-HK": ["電子產品", "時裝", "運動", "家居", "美妝"],
-  en: ["Electronics", "Fashion", "Sports", "Home", "Beauty"],
+  "zh-HK": ["Air Jordan", "Dunk", "Air Max", "Air Force", "Running"],
+  en: ["Air Jordan", "Dunk", "Air Max", "Air Force", "Running"],
 };
 
 export default async function SearchPage({
@@ -59,15 +58,6 @@ export default async function SearchPage({
 
   return (
     <div className="min-h-screen pb-[calc(96px+env(safe-area-inset-bottom))]">
-      {/* Search header - sticky */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-zinc-100 px-4 py-3">
-        <SearchForm
-          locale={l}
-          initialQuery={query}
-          placeholder={texts.placeholder}
-        />
-      </div>
-
       <div className="px-4 pt-6">
         {/* No query: show empty state with suggestions */}
         {!query && (

@@ -1,32 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { SlidersHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { SlidersHorizontal, ChevronDown } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import FilterPanel from "./FilterPanel";
-
-type QuickPill = {
-  key: string;
-  label: string;
-  labelEn: string;
-  href: string;
-  style?: "type" | "category";
-};
-
-const quickPills: QuickPill[] = [
-  // 人群分類
-  { key: "men", label: "男裝", labelEn: "Men", href: "/products?shoeType=adult", style: "type" },
-  { key: "women", label: "女裝", labelEn: "Women", href: "/products?shoeType=womens", style: "type" },
-  { key: "kids", label: "童裝", labelEn: "Kids", href: "/products?shoeType=kids", style: "type" },
-  // 系列分類
-  { key: "Air Jordan", label: "Air Jordan", labelEn: "Air Jordan", href: "/products?category=Air+Jordan" },
-  { key: "Dunk", label: "Dunk / SB", labelEn: "Dunk / SB", href: "/products?category=Dunk+%2F+SB" },
-  { key: "Air Force", label: "Air Force", labelEn: "Air Force", href: "/products?category=Air+Force" },
-  { key: "Air Max", label: "Air Max", labelEn: "Air Max", href: "/products?category=Air+Max" },
-  { key: "Running", label: "跑步", labelEn: "Running", href: "/products?category=Running" },
-  { key: "Basketball", label: "籃球", labelEn: "Basketball", href: "/products?category=Basketball" },
-];
 
 type CategoryNavProps = {
   locale: Locale;
@@ -40,64 +18,62 @@ type CategoryNavProps = {
 };
 
 export default function CategoryNav({ locale, filterTranslations }: CategoryNavProps) {
-  const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const router = useRouter();
 
-  const handlePillClick = (pill: QuickPill) => {
-    router.push(`/${locale}${pill.href}`);
-  };
-
-  const filterLabel = locale === "zh-HK" ? "篩選" : "Filter";
+  const isZh = locale === "zh-HK";
 
   const defaultFilterTranslations = {
-    title: locale === "zh-HK" ? "篩選" : "Filter",
-    brand: locale === "zh-HK" ? "品牌" : "Brand",
-    category: locale === "zh-HK" ? "種類" : "Category",
-    reset: locale === "zh-HK" ? "重置" : "Reset",
-    showResults: locale === "zh-HK" ? "顯示 {count} 件結果" : "Show {count} results",
+    title: isZh ? "篩選" : "Filter",
+    brand: isZh ? "品牌" : "Brand",
+    category: isZh ? "種類" : "Category",
+    reset: isZh ? "重置" : "Reset",
+    showResults: isZh ? "顯示 {count} 件結果" : "Show {count} results",
   };
 
   const t = filterTranslations || defaultFilterTranslations;
 
+  const quickPills = [
+    { key: "hot", label: isZh ? "熱賣" : "Hot", href: `/${locale}/products?sort=popular`, isHot: true },
+    { key: "sale", label: isZh ? "減價" : "Sale", href: `/${locale}/products?sale=true`, isSale: true },
+    { key: "men", label: isZh ? "男裝" : "Men", href: `/${locale}/products?shoeType=adult` },
+    { key: "women", label: isZh ? "女裝" : "Women", href: `/${locale}/products?shoeType=womens` },
+    { key: "kids", label: isZh ? "童裝" : "Kids", href: `/${locale}/products?shoeType=grade_school,preschool,toddler` },
+  ];
+
   return (
     <>
       <div className="sticky top-[57px] z-40 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
-        <div className="mx-auto max-w-6xl">
-          <div className="flex items-center gap-2 overflow-x-auto px-4 py-3 [-webkit-overflow-scrolling:touch] scrollbar-hide">
-            {/* Filter Button */}
+        <div className="mx-auto max-w-6xl px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            {/* Filter button */}
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="shrink-0 flex items-center gap-1.5 bg-olive-600 text-white rounded-full px-4 py-1.5 text-sm font-medium"
+              className="flex items-center gap-1.5 bg-olive-600 text-white rounded-full px-4 py-1.5 text-sm font-medium hover:bg-olive-700 transition-colors shrink-0"
             >
-              <SlidersHorizontal size={16} />
-              <span>{filterLabel}</span>
-              <ChevronDown size={14} />
+              <SlidersHorizontal size={14} />
+              <span>{isZh ? "篩選" : "Filter"}</span>
             </button>
 
-            {/* Divider before type pills */}
-            <div className="shrink-0 w-px h-5 bg-zinc-300 dark:bg-zinc-700" />
+            {/* Divider */}
+            <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-700 shrink-0" />
 
-            {/* Quick Pills */}
-            {quickPills.map((pill) => {
-              const label = locale === "zh-HK" ? pill.label : pill.labelEn;
-              const isTypePill = pill.style === "type";
-              return (
-                <button
-                  key={pill.key}
-                  onClick={() => handlePillClick(pill)}
-                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm ${
-                    isTypePill
-                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-medium"
-                      : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-
-            {/* Peek spacer */}
-            <div className="w-4 shrink-0" aria-hidden="true" />
+            {/* Quick pills */}
+            {quickPills.map((pill) => (
+              <button
+                key={pill.key}
+                onClick={() => router.push(pill.href)}
+                className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 ${
+                  pill.isHot
+                    ? "bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30"
+                    : pill.isSale
+                    ? "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30"
+                    : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                }`}
+              >
+                {pill.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
