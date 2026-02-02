@@ -8,12 +8,81 @@ import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
 
+// Extended Product type to include promotionBadges field
+type ProductWithBadges = Product & {
+  promotionBadges?: string[];
+};
+
 type ProductsTableProps = {
-  products: Product[];
+  products: ProductWithBadges[];
   locale: Locale;
   currentActive?: string;
   showAddButton?: boolean;
 };
+
+function escapeCsvField(value: string): string {
+  if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
+function exportProductsToCsv(products: ProductWithBadges[]): void {
+  const headers = [
+    "id",
+    "sku",
+    "title",
+    "brand",
+    "category",
+    "shoeType",
+    "price",
+    "originalPrice",
+    "stock",
+    "active",
+    "sizes",
+    "imageUrl",
+    "promotionBadges",
+  ];
+
+  const rows = products.map((product) => {
+    const sizesJson = product.sizes ? JSON.stringify(product.sizes) : "";
+    const promotionBadges = Array.isArray(product.promotionBadges)
+      ? product.promotionBadges.join(",")
+      : "";
+
+    return [
+      product.id,
+      product.sku || "",
+      product.title,
+      product.brand || "",
+      product.category || "",
+      product.shoeType || "",
+      String(product.price),
+      product.originalPrice != null ? String(product.originalPrice) : "",
+      String(product.stock ?? 0),
+      String(product.active),
+      sizesJson,
+      product.imageUrl || "",
+      promotionBadges,
+    ].map(escapeCsvField);
+  });
+
+  const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const filename = `hk-market-products-${today}.csv`;
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
 
 export function ProductsTable({ products, locale, currentActive, showAddButton }: ProductsTableProps) {
   const router = useRouter();
@@ -63,6 +132,12 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
           ))}
         </select>
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => exportProductsToCsv(products)}
+            className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
+          >
+            {t.admin.products.exportCsv}
+          </button>
           <a
             href="/api/admin/products/csv-template"
             className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
