@@ -90,7 +90,7 @@ body {
   animation: slide-up 0.3s ease-out;
 }
 
-/* Low stock badge pulse animation */
+/* Low stock badge pulse animation (8s cycle: fade in 1s, stay 4s, fade out 1s, pause 2s) */
 @keyframes lowStockPulse {
   0% {
     opacity: 0;

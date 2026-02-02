@@ -121,9 +121,9 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         {/* Low stock badge with pulse animation */}
         {p.stock !== undefined && p.stock > 0 && p.stock <= 5 && (
           <div
-            className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white"
+            className="absolute left-2 top-2 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white"
             style={{
-              animation: "lowStockPulse 4s ease-in-out infinite",
+              animation: "lowStockPulse 8s ease-in-out infinite",
             }}
           >
             🔥 快將售罄
@@ -165,10 +165,6 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
             </span>
           )}
         </div>
-
-        {p.stock !== undefined && p.stock > 0 && p.stock <= 5 && (
-          <div className="mt-1 text-xs font-semibold text-orange-600">快將售罄</div>
-        )}
 
         {/* 4) Badges - show up to 2 */}
         {p.badges && p.badges.length > 0 && (
