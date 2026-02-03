@@ -35,8 +35,10 @@ export default function ProductsPage() {
   useEffect(() => {
     fetch("/api/products?limit=500")
       .then((res) => res.json())
-      .then((data) => {
-        setAllProducts(data.products || []);
+      .then((response) => {
+        // API returns { ok, requestId, data: { products: [...] } }
+        const products = response.data?.products || [];
+        setAllProducts(products);
         setLoading(false);
       })
       .catch(() => {
