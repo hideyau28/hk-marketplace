@@ -7,6 +7,11 @@ import { saveReceiptHtml } from "@/lib/email";
 
 const ROUTE = "/api/orders";
 
+// Shipping fee constants
+const DEFAULT_SHIPPING_FEE = 40;
+const DEFAULT_FREE_SHIPPING_THRESHOLD = 600;
+const OUTLYING_ISLANDS_SURCHARGE = 20;
+
 async function generateOrderNumber(): Promise<string> {
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
@@ -105,6 +110,8 @@ type CreateOrderPayload = {
         address?: {
             line1: string;
             district?: string;
+            region?: string;
+            unit?: string;
             notes?: string;
         };
     };
@@ -231,6 +238,15 @@ type RepricedOrder = {
     amounts: CreateOrderPayload["amounts"];
 };
 
+// Calculate shipping fee server-side based on subtotal and region
+function calculateShippingFee(subtotal: number, region?: string): number {
+    const isOutlyingIslands = region === "離島";
+    const qualifiesForFreeShipping = subtotal >= DEFAULT_FREE_SHIPPING_THRESHOLD;
+    const baseShipping = qualifiesForFreeShipping ? 0 : DEFAULT_SHIPPING_FEE;
+    const islandSurcharge = isOutlyingIslands ? OUTLYING_ISLANDS_SURCHARGE : 0;
+    return baseShipping + islandSurcharge;
+}
+
 async function repriceOrder(payload: CreateOrderPayload): Promise<RepricedOrder> {
     const productIds = Array.from(new Set(payload.items.map((item) => item.productId)));
     const products = await prisma.product.findMany({
@@ -263,7 +279,14 @@ async function repriceOrder(payload: CreateOrderPayload): Promise<RepricedOrder>
     });
 
     const discount = payload.amounts.discount ?? 0;
-    const deliveryFee = payload.amounts.deliveryFee ?? 0;
+
+    // Calculate shipping fee server-side (don't trust client)
+    let deliveryFee = 0;
+    if (payload.fulfillment.type === "delivery") {
+        const region = payload.fulfillment.address?.region;
+        deliveryFee = calculateShippingFee(subtotal, region);
+    }
+
     const total = subtotal + deliveryFee - discount;
 
     const computedAmounts: CreateOrderPayload["amounts"] = {
@@ -275,15 +298,22 @@ async function repriceOrder(payload: CreateOrderPayload): Promise<RepricedOrder>
     if (payload.amounts.discount !== undefined) {
         computedAmounts.discount = discount;
     }
-    if (payload.amounts.deliveryFee !== undefined) {
+    if (deliveryFee > 0) {
         computedAmounts.deliveryFee = deliveryFee;
     }
 
-    if (
-        !amountMatches(payload.amounts.subtotal, computedAmounts.subtotal) ||
-        !amountMatches(payload.amounts.total, computedAmounts.total)
-    ) {
-        throw new ApiError(400, "BAD_REQUEST", "amounts mismatch (repriced)");
+    if (!amountMatches(payload.amounts.subtotal, computedAmounts.subtotal)) {
+        throw new ApiError(400, "BAD_REQUEST", "subtotal mismatch (repriced)");
+    }
+
+    // Validate client-sent delivery fee matches server calculation
+    if (payload.amounts.deliveryFee !== undefined &&
+        !amountMatches(payload.amounts.deliveryFee, deliveryFee)) {
+        throw new ApiError(400, "BAD_REQUEST", "deliveryFee mismatch (repriced)");
+    }
+
+    if (!amountMatches(payload.amounts.total, computedAmounts.total)) {
+        throw new ApiError(400, "BAD_REQUEST", "total mismatch (repriced)");
     }
 
     return {
