@@ -593,8 +593,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
           )}
         </div>
 
-        {/* Free shipping hint */}
-        {!qualifiesForFreeShipping && amountToFreeShipping > 0 && (
+        {/* Free shipping hint - only show when close to threshold ($400-$599) */}
+        {!qualifiesForFreeShipping && amountToFreeShipping > 0 && amountToFreeShipping <= 200 && (
           <div className="text-xs text-olive-600 bg-olive-50 dark:bg-olive-900/20 px-2 py-1.5 rounded-lg">
             再買 {format(amountToFreeShipping)} 即可免運費
           </div>
@@ -926,7 +926,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                     value={orderNote}
                     onChange={(e) => setOrderNote(e.target.value)}
                     rows={3}
-                    placeholder="送貨時間偏好、其他備註..."
+                    placeholder="送貨時間偏好、特別要求..."
                     className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
                   />
                 </div>
