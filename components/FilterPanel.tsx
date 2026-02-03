@@ -11,7 +11,6 @@ type FilterPanelProps = {
   locale: Locale;
   t: {
     title: string;
-    brand: string;
     category: string;
     reset: string;
     showResults: string;
@@ -55,9 +54,7 @@ const SHOE_TYPE_MAP: Record<string, string[]> = {
 
 export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelProps) {
   const router = useRouter();
-  const [brands, setBrands] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedShoeType, setSelectedShoeType] = useState<string | null>(null);
   const [selectedPriceRange, setSelectedPriceRange] = useState<{ min: number; max: number | null } | null>(null);
@@ -73,7 +70,6 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
       fetch("/api/products/filter-options")
         .then((res) => res.json())
         .then((data) => {
-          setBrands(data.brands || []);
           setCategories(data.categories || []);
           setLoading(false);
         })
@@ -84,9 +80,6 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
   // Fetch count when selection changes
   const fetchCount = useCallback(async () => {
     const params = new URLSearchParams();
-    if (selectedBrands.length > 0) {
-      params.set("brand", selectedBrands.join(","));
-    }
     if (selectedCategories.length > 0) {
       params.set("category", selectedCategories.join(","));
     }
@@ -109,19 +102,13 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
     const res = await fetch(url);
     const data = await res.json();
     setCount(data.count || 0);
-  }, [selectedBrands, selectedCategories, selectedShoeType, selectedPriceRange, selectedSizes]);
+  }, [selectedCategories, selectedShoeType, selectedPriceRange, selectedSizes]);
 
   useEffect(() => {
     if (isOpen) {
       fetchCount();
     }
   }, [isOpen, fetchCount]);
-
-  const toggleBrand = (brand: string) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
-    );
-  };
 
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) =>
@@ -154,7 +141,6 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
   };
 
   const reset = () => {
-    setSelectedBrands([]);
     setSelectedCategories([]);
     setSelectedShoeType(null);
     setSelectedPriceRange(null);
@@ -163,9 +149,6 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
 
   const applyFilters = () => {
     const params = new URLSearchParams();
-    if (selectedBrands.length > 0) {
-      params.set("brand", selectedBrands.join(","));
-    }
     if (selectedCategories.length > 0) {
       params.set("category", selectedCategories.join(","));
     }
@@ -331,30 +314,6 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
                         }`}
                       >
                         {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Brand Section */}
-              {brands.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                    {t.brand}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {brands.map((brand) => (
-                      <button
-                        key={brand}
-                        onClick={() => toggleBrand(brand)}
-                        className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                          selectedBrands.includes(brand)
-                            ? "bg-olive-600 text-white"
-                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
-                        }`}
-                      >
-                        {brand}
                       </button>
                     ))}
                   </div>

@@ -16,19 +16,35 @@ export default async function ProductsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ category?: string; shoeType?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    shoeType?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    sizes?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const { category, shoeType } = await searchParams;
+  const { category, shoeType, minPrice, maxPrice, sizes } = await searchParams;
   const l = locale as Locale;
   const t = getDict(l);
 
   // Build filter
   const where: any = { active: true };
-  if (category) where.category = category;
+
+  // Category filter
+  if (category) {
+    const categories = category.split(",").map((c) => c.trim()).filter(Boolean);
+    if (categories.length > 1) {
+      where.category = { in: categories };
+    } else {
+      where.category = category;
+    }
+  }
+
+  // ShoeType filter
   if (shoeType) {
-    // Support comma-separated shoeType values (e.g., "grade_school,preschool,toddler")
-    const types = shoeType.split(",").map((t) => t.trim());
+    const types = shoeType.split(",").map((t) => t.trim()).filter(Boolean);
     if (types.length > 1) {
       where.shoeType = { in: types };
     } else if (shoeType === "kids") {
@@ -38,10 +54,34 @@ export default async function ProductsPage({
     }
   }
 
-  const products = await prisma.product.findMany({
+  // Price range filter
+  if (minPrice || maxPrice) {
+    where.price = {};
+    if (minPrice) {
+      where.price.gte = parseFloat(minPrice);
+    }
+    if (maxPrice) {
+      where.price.lte = parseFloat(maxPrice);
+    }
+  }
+
+  // Fetch products
+  let products = await prisma.product.findMany({
     where,
     orderBy: { createdAt: "desc" },
   });
+
+  // Size filter (needs to be done in memory since sizes is JSON)
+  if (sizes) {
+    const sizeList = sizes.split(",").map((s) => s.trim()).filter(Boolean);
+    if (sizeList.length > 0) {
+      products = products.filter((p) => {
+        if (!p.sizes || typeof p.sizes !== "object") return false;
+        const productSizes = Object.keys(p.sizes as Record<string, number>);
+        return sizeList.some((size) => productSizes.includes(size));
+      });
+    }
+  }
 
   const productList = products.map((p) => ({
     id: p.id,
@@ -49,7 +89,8 @@ export default async function ProductsPage({
     title: p.title,
     image: p.imageUrl || undefined,
     price: p.price,
-    stock: (p as any).stock ?? 0,
+    originalPrice: p.originalPrice,
+    stock: p.stock ?? 0,
     badges: p.badges && Array.isArray(p.badges) ? (p.badges as string[]) : undefined,
     sizes: p.sizes as Record<string, number> | null,
   }));
@@ -78,9 +119,9 @@ export default async function ProductsPage({
             <p className="text-zinc-500">{l === "zh-HK" ? "冇搵到相關產品" : "No products found"}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {productList.map((p) => (
-              <ProductCard key={p.id} locale={l} p={p} />
+              <ProductCard key={p.id} locale={l} p={p} fillWidth />
             ))}
           </div>
         )}

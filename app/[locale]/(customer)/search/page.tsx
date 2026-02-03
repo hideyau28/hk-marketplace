@@ -108,9 +108,9 @@ export default async function SearchPage({
         {query && products.length > 0 && (
           <>
             <p className="text-sm text-zinc-500 mb-4">{texts.results(products.length)}</p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
               {products.map((p) => (
-                <ProductCard key={p.id} locale={l} p={p} />
+                <ProductCard key={p.id} locale={l} p={p} fillWidth />
               ))}
             </div>
           </>

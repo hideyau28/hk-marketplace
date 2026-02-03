@@ -199,7 +199,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         viewAllText={t.home.viewAll}
       />
 
-      {/* 3) Air Jordan (large horizontal scroll) */}
+      {/* 3) Air Jordan (LARGE horizontal scroll) */}
       {jordanProducts.length > 0 && (
         <FeaturedSneakers
           locale={l}
@@ -210,7 +210,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       )}
 
-      {/* 4) Dunk / SB (small horizontal scroll) */}
+      {/* 4) Dunk / SB (SMALL horizontal scroll) */}
       {dunkProducts.length > 0 && (
         <SportsApparel
           locale={l}
@@ -221,7 +221,18 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       )}
 
-      {/* 5) Promotional Banner #1 from CMS */}
+      {/* 5) Air Force (LARGE horizontal scroll) - moved before banner */}
+      {airForceProducts.length > 0 && (
+        <FeaturedSneakers
+          locale={l}
+          products={airForceProducts}
+          title={l === "zh-HK" ? "Air Force 系列" : "Air Force"}
+          viewAllText={t.home.viewAll}
+          viewAllHref={`/${locale}/products?category=Air+Force`}
+        />
+      )}
+
+      {/* 6) Promotional Banner #1 from CMS - after Air Force */}
       {promoBanner && (
         <PromoBannerFull
           locale={l}
@@ -235,9 +246,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       )}
 
-      {/* 6) Air Max (large horizontal scroll) */}
+      {/* 7) Air Max (SMALL horizontal scroll) - moved after banner */}
       {airMaxProducts.length > 0 && (
-        <FeaturedSneakers
+        <SportsApparel
           locale={l}
           products={airMaxProducts}
           title={l === "zh-HK" ? "Air Max 系列" : "Air Max"}
@@ -246,32 +257,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       )}
 
-      {/* 7) Air Force (small horizontal scroll) */}
-      {airForceProducts.length > 0 && (
-        <SportsApparel
-          locale={l}
-          products={airForceProducts}
-          title={l === "zh-HK" ? "Air Force 系列" : "Air Force"}
-          viewAllText={t.home.viewAll}
-          viewAllHref={`/${locale}/products?category=Air+Force`}
-        />
-      )}
-
-      {/* 8) Promotional Banner #2 from CMS (optional) */}
-      {promoBanner2 && (
-        <PromoBannerFull
-          locale={l}
-          headline={l === "zh-HK" ? promoBanner2.titleZh : promoBanner2.titleEn}
-          subtext={
-            (l === "zh-HK" ? promoBanner2.subtitleZh : promoBanner2.subtitleEn) || ""
-          }
-          ctaText={
-            (l === "zh-HK" ? promoBanner2.buttonTextZh : promoBanner2.buttonTextEn) || t.home.shopNow
-          }
-        />
-      )}
-
-      {/* 9) Running (large horizontal scroll) */}
+      {/* 8) Running (LARGE horizontal scroll) */}
       {runningProducts.length > 0 && (
         <FeaturedSneakers
           locale={l}
@@ -282,7 +268,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       )}
 
-      {/* 10) Basketball (small horizontal scroll) */}
+      {/* 9) Basketball (SMALL horizontal scroll) */}
       {basketballProducts.length > 0 && (
         <SportsApparel
           locale={l}
@@ -290,6 +276,20 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           title={l === "zh-HK" ? "Basketball 系列" : "Basketball"}
           viewAllText={t.home.viewAll}
           viewAllHref={`/${locale}/products?category=Basketball`}
+        />
+      )}
+
+      {/* Optional: Promotional Banner #2 from CMS */}
+      {promoBanner2 && (
+        <PromoBannerFull
+          locale={l}
+          headline={l === "zh-HK" ? promoBanner2.titleZh : promoBanner2.titleEn}
+          subtext={
+            (l === "zh-HK" ? promoBanner2.subtitleZh : promoBanner2.subtitleEn) || ""
+          }
+          ctaText={
+            (l === "zh-HK" ? promoBanner2.buttonTextZh : promoBanner2.buttonTextEn) || t.home.shopNow
+          }
         />
       )}
 

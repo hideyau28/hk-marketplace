@@ -9,7 +9,6 @@ type CategoryNavProps = {
   locale: Locale;
   filterTranslations?: {
     title: string;
-    brand: string;
     category: string;
     reset: string;
     showResults: string;
@@ -24,7 +23,6 @@ export default function CategoryNav({ locale, filterTranslations }: CategoryNavP
 
   const defaultFilterTranslations = {
     title: isZh ? "篩選" : "Filter",
-    brand: isZh ? "品牌" : "Brand",
     category: isZh ? "種類" : "Category",
     reset: isZh ? "重置" : "Reset",
     showResults: isZh ? "顯示 {count} 件結果" : "Show {count} results",
