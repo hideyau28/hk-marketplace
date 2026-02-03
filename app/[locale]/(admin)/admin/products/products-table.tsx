@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getDict, type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
-import { Star, Flame } from "lucide-react";
+import { Star, Flame, Search } from "lucide-react";
 import { toggleFeatured, toggleHotSelling } from "./actions";
+
+const ITEMS_PER_PAGE = 50;
 
 // Extended Product type to include promotionBadges and featured fields
 type ProductWithBadges = Product & {
@@ -96,6 +98,32 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
   const [isCsvOpen, setIsCsvOpen] = useState(false);
   const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
   const [togglingHotSelling, setTogglingHotSelling] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Filter products by search query
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return products;
+    const query = searchQuery.toLowerCase();
+    return products.filter((p) =>
+      p.title.toLowerCase().includes(query) ||
+      (p.sku && p.sku.toLowerCase().includes(query)) ||
+      (p.brand && p.brand.toLowerCase().includes(query))
+    );
+  }, [products, searchQuery]);
+
+  // Paginate filtered products
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProducts.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredProducts, currentPage]);
+
+  // Reset to page 1 when search changes
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
 
   const handleToggleFeatured = async (productId: string, currentFeatured: boolean) => {
     setTogglingFeatured(productId);
@@ -148,7 +176,19 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
 
   return (
     <>
-      <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      {/* Search bar */}
+      <div className="mt-6 relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          placeholder="搜尋產品名稱、SKU、品牌..."
+          className="w-full rounded-2xl border border-zinc-200 bg-white pl-12 pr-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+        />
+      </div>
+
+      <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <select
           value={selectedActive}
           onChange={(e) => handleActiveChange(e.target.value)}
@@ -206,14 +246,16 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
             </thead>
 
             <tbody>
-              {products.length === 0 ? (
+              {paginatedProducts.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center text-zinc-500">
-                    {t.admin.common.noData}
+                    {searchQuery ? "找不到符合的產品" : t.admin.common.noData}
                   </td>
                 </tr>
               ) : (
-                products.map((product) => (
+                paginatedProducts.map((product) => {
+                  const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
+                  return (
                   <tr key={product.id} className="border-t border-zinc-200 hover:bg-zinc-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -222,11 +264,30 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                             <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="40px" />
                           </div>
                         )}
-                        <div className="text-zinc-900 font-medium">{product.title}</div>
+                        <div>
+                          <div className="text-zinc-900 font-medium">{product.title}</div>
+                          {product.sku && (
+                            <div className="text-zinc-400 text-xs">{product.sku}</div>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-zinc-600">{product.category || "—"}</td>
-                    <td className="px-4 py-3 text-right text-zinc-900 font-medium">${Math.round(product.price)}</td>
+                    <td className="px-4 py-3 text-right">
+                      {isOnSale ? (
+                        <div className="flex flex-col items-end gap-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-zinc-900 font-medium">${Math.round(product.price)}</span>
+                            <span className="text-zinc-400 text-xs line-through">${Math.round(product.originalPrice!)}</span>
+                          </div>
+                          <span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-600">
+                            減價
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-zinc-900 font-medium">${Math.round(product.price)}</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-right text-zinc-700">{product.stock ?? 0}</td>
                     <td className="px-4 py-3">
                       <span
@@ -291,14 +352,63 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                       </div>
                     </td>
                   </tr>
-                ))
+                );})
               )}
             </tbody>
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t border-zinc-200 px-4 py-3 text-zinc-500 text-sm">
-          <div>Showing {products.length} products</div>
+        <div className="flex flex-col md:flex-row items-center justify-between border-t border-zinc-200 px-4 py-3 text-zinc-500 text-sm gap-3">
+          <div>
+            顯示 {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} / 共 {filteredProducts.length} 件產品
+            {searchQuery && ` (搜尋結果)`}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
+              >
+                上一頁
+              </button>
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium ${
+                      currentPage === pageNum
+                        ? "bg-[#6B7A2F] text-white"
+                        : "border border-zinc-200 hover:bg-zinc-50"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+              {totalPages > 5 && currentPage < totalPages - 2 && (
+                <span className="px-1">...</span>
+              )}
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
+              >
+                下一頁
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

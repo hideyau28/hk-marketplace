@@ -1,5 +1,6 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
+import { getStoreName } from "@/lib/get-store-name";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -21,6 +22,7 @@ const categoryTranslations: Record<string, { en: string; "zh-HK": string }> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; id: string }> }): Promise<Metadata> {
   const { locale, id } = await params;
+  const storeName = await getStoreName();
 
   const product = await prisma.product.findUnique({
     where: { id, active: true },
@@ -28,16 +30,21 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
   if (!product) {
     return {
-      title: "Product Not Found - HK•Market",
+      title: `Product Not Found - ${storeName}`,
     };
   }
 
+  const description = locale === "zh-HK"
+    ? `選購 ${product.title}${product.brand ? ` (${product.brand})` : ""}，正品保證！`
+    : `Shop ${product.title}${product.brand ? ` by ${product.brand}` : ""} at ${storeName}. 100% authentic!`;
+
   return {
-    title: `${product.title} - HK•Market`,
-    description: `Shop ${product.title}${product.brand ? ` by ${product.brand}` : ""} at HK•Market. Premium sports gear for Hong Kong.`,
+    title: `${product.title} - ${storeName}`,
+    description,
     openGraph: {
-      title: `${product.title} - HK•Market`,
-      description: `Shop ${product.title}${product.brand ? ` by ${product.brand}` : ""} at HK•Market. Premium sports gear for Hong Kong.`,
+      title: `${product.title} - ${storeName}`,
+      description,
+      siteName: storeName,
       type: "website",
       locale: locale === "zh-HK" ? "zh_HK" : "en_US",
       images: product.imageUrl ? [product.imageUrl] : [],

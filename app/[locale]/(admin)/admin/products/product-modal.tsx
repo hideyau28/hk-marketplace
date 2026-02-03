@@ -27,6 +27,9 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [brand, setBrand] = useState(product?.brand || "");
   const [title, setTitle] = useState(product?.title || "");
   const [price, setPrice] = useState(product?.price.toString() || "");
+  const [originalPrice, setOriginalPrice] = useState(
+    product?.originalPrice?.toString() || ""
+  );
   const [imageUrl, setImageUrl] = useState(product?.imageUrl || "");
   const [badges, setBadges] = useState(
     product?.badges && Array.isArray(product.badges) ? (product.badges as string[]).join(", ") : ""
@@ -50,6 +53,16 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     if (isNaN(priceNum) || priceNum < 0) {
       setError({ code: "VALIDATION_ERROR", message: "Price must be a non-negative number" });
       return;
+    }
+
+    // Parse originalPrice (optional)
+    let originalPriceNum: number | null = null;
+    if (originalPrice.trim()) {
+      originalPriceNum = parseFloat(originalPrice);
+      if (isNaN(originalPriceNum) || originalPriceNum < 0) {
+        setError({ code: "VALIDATION_ERROR", message: "Original price must be a non-negative number" });
+        return;
+      }
     }
 
     if (!brand.trim()) {
@@ -85,6 +98,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             brand: brand.trim(),
             title: title.trim(),
             price: priceNum,
+            originalPrice: originalPriceNum,
             imageUrl: imageUrl.trim() || null,
             badges: badges.trim() || undefined,
             category: category.trim() || null,
@@ -103,6 +117,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             brand: brand.trim(),
             title: title.trim(),
             price: priceNum,
+            originalPrice: originalPriceNum,
             imageUrl: imageUrl.trim() || undefined,
             badges: badges.trim() || undefined,
             category: category.trim() || null,
@@ -178,20 +193,54 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             />
           </div>
 
-          <div>
-            <label className="block text-zinc-700 text-sm font-medium mb-2">Price (HKD) *</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              disabled={isPending}
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-              placeholder="0.00"
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-zinc-700 text-sm font-medium mb-2">售價 (HKD) *</label>
+              <input
+                type="number"
+                step="1"
+                min="0"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                placeholder="899"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-zinc-700 text-sm font-medium mb-2">原價 (HKD)</label>
+              <input
+                type="number"
+                step="1"
+                min="0"
+                value={originalPrice}
+                onChange={(e) => setOriginalPrice(e.target.value)}
+                disabled={isPending}
+                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                placeholder="1299"
+              />
+            </div>
           </div>
+          <p className="text-zinc-400 text-xs -mt-2">如設定原價高於售價，會顯示為減價產品</p>
+
+          {/* Price preview if on sale */}
+          {originalPrice && parseFloat(originalPrice) > parseFloat(price || "0") && (
+            <div className="rounded-xl bg-red-50 border border-red-200 p-3">
+              <div className="text-sm text-zinc-600">減價預覽：</div>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-zinc-400 line-through">
+                  ${Math.round(parseFloat(originalPrice))}
+                </span>
+                <span className="text-xl font-bold text-red-600">
+                  ${Math.round(parseFloat(price || "0"))}
+                </span>
+                <span className="bg-red-500 text-white text-xs font-medium px-2 py-0.5 rounded-full">
+                  -{Math.round((1 - parseFloat(price || "0") / parseFloat(originalPrice)) * 100)}%
+                </span>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-zinc-700 text-sm font-medium mb-2">Product Image</label>

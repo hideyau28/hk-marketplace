@@ -1,5 +1,6 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
+import { getStoreName } from "@/lib/get-store-name";
 import HeroCarouselCMS from "@/components/home/HeroCarouselCMS";
 import RecommendedGrid from "@/components/home/RecommendedGrid";
 import FeaturedSneakers from "@/components/home/FeaturedSneakers";
@@ -12,13 +13,20 @@ import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
+  const storeName = await getStoreName();
+
+  const title = `${storeName} - 香港波鞋專門店`;
+  const description = locale === "zh-HK"
+    ? "探索最新波鞋及運動裝備，正品保證！"
+    : "Shop the latest sneakers and sports gear. 100% authentic!";
 
   return {
-    title: "HK•Market - Sports Gear for Hong Kong",
-    description: "Shop the latest sports apparel and gear from Nike, Adidas, Puma and more.",
+    title,
+    description,
     openGraph: {
-      title: "HK•Market - Sports Gear for Hong Kong",
-      description: "Shop the latest sports apparel and gear from Nike, Adidas, Puma and more.",
+      title,
+      description,
+      siteName: storeName,
       type: "website",
       locale: locale === "zh-HK" ? "zh_HK" : "en_US",
     },

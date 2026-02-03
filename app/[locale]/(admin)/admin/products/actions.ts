@@ -97,6 +97,7 @@ export async function createProduct(
     brand: string;
     title: string;
     price: number;
+    originalPrice?: number | null;
     imageUrl?: string;
     badges?: string;
     category?: string | null;
@@ -154,6 +155,7 @@ export async function updateProduct(
     brand?: string | null;
     title?: string;
     price?: number;
+    originalPrice?: number | null;
     imageUrl?: string | null;
     badges?: string;
     category?: string | null;
