@@ -24,8 +24,8 @@ export const GET = withApi(async (req) => {
   const sortRaw = searchParams.get("sort")?.trim() || "";
   const sort = sortRaw as "" | "new" | "price_asc" | "price_desc";
 
-  if (limitParam && (Number.isNaN(limit) || limit <= 0 || limit > 200)) {
-    throw new ApiError(400, "BAD_REQUEST", "limit must be between 1 and 200");
+  if (limitParam && (Number.isNaN(limit) || limit <= 0 || limit > 500)) {
+    throw new ApiError(400, "BAD_REQUEST", "limit must be between 1 and 500");
   }
 
   if (q.length > 50) {

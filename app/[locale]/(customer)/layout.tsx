@@ -9,6 +9,7 @@ import BottomTab from "@/components/BottomTab";
 import Footer from "@/components/Footer";
 import { CurrencyProvider } from "@/lib/currency";
 import { ThemeProvider } from "@/lib/theme-context";
+import { FilterProvider } from "@/lib/filter-context";
 import Analytics from "@/components/Analytics";
 import WelcomePopup from "@/components/WelcomePopup";
 import SocialProofPopup from "@/components/SocialProofPopup";
@@ -52,16 +53,18 @@ export default async function CustomerLayout({
   return (
     <ThemeProvider>
       <CurrencyProvider>
-        <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-          <Analytics />
-          <TopNav locale={l} t={t} />
-          <CategoryNavWrapper locale={l} />
-          <main>{children}</main>
-          <Footer locale={l} t={t} />
-          <BottomTab t={t} />
-          <WelcomePopup config={welcomePopupConfig} />
-          <SocialProofPopup products={socialProofProducts} />
-        </div>
+        <FilterProvider>
+          <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+            <Analytics />
+            <TopNav locale={l} t={t} />
+            <CategoryNavWrapper locale={l} />
+            <main>{children}</main>
+            <Footer locale={l} t={t} />
+            <BottomTab t={t} />
+            <WelcomePopup config={welcomePopupConfig} />
+            <SocialProofPopup products={socialProofProducts} />
+          </div>
+        </FilterProvider>
       </CurrencyProvider>
     </ThemeProvider>
   );

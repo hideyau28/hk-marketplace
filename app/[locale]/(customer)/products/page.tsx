@@ -1,105 +1,110 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import { useParams } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
-import { getDict } from "@/lib/i18n";
-import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
-import { Metadata } from "next";
+import { useFilters } from "@/lib/filter-context";
 
-// Disable caching to ensure filters always show fresh results
-export const dynamic = "force-dynamic";
+type Product = {
+  id: string;
+  brand: string | null;
+  title: string;
+  imageUrl: string | null;
+  price: number;
+  originalPrice: number | null;
+  stock: number;
+  badges: string[] | null;
+  promotionBadges: string[] | null;
+  sizes: Record<string, number> | null;
+  shoeType: string | null;
+};
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
-  const { locale } = await params;
-  return {
-    title: locale === "zh-HK" ? "所有產品 - HK•Market" : "All Products - HK•Market",
-  };
-}
+export default function ProductsPage() {
+  const params = useParams();
+  const locale = (params?.locale as Locale) || "zh-HK";
+  const isZh = locale === "zh-HK";
 
-export default async function ProductsPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{
-    category?: string;
-    shoeType?: string;
-    minPrice?: string;
-    maxPrice?: string;
-    sizes?: string;
-    badge?: string;
-    sale?: string;
-  }>;
-}) {
-  const { locale } = await params;
-  const { category, shoeType, minPrice, maxPrice, sizes, badge, sale } = await searchParams;
-  const l = locale as Locale;
-  const t = getDict(l);
+  const filterContext = useFilters();
+  const filters = filterContext?.filters || { shoeType: null, hot: false, sale: false };
 
-  // Build filter
-  const where: any = { active: true };
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Category filter
-  if (category) {
-    const categories = category.split(",").map((c) => c.trim()).filter(Boolean);
-    if (categories.length > 1) {
-      where.category = { in: categories };
-    } else {
-      where.category = category;
-    }
-  }
-
-  // ShoeType filter
-  if (shoeType) {
-    const types = shoeType.split(",").map((t) => t.trim()).filter(Boolean);
-    if (types.length > 1) {
-      where.shoeType = { in: types };
-    } else {
-      where.shoeType = types[0];
-    }
-  }
-
-  // Price range filter
-  if (minPrice || maxPrice) {
-    where.price = {};
-    if (minPrice) {
-      where.price.gte = parseFloat(minPrice);
-    }
-    if (maxPrice) {
-      where.price.lte = parseFloat(maxPrice);
-    }
-  }
-
-  // Badge filter (e.g., 今期熱賣)
-  if (badge) {
-    where.promotionBadges = { has: badge };
-  }
-
-  // Fetch products
-  let products = await prisma.product.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-  });
-
-  // Sale filter (originalPrice > price) - must be done in memory
-  if (sale === "true") {
-    products = products.filter((p) => {
-      if (!p.originalPrice) return false;
-      return p.originalPrice > p.price;
-    });
-  }
-
-  // Size filter (needs to be done in memory since sizes is JSON)
-  if (sizes) {
-    const sizeList = sizes.split(",").map((s) => s.trim()).filter(Boolean);
-    if (sizeList.length > 0) {
-      products = products.filter((p) => {
-        if (!p.sizes || typeof p.sizes !== "object") return false;
-        const productSizes = Object.keys(p.sizes as Record<string, number>);
-        return sizeList.some((size) => productSizes.includes(size));
+  // Fetch all products on mount
+  useEffect(() => {
+    fetch("/api/products?limit=500")
+      .then((res) => res.json())
+      .then((data) => {
+        setAllProducts(data.products || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
       });
-    }
-  }
+  }, []);
 
-  const productList = products.map((p) => ({
+  // Filter products based on active filters
+  const filteredProducts = useMemo(() => {
+    let result = allProducts;
+
+    // ShoeType filter (radio - only one at a time)
+    if (filters.shoeType === "adult") {
+      result = result.filter((p) => p.shoeType === "adult");
+    } else if (filters.shoeType === "womens") {
+      result = result.filter((p) => p.shoeType === "womens");
+    } else if (filters.shoeType === "kids") {
+      result = result.filter((p) =>
+        ["grade_school", "preschool", "toddler"].includes(p.shoeType || "")
+      );
+    }
+
+    // Hot filter (今期熱賣)
+    if (filters.hot) {
+      result = result.filter((p) =>
+        p.promotionBadges?.includes("今期熱賣")
+      );
+    }
+
+    // Sale filter (has discount)
+    if (filters.sale) {
+      result = result.filter((p) =>
+        p.originalPrice && p.originalPrice > p.price
+      );
+    }
+
+    return result;
+  }, [allProducts, filters]);
+
+  // Build page title based on active filters
+  const pageTitle = useMemo(() => {
+    const parts: string[] = [];
+
+    if (filters.shoeType === "adult") {
+      parts.push(isZh ? "男裝" : "Men");
+    } else if (filters.shoeType === "womens") {
+      parts.push(isZh ? "女裝" : "Women");
+    } else if (filters.shoeType === "kids") {
+      parts.push(isZh ? "童裝" : "Kids");
+    }
+
+    if (filters.hot) {
+      parts.push(isZh ? "熱賣" : "Hot");
+    }
+
+    if (filters.sale) {
+      parts.push(isZh ? "減價" : "Sale");
+    }
+
+    return parts.length > 0
+      ? parts.join(" · ")
+      : isZh
+        ? "所有產品"
+        : "All Products";
+  }, [filters, isZh]);
+
+  // Map to ProductCard format
+  const productList = filteredProducts.map((p) => ({
     id: p.id,
     brand: p.brand || undefined,
     title: p.title,
@@ -107,45 +112,50 @@ export default async function ProductsPage({
     price: p.price,
     originalPrice: p.originalPrice,
     stock: p.stock ?? 0,
-    badges: p.badges && Array.isArray(p.badges) ? (p.badges as string[]) : undefined,
-    sizes: p.sizes as Record<string, number> | null,
+    badges: p.badges && Array.isArray(p.badges) ? p.badges : undefined,
+    sizes: p.sizes,
   }));
 
-  // Page title
-  const shoeTypeLabels: Record<string, string> = {
-    adult: l === "zh-HK" ? "男裝" : "Men",
-    womens: l === "zh-HK" ? "女裝" : "Women",
-    grade_school: l === "zh-HK" ? "童裝" : "Kids",
-    preschool: l === "zh-HK" ? "童裝" : "Kids",
-    toddler: l === "zh-HK" ? "童裝" : "Kids",
-  };
-  const categoryLabel = category || "";
-  // Handle shoeType which might be comma-separated
-  let typeLabel = "";
-  if (shoeType) {
-    const types = shoeType.split(",");
-    const firstType = types[0].trim();
-    typeLabel = shoeTypeLabels[firstType] || firstType;
+  if (loading) {
+    return (
+      <div className="px-4 py-6 pb-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="animate-pulse">
+            <div className="h-6 bg-zinc-200 dark:bg-zinc-800 rounded w-32 mb-4" />
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="aspect-square bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
-  const pageTitle = [typeLabel, categoryLabel].filter(Boolean).join(" · ") || (l === "zh-HK" ? "所有產品" : "All Products");
 
   return (
     <div className="px-4 py-6 pb-28">
       <div className="mx-auto max-w-6xl">
         <div className="flex items-baseline justify-between mb-4">
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{pageTitle}</h1>
-          <span className="text-sm text-zinc-500">{productList.length} {l === "zh-HK" ? "件產品" : "products"}</span>
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+            {pageTitle}
+          </h1>
+          <span className="text-sm text-zinc-500">
+            {isZh ? `顯示 ${productList.length} 件產品` : `${productList.length} products`}
+          </span>
         </div>
 
         {productList.length === 0 ? (
           <div className="mt-12 text-center">
             <div className="text-5xl mb-4">👟</div>
-            <p className="text-zinc-500">{l === "zh-HK" ? "冇搵到相關產品" : "No products found"}</p>
+            <p className="text-zinc-500">
+              {isZh ? "冇搵到相關產品" : "No products found"}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {productList.map((p) => (
-              <ProductCard key={p.id} locale={l} p={p} fillWidth />
+              <ProductCard key={p.id} locale={locale} p={p} fillWidth />
             ))}
           </div>
         )}
