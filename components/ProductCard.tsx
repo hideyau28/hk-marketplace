@@ -52,6 +52,7 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
   const { format } = useCurrency();
   const { showToast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
+  const cartButtonRef = useRef<HTMLButtonElement>(null);
   const touchStartY = useRef<number>(0);
 
   // Get available sizes (stock > 0)
@@ -89,15 +90,28 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
       return;
     }
 
-    addToCart({
-      productId: p.id,
-      title: selectedSize ? `${p.title} - ${selectedSize}` : p.title || "",
-      unitPrice: p.price || 0,
-      imageUrl: p.image,
-      size: selectedSize || undefined,
-    });
+    // Get button position for animation
+    const button = cartButtonRef.current;
+    let animationStart: { x: number; y: number } | undefined;
+    if (button && p.image) {
+      const rect = button.getBoundingClientRect();
+      animationStart = { x: rect.left, y: rect.top };
+    }
 
+    addToCart(
+      {
+        productId: p.id,
+        title: selectedSize ? `${p.title} - ${selectedSize}` : p.title || "",
+        unitPrice: p.price || 0,
+        imageUrl: p.image,
+        size: selectedSize || undefined,
+      },
+      { animationStart }
+    );
+
+    // Show toast immediately (animation runs in parallel)
     showToast("✓ 已加入購物車");
+
     setSelectedSize("");
     setShowCartIcon(false);
   };
@@ -190,6 +204,7 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
         {/* Cart icon - outside Link to prevent navigation */}
         {showCartIcon && selectedSize && (
           <button
+            ref={cartButtonRef}
             onClick={handleAddToCart}
             className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-[#6B7A2F] text-white flex items-center justify-center shadow-lg hover:bg-[#5a6827] transition-all animate-fade-in z-10"
             aria-label="Add to cart"

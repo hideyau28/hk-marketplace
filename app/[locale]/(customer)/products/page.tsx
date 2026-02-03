@@ -177,14 +177,12 @@ export default function ProductsPage() {
   return (
     <div className="px-4 py-6 pb-28">
       <div className="mx-auto max-w-6xl">
-        <div className="flex items-baseline justify-between mb-4">
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-            {pageTitle}
-          </h1>
-          <span className="text-sm text-zinc-500">
-            {isZh ? `顯示 ${productList.length} 件產品` : `${productList.length} products`}
-          </span>
-        </div>
+        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+          {pageTitle}
+        </h1>
+        <p className="text-sm text-gray-500 mt-2 mb-4">
+          {isZh ? `顯示 ${productList.length} 件產品` : `Showing ${productList.length} products`}
+        </p>
 
         {productList.length === 0 ? (
           <div className="mt-12 text-center">

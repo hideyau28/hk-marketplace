@@ -13,6 +13,7 @@ import { FilterProvider } from "@/lib/filter-context";
 import Analytics from "@/components/Analytics";
 import WelcomePopup from "@/components/WelcomePopup";
 import SocialProofPopup from "@/components/SocialProofPopup";
+import CartFlyAnimation from "@/components/CartFlyAnimation";
 
 export default async function CustomerLayout({
   children,
@@ -66,6 +67,7 @@ export default async function CustomerLayout({
             <BottomTab t={t} />
             <WelcomePopup config={welcomePopupConfig} />
             <SocialProofPopup products={socialProofProducts} />
+            <CartFlyAnimation />
           </div>
         </FilterProvider>
       </CurrencyProvider>

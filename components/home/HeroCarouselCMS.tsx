@@ -14,6 +14,21 @@ type Slide = {
   imageUrl?: string;
 };
 
+// Ensure link has locale prefix
+function ensureLocalePrefix(href: string, locale: Locale): string {
+  if (!href) return href;
+  // Already has locale prefix
+  if (href.startsWith(`/${locale}/`) || href.startsWith(`/${locale}`)) {
+    return href;
+  }
+  // Absolute path without locale - add prefix
+  if (href.startsWith("/")) {
+    return `/${locale}${href}`;
+  }
+  // External URL or other - return as is
+  return href;
+}
+
 export default function HeroCarouselCMS({
   slides,
   locale,
@@ -23,7 +38,7 @@ export default function HeroCarouselCMS({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Auto-rotate every 5 seconds - NO scrollIntoView, just update index
+  // Auto-rotate every 5 seconds
   useEffect(() => {
     if (slides.length <= 1) return;
     const interval = setInterval(() => {
@@ -37,7 +52,7 @@ export default function HeroCarouselCMS({
   return (
     <section className="mt-4">
       <div className="relative overflow-hidden rounded-3xl">
-        {/* Slides Container - NO scroll-snap, use transform instead */}
+        {/* Slides Container */}
         <div
           className="flex transition-transform duration-500 ease-out"
           style={{ transform: `translateX(-${activeIndex * 100}%)` }}
@@ -60,27 +75,23 @@ export default function HeroCarouselCMS({
                 {/* Dark Overlay for Text Readability */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/30" />
 
-                {/* Content */}
+                {/* Content - NO button, just title and subtitle */}
                 <div className="relative flex h-full flex-col items-center justify-center p-6 text-center">
                   <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
                     {slide.title}
                   </h2>
                   {slide.subtitle && (
-                    <p className="text-sm md:text-base text-white/90 mb-4">
+                    <p className="text-sm md:text-base text-white/90">
                       {slide.subtitle}
                     </p>
-                  )}
-                  {slide.buttonText && slide.buttonLink && (
-                    <span className="inline-flex rounded-full bg-white px-6 py-2 text-sm font-semibold text-zinc-900 hover:bg-white/90 transition-colors">
-                      {slide.buttonText}
-                    </span>
                   )}
                 </div>
               </div>
             );
 
+            // If buttonLink exists, wrap in Link with locale prefix
             return slide.buttonLink ? (
-              <Link key={slide.key} href={slide.buttonLink} className="block w-full shrink-0">
+              <Link key={slide.key} href={ensureLocalePrefix(slide.buttonLink, locale)} className="block w-full shrink-0">
                 {Inner}
               </Link>
             ) : (

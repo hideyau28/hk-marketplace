@@ -28,7 +28,14 @@ export function setCart(items: CartItem[]): void {
   localStorage.setItem(CART_KEY, JSON.stringify(items));
 }
 
-export function addToCart(item: Omit<CartItem, "qty"> & { qty?: number }): void {
+export type AddToCartOptions = {
+  animationStart?: { x: number; y: number };
+};
+
+export function addToCart(
+  item: Omit<CartItem, "qty"> & { qty?: number },
+  options?: AddToCartOptions
+): void {
   const cart = getCart();
   // Match by productId AND size (if size is provided)
   const existing = cart.find(
@@ -43,6 +50,19 @@ export function addToCart(item: Omit<CartItem, "qty"> & { qty?: number }): void 
     cart.push({ ...item, qty: item.qty ?? 1 });
   }
   setCart(cart);
+
+  // Trigger fly animation if start position and image provided
+  if (options?.animationStart && item.imageUrl) {
+    window.dispatchEvent(
+      new CustomEvent("cartFlyStart", {
+        detail: {
+          imageUrl: item.imageUrl,
+          startX: options.animationStart.x,
+          startY: options.animationStart.y,
+        },
+      })
+    );
+  }
 }
 
 export function removeFromCart(productId: string, size?: string, sizeSystem?: string): void {

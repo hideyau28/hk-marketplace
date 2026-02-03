@@ -24,6 +24,7 @@ export default function TopNav({ locale, t, storeName = "May's Shop" }: { locale
   const [cartCount, setCartCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [cartBounce, setCartBounce] = useState(false);
   // Currency context still available if needed elsewhere
   const { resolved, cycleMode } = useTheme();
 
@@ -33,14 +34,21 @@ export default function TopNav({ locale, t, storeName = "May's Shop" }: { locale
       setCartCount(getCartItemCount(cart));
     };
 
+    const handleCartBounce = () => {
+      setCartBounce(true);
+      setTimeout(() => setCartBounce(false), 300);
+    };
+
     updateCartCount();
 
     window.addEventListener("storage", updateCartCount);
     window.addEventListener("cartUpdated", updateCartCount);
+    window.addEventListener("cartBounce", handleCartBounce);
 
     return () => {
       window.removeEventListener("storage", updateCartCount);
       window.removeEventListener("cartUpdated", updateCartCount);
+      window.removeEventListener("cartBounce", handleCartBounce);
     };
   }, []);
 
@@ -120,7 +128,10 @@ export default function TopNav({ locale, t, storeName = "May's Shop" }: { locale
 
           {/* Cart - always visible */}
           <Link
-            className="relative flex items-center gap-1 text-[#6B7A2F] hover:text-[#5a6827] dark:text-[#8fa03d] dark:hover:text-[#a0b44a]"
+            data-cart-icon
+            className={`relative flex items-center gap-1 text-[#6B7A2F] hover:text-[#5a6827] dark:text-[#8fa03d] dark:hover:text-[#a0b44a] transition-transform duration-150 ${
+              cartBounce ? "scale-125" : "scale-100"
+            }`}
             href={`/${locale}/cart`}
           >
             <ShoppingCart size={20} />
