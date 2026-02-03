@@ -46,6 +46,7 @@ export const POST = withApi(async (req) => {
       title: body.title?.trim() || null,
       subtitle: body.subtitle?.trim() || null,
       linkUrl: body.linkUrl?.trim() || null,
+      images: body.images || null,
       sortOrder: body.sortOrder ?? nextSortOrder,
       active: body.active ?? true,
       position,

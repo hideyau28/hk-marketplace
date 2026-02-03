@@ -31,6 +31,7 @@ export const PUT = withApi(async (req: Request, ctx: RouteContext) => {
       title: body.title !== undefined ? (body.title?.trim() || null) : undefined,
       subtitle: body.subtitle !== undefined ? (body.subtitle?.trim() || null) : undefined,
       linkUrl: body.linkUrl !== undefined ? (body.linkUrl?.trim() || null) : undefined,
+      images: body.images !== undefined ? body.images : undefined,
       sortOrder: body.sortOrder !== undefined ? body.sortOrder : undefined,
       active: body.active !== undefined ? body.active : undefined,
       position: body.position !== undefined ? body.position : undefined,
