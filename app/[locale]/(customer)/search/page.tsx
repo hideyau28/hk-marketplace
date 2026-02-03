@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 
+// Disable caching to ensure filters always show fresh results
+export const dynamic = "force-dynamic";
+
 // Quick suggestion chips (static)
 const suggestions = {
   "zh-HK": ["Air Jordan", "Dunk", "Air Max", "Air Force", "Running"],

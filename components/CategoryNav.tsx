@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import FilterPanel from "./FilterPanel";
@@ -71,13 +71,15 @@ export default function CategoryNav({ locale, filterTranslations }: CategoryNavP
         </div>
       </div>
 
-      {/* Filter Panel */}
-      <FilterPanel
-        isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-        locale={locale}
-        t={t}
-      />
+      {/* Filter Panel - wrapped in Suspense for useSearchParams */}
+      <Suspense fallback={null}>
+        <FilterPanel
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          locale={locale}
+          t={t}
+        />
+      </Suspense>
     </>
   );
 }

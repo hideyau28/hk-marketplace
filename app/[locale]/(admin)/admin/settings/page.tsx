@@ -1,14 +1,14 @@
 "use client";
 
 import { getDict, type Locale } from "@/lib/i18n";
-import React, { useEffect, useState, useRef, useCallback, memo } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare, Phone, Clock, MapPin, Truck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 
-// --- Utility for Tailwind merging (simulating shadcn cn()) ---
+// --- Utility for Tailwind merging ---
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -37,174 +37,188 @@ type StoreSettings = {
 
 type SaveState = "idle" | "saving" | "success" | "error";
 
-// --- Reusable UI Components (defined outside component to prevent re-creation) ---
+const DEFAULT_SETTINGS: StoreSettings = {
+  id: "default",
+  storeName: "",
+  tagline: "",
+  returnsPolicy: "",
+  shippingPolicy: "",
+  welcomePopupEnabled: true,
+  welcomePopupTitle: "",
+  welcomePopupSubtitle: "",
+  welcomePopupPromoText: "",
+  welcomePopupButtonText: "",
+  whatsappNumber: "",
+  instagramUrl: "",
+  facebookUrl: "",
+  openingHours: "",
+  pickupHours: "",
+  pickupAddress: "",
+  shippingFee: 40,
+  freeShippingThreshold: 600,
+};
+
+// --- UI Components (outside main component) ---
 function Label({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-900", className)}>
+    <label className={cn("text-sm font-medium leading-none text-zinc-900", className)}>
       {children}
     </label>
   );
 }
 
 function Description({ children }: { children: React.ReactNode }) {
+  return <p className="text-[0.8rem] text-zinc-600 mt-1.5">{children}</p>;
+}
+
+// Simple controlled input - no memo needed, just stable DOM
+function SettingsInput({
+  id,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  min,
+  step,
+}: {
+  id: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  type?: string;
+  min?: number;
+  step?: number;
+}) {
   return (
-    <p className="text-[0.8rem] text-zinc-600 mt-1.5">
-      {children}
-    </p>
+    <input
+      id={id}
+      name={id}
+      type={type}
+      min={min}
+      step={step}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      autoComplete="off"
+      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+    />
   );
 }
 
-// Memoized input component to prevent re-renders on parent state changes
-const InputField = memo(function InputField({
+function SettingsTextarea({
+  id,
   value,
   onChange,
+  placeholder,
+  rows = 3,
   className,
-  name,
-  ...props
 }: {
+  id: string;
   value: string;
-  onChange: (value: string, name: string) => void;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  rows?: number;
   className?: string;
-  name: string;
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value" | "name">) {
-  return (
-    <input
-      value={value}
-      name={name}
-      onChange={(e) => onChange(e.target.value, name)}
-      className={cn(
-        "flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      {...props}
-    />
-  );
-});
-
-// Memoized textarea component to prevent re-renders on parent state changes
-const TextareaField = memo(function TextareaField({
-  value,
-  onChange,
-  className,
-  name,
-  ...props
-}: {
-  value: string;
-  onChange: (value: string, name: string) => void;
-  className?: string;
-  name: string;
-} & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "onChange" | "value" | "name">) {
+}) {
   return (
     <textarea
+      id={id}
+      name={id}
       value={value}
-      name={name}
-      onChange={(e) => onChange(e.target.value, name)}
+      onChange={onChange}
+      placeholder={placeholder}
+      rows={rows}
+      autoComplete="off"
       className={cn(
-        "flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
         className
       )}
-      {...props}
     />
   );
-});
+}
 
 export default function AdminSettings({ params }: { params: Promise<{ locale: string }> }) {
-  const [locale, setLocale] = useState<Locale>("en");
-  const [settings, setSettings] = useState<StoreSettings>({
-    id: "default",
-    storeName: "",
-    tagline: "",
-    returnsPolicy: "",
-    shippingPolicy: "",
-    welcomePopupEnabled: true,
-    welcomePopupTitle: "",
-    welcomePopupSubtitle: "",
-    welcomePopupPromoText: "",
-    welcomePopupButtonText: "",
-    whatsappNumber: "",
-    instagramUrl: "",
-    facebookUrl: "",
-    openingHours: "",
-    pickupHours: "",
-    pickupAddress: "",
-    shippingFee: 40,
-    freeShippingThreshold: 600,
-  });
+  // Separate state: loaded data vs form data
+  const [locale, setLocale] = useState<Locale>("zh-HK");
+  const [formData, setFormData] = useState<StoreSettings>(DEFAULT_SETTINGS);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [requestId, setRequestId] = useState("");
-  const [isLoaded, setIsLoaded] = useState(false);
-  const localeInitialized = useRef(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
-  const t = getDict(locale);
+  const t = useMemo(() => getDict(locale), [locale]);
 
-  // Initialize locale only once
+  // Initialize locale from params - only once
   useEffect(() => {
-    if (!localeInitialized.current) {
-      localeInitialized.current = true;
-      params.then((p) => setLocale(p.locale as Locale));
-    }
-  }, [params]);
+    let mounted = true;
+    params.then((p) => {
+      if (mounted) {
+        setLocale(p.locale as Locale);
+      }
+    });
+    return () => { mounted = false; };
+  }, []); // Empty deps - run only once on mount
 
-  // Load settings only once on mount
+  // Load settings ONCE on mount - separate from form state updates
   useEffect(() => {
-    if (!isLoaded) {
-      loadSettings();
-    }
-  }, [isLoaded]);
+    let mounted = true;
 
-  async function loadSettings() {
-    try {
-      const res = await fetch("/api/store-settings");
-
-      if (!res.ok) {
-        if (res.status === 401) {
-          setErrorMessage("Please log in to view settings");
+    async function loadData() {
+      try {
+        const res = await fetch("/api/store-settings");
+        if (!res.ok) {
+          if (res.status === 401) {
+            setErrorMessage("Please log in to view settings");
+          }
+          setDataLoaded(true);
+          return;
         }
-        setIsLoaded(true);
-        return;
+        const data = await res.json();
+        if (mounted && data.ok && data.data) {
+          setFormData(data.data);
+        }
+      } catch {
+        // Ignore errors
+      } finally {
+        if (mounted) {
+          setDataLoaded(true);
+        }
       }
-
-      const data = await res.json();
-      if (data.ok && data.data) {
-        setSettings(data.data);
-      }
-      setIsLoaded(true);
-    } catch (err) {
-      setIsLoaded(true);
     }
-  }
 
-  // Update individual setting field - stable callback for memoized inputs
-  const handleFieldChange = useCallback((value: string, name: string) => {
-    setSettings((prev) => ({ ...prev, [name]: value }));
+    loadData();
+    return () => { mounted = false; };
+  }, []); // Empty deps - load only once on mount
+
+  // Generic handler for text fields
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
-  // Update numeric field
-  const handleNumericChange = useCallback((value: string, name: string) => {
-    setSettings((prev) => ({ ...prev, [name]: Number(value) || 0 }));
+  // Handler for numeric fields
+  const handleNumericChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: Number(value) || 0 }));
   }, []);
 
-  // Update boolean field
-  const updateBooleanSetting = useCallback((key: keyof StoreSettings, value: boolean) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
+  // Handler for boolean toggle
+  const toggleWelcomePopup = useCallback(() => {
+    setFormData((prev) => ({ ...prev, welcomePopupEnabled: !prev.welcomePopupEnabled }));
   }, []);
 
-  async function handleSave() {
+  // Save handler - only this syncs to server
+  const handleSave = useCallback(async () => {
     setSaveState("saving");
     setErrorMessage("");
-    setRequestId("");
-
-    const idempotencyKey = crypto.randomUUID();
 
     try {
       const res = await fetch("/api/store-settings", {
         method: "PUT",
         headers: {
           "content-type": "application/json",
-          "x-idempotency-key": idempotencyKey,
+          "x-idempotency-key": crypto.randomUUID(),
         },
-        body: JSON.stringify(settings),
+        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
@@ -212,21 +226,17 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
       if (res.ok) {
         setSaveState("success");
         if (data.data) {
-          setSettings(data.data);
+          setFormData(data.data);
         }
         setTimeout(() => setSaveState("idle"), 3000);
       } else {
         setSaveState("error");
         const errorCode = data.error?.code || "UNKNOWN";
         const errorMsg = data.error?.message || "Unknown error";
-        setRequestId(data.requestId || "");
-
         if (res.status === 401) {
-          setErrorMessage("Unauthorized: Missing or invalid admin credentials");
+          setErrorMessage("Unauthorized: Please log in");
         } else if (res.status === 403) {
-          setErrorMessage("Forbidden: Invalid admin credentials");
-        } else if (res.status === 409) {
-          setErrorMessage(`Conflict: ${errorMsg} (${errorCode})`);
+          setErrorMessage("Forbidden: Invalid credentials");
         } else {
           setErrorMessage(`${errorCode}: ${errorMsg}`);
         }
@@ -235,17 +245,25 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
       setSaveState("error");
       setErrorMessage(`Network error: ${err instanceof Error ? err.message : String(err)}`);
     }
+  }, [formData]);
+
+  // Show loading state
+  if (!dataLoaded) {
+    return (
+      <div className="bg-zinc-50 min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+      </div>
+    );
   }
 
   return (
     <div className="bg-zinc-50 text-zinc-900 pb-20">
       <div className="mx-auto max-w-4xl px-6 py-12">
-        {/* Sidebar Toggle */}
         <div className="mb-6">
           <SidebarToggle />
         </div>
 
-        {/* Header Section */}
+        {/* Header */}
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-1.5">
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900">{t.admin.settings.storeSettings}</h1>
@@ -255,12 +273,11 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Status Indicators */}
             <AnimatePresence mode="wait">
               {saveState === "success" && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  className="flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-sm font-medium text-emerald-400"
+                  className="flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-sm font-medium text-emerald-600"
                 >
                   <CheckCircle2 className="h-4 w-4" /> Saved
                 </motion.div>
@@ -268,9 +285,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
               {saveState === "error" && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  className="flex items-center gap-2 rounded-full bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-sm font-medium text-red-400"
+                  className="flex items-center gap-2 rounded-full bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-sm font-medium text-red-600"
                 >
-                  <AlertCircle className="h-4 w-4" /> Failed
+                  <AlertCircle className="h-4 w-4" /> {errorMessage || "Failed"}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -284,339 +301,329 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
               )}
             >
               {saveState === "saving" ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> {t.admin.common.loading}
-                </>
+                <><Loader2 className="h-4 w-4 animate-spin" /> {t.admin.common.loading}</>
               ) : (
-                <>
-                  <Save className="h-4 w-4" /> {t.admin.common.save}
-                </>
+                <><Save className="h-4 w-4" /> {t.admin.common.save}</>
               )}
             </button>
           </div>
         </div>
 
         <div className="mt-8 space-y-6">
-
-          {/* Main Settings Form */}
-          <div className={cn("grid gap-6 transition-opacity duration-300")}>
-
-            {/* General Info Card */}
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-              <div>
-                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                  <Store className="h-5 w-5 text-zinc-600" />
-                  General Information
-                </h3>
-                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                  Basic details about your storefront branding.
-                </p>
-              </div>
-
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-3">
-                  <Label>{t.admin.settings.storeName}</Label>
-                  <InputField
-                    name="storeName"
-                    value={settings.storeName || ""}
-                    onChange={handleFieldChange}
-                    placeholder="e.g. Yau Store"
-                  />
-                  <Description>Visible in the navigation bar and browser title.</Description>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>{t.admin.settings.tagline}</Label>
-                  <InputField
-                    name="tagline"
-                    value={settings.tagline || ""}
-                    onChange={handleFieldChange}
-                    placeholder="e.g. Premium Tech & Lifestyle"
-                  />
-                  <Description>Featured prominently on the homepage hero section.</Description>
-                </div>
-              </div>
+          {/* General Info */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <Store className="h-5 w-5 text-zinc-600" />
+                General Information
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                Basic details about your storefront branding.
+              </p>
             </div>
 
-            {/* Policies Card */}
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-              <div>
-                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                  <Undo2 className="h-5 w-5 text-zinc-600" />
-                  Store Policies
-                </h3>
-                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                  Define how you handle shipping and returns for your customers.
-                </p>
-              </div>
-
-              <div className="grid gap-8">
-                <div className="space-y-3">
-                  <Label>{t.admin.settings.returnsPolicy}</Label>
-                  <TextareaField
-                    name="returnsPolicy"
-                    value={settings.returnsPolicy || ""}
-                    onChange={handleFieldChange}
-                    rows={4}
-                    placeholder="e.g. Items can be returned within 30 days of delivery..."
-                    className="font-mono text-sm resize-y min-h-[120px]"
-                  />
-                  <Description>Displayed on product detail pages and during checkout.</Description>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>{t.admin.settings.shippingPolicy}</Label>
-                  <TextareaField
-                    name="shippingPolicy"
-                    value={settings.shippingPolicy || ""}
-                    onChange={handleFieldChange}
-                    rows={4}
-                    placeholder="e.g. Standard shipping takes 3-5 business days..."
-                    className="font-mono text-sm resize-y min-h-[120px]"
-                  />
-                  <Description>Inform customers about delivery times and costs.</Description>
-                </div>
-              </div>
-            </div>
-
-            {/* Welcome Popup Card */}
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-              <div>
-                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-zinc-600" />
-                  Welcome Popup
-                </h3>
-                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                  Configure the welcome popup shown to first-time visitors.
-                </p>
-              </div>
-
-              <div className="grid gap-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Welcome Popup Enabled</Label>
-                    <Description>Show welcome popup to first-time visitors.</Description>
-                  </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={settings.welcomePopupEnabled}
-                    onClick={() => updateBooleanSetting("welcomePopupEnabled", !settings.welcomePopupEnabled)}
-                    className={cn(
-                      "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
-                      settings.welcomePopupEnabled ? "bg-olive-600" : "bg-zinc-300"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform",
-                        settings.welcomePopupEnabled ? "translate-x-5" : "translate-x-0"
-                      )}
-                    />
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Welcome Popup Title</Label>
-                  <InputField
-                    name="welcomePopupTitle"
-                    value={settings.welcomePopupTitle || ""}
-                    onChange={handleFieldChange}
-                    placeholder="歡迎來到 HK•Market"
-                  />
-                  <Description>Main heading of the welcome popup.</Description>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Welcome Popup Subtitle</Label>
-                  <InputField
-                    name="welcomePopupSubtitle"
-                    value={settings.welcomePopupSubtitle || ""}
-                    onChange={handleFieldChange}
-                    placeholder="探索最新波鞋及運動裝備，正品保證！"
-                  />
-                  <Description>Subheading displayed below the title.</Description>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Welcome Popup Promo Text</Label>
-                  <InputField
-                    name="welcomePopupPromoText"
-                    value={settings.welcomePopupPromoText || ""}
-                    onChange={handleFieldChange}
-                    placeholder="🎉 訂單滿 $600 免運費！"
-                  />
-                  <Description>Promotional text shown in the highlighted box.</Description>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Welcome Popup Button Text</Label>
-                  <InputField
-                    name="welcomePopupButtonText"
-                    value={settings.welcomePopupButtonText || ""}
-                    onChange={handleFieldChange}
-                    placeholder="開始購物"
-                  />
-                  <Description>Text on the call-to-action button.</Description>
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Info Card */}
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-              <div>
-                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                  <Phone className="h-5 w-5 text-zinc-600" />
-                  Contact Information
-                </h3>
-                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                  Social media and contact details for customers.
-                </p>
-              </div>
-
-              <div className="grid gap-6 md:grid-cols-3">
-                <div className="space-y-3">
-                  <Label>WhatsApp Number</Label>
-                  <InputField
-                    name="whatsappNumber"
-                    value={settings.whatsappNumber || ""}
-                    onChange={handleFieldChange}
-                    placeholder="+852 1234 5678"
-                  />
-                  <Description>Include country code (+852).</Description>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Instagram URL</Label>
-                  <InputField
-                    name="instagramUrl"
-                    value={settings.instagramUrl || ""}
-                    onChange={handleFieldChange}
-                    placeholder="https://instagram.com/yourstore"
-                  />
-                  <Description>Full Instagram profile URL.</Description>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Facebook URL</Label>
-                  <InputField
-                    name="facebookUrl"
-                    value={settings.facebookUrl || ""}
-                    onChange={handleFieldChange}
-                    placeholder="https://facebook.com/yourstore"
-                  />
-                  <Description>Full Facebook page URL.</Description>
-                </div>
-              </div>
-            </div>
-
-            {/* Business Hours Card */}
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-              <div>
-                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-zinc-600" />
-                  Business Hours
-                </h3>
-                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                  Store opening hours and pickup availability.
-                </p>
-              </div>
-
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-3">
-                  <Label>Opening Hours</Label>
-                  <TextareaField
-                    name="openingHours"
-                    value={settings.openingHours || ""}
-                    onChange={handleFieldChange}
-                    placeholder="星期一至五: 10:00 - 20:00&#10;星期六日: 12:00 - 18:00"
-                    rows={3}
-                  />
-                  <Description>General store operating hours.</Description>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Pickup Hours</Label>
-                  <TextareaField
-                    name="pickupHours"
-                    value={settings.pickupHours || ""}
-                    onChange={handleFieldChange}
-                    placeholder="星期一至五: 14:00 - 19:00&#10;星期六: 14:00 - 17:00"
-                    rows={3}
-                  />
-                  <Description>Hours when customers can pick up orders.</Description>
-                </div>
-              </div>
-            </div>
-
-            {/* Pickup Address Card */}
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-              <div>
-                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-zinc-600" />
-                  Pickup Address
-                </h3>
-                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                  Location where customers can collect their orders.
-                </p>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <Label>{t.admin.settings.storeName}</Label>
+                <SettingsInput
+                  id="storeName"
+                  value={formData.storeName || ""}
+                  onChange={handleChange}
+                  placeholder="e.g. Yau Store"
+                />
+                <Description>Visible in the navigation bar and browser title.</Description>
               </div>
 
               <div className="space-y-3">
-                <Label>Pickup Address</Label>
-                <TextareaField
-                  name="pickupAddress"
-                  value={settings.pickupAddress || ""}
-                  onChange={handleFieldChange}
-                  placeholder="九龍旺角彌敦道XXX號&#10;XX大廈XX樓XX室"
+                <Label>{t.admin.settings.tagline}</Label>
+                <SettingsInput
+                  id="tagline"
+                  value={formData.tagline || ""}
+                  onChange={handleChange}
+                  placeholder="e.g. Premium Tech & Lifestyle"
+                />
+                <Description>Featured prominently on the homepage hero section.</Description>
+              </div>
+            </div>
+          </div>
+
+          {/* Policies */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <Undo2 className="h-5 w-5 text-zinc-600" />
+                Store Policies
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                Define how you handle shipping and returns.
+              </p>
+            </div>
+
+            <div className="grid gap-8">
+              <div className="space-y-3">
+                <Label>{t.admin.settings.returnsPolicy}</Label>
+                <SettingsTextarea
+                  id="returnsPolicy"
+                  value={formData.returnsPolicy || ""}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="e.g. Items can be returned within 30 days..."
+                  className="font-mono text-sm resize-y min-h-[120px]"
+                />
+                <Description>Displayed on product detail pages and during checkout.</Description>
+              </div>
+
+              <div className="space-y-3">
+                <Label>{t.admin.settings.shippingPolicy}</Label>
+                <SettingsTextarea
+                  id="shippingPolicy"
+                  value={formData.shippingPolicy || ""}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="e.g. Standard shipping takes 3-5 business days..."
+                  className="font-mono text-sm resize-y min-h-[120px]"
+                />
+                <Description>Inform customers about delivery times and costs.</Description>
+              </div>
+            </div>
+          </div>
+
+          {/* Welcome Popup */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-zinc-600" />
+                Welcome Popup
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                Configure the welcome popup for first-time visitors.
+              </p>
+            </div>
+
+            <div className="grid gap-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Welcome Popup Enabled</Label>
+                  <Description>Show welcome popup to first-time visitors.</Description>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={formData.welcomePopupEnabled}
+                  onClick={toggleWelcomePopup}
+                  className={cn(
+                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
+                    formData.welcomePopupEnabled ? "bg-olive-600" : "bg-zinc-300"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform",
+                      formData.welcomePopupEnabled ? "translate-x-5" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Welcome Popup Title</Label>
+                <SettingsInput
+                  id="welcomePopupTitle"
+                  value={formData.welcomePopupTitle || ""}
+                  onChange={handleChange}
+                  placeholder="歡迎來到 HK•Market"
+                />
+                <Description>Main heading of the welcome popup.</Description>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Welcome Popup Subtitle</Label>
+                <SettingsInput
+                  id="welcomePopupSubtitle"
+                  value={formData.welcomePopupSubtitle || ""}
+                  onChange={handleChange}
+                  placeholder="探索最新波鞋及運動裝備，正品保證！"
+                />
+                <Description>Subheading displayed below the title.</Description>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Welcome Popup Promo Text</Label>
+                <SettingsInput
+                  id="welcomePopupPromoText"
+                  value={formData.welcomePopupPromoText || ""}
+                  onChange={handleChange}
+                  placeholder="🎉 訂單滿 $600 免運費！"
+                />
+                <Description>Promotional text shown in the highlighted box.</Description>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Welcome Popup Button Text</Label>
+                <SettingsInput
+                  id="welcomePopupButtonText"
+                  value={formData.welcomePopupButtonText || ""}
+                  onChange={handleChange}
+                  placeholder="開始購物"
+                />
+                <Description>Text on the call-to-action button.</Description>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Info */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <Phone className="h-5 w-5 text-zinc-600" />
+                Contact Information
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                Social media and contact details for customers.
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <div className="space-y-3">
+                <Label>WhatsApp Number</Label>
+                <SettingsInput
+                  id="whatsappNumber"
+                  value={formData.whatsappNumber || ""}
+                  onChange={handleChange}
+                  placeholder="+852 1234 5678"
+                />
+                <Description>Include country code (+852).</Description>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Instagram URL</Label>
+                <SettingsInput
+                  id="instagramUrl"
+                  value={formData.instagramUrl || ""}
+                  onChange={handleChange}
+                  placeholder="https://instagram.com/yourstore"
+                />
+                <Description>Full Instagram profile URL.</Description>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Facebook URL</Label>
+                <SettingsInput
+                  id="facebookUrl"
+                  value={formData.facebookUrl || ""}
+                  onChange={handleChange}
+                  placeholder="https://facebook.com/yourstore"
+                />
+                <Description>Full Facebook page URL.</Description>
+              </div>
+            </div>
+          </div>
+
+          {/* Business Hours */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-zinc-600" />
+                Business Hours
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                Store opening hours and pickup availability.
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <Label>Opening Hours</Label>
+                <SettingsTextarea
+                  id="openingHours"
+                  value={formData.openingHours || ""}
+                  onChange={handleChange}
+                  placeholder="星期一至五: 10:00 - 20:00&#10;星期六日: 12:00 - 18:00"
                   rows={3}
                 />
-                <Description>Full address for order pickup location.</Description>
+                <Description>General store operating hours.</Description>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Pickup Hours</Label>
+                <SettingsTextarea
+                  id="pickupHours"
+                  value={formData.pickupHours || ""}
+                  onChange={handleChange}
+                  placeholder="星期一至五: 14:00 - 19:00&#10;星期六: 14:00 - 17:00"
+                  rows={3}
+                />
+                <Description>Hours when customers can pick up orders.</Description>
               </div>
             </div>
+          </div>
 
-            {/* Shipping Settings Card */}
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-              <div>
-                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                  <Truck className="h-5 w-5 text-zinc-600" />
-                  Shipping Settings
-                </h3>
-                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                  Configure shipping fees and free shipping threshold.
-                </p>
-              </div>
-
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-3">
-                  <Label>Shipping Fee ($)</Label>
-                  <InputField
-                    name="shippingFee"
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={String(settings.shippingFee)}
-                    onChange={handleNumericChange}
-                    placeholder="40"
-                  />
-                  <Description>Standard shipping fee in HKD. Default: $40</Description>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Free Shipping Threshold ($)</Label>
-                  <InputField
-                    name="freeShippingThreshold"
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={String(settings.freeShippingThreshold)}
-                    onChange={handleNumericChange}
-                    placeholder="600"
-                  />
-                  <Description>Orders above this amount get free shipping. Default: $600</Description>
-                </div>
-              </div>
+          {/* Pickup Address */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-zinc-600" />
+                Pickup Address
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                Location where customers can collect their orders.
+              </p>
             </div>
 
+            <div className="space-y-3">
+              <Label>Pickup Address</Label>
+              <SettingsTextarea
+                id="pickupAddress"
+                value={formData.pickupAddress || ""}
+                onChange={handleChange}
+                placeholder="九龍旺角彌敦道XXX號&#10;XX大廈XX樓XX室"
+                rows={3}
+              />
+              <Description>Full address for order pickup location.</Description>
+            </div>
+          </div>
+
+          {/* Shipping Settings */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <Truck className="h-5 w-5 text-zinc-600" />
+                Shipping Settings
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                Configure shipping fees and free shipping threshold.
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <Label>Shipping Fee ($)</Label>
+                <SettingsInput
+                  id="shippingFee"
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={String(formData.shippingFee)}
+                  onChange={handleNumericChange}
+                  placeholder="40"
+                />
+                <Description>Standard shipping fee in HKD. Default: $40</Description>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Free Shipping Threshold ($)</Label>
+                <SettingsInput
+                  id="freeShippingThreshold"
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={String(formData.freeShippingThreshold)}
+                  onChange={handleNumericChange}
+                  placeholder="600"
+                />
+                <Description>Orders above this amount get free shipping. Default: $600</Description>
+              </div>
+            </div>
           </div>
         </div>
       </div>

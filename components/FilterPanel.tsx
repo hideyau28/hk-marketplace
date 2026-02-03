@@ -188,8 +188,14 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
 
     // Stay on current page (search or products)
     const targetPath = isSearchPage ? `/${locale}/search` : `/${locale}/products`;
-    router.push(`${targetPath}${queryString ? `?${queryString}` : ""}`);
+    const newUrl = `${targetPath}${queryString ? `?${queryString}` : ""}`;
+
+    // Close panel first for better UX
     onClose();
+
+    // Navigate and refresh to ensure server component re-renders
+    router.push(newUrl);
+    router.refresh();
   };
 
   const getCategoryLabel = (cat: string) => {

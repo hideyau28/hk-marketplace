@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
 import { Metadata } from "next";
 
+// Disable caching to ensure filters always show fresh results
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   return {
