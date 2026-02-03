@@ -119,7 +119,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
   const statusHistory = order.statusHistory ? JSON.parse(order.statusHistory) : [];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-8">
       {/* Current Status */}
       <div>
         <label className="block text-sm text-zinc-500 mb-2">

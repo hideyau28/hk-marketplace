@@ -7,8 +7,8 @@ import { getDict, type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
-import { Star, Flame, Search } from "lucide-react";
-import { toggleFeatured, toggleHotSelling } from "./actions";
+import { Star, Flame, Search, Check, X, Pencil } from "lucide-react";
+import { toggleFeatured, toggleHotSelling, updatePrice } from "./actions";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -100,6 +100,11 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
   const [togglingHotSelling, setTogglingHotSelling] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  // Inline price editing
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [editPrice, setEditPrice] = useState("");
+  const [editOriginalPrice, setEditOriginalPrice] = useState("");
+  const [savingPrice, setSavingPrice] = useState(false);
 
   // Filter products by search query
   const filteredProducts = useMemo(() => {
@@ -146,6 +151,37 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
       console.error("Failed to toggle hot selling:", error);
     } finally {
       setTogglingHotSelling(null);
+    }
+  };
+
+  const startEditingPrice = (product: ProductWithBadges) => {
+    setEditingPriceId(product.id);
+    setEditPrice(Math.round(product.price).toString());
+    setEditOriginalPrice(product.originalPrice != null ? Math.round(product.originalPrice).toString() : "");
+  };
+
+  const cancelEditingPrice = () => {
+    setEditingPriceId(null);
+    setEditPrice("");
+    setEditOriginalPrice("");
+  };
+
+  const savePrice = async (productId: string) => {
+    const priceNum = parseFloat(editPrice);
+    if (isNaN(priceNum) || priceNum < 0) return;
+
+    const originalPriceNum = editOriginalPrice.trim() ? parseFloat(editOriginalPrice) : null;
+    if (editOriginalPrice.trim() && (isNaN(originalPriceNum!) || originalPriceNum! < 0)) return;
+
+    setSavingPrice(true);
+    try {
+      await updatePrice(productId, priceNum, originalPriceNum);
+      router.refresh();
+      cancelEditingPrice();
+    } catch (error) {
+      console.error("Failed to update price:", error);
+    } finally {
+      setSavingPrice(false);
     }
   };
 
@@ -274,18 +310,65 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                     </td>
                     <td className="px-4 py-3 text-zinc-600">{product.category || "—"}</td>
                     <td className="px-4 py-3 text-right">
-                      {isOnSale ? (
-                        <div className="flex flex-col items-end gap-0.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-zinc-900 font-medium">${Math.round(product.price)}</span>
-                            <span className="text-zinc-400 text-xs line-through">${Math.round(product.originalPrice!)}</span>
+                      {editingPriceId === product.id ? (
+                        <div className="flex flex-col items-end gap-1">
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              value={editPrice}
+                              onChange={(e) => setEditPrice(e.target.value)}
+                              className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-olive-500"
+                              placeholder="售價"
+                              autoFocus
+                            />
+                            <input
+                              type="number"
+                              value={editOriginalPrice}
+                              onChange={(e) => setEditOriginalPrice(e.target.value)}
+                              className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right text-zinc-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
+                              placeholder="原價"
+                            />
                           </div>
-                          <span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-600">
-                            減價
-                          </span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => savePrice(product.id)}
+                              disabled={savingPrice}
+                              className="p-1 rounded-lg text-olive-600 hover:bg-olive-50 disabled:opacity-50"
+                            >
+                              <Check size={14} />
+                            </button>
+                            <button
+                              onClick={cancelEditingPrice}
+                              disabled={savingPrice}
+                              className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-100"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        <span className="text-zinc-900 font-medium">${Math.round(product.price)}</span>
+                        <div
+                          className="group cursor-pointer"
+                          onClick={() => startEditingPrice(product)}
+                        >
+                          {isOnSale ? (
+                            <div className="flex flex-col items-end gap-0.5">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-zinc-900 font-medium">${Math.round(product.price)}</span>
+                                <span className="text-zinc-400 text-xs line-through">${Math.round(product.originalPrice!)}</span>
+                                <Pencil size={12} className="text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                              <span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-600">
+                                減價
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-end gap-1">
+                              <span className="text-zinc-900 font-medium">${Math.round(product.price)}</span>
+                              <Pencil size={12} className="text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          )}
+                        </div>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right text-zinc-700">{product.stock ?? 0}</td>

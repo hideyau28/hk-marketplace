@@ -36,6 +36,9 @@ type ToggleFeaturedResult = ToggleFeaturedOk | ActionFail;
 type ToggleHotSellingOk = { ok: true };
 type ToggleHotSellingResult = ToggleHotSellingOk | ActionFail;
 
+type UpdatePriceOk = { ok: true };
+type UpdatePriceResult = UpdatePriceOk | ActionFail;
+
 function getApiBaseUrl() {
   // Server-side calls back into this same app.
   // Prefer an explicit base URL when deployed; fall back to local dev port 3012.
@@ -99,13 +102,16 @@ export async function createProduct(
     price: number;
     originalPrice?: number | null;
     imageUrl?: string;
+    images?: string[];
     badges?: string;
     category?: string | null;
     active?: boolean;
     featured?: boolean;
+    shoeType?: string | null;
     sizeSystem?: string;
     sizes?: string[];
     stock?: number;
+    promotionBadges?: string[];
   },
   locale?: string
 ): Promise<CreateProductResult> {
@@ -157,13 +163,16 @@ export async function updateProduct(
     price?: number;
     originalPrice?: number | null;
     imageUrl?: string | null;
+    images?: string[];
     badges?: string;
     category?: string | null;
     active?: boolean;
     featured?: boolean;
+    shoeType?: string | null;
     sizeSystem?: string | null;
     sizes?: string[] | null;
     stock?: number;
+    promotionBadges?: string[];
   },
   locale?: string
 ): Promise<UpdateProductResult> {
@@ -293,5 +302,51 @@ export async function toggleHotSelling(
   } catch (error) {
     console.error("Failed to toggle hot selling:", error);
     return { ok: false, code: "NETWORK_ERROR", message: "Failed to toggle hot selling" };
+  }
+}
+
+export async function updatePrice(
+  productId: string,
+  price: number,
+  originalPrice?: number | null
+): Promise<UpdatePriceResult> {
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret) {
+    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  }
+
+  try {
+    const url = new URL(`/api/admin/products/${productId}`, getApiBaseUrl());
+    const body: Record<string, any> = { price };
+    if (originalPrice !== undefined) {
+      body.originalPrice = originalPrice;
+    }
+
+    const response = await fetch(url.toString(), {
+      method: "PATCH",
+      headers: {
+        "x-admin-secret": adminSecret,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Product>;
+
+    if (!response.ok) {
+      const errorData = json as ApiErrorResponse;
+      return {
+        ok: false,
+        code: errorData.error?.code || "UNKNOWN_ERROR",
+        message: errorData.error?.message || "Failed to update price",
+      };
+    }
+
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (error) {
+    console.error("Failed to update price:", error);
+    return { ok: false, code: "NETWORK_ERROR", message: "Failed to update price" };
   }
 }
