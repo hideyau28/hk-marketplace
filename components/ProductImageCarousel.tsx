@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
+import WishlistHeart from "@/components/WishlistHeart";
 
 type ProductImageCarouselProps = {
   images: string[];
   alt: string;
   stock?: number;
+  productId?: string;
 };
 
-export default function ProductImageCarousel({ images, alt, stock }: ProductImageCarouselProps) {
+export default function ProductImageCarousel({ images, alt, stock, productId }: ProductImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -100,6 +102,9 @@ export default function ProductImageCarousel({ images, alt, stock }: ProductImag
               🔥 快將售罄
             </div>
           )}
+
+          {/* Wishlist heart - consistent with ProductCard */}
+          {productId && <WishlistHeart productId={productId} size="md" />}
           <div
             className="flex h-full transition-transform duration-300 ease-out"
             style={{
