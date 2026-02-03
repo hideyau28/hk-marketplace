@@ -6,17 +6,17 @@ import SidebarToggle from "@/components/admin/SidebarToggle";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; q?: string }>;
 };
 
 export default async function AdminOrders({ params, searchParams }: PageProps) {
   const { locale } = await params;
-  const { status } = await searchParams;
+  const { status, q } = await searchParams;
   const l = locale as Locale;
   const t = getDict(l);
 
   // Fetch orders via API using server action
-  const result = await fetchOrders(status);
+  const result = await fetchOrders(status, q);
 
   return (
     <div className="p-4 pb-16">
@@ -30,7 +30,7 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
       </div>
 
       {result.ok ? (
-        <OrdersTable orders={result.data} locale={l} currentStatus={status} />
+        <OrdersTable orders={result.data} locale={l} currentStatus={status} searchQuery={q} />
       ) : (
         <div className="mt-6 rounded-3xl border border-red-500/20 bg-red-500/10 p-6">
           <div className="text-red-400 font-semibold">{t.common.error}</div>
