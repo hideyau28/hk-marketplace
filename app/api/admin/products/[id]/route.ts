@@ -122,6 +122,15 @@ export const PATCH = withApi(
       updateData.price = body.price;
     }
 
+    if (body.originalPrice !== undefined) {
+      if (body.originalPrice === null) {
+        updateData.originalPrice = null;
+      } else {
+        assertNonNegativeNumber(body.originalPrice, "originalPrice");
+        updateData.originalPrice = body.originalPrice;
+      }
+    }
+
     if (body.imageUrl !== undefined) {
       if (body.imageUrl === null || body.imageUrl === "") {
         updateData.imageUrl = null;

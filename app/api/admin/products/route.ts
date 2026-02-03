@@ -94,6 +94,7 @@ type CreateProductPayload = {
   brand?: string | null;
   title: string;
   price: number;
+  originalPrice?: number | null;
   imageUrl?: string | null;
   category?: string | null;
   badges?: string[];
@@ -110,6 +111,13 @@ function parseCreatePayload(body: any): CreateProductPayload {
 
   assertNonEmptyString(body.title, "title");
   assertNonNegativeNumber(body.price, "price");
+
+  // Validate originalPrice: optional, non-negative number or null
+  let originalPrice: number | null = null;
+  if (body.originalPrice !== undefined && body.originalPrice !== null) {
+    assertNonNegativeNumber(body.originalPrice, "originalPrice");
+    originalPrice = body.originalPrice;
+  }
 
   const badges = parseBadges(body.badges);
 
@@ -150,6 +158,7 @@ function parseCreatePayload(body: any): CreateProductPayload {
     brand,
     title: body.title.trim(),
     price: body.price,
+    originalPrice,
     imageUrl: typeof body.imageUrl === "string" && body.imageUrl.trim().length > 0 ? body.imageUrl.trim() : null,
     category,
     badges: badges.length > 0 ? badges : undefined,
@@ -243,6 +252,7 @@ export const POST = withApi(
         brand: payload.brand,
         title: payload.title,
         price: payload.price,
+        originalPrice: payload.originalPrice,
         imageUrl: payload.imageUrl ?? null,
         category: payload.category ?? null,
         badges: payload.badges,
