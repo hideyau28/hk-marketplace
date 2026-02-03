@@ -24,20 +24,39 @@ function assertNonNegativeInt(value: unknown, field: string) {
   }
 }
 
-function parseSizes(value: unknown) {
+function parseSizes(value: unknown): Record<string, number> | null {
   if (value === undefined || value === null) return null;
+  // Accept JSON object format: { "US 7": 5, "US 8": 10 }
+  if (typeof value === "object" && !Array.isArray(value)) {
+    const result: Record<string, number> = {};
+    for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof val === "number" && val >= 0) {
+        result[key] = val;
+      }
+    }
+    return Object.keys(result).length > 0 ? result : null;
+  }
+  // Legacy: array format ["US 7", "US 8"] - convert to object with stock 0
   if (Array.isArray(value)) {
-    const list = value.map((v) => (typeof v === "string" ? v.trim() : "")).filter(Boolean);
-    return list.length > 0 ? list : null;
+    const result: Record<string, number> = {};
+    value.forEach((v) => {
+      if (typeof v === "string" && v.trim()) {
+        result[v.trim()] = 0;
+      }
+    });
+    return Object.keys(result).length > 0 ? result : null;
   }
+  // Legacy: comma-separated string "US 7, US 8" - convert to object with stock 0
   if (typeof value === "string") {
-    const list = value
-      .split(",")
-      .map((v) => v.trim())
-      .filter(Boolean);
-    return list.length > 0 ? list : null;
+    const result: Record<string, number> = {};
+    value.split(",").forEach((v) => {
+      if (v.trim()) {
+        result[v.trim()] = 0;
+      }
+    });
+    return Object.keys(result).length > 0 ? result : null;
   }
-  throw new ApiError(400, "BAD_REQUEST", "sizes must be an array or comma-separated string");
+  throw new ApiError(400, "BAD_REQUEST", "sizes must be an object, array, or comma-separated string");
 }
 
 // GET /api/admin/products/:id (admin)

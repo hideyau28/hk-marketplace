@@ -7,26 +7,39 @@ import { createProduct, updateProduct } from "./actions";
 import ImageUpload from "@/components/admin/ImageUpload";
 import { GripVertical, X, Plus, Trash2 } from "lucide-react";
 
-// Shoe size systems only
+// Shoe size systems with default sizes
 const SIZE_SYSTEMS: Record<string, { label: string; sizes: string[] }> = {
-  mens_us: { label: "Men's US", sizes: ["7", "7.5", "8", "8.5", "9", "9.5", "10", "10.5", "11", "11.5", "12", "13"] },
-  womens_us: { label: "Women's US", sizes: ["5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5", "10"] },
+  mens_us: { label: "Men's US", sizes: ["US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 9.5", "US 10", "US 10.5", "US 11", "US 11.5", "US 12", "US 13"] },
+  womens_us: { label: "Women's US", sizes: ["US 5", "US 5.5", "US 6", "US 6.5", "US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 9.5", "US 10"] },
   gs_youth: { label: "GS Youth", sizes: ["3.5Y", "4Y", "4.5Y", "5Y", "5.5Y", "6Y", "6.5Y", "7Y"] },
   ps_kids: { label: "PS Kids", sizes: ["10.5C", "11C", "11.5C", "12C", "12.5C", "13C", "13.5C", "1Y", "1.5Y", "2Y", "2.5Y", "3Y"] },
   td_toddler: { label: "TD Toddler", sizes: ["2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "10C"] },
-  eu: { label: "EU", sizes: ["36", "36.5", "37.5", "38", "38.5", "39", "40", "40.5", "41", "42", "42.5", "43", "44", "44.5", "45", "46"] },
+  eu: { label: "EU", sizes: ["EU 36", "EU 37", "EU 38", "EU 39", "EU 40", "EU 41", "EU 42", "EU 43", "EU 44", "EU 45", "EU 46", "EU 47"] },
 };
 
-// Shoe type options
-const SHOE_TYPES = [
-  { value: "adult", label: "Adult / 成人" },
-  { value: "womens", label: "Women's / 女裝" },
-  { value: "grade_school", label: "Grade School / 大童" },
-  { value: "preschool", label: "Preschool / 中童" },
-  { value: "toddler", label: "Toddler / 幼童" },
+// Category options (dropdown)
+const CATEGORIES = [
+  "Air Jordan",
+  "Dunk/SB",
+  "Air Max",
+  "Air Force",
+  "Running",
+  "Basketball",
+  "Lifestyle",
+  "Training",
+  "Sandals",
 ];
 
-// Promotion badges options
+// Shoe type options (dropdown)
+const SHOE_TYPES = [
+  { value: "adult", label: "男裝" },
+  { value: "womens", label: "女裝" },
+  { value: "grade_school", label: "GS 大童" },
+  { value: "preschool", label: "PS 小童" },
+  { value: "toddler", label: "TD 幼童" },
+];
+
+// Promotion badges options (checkbox pills)
 const PROMOTION_BADGES = [
   { value: "店長推介", label: "店長推介" },
   { value: "今期熱賣", label: "今期熱賣" },
@@ -65,14 +78,22 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [featured, setFeatured] = useState((product as any)?.featured ?? false);
   // shoeType
   const [shoeType, setShoeType] = useState((product as any)?.shoeType || "");
-  // Size system as table
+  // Size system
   const [sizeSystem, setSizeSystem] = useState((product as any)?.sizeSystem || "");
-  const [sizes, setSizes] = useState(
-    (product as any)?.sizes && Array.isArray((product as any).sizes)
-      ? ((product as any).sizes as string[]).join(", ")
-      : ""
-  );
-  const [stock, setStock] = useState((product as any)?.stock?.toString() || "0");
+
+  // Size inventory: { "US 7": 5, "US 8": 10, ... }
+  const [sizeInventory, setSizeInventory] = useState<Record<string, number>>(() => {
+    const existingSizes = (product as any)?.sizes;
+    if (existingSizes && typeof existingSizes === "object" && !Array.isArray(existingSizes)) {
+      return existingSizes as Record<string, number>;
+    }
+    return {};
+  });
+
+  // Custom sizes added by user
+  const [customSizes, setCustomSizes] = useState<string[]>([]);
+  const [newCustomSize, setNewCustomSize] = useState("");
+
   // Promotion badges as checkboxes
   const [promotionBadges, setPromotionBadges] = useState<string[]>(
     (product as any)?.promotionBadges && Array.isArray((product as any).promotionBadges)
@@ -81,6 +102,9 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   );
   // Drag state for image reordering
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  // Calculate total stock from size inventory
+  const totalStock = Object.values(sizeInventory).reduce((sum, qty) => sum + qty, 0);
 
   // Close on backdrop click
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -139,6 +163,49 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     }
   };
 
+  // Size inventory handlers
+  const handleSizeCheck = (size: string, checked: boolean) => {
+    if (checked) {
+      setSizeInventory((prev) => ({ ...prev, [size]: prev[size] || 0 }));
+    } else {
+      setSizeInventory((prev) => {
+        const next = { ...prev };
+        delete next[size];
+        return next;
+      });
+    }
+  };
+
+  const handleSizeStockChange = (size: string, stock: number) => {
+    setSizeInventory((prev) => ({ ...prev, [size]: Math.max(0, stock) }));
+  };
+
+  const handleAddCustomSize = () => {
+    if (newCustomSize.trim() && !customSizes.includes(newCustomSize.trim())) {
+      setCustomSizes([...customSizes, newCustomSize.trim()]);
+      setNewCustomSize("");
+    }
+  };
+
+  const handleRemoveCustomSize = (size: string) => {
+    setCustomSizes(customSizes.filter((s) => s !== size));
+    setSizeInventory((prev) => {
+      const next = { ...prev };
+      delete next[size];
+      return next;
+    });
+  };
+
+  // When size system changes, reset inventory to new system's sizes
+  const handleSizeSystemChange = (newSystem: string) => {
+    setSizeSystem(newSystem);
+    if (!newSystem) {
+      setSizeInventory({});
+      setCustomSizes([]);
+    }
+    // Don't auto-populate - let user select sizes they want
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -169,14 +236,23 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       return;
     }
 
-    const stockNum = Number(stock);
-    if (!Number.isInteger(stockNum) || stockNum < 0) {
-      setError({ code: "VALIDATION_ERROR", message: "Stock must be a non-negative integer" });
+    if (!category) {
+      setError({ code: "VALIDATION_ERROR", message: "Category is required" });
       return;
     }
 
-    // Parse sizes array
-    const sizesArray = sizes.trim() ? sizes.split(",").map((s) => s.trim()).filter(Boolean) : [];
+    if (!shoeType) {
+      setError({ code: "VALIDATION_ERROR", message: "Shoe Type is required" });
+      return;
+    }
+
+    // Filter size inventory to only include sizes with stock > 0
+    const filteredSizeInventory: Record<string, number> = {};
+    Object.entries(sizeInventory).forEach(([size, stock]) => {
+      if (stock > 0) {
+        filteredSizeInventory[size] = stock;
+      }
+    });
 
     startTransition(async () => {
       let result;
@@ -187,13 +263,13 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         originalPrice: originalPriceNum,
         imageUrl: imageUrl.trim() || null,
         images: images.length > 0 ? images : undefined,
-        category: category.trim() || null,
+        category: category || null,
         active,
         featured,
         shoeType: shoeType || null,
-        sizeSystem: sizeSystem.trim() || null,
-        sizes: sizesArray.length > 0 ? sizesArray : null,
-        stock: stockNum,
+        sizeSystem: sizeSystem || null,
+        sizes: Object.keys(filteredSizeInventory).length > 0 ? filteredSizeInventory : null,
+        stock: totalStock,
         promotionBadges: promotionBadges.length > 0 ? promotionBadges : undefined,
       };
 
@@ -217,6 +293,10 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const originalPriceNum = parseFloat(originalPrice) || 0;
   const isOnSale = originalPriceNum > priceNum && priceNum > 0;
   const discountPercent = isOnSale ? Math.round((1 - priceNum / originalPriceNum) * 100) : 0;
+
+  // Get all available sizes (system sizes + custom sizes)
+  const systemSizes = sizeSystem ? SIZE_SYSTEMS[sizeSystem]?.sizes || [] : [];
+  const allAvailableSizes = [...systemSizes, ...customSizes];
 
   return (
     <div
@@ -423,32 +503,40 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               )}
             </div>
 
+            {/* Category Dropdown (FIX 4) */}
             <div>
               <label className="block text-zinc-700 text-sm font-medium mb-2">
-                Category <span className="text-zinc-400 font-normal">(silhouette)</span>
+                Category *
               </label>
-              <input
-                type="text"
+              <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 disabled={isPending}
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                placeholder="Air Jordan / Dunk / Air Max / Air Force"
-              />
+                required
+                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+              >
+                <option value="">-- 選擇類別 --</option>
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Shoe Type Dropdown */}
+            {/* Shoe Type Dropdown (FIX 5) */}
             <div>
               <label className="block text-zinc-700 text-sm font-medium mb-2">
-                鞋款類型 <span className="text-zinc-400 font-normal">(Shoe Type)</span>
+                鞋類 / Shoe Type *
               </label>
               <select
                 value={shoeType}
                 onChange={(e) => setShoeType(e.target.value)}
                 disabled={isPending}
+                required
                 className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               >
-                <option value="">-- Select shoe type --</option>
+                <option value="">-- 選擇鞋類 --</option>
                 {SHOE_TYPES.map((type) => (
                   <option key={type.value} value={type.value}>
                     {type.label}
@@ -457,21 +545,13 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               </select>
             </div>
 
-            {/* Size System as Table */}
+            {/* Size System Table (FIX 2) */}
             <div className="rounded-2xl border border-zinc-200 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <label className="block text-zinc-700 text-sm font-medium">尺碼系統</label>
                 <select
                   value={sizeSystem}
-                  onChange={(e) => {
-                    const next = e.target.value;
-                    setSizeSystem(next);
-                    if (!next) {
-                      setSizes("");
-                    } else {
-                      setSizes(SIZE_SYSTEMS[next]?.sizes.join(", ") || "");
-                    }
-                  }}
+                  onChange={(e) => handleSizeSystemChange(e.target.value)}
                   disabled={isPending}
                   className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                 >
@@ -486,35 +566,55 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
               {sizeSystem && (
                 <>
-                  {/* Size table */}
-                  <div className="overflow-x-auto">
+                  {/* Size inventory table */}
+                  <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
                     <table className="w-full text-sm">
-                      <thead>
+                      <thead className="sticky top-0 bg-white">
                         <tr className="text-zinc-500 border-b border-zinc-200">
-                          <th className="py-2 text-left font-medium">{SIZE_SYSTEMS[sizeSystem]?.label || "Size"}</th>
-                          <th className="py-2 text-center font-medium w-16">有貨</th>
+                          <th className="py-2 text-center font-medium w-12">✓</th>
+                          <th className="py-2 text-left font-medium">Size</th>
+                          <th className="py-2 text-right font-medium w-24">Stock</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {SIZE_SYSTEMS[sizeSystem]?.sizes.map((size) => {
-                          const sizesArray = sizes.split(",").map((s) => s.trim()).filter(Boolean);
-                          const isSelected = sizesArray.includes(size);
+                        {allAvailableSizes.map((size) => {
+                          const isChecked = size in sizeInventory;
+                          const stock = sizeInventory[size] || 0;
+                          const isCustom = customSizes.includes(size);
                           return (
                             <tr key={size} className="border-b border-zinc-100">
-                              <td className="py-2 text-zinc-900">{size}</td>
                               <td className="py-2 text-center">
                                 <input
                                   type="checkbox"
-                                  checked={isSelected}
-                                  onChange={() => {
-                                    if (isSelected) {
-                                      setSizes(sizesArray.filter((s) => s !== size).join(", "));
-                                    } else {
-                                      setSizes([...sizesArray, size].join(", "));
-                                    }
-                                  }}
+                                  checked={isChecked}
+                                  onChange={(e) => handleSizeCheck(size, e.target.checked)}
                                   disabled={isPending}
-                                  className="h-4 w-4 accent-olive-600 disabled:opacity-50"
+                                  className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50"
+                                />
+                              </td>
+                              <td className="py-2 text-zinc-900">
+                                <div className="flex items-center gap-2">
+                                  {size}
+                                  {isCustom && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveCustomSize(size)}
+                                      className="text-zinc-400 hover:text-red-500"
+                                    >
+                                      <X size={12} />
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-2 text-right">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={isChecked ? stock : ""}
+                                  onChange={(e) => handleSizeStockChange(size, parseInt(e.target.value) || 0)}
+                                  disabled={isPending || !isChecked}
+                                  className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50 disabled:bg-zinc-50"
+                                  placeholder="0"
                                 />
                               </td>
                             </tr>
@@ -524,27 +624,42 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     </table>
                   </div>
 
-                  <div className="text-xs text-zinc-400">
-                    已選: {sizes || "(none)"}
+                  {/* Add custom size */}
+                  <div className="flex gap-2 pt-2 border-t border-zinc-100">
+                    <input
+                      type="text"
+                      value={newCustomSize}
+                      onChange={(e) => setNewCustomSize(e.target.value)}
+                      disabled={isPending}
+                      className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                      placeholder="自訂尺碼 (e.g. US 14)"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddCustomSize();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustomSize}
+                      disabled={isPending || !newCustomSize.trim()}
+                      className="rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                    >
+                      ＋ 自訂尺碼
+                    </button>
+                  </div>
+
+                  {/* Total stock display */}
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                    <span className="text-sm text-zinc-600">總庫存:</span>
+                    <span className="text-lg font-semibold text-zinc-900">{totalStock}</span>
                   </div>
                 </>
               )}
             </div>
 
-            <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">Stock</label>
-              <input
-                type="number"
-                min="0"
-                value={stock}
-                onChange={(e) => setStock(e.target.value)}
-                disabled={isPending}
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                placeholder="0"
-              />
-            </div>
-
-            {/* Promotion Badges as Checkboxes */}
+            {/* Promotion Badges as Checkboxes (FIX 3) */}
             <div>
               <label className="block text-zinc-700 text-sm font-medium mb-2">推廣標籤</label>
               <div className="flex flex-wrap gap-2">
@@ -556,10 +671,10 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       type="button"
                       onClick={() => togglePromotionBadge(badge.value)}
                       disabled={isPending}
-                      className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
+                      className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors border disabled:opacity-50 ${
                         isSelected
-                          ? "bg-red-500 text-white"
-                          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                          ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
+                          : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                       }`}
                     >
                       {badge.label}
@@ -567,6 +682,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                   );
                 })}
               </div>
+              <p className="text-xs text-zinc-400 mt-2">「快將售罄」會在庫存 ≤ 5 時自動顯示</p>
             </div>
 
             <div className="flex items-center gap-6">
@@ -577,7 +693,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                   checked={active}
                   onChange={(e) => setActive(e.target.checked)}
                   disabled={isPending}
-                  className="h-4 w-4 accent-olive-600 disabled:opacity-50"
+                  className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50"
                 />
                 <label htmlFor="active" className="text-zinc-700 text-sm">
                   Active (visible to customers)
@@ -615,7 +731,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               type="submit"
               form="product-form"
               disabled={isPending}
-              className="flex-1 rounded-2xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700 disabled:opacity-50"
+              className="flex-1 rounded-2xl bg-[#6B7A2F] px-4 py-3 text-sm text-white font-semibold hover:bg-[#5a6827] disabled:opacity-50"
             >
               {isPending ? "Saving..." : product ? "Update" : "Create"}
             </button>

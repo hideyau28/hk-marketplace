@@ -108,8 +108,8 @@ export async function createProduct(
     active?: boolean;
     featured?: boolean;
     shoeType?: string | null;
-    sizeSystem?: string;
-    sizes?: string[];
+    sizeSystem?: string | null;
+    sizes?: Record<string, number> | null;
     stock?: number;
     promotionBadges?: string[];
   },
@@ -170,7 +170,7 @@ export async function updateProduct(
     featured?: boolean;
     shoeType?: string | null;
     sizeSystem?: string | null;
-    sizes?: string[] | null;
+    sizes?: Record<string, number> | null;
     stock?: number;
     promotionBadges?: string[];
   },
