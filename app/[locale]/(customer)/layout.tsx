@@ -42,9 +42,12 @@ export default async function CustomerLayout({
     take: 50,
   }).catch(() => []);
 
+  // Get store name with fallback
+  const storeName = storeSettings?.storeName || "HK•Market";
+
   const welcomePopupConfig = {
     enabled: storeSettings?.welcomePopupEnabled ?? true,
-    title: storeSettings?.welcomePopupTitle || "歡迎來到 HK•Market",
+    title: storeSettings?.welcomePopupTitle || `歡迎來到 ${storeName}`,
     subtitle: storeSettings?.welcomePopupSubtitle || "探索最新波鞋及運動裝備，正品保證！",
     promoText: storeSettings?.welcomePopupPromoText || "🎉 訂單滿 $600 免運費！",
     buttonText: storeSettings?.welcomePopupButtonText || "開始購物",
@@ -56,10 +59,10 @@ export default async function CustomerLayout({
         <FilterProvider>
           <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
             <Analytics />
-            <TopNav locale={l} t={t} />
+            <TopNav locale={l} t={t} storeName={storeName} />
             <CategoryNavWrapper locale={l} />
             <main>{children}</main>
-            <Footer locale={l} t={t} />
+            <Footer locale={l} t={t} storeName={storeName} />
             <BottomTab t={t} />
             <WelcomePopup config={welcomePopupConfig} />
             <SocialProofPopup products={socialProofProducts} />

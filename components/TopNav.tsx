@@ -18,7 +18,7 @@ function swapLocale(pathname: string, nextLocale: Locale) {
   return "/" + parts.join("/");
 }
 
-export default function TopNav({ locale, t }: { locale: Locale; t: Translations }) {
+export default function TopNav({ locale, t, storeName = "HK•Market" }: { locale: Locale; t: Translations; storeName?: string }) {
   const pathname = usePathname() || `/${locale}`;
   const router = useRouter();
   const [cartCount, setCartCount] = useState(0);
@@ -62,7 +62,7 @@ export default function TopNav({ locale, t }: { locale: Locale; t: Translations 
             href={`/${locale}`}
             className="text-base font-bold tracking-wide text-zinc-900 dark:text-zinc-100"
           >
-            HK•Market
+            {storeName}
           </Link>
 
           {/* Desktop search bar */}
@@ -120,7 +120,7 @@ export default function TopNav({ locale, t }: { locale: Locale; t: Translations 
 
           {/* Cart - always visible */}
           <Link
-            className="relative flex items-center gap-1 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            className="relative flex items-center gap-1 text-[#6B7A2F] hover:text-[#5a6827] dark:text-[#8fa03d] dark:hover:text-[#a0b44a]"
             href={`/${locale}/cart`}
           >
             <ShoppingCart size={20} />

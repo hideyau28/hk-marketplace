@@ -83,7 +83,7 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
             onClick={() => handlePillClick("hot")}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 ${
               filters.hot
-                ? "bg-orange-500 text-white"
+                ? "bg-[#6B7A2F] text-white"
                 : "bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30"
             }`}
           >
@@ -95,7 +95,7 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
             onClick={() => handlePillClick("sale")}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 ${
               filters.sale
-                ? "bg-red-500 text-white"
+                ? "bg-[#6B7A2F] text-white"
                 : "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30"
             }`}
           >
@@ -107,7 +107,7 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
             onClick={() => handlePillClick("shoeType", "adult")}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 ${
               filters.shoeType === "adult"
-                ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
+                ? "bg-[#6B7A2F] text-white"
                 : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
@@ -119,7 +119,7 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
             onClick={() => handlePillClick("shoeType", "womens")}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 ${
               filters.shoeType === "womens"
-                ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
+                ? "bg-[#6B7A2F] text-white"
                 : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
@@ -131,7 +131,7 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
             onClick={() => handlePillClick("shoeType", "kids")}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 ${
               filters.shoeType === "kids"
-                ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
+                ? "bg-[#6B7A2F] text-white"
                 : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >

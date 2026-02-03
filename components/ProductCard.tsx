@@ -240,7 +240,7 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
         {showCartIcon && selectedSize && (
           <button
             onClick={handleAddToCart}
-            className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-lg hover:bg-zinc-800 transition-all animate-fade-in z-10"
+            className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-[#6B7A2F] text-white flex items-center justify-center shadow-lg hover:bg-[#5a6827] transition-all animate-fade-in z-10"
             aria-label="Add to cart"
           >
             <CartIcon />

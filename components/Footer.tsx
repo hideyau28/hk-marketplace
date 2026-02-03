@@ -3,14 +3,14 @@ import type { Locale } from "@/lib/i18n";
 import type { Translations } from "@/lib/translations";
 import { Instagram, Facebook } from "lucide-react";
 
-export default function Footer({ locale, t }: { locale: Locale; t: Translations }) {
+export default function Footer({ locale, t, storeName = "HK•Market" }: { locale: Locale; t: Translations; storeName?: string }) {
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-zinc-900 text-zinc-100 pb-24 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="px-6 py-8 text-center">
         {/* Brand */}
-        <h3 className="text-lg font-bold mb-3">HK•Market</h3>
+        <h3 className="text-lg font-bold mb-3">{storeName}</h3>
 
         {/* Links - Single line with · separator */}
         <div className="flex justify-center items-center gap-1 mb-4 text-[11px]">
@@ -78,7 +78,7 @@ export default function Footer({ locale, t }: { locale: Locale; t: Translations 
 
         {/* Copyright */}
         <p className="text-zinc-500 text-xs">
-          © {currentYear} HK•Market. {t.footer.rights}
+          © {currentYear} {storeName}. {t.footer.rights}
         </p>
       </div>
     </footer>
