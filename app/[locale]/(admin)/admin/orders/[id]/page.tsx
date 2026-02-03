@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import OrderStatusUpdate from "./order-status-update";
+import PaymentActions from "./payment-actions";
 import type { Locale } from "@/lib/i18n";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 
@@ -201,6 +202,18 @@ export default async function OrderDetailPage({ params }: PageProps) {
           ))}
         </div>
       </div>
+
+      {/* Local Payment (FPS/PayMe/Alipay) */}
+      {order.paymentMethod && (
+        <div className="mt-6">
+          <PaymentActions
+            orderId={order.id}
+            paymentMethod={order.paymentMethod}
+            paymentStatus={order.paymentStatus}
+            paymentProof={order.paymentProof}
+          />
+        </div>
+      )}
 
       {/* Payment Attempts */}
       {order.paymentAttempts.length > 0 && (

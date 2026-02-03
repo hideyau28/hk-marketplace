@@ -103,6 +103,9 @@ type CreateOrderPayload = {
         };
     };
     note?: string | null;
+    // Local payment fields (FPS/PayMe/Alipay)
+    paymentMethod?: string | null;
+    paymentProof?: string | null;
 };
 
 function assertNonEmptyString(value: unknown, field: string) {
@@ -204,6 +207,8 @@ function parseCreatePayload(body: any): CreateOrderPayload {
         },
         fulfillment: body.fulfillment,
         note: typeof body.note === "string" && body.note.trim().length > 0 ? body.note.trim() : undefined,
+        paymentMethod: typeof body.paymentMethod === "string" && body.paymentMethod.trim().length > 0 ? body.paymentMethod.trim() : undefined,
+        paymentProof: typeof body.paymentProof === "string" && body.paymentProof.trim().length > 0 ? body.paymentProof.trim() : undefined,
     };
 }
 
@@ -358,6 +363,10 @@ export const POST = withApi(async (req) => {
 
     const orderNumber = await generateOrderNumber();
 
+    // Determine payment status based on whether proof is uploaded
+    const hasPaymentProof = !!payload.paymentProof;
+    const paymentStatus = hasPaymentProof ? "uploaded" : "pending";
+
     const order = await prisma.order.create({
         data: {
             orderNumber,
@@ -371,6 +380,9 @@ export const POST = withApi(async (req) => {
                 payload.fulfillment.type === "delivery" ? (payload.fulfillment.address ?? undefined) : undefined,
             status: "PENDING",
             note: payload.note ?? null,
+            paymentMethod: payload.paymentMethod ?? null,
+            paymentProof: payload.paymentProof ?? null,
+            paymentStatus,
         },
     });
 

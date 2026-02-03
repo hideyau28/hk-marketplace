@@ -71,6 +71,10 @@ model Order {
   refundedAt              DateTime?
   shippedAt               DateTime?
   paymentAttempts         PaymentAttempt[]
+  // Local payment fields (FPS/PayMe/Alipay)
+  paymentMethod           String?          // "fps", "payme", "alipay"
+  paymentProof            String?          // uploaded image URL/path
+  paymentStatus           String           @default("pending") // pending, uploaded, confirmed, rejected
 
   @@index([status])
   @@index([createdAt])
@@ -78,6 +82,7 @@ model Order {
   @@index([stripePaymentIntentId])
   @@index([phone])
   @@index([orderNumber])
+  @@index([paymentStatus])
 }
 
 model PaymentAttempt {
@@ -217,4 +222,51 @@ enum PaymentAttemptStatus {
 enum CouponDiscountType {
   PERCENTAGE
   FIXED
+}
+
+model HomepageSection {
+  id          String   @id @default(cuid())
+  title       String
+  type        String
+  cardSize    String   @default("small")
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  productIds  String[]
+  filterType  String?
+  filterValue String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([active])
+}
+
+model HomepageBanner {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  title     String?
+  subtitle  String?
+  linkUrl   String?
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  position  String   @default("hero")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([position, sortOrder])
+  @@index([active])
+}
+
+model PaymentMethod {
+  id          String   @id @default(cuid())
+  name        String   // "FPS 轉數快", "PayMe", "Alipay HK"
+  type        String   @unique // "fps", "payme", "alipay"
+  qrImage     String?  // URL to QR code image
+  accountInfo String?  // e.g. FPS ID, phone number
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active, sortOrder])
 }

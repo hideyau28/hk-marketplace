@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useParams, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Settings, LogOut, X, ScrollText, Ticket } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Settings, LogOut, X, ScrollText, Ticket, CreditCard } from "lucide-react";
 import { useSidebar } from "@/components/admin/SidebarContext";
 import { getDict, type Locale } from "@/lib/i18n";
 
@@ -18,6 +18,7 @@ export default function AdminSidebar() {
     { href: "/admin", label: t.admin.sidebar.dashboard, icon: LayoutDashboard },
     { href: "/admin/products", label: t.admin.sidebar.products, icon: Package },
     { href: "/admin/orders", label: t.admin.sidebar.orders, icon: ShoppingCart },
+    { href: "/admin/payments", label: "付款方式", icon: CreditCard },
     { href: "/admin/coupons", label: t.admin.sidebar.coupons, icon: Ticket },
     { href: "/admin/logs", label: t.admin.sidebar.logs, icon: ScrollText },
     { href: "/admin/settings", label: t.admin.sidebar.settings, icon: Settings },
