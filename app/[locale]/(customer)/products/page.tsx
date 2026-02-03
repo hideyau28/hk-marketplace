@@ -137,10 +137,6 @@ export default function ProductsPage() {
 
   return (
     <div className="px-4 py-6 pb-28">
-      {/* TEMPORARY DEBUG BAR */}
-      <div className="bg-yellow-200 p-2 text-xs fixed top-0 left-0 right-0 z-[9999]">
-        DEBUG: Filters={JSON.stringify(filters)} | Total={allProducts.length} | Shown={filteredProducts.length}
-      </div>
       <div className="mx-auto max-w-6xl">
         <div className="flex items-baseline justify-between mb-4">
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
