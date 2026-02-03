@@ -45,11 +45,20 @@ const PRICE_RANGES = [
   { label: "$1200+", min: 1200, max: null },
 ];
 
-// ShoeType mapping
+// ShoeType mapping - key is internal name, value is URL param values
 const SHOE_TYPE_MAP: Record<string, string[]> = {
   adult: ["adult"],
   womens: ["womens"],
   kids: ["grade_school", "preschool", "toddler"],
+};
+
+// Reverse mapping: URL param value to internal key
+const SHOE_TYPE_REVERSE_MAP: Record<string, string> = {
+  adult: "adult",
+  womens: "womens",
+  grade_school: "kids",
+  preschool: "kids",
+  toddler: "kids",
 };
 
 export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelProps) {
@@ -66,6 +75,58 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
 
   const isZh = locale === "zh-HK";
   const isSearchPage = pathname?.includes("/search");
+
+  // Initialize filter state from URL params when panel opens
+  useEffect(() => {
+    if (isOpen && searchParams) {
+      // Read shoeType from URL
+      const shoeTypeParam = searchParams.get("shoeType");
+      if (shoeTypeParam) {
+        const types = shoeTypeParam.split(",");
+        // Use first type to determine the category
+        const firstType = types[0];
+        const internalKey = SHOE_TYPE_REVERSE_MAP[firstType];
+        if (internalKey) {
+          setSelectedShoeType(internalKey);
+        }
+      } else {
+        setSelectedShoeType(null);
+      }
+
+      // Read category from URL
+      const categoryParam = searchParams.get("category");
+      if (categoryParam) {
+        setSelectedCategories(categoryParam.split(",").filter(Boolean));
+      } else {
+        setSelectedCategories([]);
+      }
+
+      // Read price range from URL
+      const minPriceParam = searchParams.get("minPrice");
+      const maxPriceParam = searchParams.get("maxPrice");
+      if (minPriceParam) {
+        const min = parseFloat(minPriceParam);
+        const max = maxPriceParam ? parseFloat(maxPriceParam) : null;
+        // Match to predefined range
+        const matchedRange = PRICE_RANGES.find(r => r.min === min && r.max === max);
+        if (matchedRange) {
+          setSelectedPriceRange({ min: matchedRange.min, max: matchedRange.max });
+        } else {
+          setSelectedPriceRange({ min, max });
+        }
+      } else {
+        setSelectedPriceRange(null);
+      }
+
+      // Read sizes from URL
+      const sizesParam = searchParams.get("sizes");
+      if (sizesParam) {
+        setSelectedSizes(sizesParam.split(",").filter(Boolean));
+      } else {
+        setSelectedSizes([]);
+      }
+    }
+  }, [isOpen, searchParams]);
 
   // Fetch filter options on mount
   useEffect(() => {
@@ -357,12 +418,17 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
           >
             {t.reset}
           </button>
-          <button
-            onClick={applyFilters}
-            className="bg-olive-600 text-white rounded-full px-6 py-2 text-sm font-medium hover:bg-olive-700 transition-colors"
-          >
-            {t.showResults.replace("{count}", String(count))}
-          </button>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-zinc-500">
+              {count} {isZh ? "件產品" : "products"}
+            </span>
+            <button
+              onClick={applyFilters}
+              className="bg-olive-600 text-white rounded-full px-6 py-2 text-sm font-medium hover:bg-olive-700 transition-colors"
+            >
+              {isZh ? "套用" : "Apply"}
+            </button>
+          </div>
         </div>
       </div>
     </>

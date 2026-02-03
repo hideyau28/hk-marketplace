@@ -50,10 +50,8 @@ export default async function ProductsPage({
     const types = shoeType.split(",").map((t) => t.trim()).filter(Boolean);
     if (types.length > 1) {
       where.shoeType = { in: types };
-    } else if (shoeType === "kids") {
-      where.shoeType = { in: ["grade_school", "preschool", "toddler"] };
     } else {
-      where.shoeType = shoeType;
+      where.shoeType = types[0];
     }
   }
 
@@ -102,10 +100,18 @@ export default async function ProductsPage({
   const shoeTypeLabels: Record<string, string> = {
     adult: l === "zh-HK" ? "男裝" : "Men",
     womens: l === "zh-HK" ? "女裝" : "Women",
-    kids: l === "zh-HK" ? "童裝" : "Kids",
+    grade_school: l === "zh-HK" ? "童裝" : "Kids",
+    preschool: l === "zh-HK" ? "童裝" : "Kids",
+    toddler: l === "zh-HK" ? "童裝" : "Kids",
   };
   const categoryLabel = category || "";
-  const typeLabel = shoeType ? shoeTypeLabels[shoeType] || shoeType : "";
+  // Handle shoeType which might be comma-separated
+  let typeLabel = "";
+  if (shoeType) {
+    const types = shoeType.split(",");
+    const firstType = types[0].trim();
+    typeLabel = shoeTypeLabels[firstType] || firstType;
+  }
   const pageTitle = [typeLabel, categoryLabel].filter(Boolean).join(" · ") || (l === "zh-HK" ? "所有產品" : "All Products");
 
   return (
