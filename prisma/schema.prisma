@@ -218,3 +218,36 @@ enum CouponDiscountType {
   PERCENTAGE
   FIXED
 }
+
+model HomepageSection {
+  id          String   @id @default(cuid())
+  title       String   // e.g. "為你推薦", "Air Jordan"
+  type        String   // "product_grid", "banner"
+  cardSize    String   @default("small") // "small" or "large"
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  productIds  String[] // manually selected product IDs (for product_grid)
+  filterType  String?  // alternative: auto-filter by shoeType/category
+  filterValue String?  // e.g. "adult", "Air Jordan"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([active])
+}
+
+model HomepageBanner {
+  id        String   @id @default(cuid())
+  imageUrl  String   // banner image URL
+  title     String?  // overlay text
+  subtitle  String?  // overlay subtitle
+  linkUrl   String?  // click destination (optional, no button)
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  position  String   @default("hero") // "hero" = top carousel, "mid" = mid-page
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([position, sortOrder])
+  @@index([active])
+}
