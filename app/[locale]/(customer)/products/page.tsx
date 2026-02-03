@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import ProductCard from "@/components/ProductCard";
-import { useFilters } from "@/lib/filter-context";
+import { useFilters, type CategoryFilter } from "@/lib/filter-context";
 
 type Product = {
   id: string;
@@ -18,7 +18,37 @@ type Product = {
   promotionBadges: string[] | null;
   sizes: Record<string, number> | null;
   shoeType: string | null;
+  category: string | null;
 };
+
+// Match category filter to product.category using contains/startsWith logic
+function matchesCategory(productCategory: string | null, filter: CategoryFilter): boolean {
+  if (!filter || !productCategory) return !filter; // null filter = match all
+  const cat = productCategory.toLowerCase();
+
+  switch (filter) {
+    case "Air Jordan":
+      return cat.includes("air jordan") || cat.includes("jordan");
+    case "Dunk/SB":
+      return cat.includes("dunk") || cat.includes("sb ");
+    case "Air Max":
+      return cat.includes("air max");
+    case "Air Force":
+      return cat.includes("air force");
+    case "Running":
+      return cat.includes("running");
+    case "Basketball":
+      return cat.includes("basketball");
+    case "Lifestyle":
+      return cat.includes("lifestyle");
+    case "Training":
+      return cat.includes("training");
+    case "Sandals":
+      return cat.includes("sandal");
+    default:
+      return true;
+  }
+}
 
 export default function ProductsPage() {
   const params = useParams();
@@ -26,7 +56,7 @@ export default function ProductsPage() {
   const isZh = locale === "zh-HK";
 
   const filterContext = useFilters();
-  const filters = filterContext?.filters || { shoeType: null, hot: false, sale: false };
+  const filters = filterContext?.filters || { shoeType: null, hot: false, sale: false, category: null };
 
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +91,11 @@ export default function ProductsPage() {
       );
     }
 
+    // Category filter
+    if (filters.category) {
+      result = result.filter((p) => matchesCategory(p.category, filters.category));
+    }
+
     // Hot filter (今期熱賣)
     if (filters.hot) {
       result = result.filter((p) =>
@@ -88,6 +123,10 @@ export default function ProductsPage() {
       parts.push(isZh ? "女裝" : "Women");
     } else if (filters.shoeType === "kids") {
       parts.push(isZh ? "童裝" : "Kids");
+    }
+
+    if (filters.category) {
+      parts.push(filters.category);
     }
 
     if (filters.hot) {

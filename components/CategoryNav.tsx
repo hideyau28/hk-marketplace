@@ -2,11 +2,24 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
-import { useFilters } from "@/lib/filter-context";
+import { useFilters, type CategoryFilter } from "@/lib/filter-context";
 
 type CategoryNavProps = {
   locale: Locale;
 };
+
+const CATEGORIES: { key: CategoryFilter; label: string; labelEn: string }[] = [
+  { key: null, label: "全部", labelEn: "All" },
+  { key: "Air Jordan", label: "Air Jordan", labelEn: "Air Jordan" },
+  { key: "Dunk/SB", label: "Dunk/SB", labelEn: "Dunk/SB" },
+  { key: "Air Max", label: "Air Max", labelEn: "Air Max" },
+  { key: "Air Force", label: "Air Force", labelEn: "Air Force" },
+  { key: "Running", label: "Running", labelEn: "Running" },
+  { key: "Basketball", label: "Basketball", labelEn: "Basketball" },
+  { key: "Lifestyle", label: "Lifestyle", labelEn: "Lifestyle" },
+  { key: "Training", label: "Training", labelEn: "Training" },
+  { key: "Sandals", label: "Sandals", labelEn: "Sandals" },
+];
 
 export default function CategoryNav({ locale }: CategoryNavProps) {
   const router = useRouter();
@@ -18,9 +31,9 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
   const isProductsPage = pathname?.startsWith(`/${locale}/products`);
 
   // Get current filter state (or defaults if no context)
-  const filters = filterContext?.filters || { shoeType: null, hot: false, sale: false };
+  const filters = filterContext?.filters || { shoeType: null, hot: false, sale: false, category: null };
 
-  // Handle pill click
+  // Handle main pill click (hot/sale/shoeType)
   const handlePillClick = (type: "hot" | "sale" | "shoeType", value?: "adult" | "womens" | "kids") => {
     if (isProductsPage && filterContext) {
       // On products page: update context state directly
@@ -33,15 +46,28 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
       }
     } else {
       // On homepage: navigate to products page (filter will be applied there)
-      // We set initial filter state then navigate
       if (filterContext) {
         if (type === "hot") {
-          filterContext.setFilters({ shoeType: null, hot: true, sale: false });
+          filterContext.setFilters({ shoeType: null, hot: true, sale: false, category: null });
         } else if (type === "sale") {
-          filterContext.setFilters({ shoeType: null, hot: false, sale: true });
+          filterContext.setFilters({ shoeType: null, hot: false, sale: true, category: null });
         } else if (type === "shoeType" && value) {
-          filterContext.setFilters({ shoeType: value, hot: false, sale: false });
+          filterContext.setFilters({ shoeType: value, hot: false, sale: false, category: null });
         }
+      }
+      router.push(`/${locale}/products`);
+    }
+  };
+
+  // Handle category pill click
+  const handleCategoryClick = (category: CategoryFilter) => {
+    if (isProductsPage && filterContext) {
+      // On products page: update context state directly
+      filterContext.toggleCategory(category);
+    } else {
+      // On homepage: navigate to products page with category
+      if (filterContext) {
+        filterContext.setFilters({ shoeType: null, hot: false, sale: false, category });
       }
       router.push(`/${locale}/products`);
     }
@@ -50,6 +76,7 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
   return (
     <div className="sticky top-[57px] z-40 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
       <div className="mx-auto max-w-6xl px-4 py-2.5">
+        {/* Main filter pills row */}
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
           {/* 熱賣 Hot pill */}
           <button
@@ -110,6 +137,26 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
           >
             {isZh ? "童裝" : "Kids"}
           </button>
+        </div>
+
+        {/* Category pills row */}
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide mt-2 -mx-4 px-4">
+          {CATEGORIES.map((cat) => {
+            const isActive = filters.category === cat.key;
+            return (
+              <button
+                key={cat.key || "all"}
+                onClick={() => handleCategoryClick(cat.key)}
+                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors shrink-0 ${
+                  isActive
+                    ? "bg-olive-600 text-white"
+                    : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                }`}
+              >
+                {isZh ? cat.label : cat.labelEn}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
