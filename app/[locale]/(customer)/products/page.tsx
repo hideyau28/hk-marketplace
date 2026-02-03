@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import ProductCard from "@/components/ProductCard";
 import { useFilters, type CategoryFilter } from "@/lib/filter-context";
@@ -52,14 +52,67 @@ function matchesCategory(productCategory: string | null, filter: CategoryFilter)
 
 export default function ProductsPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = (params?.locale as Locale) || "zh-HK";
   const isZh = locale === "zh-HK";
 
   const filterContext = useFilters();
   const filters = filterContext?.filters || { shoeType: null, hot: false, sale: false, category: null };
+  const setFilters = filterContext?.setFilters;
 
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialFiltersApplied, setInitialFiltersApplied] = useState(false);
+
+  // Apply URL params as initial filters
+  useEffect(() => {
+    if (!setFilters || initialFiltersApplied) return;
+
+    const urlCategory = searchParams?.get("category");
+    const urlShoeType = searchParams?.get("shoeType");
+    const urlSale = searchParams?.get("sale");
+    const urlHot = searchParams?.get("hot");
+
+    // Map URL category to filter category
+    let category: CategoryFilter = null;
+    if (urlCategory) {
+      const categoryMap: Record<string, CategoryFilter> = {
+        "Air Jordan": "Air Jordan",
+        "Dunk / SB": "Dunk/SB",
+        "Dunk/SB": "Dunk/SB",
+        "Air Max": "Air Max",
+        "Air Force": "Air Force",
+        "Running": "Running",
+        "Basketball": "Basketball",
+        "Lifestyle": "Lifestyle",
+        "Training": "Training",
+        "Sandals": "Sandals",
+      };
+      category = categoryMap[urlCategory] || null;
+    }
+
+    // Map URL shoeType to filter shoeType
+    let shoeType: "adult" | "womens" | "kids" | null = null;
+    if (urlShoeType) {
+      if (urlShoeType.includes("grade_school") || urlShoeType.includes("preschool") || urlShoeType.includes("toddler") || urlShoeType === "kids") {
+        shoeType = "kids";
+      } else if (urlShoeType === "womens") {
+        shoeType = "womens";
+      } else if (urlShoeType === "adult") {
+        shoeType = "adult";
+      }
+    }
+
+    const sale = urlSale === "true";
+    const hot = urlHot === "true";
+
+    // Only set filters if there are URL params
+    if (category || shoeType || sale || hot) {
+      setFilters({ category, shoeType, sale, hot });
+    }
+
+    setInitialFiltersApplied(true);
+  }, [searchParams, setFilters, initialFiltersApplied]);
 
   // Fetch all products on mount
   useEffect(() => {

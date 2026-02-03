@@ -15,6 +15,7 @@ type Product = {
   brand: string;
   title: string;
   price: number;
+  originalPrice?: number | null;
   image: string;
   sizes?: Record<string, number> | null;
   stock?: number;
@@ -40,6 +41,8 @@ function LargeCardItem({ product, locale, isFirst, isLast }: { product: Product;
       .filter(([, stock]) => stock > 0)
       .map(([size]) => size);
   }, [product.sizes]);
+
+  const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
 
   const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
@@ -73,7 +76,7 @@ function LargeCardItem({ product, locale, isFirst, isLast }: { product: Product;
   return (
     <div className={`group shrink-0 snap-start ${isFirst ? "ml-4" : ""} ${isLast ? "mr-4" : ""}`}>
       {/* Large card: 220px mobile, 280px desktop - all content inside card border */}
-      <div className="w-[220px] min-w-[220px] md:w-[280px] md:min-w-[280px] overflow-hidden rounded-xl bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
+      <div className={`w-[220px] min-w-[220px] md:w-[280px] md:min-w-[280px] overflow-hidden rounded-xl bg-white border shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 ${isOnSale ? "border-red-200 ring-1 ring-red-200 dark:border-red-900/50 dark:ring-red-900/50" : "border-zinc-200/50 dark:border-zinc-800"}`}>
         <Link href={`/${locale}/product/${product.id}`}>
           <div className="relative aspect-[4/5] overflow-hidden bg-zinc-50 dark:bg-zinc-800">
             <Image
@@ -108,9 +111,16 @@ function LargeCardItem({ product, locale, isFirst, isLast }: { product: Product;
           className="px-3 pb-3 flex items-center justify-between gap-1"
           onClick={(e) => e.stopPropagation()}
         >
-          <p className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-            {formatPrice(product.price)}
-          </p>
+          <div className="flex flex-col leading-tight">
+            {isOnSale ? (
+              <>
+                <span className="text-[10px] text-zinc-400 line-through">{formatPrice(product.originalPrice!)}</span>
+                <span className="text-base font-bold text-red-600">{formatPrice(product.price)}</span>
+              </>
+            ) : (
+              <span className="text-base font-bold text-zinc-900 dark:text-zinc-100">{formatPrice(product.price)}</span>
+            )}
+          </div>
           {availableSizes.length > 0 && (
             <div
               className="relative"
