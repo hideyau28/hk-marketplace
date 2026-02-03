@@ -25,6 +25,7 @@ function RecentCardItem({ product, locale, isFirst, isLast }: { product: Product
   const { format: formatPrice } = useCurrency();
   const { showToast } = useToast();
   const [selectedSize, setSelectedSize] = useState<string>("");
+  const [showCartIcon, setShowCartIcon] = useState(false);
 
   const availableSizes = useMemo(() => {
     if (!product.sizes || typeof product.sizes !== "object") return [];
@@ -36,41 +37,67 @@ function RecentCardItem({ product, locale, isFirst, isLast }: { product: Product
   const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setSelectedSize(e.target.value);
-    if (e.target.value) {
+    const size = e.target.value;
+    setSelectedSize(size);
+    if (size) {
+      setShowCartIcon(true);
+    } else {
+      setShowCartIcon(false);
+    }
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (selectedSize) {
       addToCart({
         productId: product.id,
-        title: `${product.title} - ${e.target.value}`,
+        title: `${product.title} - ${selectedSize}`,
         unitPrice: product.price,
         imageUrl: product.image,
-        size: e.target.value,
+        size: selectedSize,
       });
       showToast("✓ 已加入購物車");
       setSelectedSize("");
+      setShowCartIcon(false);
     }
   };
 
   return (
     <div className={`group shrink-0 snap-start flex flex-col ${isFirst ? "ml-4" : ""} ${isLast ? "mr-4" : ""}`}>
-      <Link href={`/${locale}/product/${product.id}`}>
-        <div className="w-[120px] overflow-hidden rounded-lg bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
-          <div className="relative aspect-square overflow-hidden">
-            <Image
-              src={product.image}
-              alt={product.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform"
-              sizes="120px"
-            />
-            <WishlistHeart productId={product.id} size="sm" />
+      <div className="relative w-[120px]">
+        <Link href={`/${locale}/product/${product.id}`}>
+          <div className="overflow-hidden rounded-lg bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
+            <div className="relative aspect-square overflow-hidden">
+              <Image
+                src={product.image}
+                alt={product.title}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform"
+                sizes="120px"
+              />
+              <WishlistHeart productId={product.id} size="sm" />
+            </div>
+            <div className="p-2 flex flex-col">
+              <h3 className="text-xs text-zinc-900 line-clamp-1 dark:text-zinc-100">
+                {product.title}
+              </h3>
+            </div>
           </div>
-          <div className="p-2 flex flex-col">
-            <h3 className="text-xs text-zinc-900 line-clamp-1 dark:text-zinc-100">
-              {product.title}
-            </h3>
-          </div>
-        </div>
-      </Link>
+        </Link>
+        {/* Cart icon - shows after size selection */}
+        {showCartIcon && selectedSize && (
+          <button
+            onClick={handleAddToCart}
+            className="absolute bottom-12 right-2 w-8 h-8 rounded-full bg-[#6B7A2F] text-white flex items-center justify-center shadow-md hover:bg-[#5a6827] transition-all z-10"
+            aria-label="Add to cart"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+            </svg>
+          </button>
+        )}
+      </div>
       {/* Price row with size dropdown - outside Link */}
       <div className="w-[120px] mt-0.5 px-2 flex items-center justify-between gap-1">
         <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">

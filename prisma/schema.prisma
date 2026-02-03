@@ -112,25 +112,26 @@ model PaymentAttempt {
 }
 
 model Product {
-  id            String   @id @default(cuid())
-  title         String
-  price         Float
-  imageUrl      String?
-  active        Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  badges        Json?
-  brand         String?
-  category      String?
-  sizeSystem    String?
-  sizes         Json?
-  stock         Int      @default(0)
-  originalPrice Float?
-  images        String[]
-  color         String?
-  shoeType      String?
-  sku           String?  @unique
-  featured      Boolean  @default(false)
+  id              String   @id @default(cuid())
+  title           String
+  price           Float
+  imageUrl        String?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  badges          Json?
+  brand           String?
+  category        String?
+  sizeSystem      String?
+  sizes           Json?
+  stock           Int      @default(0)
+  originalPrice   Float?
+  images          String[]
+  color           String?
+  shoeType        String?
+  sku             String?  @unique
+  featured        Boolean  @default(false)
+  promotionBadges String[] @default([])
 
   @@index([active])
   @@index([brand])

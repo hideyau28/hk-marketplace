@@ -157,6 +157,25 @@ export const PATCH = withApi(
       updateData.stock = body.stock;
     }
 
+    if (body.featured !== undefined) {
+      if (typeof body.featured !== "boolean") {
+        throw new ApiError(400, "BAD_REQUEST", "featured must be a boolean");
+      }
+      updateData.featured = body.featured;
+    }
+
+    if (body.promotionBadges !== undefined) {
+      if (!Array.isArray(body.promotionBadges)) {
+        throw new ApiError(400, "BAD_REQUEST", "promotionBadges must be an array");
+      }
+      // Validate all items are strings
+      const validBadges = body.promotionBadges.every((b: unknown) => typeof b === "string");
+      if (!validBadges) {
+        throw new ApiError(400, "BAD_REQUEST", "promotionBadges must contain only strings");
+      }
+      updateData.promotionBadges = body.promotionBadges;
+    }
+
     if (Object.keys(updateData).length === 0) {
       throw new ApiError(400, "BAD_REQUEST", "No valid fields to update");
     }

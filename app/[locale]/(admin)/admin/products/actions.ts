@@ -33,6 +33,9 @@ type UpdateProductResult = UpdateProductOk | ActionFail;
 type ToggleFeaturedOk = { ok: true };
 type ToggleFeaturedResult = ToggleFeaturedOk | ActionFail;
 
+type ToggleHotSellingOk = { ok: true };
+type ToggleHotSellingResult = ToggleHotSellingOk | ActionFail;
+
 function getApiBaseUrl() {
   // Server-side calls back into this same app.
   // Prefer an explicit base URL when deployed; fall back to local dev port 3012.
@@ -236,5 +239,57 @@ export async function toggleFeatured(
   } catch (error) {
     console.error("Failed to toggle featured:", error);
     return { ok: false, code: "NETWORK_ERROR", message: "Failed to toggle featured" };
+  }
+}
+
+export async function toggleHotSelling(
+  productId: string,
+  currentBadges: string[],
+  add: boolean
+): Promise<ToggleHotSellingResult> {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const HOT_SELLING_BADGE = "今期熱賣";
+
+  if (!adminSecret) {
+    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  }
+
+  try {
+    // Calculate new badges array
+    let newBadges: string[];
+    if (add) {
+      newBadges = currentBadges.includes(HOT_SELLING_BADGE)
+        ? currentBadges
+        : [...currentBadges, HOT_SELLING_BADGE];
+    } else {
+      newBadges = currentBadges.filter((b) => b !== HOT_SELLING_BADGE);
+    }
+
+    const url = new URL(`/api/admin/products/${productId}`, getApiBaseUrl());
+    const response = await fetch(url.toString(), {
+      method: "PATCH",
+      headers: {
+        "x-admin-secret": adminSecret,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ promotionBadges: newBadges }),
+    });
+
+    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Product>;
+
+    if (!response.ok) {
+      const errorData = json as ApiErrorResponse;
+      return {
+        ok: false,
+        code: errorData.error?.code || "UNKNOWN_ERROR",
+        message: errorData.error?.message || "Failed to toggle hot selling",
+      };
+    }
+
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (error) {
+    console.error("Failed to toggle hot selling:", error);
+    return { ok: false, code: "NETWORK_ERROR", message: "Failed to toggle hot selling" };
   }
 }

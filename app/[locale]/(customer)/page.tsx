@@ -37,19 +37,31 @@ function shuffleArray<T>(array: T[]): T[] {
 // Fetch products for a section based on filter or manual selection
 async function fetchSectionProducts(
   section: {
+    title: string;
     filterType: string | null;
     filterValue: string | null;
     productIds: string[];
   },
   allProducts: any[]
 ) {
+  const KIDS_SHOE_TYPES = ["grade_school", "preschool", "toddler"];
+  const isKidsSection = section.title === "童裝專區";
+
+  // Helper to filter by kids/adult
+  const filterByAgeGroup = (products: any[]) => {
+    if (isKidsSection) {
+      return products.filter((p) => KIDS_SHOE_TYPES.includes(p.shoeType || ""));
+    }
+    return products.filter((p) => !KIDS_SHOE_TYPES.includes(p.shoeType || ""));
+  };
+
   // Manual selection
   if (section.productIds && section.productIds.length > 0) {
     const productMap = new Map(allProducts.map((p) => [p.id, p]));
-    return section.productIds
+    const selected = section.productIds
       .map((id) => productMap.get(id))
-      .filter(Boolean)
-      .slice(0, 10);
+      .filter(Boolean);
+    return filterByAgeGroup(selected).slice(0, 10);
   }
 
   // Auto filter
@@ -62,25 +74,31 @@ async function fetchSectionProducts(
         break;
       case "shoeType":
         if (section.filterValue === "kids") {
+          // Kids section uses this filter value
           filtered = allProducts.filter((p) =>
-            ["grade_school", "preschool", "toddler"].includes(p.shoeType || "")
+            KIDS_SHOE_TYPES.includes(p.shoeType || "")
           );
+          // Return early - no need to filter again
+          return shuffleArray(filtered).slice(0, 10);
         } else {
           filtered = allProducts.filter((p) => p.shoeType === section.filterValue);
         }
         break;
       case "featured":
-        filtered = allProducts.filter(
-          (p) =>
-            p.featured &&
-            !["grade_school", "preschool", "toddler"].includes(p.shoeType || "")
+        filtered = allProducts.filter((p) => p.featured);
+        break;
+      case "promotion":
+        // Filter by promotion badge (e.g., "今期熱賣")
+        filtered = allProducts.filter((p) =>
+          p.promotionBadges?.includes(section.filterValue!)
         );
         break;
       default:
         filtered = allProducts;
     }
 
-    return shuffleArray(filtered).slice(0, 10);
+    // Apply kids/adult filter (except for shoeType=kids which already returned)
+    return shuffleArray(filterByAgeGroup(filtered)).slice(0, 10);
   }
 
   return [];
@@ -126,6 +144,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     stock: p.stock ?? 0,
     shoeType: p.shoeType || null,
     featured: p.featured || false,
+    promotionBadges: (p.promotionBadges as string[]) || [],
   }));
 
   // Format hero banners for carousel

@@ -7,8 +7,8 @@ import { getDict, type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
-import { Star } from "lucide-react";
-import { toggleFeatured } from "./actions";
+import { Star, Flame } from "lucide-react";
+import { toggleFeatured, toggleHotSelling } from "./actions";
 
 // Extended Product type to include promotionBadges and featured fields
 type ProductWithBadges = Product & {
@@ -95,6 +95,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
   const [isCreating, setIsCreating] = useState(false);
   const [isCsvOpen, setIsCsvOpen] = useState(false);
   const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
+  const [togglingHotSelling, setTogglingHotSelling] = useState<string | null>(null);
 
   const handleToggleFeatured = async (productId: string, currentFeatured: boolean) => {
     setTogglingFeatured(productId);
@@ -105,6 +106,18 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
       console.error("Failed to toggle featured:", error);
     } finally {
       setTogglingFeatured(null);
+    }
+  };
+
+  const handleToggleHotSelling = async (productId: string, currentBadges: string[], isHot: boolean) => {
+    setTogglingHotSelling(productId);
+    try {
+      await toggleHotSelling(productId, currentBadges, !isHot);
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to toggle hot selling:", error);
+    } finally {
+      setTogglingHotSelling(null);
     }
   };
 
@@ -231,6 +244,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {/* Featured toggle (star) */}
                         <button
                           onClick={() => handleToggleFeatured(product.id, (product as ProductWithBadges).featured ?? false)}
                           disabled={togglingFeatured === product.id}
@@ -246,6 +260,28 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                             fill={(product as ProductWithBadges).featured ? "currentColor" : "none"}
                           />
                         </button>
+                        {/* Hot selling toggle (fire) */}
+                        {(() => {
+                          const badges = (product as ProductWithBadges).promotionBadges || [];
+                          const isHot = badges.includes("今期熱賣");
+                          return (
+                            <button
+                              onClick={() => handleToggleHotSelling(product.id, badges, isHot)}
+                              disabled={togglingHotSelling === product.id}
+                              className={`p-2 rounded-lg transition-colors ${
+                                isHot
+                                  ? "text-orange-500 bg-orange-50 hover:bg-orange-100"
+                                  : "text-zinc-400 hover:text-orange-500 hover:bg-zinc-100"
+                              } disabled:opacity-50`}
+                              title={isHot ? "移除熱賣" : "設為熱賣"}
+                            >
+                              <Flame
+                                size={16}
+                                fill={isHot ? "currentColor" : "none"}
+                              />
+                            </button>
+                          );
+                        })()}
                         <button
                           onClick={() => handleEditProduct(product)}
                           className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50"
