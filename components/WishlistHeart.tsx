@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 
-const WISHLIST_KEY = "hk_wishlist";
+const WISHLIST_KEY = "hk-wishlist";
 
 function getWishlist(): string[] {
   if (typeof window === "undefined") return [];

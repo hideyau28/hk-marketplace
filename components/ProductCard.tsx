@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
-import { isWishlisted, toggleWishlist } from "@/lib/wishlist";
 import { addToCart } from "@/lib/cart";
 import { Badge } from "./Badge";
 import { useCurrency } from "@/lib/currency";
 import { useToast } from "@/components/Toast";
+import WishlistHeart from "@/components/WishlistHeart";
 
 type ProductCardProps = {
   locale: Locale;
@@ -26,25 +26,6 @@ type ProductCardProps = {
   // For grid layouts - makes card fill container width
   fillWidth?: boolean;
 };
-
-function HeartIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill={filled ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth={filled ? 0 : 2}
-      className="w-5 h-5"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-      />
-    </svg>
-  );
-}
 
 function CartIcon() {
   return (
@@ -66,7 +47,6 @@ function CartIcon() {
 }
 
 export default function ProductCard({ locale, p, fillWidth = false }: ProductCardProps) {
-  const [wishlisted, setWishlisted] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [showCartIcon, setShowCartIcon] = useState(false);
   const { format } = useCurrency();
@@ -87,27 +67,6 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
   const discountPercent = isOnSale
     ? Math.round((1 - p.price! / p.originalPrice!) * 100)
     : 0;
-
-  useEffect(() => {
-    setWishlisted(isWishlisted(p.id));
-
-    const handleUpdate = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { id?: string; wishlisted?: boolean } | undefined;
-      if (detail?.id === p.id && typeof detail.wishlisted === "boolean") {
-        setWishlisted(detail.wishlisted);
-      }
-    };
-
-    window.addEventListener("wishlistUpdated", handleUpdate);
-    return () => window.removeEventListener("wishlistUpdated", handleUpdate);
-  }, [p.id]);
-
-  const handleWishlistClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const newState = toggleWishlist(p.id);
-    setWishlisted(newState);
-  };
 
   const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
@@ -225,16 +184,8 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
           </div>
         </Link>
 
-        {/* Wishlist heart button - outside Link */}
-        <button
-          onClick={handleWishlistClick}
-          className={`absolute top-2 right-2 p-2 rounded-full bg-white/70 backdrop-blur shadow-sm hover:bg-white transition-colors dark:bg-zinc-800/70 dark:hover:bg-zinc-800 z-10 ${
-            wishlisted ? "text-red-500" : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100"
-          }`}
-          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <HeartIcon filled={wishlisted} />
-        </button>
+        {/* Wishlist heart button - using shared WishlistHeart component */}
+        <WishlistHeart productId={p.id} size="sm" />
 
         {/* Cart icon - outside Link to prevent navigation */}
         {showCartIcon && selectedSize && (

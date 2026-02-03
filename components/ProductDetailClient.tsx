@@ -8,6 +8,7 @@ import ProductSizeSelector from "@/components/ProductSizeSelector";
 import SizeChartButton from "@/components/SizeChartButton";
 import { useCurrency } from "@/lib/currency";
 import type { Translations } from "@/lib/translations";
+import { isWishlisted as checkWishlisted, toggleWishlist } from "@/lib/wishlist";
 
 type ProductDetailClientProps = {
   product: {
@@ -28,22 +29,6 @@ type ProductDetailClientProps = {
   t: Translations;
 };
 
-// Wishlist helpers
-function getWishlist(): string[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const stored = localStorage.getItem("wishlist");
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveWishlist(ids: string[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("wishlist", JSON.stringify(ids));
-}
-
 export default function ProductDetailClient({ product, locale, t }: ProductDetailClientProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
@@ -54,8 +39,7 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
 
   // Check wishlist on mount
   useEffect(() => {
-    const wishlist = getWishlist();
-    setIsWishlisted(wishlist.includes(product.id));
+    setIsWishlisted(checkWishlisted(product.id));
   }, [product.id]);
 
   // Calculate discount percentage if on sale
@@ -95,20 +79,8 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
   };
 
   const handleToggleWishlist = () => {
-    const wishlist = getWishlist();
-    if (isWishlisted) {
-      // Remove from wishlist
-      const newWishlist = wishlist.filter((id) => id !== product.id);
-      saveWishlist(newWishlist);
-      setIsWishlisted(false);
-    } else {
-      // Add to wishlist
-      wishlist.push(product.id);
-      saveWishlist(wishlist);
-      setIsWishlisted(true);
-    }
-    // Dispatch event for other components
-    window.dispatchEvent(new Event("wishlistUpdated"));
+    const newState = toggleWishlist(product.id);
+    setIsWishlisted(newState);
   };
 
   // Determine if Add to Cart should be disabled (no size selected when required)
