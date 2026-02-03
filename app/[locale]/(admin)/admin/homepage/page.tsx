@@ -18,6 +18,19 @@ export default async function AdminHomepage({
     }),
     prisma.homepageBanner.findMany({
       orderBy: { sortOrder: "asc" },
+      select: {
+        id: true,
+        imageUrl: true,
+        title: true,
+        subtitle: true,
+        linkUrl: true,
+        images: true,
+        sortOrder: true,
+        active: true,
+        position: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     }),
     // Fetch products for manual selection with filters
     prisma.product.findMany({
@@ -27,6 +40,12 @@ export default async function AdminHomepage({
       take: 500,
     }),
   ]);
+
+  // Transform banners to match Banner type (images is JsonValue from Prisma)
+  const bannersFormatted = banners.map((b) => ({
+    ...b,
+    images: b.images as any, // Cast JsonValue to BannerSlide[]
+  }));
 
   return (
     <div className="p-4 pb-16">
@@ -41,7 +60,7 @@ export default async function AdminHomepage({
 
       <HomepageCMS
         initialSections={sections}
-        initialBanners={banners}
+        initialBanners={bannersFormatted}
         products={products}
         locale={locale}
       />
