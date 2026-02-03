@@ -1,0 +1,81 @@
+export const runtime = "nodejs";
+
+import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
+import { getSessionFromCookie } from "@/lib/admin/session";
+import { prisma } from "@/lib/prisma";
+
+// GET /api/homepage/sections - get all sections ordered by sortOrder
+export const GET = withApi(async (req) => {
+  const sections = await prisma.homepageSection.findMany({
+    orderBy: { sortOrder: "asc" },
+  });
+  return ok(req, { sections });
+});
+
+// POST /api/homepage/sections - create a new section (admin only)
+export const POST = withApi(async (req) => {
+  const headerSecret = req.headers.get("x-admin-secret");
+  const isAuthenticated = headerSecret
+    ? headerSecret === process.env.ADMIN_SECRET
+    : await getSessionFromCookie();
+  if (!isAuthenticated) {
+    throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
+  }
+
+  const body = await req.json();
+
+  if (!body.title || typeof body.title !== "string") {
+    throw new ApiError(400, "BAD_REQUEST", "title is required");
+  }
+
+  // Get max sortOrder to add at end
+  const maxSection = await prisma.homepageSection.findFirst({
+    orderBy: { sortOrder: "desc" },
+  });
+  const nextSortOrder = (maxSection?.sortOrder ?? 0) + 1;
+
+  const section = await prisma.homepageSection.create({
+    data: {
+      title: body.title.trim(),
+      type: body.type || "product_grid",
+      cardSize: body.cardSize || "small",
+      sortOrder: body.sortOrder ?? nextSortOrder,
+      active: body.active ?? true,
+      productIds: body.productIds || [],
+      filterType: body.filterType || null,
+      filterValue: body.filterValue || null,
+    },
+  });
+
+  return ok(req, { section });
+});
+
+// PATCH /api/homepage/sections - reorder multiple sections
+export const PATCH = withApi(async (req) => {
+  const headerSecret = req.headers.get("x-admin-secret");
+  const isAuthenticated = headerSecret
+    ? headerSecret === process.env.ADMIN_SECRET
+    : await getSessionFromCookie();
+  if (!isAuthenticated) {
+    throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
+  }
+
+  const body = await req.json();
+
+  if (!Array.isArray(body.sections)) {
+    throw new ApiError(400, "BAD_REQUEST", "sections array is required");
+  }
+
+  // Update sortOrder for each section
+  const updates = body.sections.map(
+    (item: { id: string; sortOrder: number }, index: number) =>
+      prisma.homepageSection.update({
+        where: { id: item.id },
+        data: { sortOrder: item.sortOrder ?? index + 1 },
+      })
+  );
+
+  await Promise.all(updates);
+
+  return ok(req, { success: true });
+});
