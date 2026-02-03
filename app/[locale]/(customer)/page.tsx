@@ -4,11 +4,11 @@ import { getStoreName } from "@/lib/get-store-name";
 import HeroCarouselCMS from "@/components/home/HeroCarouselCMS";
 import RecommendedGrid from "@/components/home/RecommendedGrid";
 import FeaturedSneakers from "@/components/home/FeaturedSneakers";
-import PromoBannerFull from "@/components/home/PromoBannerFull";
 import SportsApparel from "@/components/home/SportsApparel";
 import RecentlyViewed from "@/components/home/RecentlyViewed";
 import SaleZone from "@/components/home/SaleZone";
 import KidsSection from "@/components/home/KidsSection";
+import PromoBannerFull from "@/components/home/PromoBannerFull";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -42,7 +42,6 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-// Fetch products for a section based on filter or manual selection
 async function fetchSectionProducts(
   section: {
     title: string;
@@ -55,7 +54,6 @@ async function fetchSectionProducts(
   const KIDS_SHOE_TYPES = ["grade_school", "preschool", "toddler"];
   const isKidsSection = section.title === "童裝專區";
 
-  // Helper to filter by kids/adult
   const filterByAgeGroup = (products: any[]) => {
     if (isKidsSection) {
       return products.filter((p) => KIDS_SHOE_TYPES.includes(p.shoeType || ""));
@@ -63,16 +61,12 @@ async function fetchSectionProducts(
     return products.filter((p) => !KIDS_SHOE_TYPES.includes(p.shoeType || ""));
   };
 
-  // Manual selection
   if (section.productIds && section.productIds.length > 0) {
     const productMap = new Map(allProducts.map((p) => [p.id, p]));
-    const selected = section.productIds
-      .map((id) => productMap.get(id))
-      .filter(Boolean);
+    const selected = section.productIds.map((id) => productMap.get(id)).filter(Boolean);
     return filterByAgeGroup(selected).slice(0, 10);
   }
 
-  // Auto filter
   if (section.filterType && section.filterValue) {
     let filtered: any[] = [];
 
@@ -82,11 +76,7 @@ async function fetchSectionProducts(
         break;
       case "shoeType":
         if (section.filterValue === "kids") {
-          // Kids section uses this filter value
-          filtered = allProducts.filter((p) =>
-            KIDS_SHOE_TYPES.includes(p.shoeType || "")
-          );
-          // Return early - no need to filter again
+          filtered = allProducts.filter((p) => KIDS_SHOE_TYPES.includes(p.shoeType || ""));
           return shuffleArray(filtered).slice(0, 10);
         } else {
           filtered = allProducts.filter((p) => p.shoeType === section.filterValue);
@@ -96,39 +86,34 @@ async function fetchSectionProducts(
         filtered = allProducts.filter((p) => p.featured);
         break;
       case "promotion":
-        // Filter by promotion badge (e.g., "今期熱賣")
-        filtered = allProducts.filter((p) =>
-          p.promotionBadges?.includes(section.filterValue!)
-        );
+        filtered = allProducts.filter((p) => p.promotionBadges?.includes(section.filterValue!));
         break;
       default:
         filtered = allProducts;
     }
 
-    // Apply kids/adult filter (except for shoeType=kids which already returned)
     return shuffleArray(filterByAgeGroup(filtered)).slice(0, 10);
   }
 
   return [];
 }
 
+type HomepageItem =
+  | { type: "section"; data: any; products: any[] }
+  | { type: "banner"; data: any };
+
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const l = locale as Locale;
   const t = getDict(l);
 
-  // Fetch CMS data: sections and banners
-  const [sections, heroBanners, midBanners, allProductsRaw] = await Promise.all([
+  const [sectionsRaw, bannersRaw, allProductsRaw] = await Promise.all([
     prisma.homepageSection.findMany({
       where: { active: true },
       orderBy: { sortOrder: "asc" },
     }),
     prisma.homepageBanner.findMany({
-      where: { active: true, position: "hero" },
-      orderBy: { sortOrder: "asc" },
-    }),
-    prisma.homepageBanner.findMany({
-      where: { active: true, position: "mid" },
+      where: { active: true },
       orderBy: { sortOrder: "asc" },
     }),
     prisma.product.findMany({
@@ -137,7 +122,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     }),
   ]);
 
-  // Map products to expected format
   const allProducts = allProductsRaw.map((p) => ({
     id: p.id,
     brand: p.brand || "",
@@ -155,27 +139,38 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     promotionBadges: (p.promotionBadges as string[]) || [],
   }));
 
-  // Format hero banners for carousel
-  const heroSlidesFormatted = heroBanners.map((banner) => ({
-    key: banner.id,
-    title: banner.title || "",
-    subtitle: banner.subtitle || undefined,
-    buttonLink: banner.linkUrl || undefined,
-    imageUrl: banner.imageUrl || undefined,
-  }));
+  const unifiedItems: HomepageItem[] = [];
 
-  // Get first mid-page banner
-  const midBanner = midBanners[0] || null;
+  for (const section of sectionsRaw) {
+    const products = await fetchSectionProducts(section, allProducts);
+    unifiedItems.push({ type: "section", data: section, products });
+  }
 
-  // Fetch products for each section
-  const sectionsWithProducts = await Promise.all(
-    sections.map(async (section) => ({
-      ...section,
-      products: await fetchSectionProducts(section, allProducts),
-    }))
-  );
+  for (const banner of bannersRaw) {
+    unifiedItems.push({ type: "banner", data: banner });
+  }
 
-  // Sale products: originalPrice > price
+  unifiedItems.sort((a, b) => a.data.sortOrder - b.data.sortOrder);
+
+  type RenderItem =
+    | { type: "section"; data: any; products: any[] }
+    | { type: "banner-group"; banners: any[] };
+
+  const renderItems: RenderItem[] = [];
+
+  for (const item of unifiedItems) {
+    if (item.type === "banner") {
+      const lastItem = renderItems[renderItems.length - 1];
+      if (lastItem && lastItem.type === "banner-group") {
+        lastItem.banners.push(item.data);
+      } else {
+        renderItems.push({ type: "banner-group", banners: [item.data] });
+      }
+    } else {
+      renderItems.push(item);
+    }
+  }
+
   const saleProducts = allProducts
     .filter((p) => p.originalPrice && p.originalPrice > p.price)
     .slice(0, 8)
@@ -190,7 +185,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       stock: p.stock,
     }));
 
-  // Fallback products for "你可能鍾意"
   const fallbackProducts = shuffleArray(allProducts).slice(0, 8).map((p) => ({
     id: p.id,
     title: p.title,
@@ -200,28 +194,51 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     stock: p.stock,
   }));
 
-  // Determine where to insert mid-banner (after 4th section)
-  const midBannerPosition = 4;
-
   return (
     <div className="pb-16">
-      {/* 1) Hero Banner from CMS */}
-      <div className="px-4 pt-4">
-        <HeroCarouselCMS slides={heroSlidesFormatted} locale={l} />
-      </div>
+      {renderItems.map((item) => {
+        if (item.type === "banner-group") {
+          const banners = item.banners;
 
-      {/* Sentinel */}
-      <div id="home-search-sentinel" className="h-px w-full" />
+          if (banners.length === 1) {
+            const banner = banners[0];
+            return (
+              <div key={`banner-${banner.id}`} className="px-4 pt-4">
+                <PromoBannerFull
+                  locale={l}
+                  headline={banner.title || ""}
+                  subtext={banner.subtitle || ""}
+                  imageUrl={banner.imageUrl}
+                  linkUrl={banner.linkUrl}
+                />
+              </div>
+            );
+          } else {
+            const slides = banners.map((banner: any) => ({
+              key: banner.id,
+              title: banner.title || "",
+              subtitle: banner.subtitle || undefined,
+              buttonLink: banner.linkUrl || undefined,
+              imageUrl: banner.imageUrl || undefined,
+            }));
 
-      {/* Render sections from CMS */}
-      {sectionsWithProducts.map((section, index) => {
-        if (section.products.length === 0) return null;
+            return (
+              <div key={`carousel-${banners[0].id}`} className="px-4 pt-4">
+                <HeroCarouselCMS slides={slides} locale={l} />
+              </div>
+            );
+          }
+        }
+
+        const section = item.data;
+        const products = item.products;
+
+        if (products.length === 0) return null;
 
         const isLarge = section.cardSize === "large";
         const isKidsSection =
           section.filterType === "shoeType" && section.filterValue === "kids";
 
-        // Generate view all href based on filter
         let viewAllHref = `/${locale}/products`;
         if (section.filterType === "category" && section.filterValue) {
           viewAllHref = `/${locale}/products?category=${encodeURIComponent(section.filterValue)}`;
@@ -244,37 +261,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               : SportsApparel;
 
         return (
-          <div key={section.id}>
-            {/* Insert mid-banner after 4th section */}
-            {index === midBannerPosition && midBanner && (
-              <PromoBannerFull
-                locale={l}
-                headline={midBanner.title || ""}
-                subtext={midBanner.subtitle || ""}
-              />
-            )}
-
-            <SectionComponent
-              locale={l}
-              products={section.products}
-              title={section.title}
-              viewAllText={t.home.viewAll}
-              viewAllHref={viewAllHref}
-            />
-          </div>
+          <SectionComponent
+            key={section.id}
+            locale={l}
+            products={products}
+            title={section.title}
+            viewAllText={t.home.viewAll}
+            viewAllHref={viewAllHref}
+          />
         );
       })}
 
-      {/* Mid-banner fallback if fewer than 5 sections */}
-      {sectionsWithProducts.length <= midBannerPosition && midBanner && (
-        <PromoBannerFull
-          locale={l}
-          headline={midBanner.title || ""}
-          subtext={midBanner.subtitle || ""}
-        />
-      )}
+      <div id="home-search-sentinel" className="h-px w-full" />
 
-      {/* 🔥 特價專區 Sale Zone */}
       {saleProducts.length > 0 && (
         <SaleZone
           locale={l}
@@ -284,7 +283,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         />
       )}
 
-      {/* 最近瀏覽 / 你可能鍾意 */}
       <RecentlyViewed
         locale={l}
         fallbackProducts={fallbackProducts}

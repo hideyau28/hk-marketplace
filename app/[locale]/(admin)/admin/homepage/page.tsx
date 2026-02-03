@@ -17,12 +17,12 @@ export default async function AdminHomepage({
       orderBy: { sortOrder: "asc" },
     }),
     prisma.homepageBanner.findMany({
-      orderBy: [{ position: "asc" }, { sortOrder: "asc" }],
+      orderBy: { sortOrder: "asc" },
     }),
-    // Fetch products for manual selection
+    // Fetch products for manual selection with filters
     prisma.product.findMany({
       where: { active: true },
-      select: { id: true, title: true, imageUrl: true, category: true },
+      select: { id: true, title: true, imageUrl: true, category: true, shoeType: true, sku: true },
       orderBy: { title: "asc" },
       take: 500,
     }),
