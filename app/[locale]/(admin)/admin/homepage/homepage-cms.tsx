@@ -1,7 +1,23 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   GripVertical,
   Plus,
@@ -80,6 +96,22 @@ export default function HomepageCMS({
   const [isCreatingSection, setIsCreatingSection] = useState(false);
   const [isCreatingBanner, setIsCreatingBanner] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showLongPressHint, setShowLongPressHint] = useState(true);
+
+  // Sensors for drag-and-drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Desktop: click and drag with 5px movement
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 500, // Mobile: long-press 500ms
+        tolerance: 5,
+      },
+    })
+  );
 
   // Combine sections and banners into unified list sorted by sortOrder
   const unifiedList = useMemo(() => {
@@ -89,6 +121,61 @@ export default function HomepageCMS({
     ];
     return items.sort((a, b) => a.data.sortOrder - b.data.sortOrder);
   }, [sections, banners]);
+
+  // Normalize sortOrder on mount (fix gaps and duplicates)
+  useEffect(() => {
+    const normalizeSortOrder = async () => {
+      const items = [...unifiedList];
+      let needsUpdate = false;
+
+      // Check if sortOrders are sequential (1, 2, 3, ...)
+      items.forEach((item, index) => {
+        const expectedOrder = index + 1;
+        if (item.data.sortOrder !== expectedOrder) {
+          needsUpdate = true;
+        }
+      });
+
+      if (!needsUpdate) return;
+
+      // Re-assign sequential sortOrder
+      const updates: Promise<Response>[] = [];
+      items.forEach((item, index) => {
+        const newOrder = index + 1;
+        if (item.type === "section") {
+          setSections((prev) =>
+            prev.map((s) =>
+              s.id === item.data.id ? { ...s, sortOrder: newOrder } : s
+            )
+          );
+          updates.push(
+            fetch(`/api/homepage/sections/${item.data.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sortOrder: newOrder }),
+            })
+          );
+        } else {
+          setBanners((prev) =>
+            prev.map((b) =>
+              b.id === item.data.id ? { ...b, sortOrder: newOrder } : b
+            )
+          );
+          updates.push(
+            fetch(`/api/homepage/banners/${item.data.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sortOrder: newOrder }),
+            })
+          );
+        }
+      });
+
+      await Promise.all(updates);
+    };
+
+    normalizeSortOrder();
+  }, []); // Only run once on mount
 
   // Get next available sortOrder
   const getNextSortOrder = () => {
@@ -282,6 +369,57 @@ export default function HomepageCMS({
     await Promise.all(updates);
   };
 
+  // Handle drag and drop
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    // Vibrate if available (mobile feedback)
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+
+    const oldIndex = unifiedList.findIndex((item) => `${item.type}-${item.data.id}` === active.id);
+    const newIndex = unifiedList.findIndex((item) => `${item.type}-${item.data.id}` === over.id);
+
+    const reorderedList = arrayMove(unifiedList, oldIndex, newIndex);
+
+    // Update sortOrder for all affected items
+    const updates: Promise<Response>[] = [];
+    reorderedList.forEach((item, index) => {
+      const newOrder = index + 1;
+      if (item.type === "section") {
+        setSections((prev) =>
+          prev.map((s) =>
+            s.id === item.data.id ? { ...s, sortOrder: newOrder } : s
+          )
+        );
+        updates.push(
+          fetch(`/api/homepage/sections/${item.data.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sortOrder: newOrder }),
+          })
+        );
+      } else {
+        setBanners((prev) =>
+          prev.map((b) =>
+            b.id === item.data.id ? { ...b, sortOrder: newOrder } : b
+          )
+        );
+        updates.push(
+          fetch(`/api/homepage/banners/${item.data.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sortOrder: newOrder }),
+          })
+        );
+      }
+    });
+
+    await Promise.all(updates);
+  };
+
   const getSectionProductInfo = (section: Section) => {
     if (section.productIds && section.productIds.length > 0) {
       return `${section.productIds.length} products`;
@@ -306,6 +444,172 @@ export default function HomepageCMS({
       count: slides.length,
       title: banner.title || slides[0]?.title || "未命名 Banner",
     };
+  };
+
+  // Sortable item component
+  const SortableItem = ({ item, index }: { item: HomepageItem; index: number }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: `${item.type}-${item.data.id}` });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    };
+
+    const bannerInfo = item.type === "banner" ? getBannerInfo(item.data as Banner) : null;
+    const firstSlideUrl = bannerInfo?.slides[0]?.imageUrl;
+
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`flex flex-col md:flex-row items-start gap-2 md:items-center md:gap-3 p-3 md:p-4 hover:bg-zinc-50 border-b border-zinc-200 last:border-b-0 ${isDragging ? "shadow-lg scale-105 bg-white z-10 rounded-xl" : ""}`}
+      >
+        {/* Drag handle - desktop only */}
+        <div
+          {...attributes}
+          {...listeners}
+          className="hidden md:block cursor-grab active:cursor-grabbing flex-shrink-0"
+        >
+          <GripVertical size={20} className="text-zinc-400" />
+        </div>
+
+        {/* Type badge + title + info */}
+        <div className="flex items-start gap-2 flex-1 min-w-0 w-full">
+          {/* Type badge */}
+          {item.type === "section" ? (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium flex-shrink-0">
+              <LayoutGrid size={14} />
+              <span className="hidden md:inline">Section</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-purple-50 text-purple-700 rounded text-xs font-medium flex-shrink-0">
+              <BannerIcon size={14} />
+              <span className="hidden md:inline">Banner</span>
+            </div>
+          )}
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            {item.type === "section" ? (
+              <div>
+                <div className="text-sm font-bold text-zinc-900 truncate">
+                  {(item.data as Section).title || "未命名 Section"}
+                </div>
+                <div className="text-xs text-zinc-500">
+                  {(item.data as Section).cardSize === "large" ? "大卡" : "細卡"} ·{" "}
+                  {(item.data as Section).filterType === "featured"
+                    ? "featured: true"
+                    : (item.data as Section).filterType
+                      ? `${(item.data as Section).filterType}: ${(item.data as Section).filterValue || "all"}`
+                      : getSectionProductInfo(item.data as Section)}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 w-full">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-zinc-900 truncate">
+                    {bannerInfo!.title}
+                  </div>
+                  <div className="text-xs text-zinc-500">
+                    {bannerInfo!.count} 張圖片
+                  </div>
+                </div>
+                {firstSlideUrl && (
+                  <div className="w-10 h-6 rounded overflow-hidden bg-zinc-100 flex-shrink-0">
+                    <img
+                      src={firstSlideUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Actions row */}
+        <div className="flex items-center gap-1 flex-shrink-0 w-full md:w-auto justify-between md:justify-end">
+          {/* Arrow buttons */}
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => moveItem(index, "up")}
+              disabled={index === 0}
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 disabled:opacity-30 rounded"
+              title="向上"
+            >
+              <ChevronUp size={16} className="md:hidden" />
+              <ChevronUp size={20} className="hidden md:block" />
+            </button>
+            <button
+              onClick={() => moveItem(index, "down")}
+              disabled={index === unifiedList.length - 1}
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 disabled:opacity-30 rounded"
+              title="向下"
+            >
+              <ChevronDown size={16} className="md:hidden" />
+              <ChevronDown size={20} className="hidden md:block" />
+            </button>
+          </div>
+
+          {/* Status + Edit + Delete */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() =>
+                item.type === "section"
+                  ? toggleSectionActive(item.data as Section)
+                  : toggleBannerActive(item.data as Banner)
+              }
+              className={`px-2 py-1 rounded text-xs font-medium flex-shrink-0 ${
+                item.data.active
+                  ? "bg-green-100 text-green-700"
+                  : "bg-zinc-100 text-zinc-500"
+              }`}
+            >
+              {item.data.active ? "啟用" : "停用"}
+            </button>
+
+            <button
+              onClick={() => {
+                if (item.type === "section") {
+                  setEditingSection(item.data as Section);
+                  setIsCreatingSection(false);
+                } else {
+                  setEditingBanner(item.data as Banner);
+                  setIsCreatingBanner(false);
+                }
+              }}
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 flex-shrink-0 rounded"
+              title="編輯"
+            >
+              <Pencil size={16} className="md:hidden" />
+              <Pencil size={18} className="hidden md:block" />
+            </button>
+
+            <button
+              onClick={() =>
+                item.type === "section"
+                  ? deleteSection(item.data.id)
+                  : deleteBanner(item.data.id)
+              }
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-red-600 flex-shrink-0 rounded"
+              title="刪除"
+            >
+              <Trash2 size={16} className="md:hidden" />
+              <Trash2 size={18} className="hidden md:block" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -354,148 +658,43 @@ export default function HomepageCMS({
         <div className="p-4 border-b border-zinc-200">
           <h2 className="font-semibold text-zinc-900">首頁內容排序</h2>
           <p className="text-sm text-zinc-500 mt-1">
-            拖拉或用箭嘴調整順序，順序即係首頁顯示嘅順序
+            <span className="hidden md:inline">拖拉或用箭嘴調整順序</span>
+            <span className="md:hidden">長按拖拉排序</span>
+            ，順序即係首頁顯示嘅順序
           </p>
-        </div>
-
-        <div className="divide-y divide-zinc-200">
-          {unifiedList.length === 0 && (
-            <div className="p-8 text-center text-zinc-500">
-              未有任何內容，請新增 Section 或 Banner
+          {showLongPressHint && unifiedList.length > 0 && (
+            <div className="mt-2 md:hidden bg-olive-50 border border-olive-200 rounded-lg p-2 text-xs text-olive-700 flex items-center justify-between">
+              <span>💡 長按項目 0.5 秒可拖拉排序</span>
+              <button
+                onClick={() => setShowLongPressHint(false)}
+                className="text-olive-600 hover:text-olive-800 ml-2"
+              >
+                <X size={14} />
+              </button>
             </div>
           )}
-
-          {unifiedList.map((item, index) => (
-            <div
-              key={`${item.type}-${item.data.id}`}
-              className="flex items-start gap-2 md:items-center md:gap-3 p-3 md:p-4 hover:bg-zinc-50"
-            >
-              <GripVertical size={20} className="hidden md:block text-zinc-300 cursor-grab flex-shrink-0" />
-
-              {item.type === "section" ? (
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
-                  <LayoutGrid size={14} />
-                  Section
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-purple-50 text-purple-700 rounded text-xs font-medium">
-                  <BannerIcon size={14} />
-                  Banner
-                </div>
-              )}
-
-              <div className="flex-1 min-w-0">
-                {item.type === "section" ? (
-                  <div>
-                    <div className="font-medium text-zinc-900 truncate">
-                      {(item.data as Section).title || "未命名 Section"}
-                    </div>
-                    <div className="text-sm text-zinc-500">
-                      {(item.data as Section).cardSize === "large" ? "大卡" : "細卡"} ·{" "}
-                      {(item.data as Section).filterType
-                        ? `${(item.data as Section).filterType}: ${(item.data as Section).filterValue || "all"}`
-                        : getSectionProductInfo(item.data as Section)}
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="font-medium text-zinc-900 truncate">
-                      {getBannerInfo(item.data as Banner).title}
-                    </div>
-                    <div className="text-sm text-zinc-500 mb-2">
-                      {getBannerInfo(item.data as Banner).count} 張圖片
-                    </div>
-                    <div className="flex gap-1 flex-wrap">
-                      {getBannerInfo(item.data as Banner)
-                        .slides.slice(0, 5)
-                        .map((slide, idx) => (
-                          <div
-                            key={idx}
-                            className="w-10 h-6 rounded overflow-hidden bg-zinc-100 flex-shrink-0"
-                          >
-                            {slide.imageUrl ? (
-                              <img
-                                src={slide.imageUrl}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <ImageIcon size={12} className="text-zinc-400" />
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      {getBannerInfo(item.data as Banner).count > 5 && (
-                        <div className="w-10 h-6 rounded bg-zinc-100 flex items-center justify-center text-xs text-zinc-500">
-                          +{getBannerInfo(item.data as Banner).count - 5}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex md:items-center gap-0.5 md:gap-1 flex-shrink-0">
-                <button
-                  onClick={() => moveItem(index, "up")}
-                  disabled={index === 0}
-                  className="w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 disabled:opacity-30 rounded"
-                >
-                  <ChevronUp size={20} />
-                </button>
-                <button
-                  onClick={() => moveItem(index, "down")}
-                  disabled={index === unifiedList.length - 1}
-                  className="w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 disabled:opacity-30 rounded"
-                >
-                  <ChevronDown size={20} />
-                </button>
-              </div>
-
-              <button
-                onClick={() =>
-                  item.type === "section"
-                    ? toggleSectionActive(item.data as Section)
-                    : toggleBannerActive(item.data as Banner)
-                }
-                className={`px-2 py-1 rounded text-xs font-medium flex-shrink-0 ${
-                  item.data.active
-                    ? "bg-green-100 text-green-700"
-                    : "bg-zinc-100 text-zinc-500"
-                }`}
-              >
-                {item.data.active ? "啟用" : "停用"}
-              </button>
-
-              <button
-                onClick={() => {
-                  if (item.type === "section") {
-                    setEditingSection(item.data as Section);
-                    setIsCreatingSection(false);
-                  } else {
-                    setEditingBanner(item.data as Banner);
-                    setIsCreatingBanner(false);
-                  }
-                }}
-                className="w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 flex-shrink-0 rounded"
-              >
-                <Pencil size={18} />
-              </button>
-
-              <button
-                onClick={() =>
-                  item.type === "section"
-                    ? deleteSection(item.data.id)
-                    : deleteBanner(item.data.id)
-                }
-                className="w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-red-600 flex-shrink-0 rounded"
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          ))}
         </div>
+
+        {unifiedList.length === 0 ? (
+          <div className="p-8 text-center text-zinc-500">
+            未有任何內容，請新增 Section 或 Banner
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={unifiedList.map((item) => `${item.type}-${item.data.id}`)}
+              strategy={verticalListSortingStrategy}
+            >
+              {unifiedList.map((item, index) => (
+                <SortableItem key={`${item.type}-${item.data.id}`} item={item} index={index} />
+              ))}
+            </SortableContext>
+          </DndContext>
+        )}
       </div>
 
       {(editingSection || isCreatingSection) && editingSection && (
