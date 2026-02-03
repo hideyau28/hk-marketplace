@@ -1,6 +1,8 @@
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
+import { promises as fs } from "fs";
+import path from "path";
 
 // HK regions mapping for common districts
 const REGION_MAP: Record<string, string> = {
@@ -201,9 +203,78 @@ function parseALSResponse(data: any): Array<{
   return results;
 }
 
-// Simple in-memory cache (Edge runtime compatible)
+// Simple in-memory cache
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+// Load local address database
+let localAddresses: any = null;
+async function getLocalAddresses() {
+  if (localAddresses) return localAddresses;
+
+  try {
+    const filePath = path.join(process.cwd(), "app", "data", "hk-addresses.json");
+    const fileContents = await fs.readFile(filePath, "utf8");
+    localAddresses = JSON.parse(fileContents);
+    return localAddresses;
+  } catch (error) {
+    console.error("Failed to load local addresses:", error);
+    return { regions: {}, estates: [] };
+  }
+}
+
+// Search local address database
+async function searchLocalAddresses(query: string): Promise<Array<{
+  fullAddress: string;
+  region: string;
+  district: string;
+  street: string;
+  building: string;
+}>> {
+  const data = await getLocalAddresses();
+  const results: Array<{
+    fullAddress: string;
+    region: string;
+    district: string;
+    street: string;
+    building: string;
+  }> = [];
+
+  const lowerQuery = query.toLowerCase();
+
+  // Search estates first
+  for (const estate of data.estates || []) {
+    if (estate.name.includes(query) || estate.name.toLowerCase().includes(lowerQuery)) {
+      results.push({
+        fullAddress: `${estate.region} ${estate.district} ${estate.street} ${estate.name}`,
+        region: estate.region,
+        district: estate.district,
+        street: estate.street,
+        building: estate.name,
+      });
+    }
+  }
+
+  // Search streets
+  for (const [region, districts] of Object.entries(data.regions || {})) {
+    for (const [district, streets] of Object.entries(districts as Record<string, string[]>)) {
+      for (const street of streets) {
+        if (street.includes(query) || street.toLowerCase().includes(lowerQuery)) {
+          results.push({
+            fullAddress: `${region} ${district} ${street}`,
+            region,
+            district,
+            street,
+            building: "",
+          });
+        }
+      }
+    }
+  }
+
+  // Limit to 10 results
+  return results.slice(0, 10);
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -220,49 +291,74 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, data: { addresses: cached.data } });
   }
 
+  // Try ALS API first with 2-second timeout
+  let addresses: Array<{
+    fullAddress: string;
+    region: string;
+    district: string;
+    street: string;
+    building: string;
+  }> = [];
+
   try {
-    // Call HK Government Address Lookup Service API
     const alsUrl = new URL("https://www.als.ogcio.gov.hk/lookup");
     alsUrl.searchParams.set("q", query);
-    alsUrl.searchParams.set("n", "10"); // Limit results
+    alsUrl.searchParams.set("n", "10");
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
 
     const response = await fetch(alsUrl.toString(), {
       headers: {
         "Accept": "application/json",
         "Accept-Language": "zh-HK,zh;q=0.9,en;q=0.8",
       },
+      signal: controller.signal,
     });
 
-    if (!response.ok) {
-      console.error("ALS API error:", response.status);
-      return NextResponse.json({
-        ok: false,
-        error: { code: "ALS_ERROR", message: "Address lookup service unavailable" }
-      }, { status: 502 });
-    }
+    clearTimeout(timeoutId);
 
-    const data = await response.json();
-    const addresses = parseALSResponse(data);
+    if (response.ok) {
+      const data = await response.json();
+      addresses = parseALSResponse(data);
 
-    // Cache result
-    cache.set(cacheKey, { data: addresses, timestamp: Date.now() });
-
-    // Clean old cache entries periodically
-    if (cache.size > 100) {
-      const now = Date.now();
-      for (const [key, value] of cache.entries()) {
-        if (now - value.timestamp > CACHE_TTL) {
-          cache.delete(key);
-        }
+      // Cache successful ALS result
+      if (addresses.length > 0) {
+        cache.set(cacheKey, { data: addresses, timestamp: Date.now() });
       }
     }
-
-    return NextResponse.json({ ok: true, data: { addresses } });
   } catch (error) {
-    console.error("Address lookup failed:", error);
-    return NextResponse.json({
-      ok: false,
-      error: { code: "LOOKUP_FAILED", message: "Failed to lookup address" }
-    }, { status: 500 });
+    // ALS failed or timed out, will fall back to local
+    console.log("ALS API failed/timeout, using local fallback:", error instanceof Error ? error.message : "unknown");
   }
+
+  // If ALS returned no results or failed, use local database
+  if (addresses.length === 0) {
+    try {
+      addresses = await searchLocalAddresses(query);
+
+      // Cache local result
+      if (addresses.length > 0) {
+        cache.set(cacheKey, { data: addresses, timestamp: Date.now() });
+      }
+    } catch (error) {
+      console.error("Local address search failed:", error);
+      return NextResponse.json({
+        ok: false,
+        error: { code: "SEARCH_FAILED", message: "Failed to search addresses" }
+      }, { status: 500 });
+    }
+  }
+
+  // Clean old cache entries periodically
+  if (cache.size > 100) {
+    const now = Date.now();
+    for (const [key, value] of cache.entries()) {
+      if (now - value.timestamp > CACHE_TTL) {
+        cache.delete(key);
+      }
+    }
+  }
+
+  return NextResponse.json({ ok: true, data: { addresses } });
 }
