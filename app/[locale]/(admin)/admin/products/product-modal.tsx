@@ -33,6 +33,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   );
   const [category, setCategory] = useState(product?.category || "");
   const [active, setActive] = useState(product?.active ?? true);
+  const [featured, setFeatured] = useState((product as any)?.featured ?? false);
   const [sizeSystem, setSizeSystem] = useState((product as any)?.sizeSystem || "");
   const [sizes, setSizes] = useState(
     (product as any)?.sizes && Array.isArray((product as any).sizes)
@@ -88,6 +89,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             badges: badges.trim() || undefined,
             category: category.trim() || null,
             active,
+            featured,
             sizeSystem: sizeSystem.trim() || null,
             sizes: sizesArray.length > 0 ? sizesArray : null,
             stock: stockNum,
@@ -105,6 +107,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             badges: badges.trim() || undefined,
             category: category.trim() || null,
             active,
+            featured,
             sizeSystem: sizeSystem.trim() || undefined,
             sizes: sizesArray.length > 0 ? sizesArray : undefined,
             stock: stockNum,
@@ -309,18 +312,33 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             <p className="mt-1 text-zinc-400 text-xs">Available sizes for this product. Leave empty if no size selection needed.</p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="active"
-              checked={active}
-              onChange={(e) => setActive(e.target.checked)}
-              disabled={isPending}
-              className="h-4 w-4 accent-olive-600 disabled:opacity-50"
-            />
-            <label htmlFor="active" className="text-zinc-700 text-sm">
-              Active (visible to customers)
-            </label>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="active"
+                checked={active}
+                onChange={(e) => setActive(e.target.checked)}
+                disabled={isPending}
+                className="h-4 w-4 accent-olive-600 disabled:opacity-50"
+              />
+              <label htmlFor="active" className="text-zinc-700 text-sm">
+                Active (visible to customers)
+              </label>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="featured"
+                checked={featured}
+                onChange={(e) => setFeatured(e.target.checked)}
+                disabled={isPending}
+                className="h-4 w-4 accent-yellow-500 disabled:opacity-50"
+              />
+              <label htmlFor="featured" className="text-zinc-700 text-sm">
+                ⭐ Featured (為你推薦)
+              </label>
+            </div>
           </div>
 
           <div className="flex gap-3 pt-4">

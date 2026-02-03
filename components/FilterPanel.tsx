@@ -19,6 +19,12 @@ type FilterPanelProps = {
 };
 
 const CATEGORY_LABELS: Record<string, Record<Locale, string>> = {
+  "Air Jordan": { "zh-HK": "Air Jordan", en: "Air Jordan" },
+  "Dunk / SB": { "zh-HK": "Dunk / SB", en: "Dunk / SB" },
+  "Air Max": { "zh-HK": "Air Max", en: "Air Max" },
+  "Air Force": { "zh-HK": "Air Force", en: "Air Force" },
+  "Running": { "zh-HK": "Running", en: "Running" },
+  "Basketball": { "zh-HK": "Basketball", en: "Basketball" },
   Shoes: { "zh-HK": "鞋款", en: "Shoes" },
   Tops: { "zh-HK": "上衣", en: "Tops" },
   Pants: { "zh-HK": "褲裝", en: "Pants" },
@@ -27,14 +33,39 @@ const CATEGORY_LABELS: Record<string, Record<Locale, string>> = {
   Accessories: { "zh-HK": "配件", en: "Accessories" },
 };
 
+// Predefined size lists
+const MENS_SIZES = ["US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 9.5", "US 10", "US 10.5", "US 11", "US 11.5", "US 12", "US 13"];
+const WOMENS_SIZES = ["US 5", "US 5.5", "US 6", "US 6.5", "US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 9.5", "US 10"];
+const KIDS_SIZES = ["GS (3.5Y-7Y)", "PS (10.5C-3Y)", "TD (2C-10C)"];
+
+// Price ranges
+const PRICE_RANGES = [
+  { label: "$0-500", min: 0, max: 500 },
+  { label: "$500-800", min: 500, max: 800 },
+  { label: "$800-1200", min: 800, max: 1200 },
+  { label: "$1200+", min: 1200, max: null },
+];
+
+// ShoeType mapping
+const SHOE_TYPE_MAP: Record<string, string[]> = {
+  adult: ["adult"],
+  womens: ["womens"],
+  kids: ["grade_school", "preschool", "toddler"],
+};
+
 export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelProps) {
   const router = useRouter();
   const [brands, setBrands] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedShoeType, setSelectedShoeType] = useState<string | null>(null);
+  const [selectedPriceRange, setSelectedPriceRange] = useState<{ min: number; max: number | null } | null>(null);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [count, setCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+
+  const isZh = locale === "zh-HK";
 
   // Fetch filter options on mount
   useEffect(() => {
@@ -59,11 +90,26 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
     if (selectedCategories.length > 0) {
       params.set("category", selectedCategories.join(","));
     }
+    if (selectedShoeType) {
+      const types = SHOE_TYPE_MAP[selectedShoeType] || [];
+      if (types.length > 0) {
+        params.set("shoeType", types.join(","));
+      }
+    }
+    if (selectedPriceRange) {
+      params.set("minPrice", String(selectedPriceRange.min));
+      if (selectedPriceRange.max !== null) {
+        params.set("maxPrice", String(selectedPriceRange.max));
+      }
+    }
+    if (selectedSizes.length > 0) {
+      params.set("sizes", selectedSizes.join(","));
+    }
     const url = `/api/products/filter-counts${params.toString() ? `?${params}` : ""}`;
     const res = await fetch(url);
     const data = await res.json();
     setCount(data.count || 0);
-  }, [selectedBrands, selectedCategories]);
+  }, [selectedBrands, selectedCategories, selectedShoeType, selectedPriceRange, selectedSizes]);
 
   useEffect(() => {
     if (isOpen) {
@@ -83,9 +129,36 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
     );
   };
 
+  const selectShoeType = (type: string) => {
+    if (selectedShoeType === type) {
+      setSelectedShoeType(null);
+      setSelectedSizes([]); // Clear sizes when deselecting shoe type
+    } else {
+      setSelectedShoeType(type);
+      setSelectedSizes([]); // Clear sizes when changing shoe type
+    }
+  };
+
+  const selectPriceRange = (range: { min: number; max: number | null }) => {
+    if (selectedPriceRange?.min === range.min && selectedPriceRange?.max === range.max) {
+      setSelectedPriceRange(null);
+    } else {
+      setSelectedPriceRange(range);
+    }
+  };
+
+  const toggleSize = (size: string) => {
+    setSelectedSizes((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+    );
+  };
+
   const reset = () => {
     setSelectedBrands([]);
     setSelectedCategories([]);
+    setSelectedShoeType(null);
+    setSelectedPriceRange(null);
+    setSelectedSizes([]);
   };
 
   const applyFilters = () => {
@@ -96,6 +169,21 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
     if (selectedCategories.length > 0) {
       params.set("category", selectedCategories.join(","));
     }
+    if (selectedShoeType) {
+      const types = SHOE_TYPE_MAP[selectedShoeType] || [];
+      if (types.length > 0) {
+        params.set("shoeType", types.join(","));
+      }
+    }
+    if (selectedPriceRange) {
+      params.set("minPrice", String(selectedPriceRange.min));
+      if (selectedPriceRange.max !== null) {
+        params.set("maxPrice", String(selectedPriceRange.max));
+      }
+    }
+    if (selectedSizes.length > 0) {
+      params.set("sizes", selectedSizes.join(","));
+    }
     const queryString = params.toString();
     router.push(`/${locale}/products${queryString ? `?${queryString}` : ""}`);
     onClose();
@@ -103,6 +191,21 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
 
   const getCategoryLabel = (cat: string) => {
     return CATEGORY_LABELS[cat]?.[locale] || cat;
+  };
+
+  // Get sizes based on selected shoe type
+  const getAvailableSizes = () => {
+    if (!selectedShoeType) return [];
+    switch (selectedShoeType) {
+      case "adult":
+        return MENS_SIZES;
+      case "womens":
+        return WOMENS_SIZES;
+      case "kids":
+        return KIDS_SIZES;
+      default:
+        return [];
+    }
   };
 
   if (!isOpen) return null;
@@ -117,7 +220,7 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
       />
 
       {/* Panel */}
-      <div className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-zinc-900 rounded-t-2xl max-h-[70vh] flex flex-col animate-slide-up">
+      <div className="fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-zinc-900 rounded-t-2xl max-h-[80vh] flex flex-col animate-slide-up">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -138,6 +241,102 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
             <div className="text-center text-zinc-500 py-8">Loading...</div>
           ) : (
             <>
+              {/* 對象 (ShoeType) Section */}
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+                  {isZh ? "對象" : "Target"}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { key: "adult", label: isZh ? "男裝" : "Men" },
+                    { key: "womens", label: isZh ? "女裝" : "Women" },
+                    { key: "kids", label: isZh ? "童裝" : "Kids" },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      onClick={() => selectShoeType(item.key)}
+                      className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                        selectedShoeType === item.key
+                          ? "bg-olive-600 text-white"
+                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category Section */}
+              {categories.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+                    {t.category}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => toggleCategory(category)}
+                        className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                          selectedCategories.includes(category)
+                            ? "bg-olive-600 text-white"
+                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                        }`}
+                      >
+                        {getCategoryLabel(category)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 價錢範圍 (Price Range) Section */}
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+                  {isZh ? "價錢範圍" : "Price Range"}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {PRICE_RANGES.map((range) => (
+                    <button
+                      key={range.label}
+                      onClick={() => selectPriceRange({ min: range.min, max: range.max })}
+                      className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                        selectedPriceRange?.min === range.min && selectedPriceRange?.max === range.max
+                          ? "bg-olive-600 text-white"
+                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                      }`}
+                    >
+                      {range.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 尺碼 (Size) Section - Only show when shoe type is selected */}
+              {selectedShoeType && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+                    {isZh ? "尺碼" : "Size"}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {getAvailableSizes().map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => toggleSize(size)}
+                        className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                          selectedSizes.includes(size)
+                            ? "bg-olive-600 text-white"
+                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Brand Section */}
               {brands.length > 0 && (
                 <div className="mb-6">
@@ -156,30 +355,6 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
                         }`}
                       >
                         {brand}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Category Section */}
-              {categories.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                    {t.category}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map((category) => (
-                      <button
-                        key={category}
-                        onClick={() => toggleCategory(category)}
-                        className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                          selectedCategories.includes(category)
-                            ? "bg-olive-600 text-white"
-                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
-                        }`}
-                      >
-                        {getCategoryLabel(category)}
                       </button>
                     ))}
                   </div>

@@ -30,6 +30,9 @@ type CreateProductResult = CreateProductOk | ActionFail;
 type UpdateProductOk = { ok: true; data: Product };
 type UpdateProductResult = UpdateProductOk | ActionFail;
 
+type ToggleFeaturedOk = { ok: true };
+type ToggleFeaturedResult = ToggleFeaturedOk | ActionFail;
+
 function getApiBaseUrl() {
   // Server-side calls back into this same app.
   // Prefer an explicit base URL when deployed; fall back to local dev port 3012.
@@ -95,6 +98,7 @@ export async function createProduct(
     badges?: string;
     category?: string | null;
     active?: boolean;
+    featured?: boolean;
     sizeSystem?: string;
     sizes?: string[];
     stock?: number;
@@ -151,6 +155,7 @@ export async function updateProduct(
     badges?: string;
     category?: string | null;
     active?: boolean;
+    featured?: boolean;
     sizeSystem?: string | null;
     sizes?: string[] | null;
     stock?: number;
@@ -191,5 +196,45 @@ export async function updateProduct(
   } catch (error) {
     console.error("Failed to update product:", error);
     return { ok: false, code: "NETWORK_ERROR", message: "Failed to update product" };
+  }
+}
+
+export async function toggleFeatured(
+  productId: string,
+  featured: boolean
+): Promise<ToggleFeaturedResult> {
+  const adminSecret = process.env.ADMIN_SECRET;
+
+  if (!adminSecret) {
+    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  }
+
+  try {
+    const url = new URL(`/api/admin/products/${productId}`, getApiBaseUrl());
+    const response = await fetch(url.toString(), {
+      method: "PATCH",
+      headers: {
+        "x-admin-secret": adminSecret,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ featured }),
+    });
+
+    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Product>;
+
+    if (!response.ok) {
+      const errorData = json as ApiErrorResponse;
+      return {
+        ok: false,
+        code: errorData.error?.code || "UNKNOWN_ERROR",
+        message: errorData.error?.message || "Failed to toggle featured",
+      };
+    }
+
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (error) {
+    console.error("Failed to toggle featured:", error);
+    return { ok: false, code: "NETWORK_ERROR", message: "Failed to toggle featured" };
   }
 }

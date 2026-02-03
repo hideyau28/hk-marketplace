@@ -1,7 +1,7 @@
 "use client";
 
 import { getDict, type Locale } from "@/lib/i18n";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare, Phone, Clock, MapPin, Truck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
@@ -13,40 +13,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// --- Reusable UI Components (defined outside component to prevent re-creation) ---
-const Label = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-900", className)}>
-    {children}
-  </label>
-);
-
-const Description = ({ children }: { children: React.ReactNode }) => (
-  <p className="text-[0.8rem] text-zinc-600 mt-1.5">
-    {children}
-  </p>
-);
-
-const Input = ({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
-  <input
-    className={cn(
-      "flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
-      className
-    )}
-    {...props}
-  />
-);
-
-const Textarea = ({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
-  <textarea
-    className={cn(
-      "flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
-      className
-    )}
-    {...props}
-  />
-);
-
-// --- Types (Preserved) ---
+// --- Types ---
 type StoreSettings = {
   id: string;
   storeName: string | null;
@@ -58,24 +25,83 @@ type StoreSettings = {
   welcomePopupSubtitle: string | null;
   welcomePopupPromoText: string | null;
   welcomePopupButtonText: string | null;
-  // Contact info
   whatsappNumber: string | null;
   instagramUrl: string | null;
   facebookUrl: string | null;
-  // Business hours
   openingHours: string | null;
   pickupHours: string | null;
-  // Pickup address
   pickupAddress: string | null;
-  // Shipping
   shippingFee: number;
   freeShippingThreshold: number;
 };
 
 type SaveState = "idle" | "saving" | "success" | "error";
 
+// --- Reusable UI Components (defined outside component to prevent re-creation) ---
+function Label({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-900", className)}>
+      {children}
+    </label>
+  );
+}
+
+function Description({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[0.8rem] text-zinc-600 mt-1.5">
+      {children}
+    </p>
+  );
+}
+
+// Input component with forwardRef for proper focus handling
+function InputField({
+  value,
+  onChange,
+  className,
+  ...props
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value">) {
+  return (
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={cn(
+        "flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function TextareaField({
+  value,
+  onChange,
+  className,
+  ...props
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+} & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "onChange" | "value">) {
+  return (
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={cn(
+        "flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
 export default function AdminSettings({ params }: { params: Promise<{ locale: string }> }) {
-  // --- Logic State (Preserved) ---
   const [locale, setLocale] = useState<Locale>("en");
   const [settings, setSettings] = useState<StoreSettings>({
     id: "default",
@@ -100,19 +126,26 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [requestId, setRequestId] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const localeInitialized = useRef(false);
 
   const t = getDict(locale);
 
-  // --- Effects (Preserved) ---
+  // Initialize locale only once
   useEffect(() => {
-    params.then((p) => setLocale(p.locale as Locale));
+    if (!localeInitialized.current) {
+      localeInitialized.current = true;
+      params.then((p) => setLocale(p.locale as Locale));
+    }
   }, [params]);
 
+  // Load settings only once on mount
   useEffect(() => {
-    loadSettings();
-  }, []);
+    if (!isLoaded) {
+      loadSettings();
+    }
+  }, [isLoaded]);
 
-  // --- Functions (Preserved Logic) ---
   async function loadSettings() {
     try {
       const res = await fetch("/api/store-settings");
@@ -121,6 +154,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
         if (res.status === 401) {
           setErrorMessage("Please log in to view settings");
         }
+        setIsLoaded(true);
         return;
       }
 
@@ -128,10 +162,16 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
       if (data.ok && data.data) {
         setSettings(data.data);
       }
+      setIsLoaded(true);
     } catch (err) {
-      // Silent fail on load
+      setIsLoaded(true);
     }
   }
+
+  // Update individual setting field
+  const updateSetting = useCallback(<K extends keyof StoreSettings>(key: K, value: StoreSettings[K]) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
+  }, []);
 
   async function handleSave() {
     setSaveState("saving");
@@ -259,9 +299,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-3">
                   <Label>{t.admin.settings.storeName}</Label>
-                  <Input
+                  <InputField
                     value={settings.storeName || ""}
-                    onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
+                    onChange={(value) => updateSetting("storeName", value)}
                     placeholder="e.g. Yau Store"
                   />
                   <Description>Visible in the navigation bar and browser title.</Description>
@@ -269,9 +309,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
                 <div className="space-y-3">
                   <Label>{t.admin.settings.tagline}</Label>
-                  <Input
+                  <InputField
                     value={settings.tagline || ""}
-                    onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
+                    onChange={(value) => updateSetting("tagline", value)}
                     placeholder="e.g. Premium Tech & Lifestyle"
                   />
                   <Description>Featured prominently on the homepage hero section.</Description>
@@ -294,9 +334,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
               <div className="grid gap-8">
                 <div className="space-y-3">
                   <Label>{t.admin.settings.returnsPolicy}</Label>
-                  <Textarea
+                  <TextareaField
                     value={settings.returnsPolicy || ""}
-                    onChange={(e) => setSettings({ ...settings, returnsPolicy: e.target.value })}
+                    onChange={(value) => updateSetting("returnsPolicy", value)}
                     rows={4}
                     placeholder="e.g. Items can be returned within 30 days of delivery..."
                     className="font-mono text-sm resize-y min-h-[120px]"
@@ -306,9 +346,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
                 <div className="space-y-3">
                   <Label>{t.admin.settings.shippingPolicy}</Label>
-                  <Textarea
+                  <TextareaField
                     value={settings.shippingPolicy || ""}
-                    onChange={(e) => setSettings({ ...settings, shippingPolicy: e.target.value })}
+                    onChange={(value) => updateSetting("shippingPolicy", value)}
                     rows={4}
                     placeholder="e.g. Standard shipping takes 3-5 business days..."
                     className="font-mono text-sm resize-y min-h-[120px]"
@@ -340,7 +380,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                     type="button"
                     role="switch"
                     aria-checked={settings.welcomePopupEnabled}
-                    onClick={() => setSettings({ ...settings, welcomePopupEnabled: !settings.welcomePopupEnabled })}
+                    onClick={() => updateSetting("welcomePopupEnabled", !settings.welcomePopupEnabled)}
                     className={cn(
                       "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
                       settings.welcomePopupEnabled ? "bg-olive-600" : "bg-zinc-300"
@@ -357,9 +397,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
                 <div className="space-y-3">
                   <Label>Welcome Popup Title</Label>
-                  <Input
+                  <InputField
                     value={settings.welcomePopupTitle || ""}
-                    onChange={(e) => setSettings({ ...settings, welcomePopupTitle: e.target.value })}
+                    onChange={(value) => updateSetting("welcomePopupTitle", value)}
                     placeholder="歡迎來到 HK•Market"
                   />
                   <Description>Main heading of the welcome popup.</Description>
@@ -367,9 +407,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
                 <div className="space-y-3">
                   <Label>Welcome Popup Subtitle</Label>
-                  <Input
+                  <InputField
                     value={settings.welcomePopupSubtitle || ""}
-                    onChange={(e) => setSettings({ ...settings, welcomePopupSubtitle: e.target.value })}
+                    onChange={(value) => updateSetting("welcomePopupSubtitle", value)}
                     placeholder="探索最新波鞋及運動裝備，正品保證！"
                   />
                   <Description>Subheading displayed below the title.</Description>
@@ -377,9 +417,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
                 <div className="space-y-3">
                   <Label>Welcome Popup Promo Text</Label>
-                  <Input
+                  <InputField
                     value={settings.welcomePopupPromoText || ""}
-                    onChange={(e) => setSettings({ ...settings, welcomePopupPromoText: e.target.value })}
+                    onChange={(value) => updateSetting("welcomePopupPromoText", value)}
                     placeholder="🎉 訂單滿 $600 免運費！"
                   />
                   <Description>Promotional text shown in the highlighted box.</Description>
@@ -387,9 +427,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
                 <div className="space-y-3">
                   <Label>Welcome Popup Button Text</Label>
-                  <Input
+                  <InputField
                     value={settings.welcomePopupButtonText || ""}
-                    onChange={(e) => setSettings({ ...settings, welcomePopupButtonText: e.target.value })}
+                    onChange={(value) => updateSetting("welcomePopupButtonText", value)}
                     placeholder="開始購物"
                   />
                   <Description>Text on the call-to-action button.</Description>
@@ -412,9 +452,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
               <div className="grid gap-6 md:grid-cols-3">
                 <div className="space-y-3">
                   <Label>WhatsApp Number</Label>
-                  <Input
+                  <InputField
                     value={settings.whatsappNumber || ""}
-                    onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
+                    onChange={(value) => updateSetting("whatsappNumber", value)}
                     placeholder="+852 1234 5678"
                   />
                   <Description>Include country code (+852).</Description>
@@ -422,9 +462,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
                 <div className="space-y-3">
                   <Label>Instagram URL</Label>
-                  <Input
+                  <InputField
                     value={settings.instagramUrl || ""}
-                    onChange={(e) => setSettings({ ...settings, instagramUrl: e.target.value })}
+                    onChange={(value) => updateSetting("instagramUrl", value)}
                     placeholder="https://instagram.com/yourstore"
                   />
                   <Description>Full Instagram profile URL.</Description>
@@ -432,9 +472,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
                 <div className="space-y-3">
                   <Label>Facebook URL</Label>
-                  <Input
+                  <InputField
                     value={settings.facebookUrl || ""}
-                    onChange={(e) => setSettings({ ...settings, facebookUrl: e.target.value })}
+                    onChange={(value) => updateSetting("facebookUrl", value)}
                     placeholder="https://facebook.com/yourstore"
                   />
                   <Description>Full Facebook page URL.</Description>
@@ -457,9 +497,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-3">
                   <Label>Opening Hours</Label>
-                  <Textarea
+                  <TextareaField
                     value={settings.openingHours || ""}
-                    onChange={(e) => setSettings({ ...settings, openingHours: e.target.value })}
+                    onChange={(value) => updateSetting("openingHours", value)}
                     placeholder="星期一至五: 10:00 - 20:00&#10;星期六日: 12:00 - 18:00"
                     rows={3}
                   />
@@ -468,9 +508,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
                 <div className="space-y-3">
                   <Label>Pickup Hours</Label>
-                  <Textarea
+                  <TextareaField
                     value={settings.pickupHours || ""}
-                    onChange={(e) => setSettings({ ...settings, pickupHours: e.target.value })}
+                    onChange={(value) => updateSetting("pickupHours", value)}
                     placeholder="星期一至五: 14:00 - 19:00&#10;星期六: 14:00 - 17:00"
                     rows={3}
                   />
@@ -493,9 +533,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
               <div className="space-y-3">
                 <Label>Pickup Address</Label>
-                <Textarea
+                <TextareaField
                   value={settings.pickupAddress || ""}
-                  onChange={(e) => setSettings({ ...settings, pickupAddress: e.target.value })}
+                  onChange={(value) => updateSetting("pickupAddress", value)}
                   placeholder="九龍旺角彌敦道XXX號&#10;XX大廈XX樓XX室"
                   rows={3}
                 />
@@ -518,12 +558,12 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-3">
                   <Label>Shipping Fee ($)</Label>
-                  <Input
+                  <InputField
                     type="number"
-                    min="0"
-                    step="1"
-                    value={settings.shippingFee}
-                    onChange={(e) => setSettings({ ...settings, shippingFee: Number(e.target.value) || 0 })}
+                    min={0}
+                    step={1}
+                    value={String(settings.shippingFee)}
+                    onChange={(value) => updateSetting("shippingFee", Number(value) || 0)}
                     placeholder="40"
                   />
                   <Description>Standard shipping fee in HKD. Default: $40</Description>
@@ -531,12 +571,12 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
                 <div className="space-y-3">
                   <Label>Free Shipping Threshold ($)</Label>
-                  <Input
+                  <InputField
                     type="number"
-                    min="0"
-                    step="1"
-                    value={settings.freeShippingThreshold}
-                    onChange={(e) => setSettings({ ...settings, freeShippingThreshold: Number(e.target.value) || 0 })}
+                    min={0}
+                    step={1}
+                    value={String(settings.freeShippingThreshold)}
+                    onChange={(value) => updateSetting("freeShippingThreshold", Number(value) || 0)}
                     placeholder="600"
                   />
                   <Description>Orders above this amount get free shipping. Default: $600</Description>

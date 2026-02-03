@@ -125,10 +125,12 @@ model Product {
   color         String?
   shoeType      String?
   sku           String?  @unique
+  featured      Boolean  @default(false)
 
   @@index([active])
   @@index([brand])
   @@index([category])
+  @@index([featured])
 }
 
 model Coupon {

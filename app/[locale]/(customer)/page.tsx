@@ -83,10 +83,41 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
     sizes: (p as any).sizes || null,
     stock: (p as any).stock ?? 0,
+    shoeType: p.shoeType || null,
   }));
 
-  // 為你推薦 — random 8 products (horizontal scroll)
-  const recommendedProducts = shuffleArray(allProducts).slice(0, 8);
+  // Fetch featured products for 為你推薦
+  const featuredProductsRaw = await prisma.product.findMany({
+    where: {
+      active: true,
+      featured: true,
+      shoeType: { notIn: ["grade_school", "preschool", "toddler"] },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 8,
+  });
+
+  // 為你推薦 — featured products first, fallback to random adult products (exclude kids)
+  const adultProducts = allProducts.filter(
+    (p) => !["grade_school", "preschool", "toddler"].includes(p.shoeType || "")
+  );
+
+  const featuredProducts = featuredProductsRaw.map((p) => ({
+    id: p.id,
+    brand: p.brand || "",
+    title: p.title,
+    price: p.price,
+    originalPrice: p.originalPrice,
+    category: p.category || "",
+    image: p.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
+    sizes: p.sizes as Record<string, number> | null,
+    stock: p.stock ?? 0,
+  }));
+
+  // Use featured products if available, otherwise fallback to random adult products
+  const recommendedProducts = featuredProducts.length > 0
+    ? featuredProducts
+    : shuffleArray(adultProducts).slice(0, 8);
 
   // Air Jordan section (large cards)
   const jordanProducts = shuffleArray(allProducts.filter((p) => p.category === "Air Jordan")).slice(0, 8);

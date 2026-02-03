@@ -44,10 +44,29 @@ function HeartIcon({ filled }: { filled: boolean }) {
   );
 }
 
+function CartIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      className="w-4 h-4"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+      />
+    </svg>
+  );
+}
+
 export default function ProductCard({ locale, p }: ProductCardProps) {
   const [wishlisted, setWishlisted] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string>("");
-  const [showTooltip, setShowTooltip] = useState(false);
+  const [showCartIcon, setShowCartIcon] = useState(false);
   const { format } = useCurrency();
   const { showToast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -81,14 +100,6 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
     return () => window.removeEventListener("wishlistUpdated", handleUpdate);
   }, [p.id]);
 
-  // Hide tooltip after 3s
-  useEffect(() => {
-    if (showTooltip) {
-      const timer = setTimeout(() => setShowTooltip(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showTooltip]);
-
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -102,11 +113,16 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
     const size = e.target.value;
     setSelectedSize(size);
     if (size) {
-      setShowTooltip(true);
+      setShowCartIcon(true);
+    } else {
+      setShowCartIcon(false);
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (availableSizes.length > 0 && !selectedSize) {
       showToast("請先揀尺碼");
       return;
@@ -122,7 +138,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
 
     showToast("✓ 已加入購物車");
     setSelectedSize("");
-    setShowTooltip(false);
+    setShowCartIcon(false);
   };
 
   // Swipe up detection on image
@@ -138,23 +154,28 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
     if (swipeDistance > 50) {
       e.preventDefault();
       e.stopPropagation();
-      handleAddToCart();
+      if (selectedSize) {
+        handleAddToCart(e as unknown as React.MouseEvent);
+      }
     }
   };
 
   return (
-    <div ref={cardRef} className="group flex flex-col h-full">
+    <div
+      ref={cardRef}
+      className={`group flex flex-col h-full w-[160px] min-w-[160px] max-w-[160px] md:w-[180px] md:min-w-[180px] md:max-w-[180px] rounded-2xl overflow-hidden border border-zinc-200/50 bg-white shadow-sm dark:bg-zinc-900 dark:border-zinc-800 ${
+        isOnSale
+          ? "ring-1 ring-red-200 bg-red-50/30 dark:ring-red-900/50 dark:bg-red-950/20"
+          : ""
+      }`}
+    >
       <Link
         href={`/${locale}/product/${p.id}`}
-        className={`flex flex-col rounded-2xl ${
-          isOnSale
-            ? "ring-1 ring-red-200 bg-red-50/30 dark:ring-red-900/50 dark:bg-red-950/20"
-            : ""
-        }`}
+        className="flex flex-col flex-1"
       >
         {/* Image container */}
         <div
-          className="relative overflow-hidden rounded-2xl bg-zinc-100 aspect-square dark:bg-zinc-800"
+          className="relative overflow-hidden bg-zinc-100 aspect-square dark:bg-zinc-800"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -172,17 +193,10 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
             </div>
           )}
 
-          {/* Swipe hint tooltip */}
-          {showTooltip && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-zinc-900/90 text-white text-xs px-3 py-1.5 rounded-full whitespace-nowrap z-10 animate-fade-in">
-              ↑ 向上滑加入購物車
-            </div>
-          )}
-
           {/* Wishlist heart button */}
           <button
             onClick={handleWishlistClick}
-            className={`absolute top-2 right-2 p-3 rounded-full bg-white/70 backdrop-blur shadow-sm hover:bg-white transition-colors dark:bg-zinc-800/70 dark:hover:bg-zinc-800 ${
+            className={`absolute top-2 right-2 p-2 rounded-full bg-white/70 backdrop-blur shadow-sm hover:bg-white transition-colors dark:bg-zinc-800/70 dark:hover:bg-zinc-800 ${
               wishlisted ? "text-red-500" : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100"
             }`}
             aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
@@ -214,70 +228,73 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
               -{discountPercent}%
             </div>
           )}
+
+          {/* Cart icon - shows after size selection */}
+          {showCartIcon && selectedSize && (
+            <button
+              onClick={handleAddToCart}
+              className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-zinc-900 text-white flex items-center justify-center shadow-lg hover:bg-zinc-800 transition-all animate-fade-in z-10"
+              aria-label="Add to cart"
+            >
+              <CartIcon />
+            </button>
+          )}
         </div>
 
         {/* Content */}
-        <div className="pt-2.5">
+        <div className="flex flex-col flex-1 p-2.5">
           {/* Brand */}
           {p.brand ? (
-            <div className="text-xs font-medium tracking-wide text-zinc-700 truncate dark:text-zinc-300">
+            <div className="text-xs font-medium tracking-wide text-zinc-500 truncate dark:text-zinc-400">
               {p.brand}
             </div>
           ) : null}
 
-          {/* Title */}
-          <h3 className={"text-sm text-zinc-900 dark:text-zinc-100 font-medium line-clamp-2 leading-snug " + (p.brand ? "mt-0.5" : "")}>
+          {/* Title - fixed 2 lines height */}
+          <h3 className="text-xs text-zinc-900 dark:text-zinc-100 font-medium line-clamp-2 leading-tight min-h-[2rem] mt-0.5">
             {p.title || "—"}
           </h3>
+
+          {/* Price row with size selector - pushed to bottom */}
+          <div className="mt-auto pt-2 flex items-center justify-between gap-1">
+            <div className="flex flex-col leading-tight">
+              {isOnSale ? (
+                <>
+                  <span className="text-[10px] text-zinc-400 line-through">{format(p.originalPrice!)}</span>
+                  <span className="text-sm font-bold text-red-600">{format(p.price!)}</span>
+                </>
+              ) : (
+                <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  {p.price != null ? format(p.price) : "—"}
+                </span>
+              )}
+            </div>
+
+            {/* Size dropdown */}
+            {availableSizes.length > 0 && (
+              <div className="relative" onClick={(e) => e.preventDefault()}>
+                <select
+                  value={selectedSize}
+                  onChange={handleSizeChange}
+                  onClick={(e) => e.stopPropagation()}
+                  className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-1.5 py-1 pr-4 rounded-md cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus:outline-none focus:ring-1 focus:ring-olive-500"
+                >
+                  <option value="">尺碼 ▼</option>
+                  {availableSizes.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
         </div>
       </Link>
 
-      {/* Price row with size selector - outside Link to prevent navigation on select */}
-      <div className="mt-auto pt-1.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 leading-tight">
-          {isOnSale ? (
-            <>
-              <span className="text-sm text-zinc-400 line-through">{format(p.originalPrice!)}</span>
-              <span className="text-base font-bold text-red-600">{format(p.price!)}</span>
-            </>
-          ) : (
-            <span className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-              {p.price != null ? format(p.price) : "—"}
-            </span>
-          )}
-        </div>
-
-        {/* Size dropdown */}
-        {availableSizes.length > 0 && (
-          <div className="relative">
-            <select
-              value={selectedSize}
-              onChange={handleSizeChange}
-              onClick={(e) => e.stopPropagation()}
-              className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium px-2 py-1 pr-5 rounded-lg cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus:outline-none focus:ring-1 focus:ring-olive-500"
-            >
-              <option value="">尺碼</option>
-              {availableSizes.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-            <svg
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        )}
-      </div>
-
       {/* Badges */}
       {p.badges && p.badges.length > 0 && (
-        <div className="mt-1.5 flex gap-1.5 flex-wrap">
+        <div className="px-2.5 pb-2 flex gap-1 flex-wrap">
           {p.badges.slice(0, 2).map((badge, idx) => (
             <Badge key={idx}>{badge}</Badge>
           ))}
@@ -286,7 +303,7 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
 
       {/* Legacy single badge support */}
       {!p.badges && p.badge && (
-        <div className="mt-1.5">
+        <div className="px-2.5 pb-2">
           <Badge>{p.badge}</Badge>
         </div>
       )}
@@ -295,11 +312,11 @@ export default function ProductCard({ locale, p }: ProductCardProps) {
         @keyframes fade-in {
           from {
             opacity: 0;
-            transform: translate(-50%, 10px);
+            transform: scale(0.8);
           }
           to {
             opacity: 1;
-            transform: translate(-50%, 0);
+            transform: scale(1);
           }
         }
         .animate-fade-in {
