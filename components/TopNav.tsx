@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import type { Locale } from "@/lib/i18n";
 import type { Translations } from "@/lib/translations";
 import { getCartItemCount, getCart } from "@/lib/cart";
-import { Moon, ShoppingCart, Sun, Menu, Search } from "lucide-react";
+import { Moon, ShoppingCart, Sun, Menu, Search, User, LogOut, ShoppingBag, ChevronDown } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
+import { useAuth } from "@/lib/auth-context";
 import MobileMenu from "./MobileMenu";
 import SearchOverlay from "./SearchOverlay";
 
@@ -25,8 +26,29 @@ export default function TopNav({ locale, t, storeName = "May's Shop" }: { locale
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartBounce, setCartBounce] = useState(false);
-  // Currency context still available if needed elsewhere
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const { resolved, cycleMode } = useTheme();
+  const { user, loading: authLoading, logout } = useAuth();
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [userMenuOpen]);
+
+  const handleLogout = async () => {
+    await logout();
+    setUserMenuOpen(false);
+    router.push(`/${locale}`);
+  };
 
   useEffect(() => {
     const updateCartCount = () => {
@@ -124,6 +146,58 @@ export default function TopNav({ locale, t, storeName = "May's Shop" }: { locale
             >
               EN
             </Link>
+
+            {/* User menu */}
+            {!authLoading && (
+              user ? (
+                <div ref={userMenuRef} className="relative">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  >
+                    <User size={14} />
+                    <span className="max-w-[80px] truncate">{user.name || user.phone.replace("+852", "")}</span>
+                    <ChevronDown size={12} className={`transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900 z-50">
+                      <Link
+                        href={`/${locale}/profile`}
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <User size={14} />
+                        {locale === "zh-HK" ? "我的帳戶" : "My Account"}
+                      </Link>
+                      <Link
+                        href={`/${locale}/profile/orders`}
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <ShoppingBag size={14} />
+                        {locale === "zh-HK" ? "訂單記錄" : "Order History"}
+                      </Link>
+                      <div className="border-t border-zinc-100 dark:border-zinc-800 my-1" />
+                      <button
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                      >
+                        <LogOut size={14} />
+                        {locale === "zh-HK" ? "登出" : "Logout"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  href={`/${locale}/login`}
+                  className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                >
+                  <User size={14} />
+                  {locale === "zh-HK" ? "登入" : "Login"}
+                </Link>
+              )
+            )}
           </div>
 
           {/* Cart - always visible */}
