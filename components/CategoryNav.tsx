@@ -149,7 +149,7 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
                 onClick={() => handleCategoryClick(cat.key)}
                 className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors shrink-0 ${
                   isActive
-                    ? "bg-olive-600 text-white"
+                    ? "bg-[#6B7A2F] text-white"
                     : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                 }`}
               >

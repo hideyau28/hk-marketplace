@@ -3,7 +3,7 @@ import type { Locale } from "@/lib/i18n";
 import type { Translations } from "@/lib/translations";
 import { Instagram, Facebook } from "lucide-react";
 
-export default function Footer({ locale, t, storeName = "HK•Market" }: { locale: Locale; t: Translations; storeName?: string }) {
+export default function Footer({ locale, t, storeName = "May's Shop" }: { locale: Locale; t: Translations; storeName?: string }) {
   const currentYear = new Date().getFullYear();
 
   return (

@@ -43,7 +43,7 @@ export default async function CustomerLayout({
   }).catch(() => []);
 
   // Get store name with fallback
-  const storeName = storeSettings?.storeName || "HK•Market";
+  const storeName = storeSettings?.storeName || "May's Shop";
 
   const welcomePopupConfig = {
     enabled: storeSettings?.welcomePopupEnabled ?? true,
