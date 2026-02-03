@@ -28,12 +28,20 @@ type Section = {
   filterValue: string | null;
 };
 
+type BannerSlide = {
+  imageUrl: string;
+  linkUrl?: string;
+  title?: string;
+  subtitle?: string;
+};
+
 type Banner = {
   id: string;
-  imageUrl: string;
+  imageUrl: string; // fallback for backward compatibility
   title: string | null;
   subtitle: string | null;
   linkUrl: string | null;
+  images?: BannerSlide[]; // new: array of slides for carousel
   sortOrder: number;
   active: boolean;
   position: string;
@@ -284,6 +292,22 @@ export default function HomepageCMS({
     return "0 products";
   };
 
+  const getBannerInfo = (banner: Banner) => {
+    const slides = banner.images || [
+      {
+        imageUrl: banner.imageUrl,
+        linkUrl: banner.linkUrl || undefined,
+        title: banner.title || undefined,
+        subtitle: banner.subtitle || undefined,
+      },
+    ];
+    return {
+      slides,
+      count: slides.length,
+      title: banner.title || slides[0]?.title || "未命名 Banner",
+    };
+  };
+
   return (
     <div>
       <div className="flex gap-2 mb-6">
@@ -344,9 +368,9 @@ export default function HomepageCMS({
           {unifiedList.map((item, index) => (
             <div
               key={`${item.type}-${item.data.id}`}
-              className="flex items-center gap-3 p-4 hover:bg-zinc-50"
+              className="flex items-start gap-2 md:items-center md:gap-3 p-3 md:p-4 hover:bg-zinc-50"
             >
-              <GripVertical size={20} className="text-zinc-300 cursor-grab" />
+              <GripVertical size={20} className="hidden md:block text-zinc-300 cursor-grab flex-shrink-0" />
 
               {item.type === "section" ? (
                 <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
@@ -362,51 +386,70 @@ export default function HomepageCMS({
 
               <div className="flex-1 min-w-0">
                 {item.type === "section" ? (
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium text-zinc-900 truncate">
-                      {(item.data as Section).title}
-                    </span>
-                    <span className="text-sm text-zinc-500">
+                  <div>
+                    <div className="font-medium text-zinc-900 truncate">
+                      {(item.data as Section).title || "未命名 Section"}
+                    </div>
+                    <div className="text-sm text-zinc-500">
                       {(item.data as Section).cardSize === "large" ? "大卡" : "細卡"} ·{" "}
-                      {getSectionProductInfo(item.data as Section)}
-                    </span>
+                      {(item.data as Section).filterType
+                        ? `${(item.data as Section).filterType}: ${(item.data as Section).filterValue || "all"}`
+                        : getSectionProductInfo(item.data as Section)}
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3">
-                    <div className="w-20 h-10 rounded overflow-hidden bg-zinc-100 flex-shrink-0">
-                      {(item.data as Banner).imageUrl ? (
-                        <img
-                          src={(item.data as Banner).imageUrl}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ImageIcon size={16} className="text-zinc-400" />
+                  <div>
+                    <div className="font-medium text-zinc-900 truncate">
+                      {getBannerInfo(item.data as Banner).title}
+                    </div>
+                    <div className="text-sm text-zinc-500 mb-2">
+                      {getBannerInfo(item.data as Banner).count} 張圖片
+                    </div>
+                    <div className="flex gap-1 flex-wrap">
+                      {getBannerInfo(item.data as Banner)
+                        .slides.slice(0, 5)
+                        .map((slide, idx) => (
+                          <div
+                            key={idx}
+                            className="w-10 h-6 rounded overflow-hidden bg-zinc-100 flex-shrink-0"
+                          >
+                            {slide.imageUrl ? (
+                              <img
+                                src={slide.imageUrl}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <ImageIcon size={12} className="text-zinc-400" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      {getBannerInfo(item.data as Banner).count > 5 && (
+                        <div className="w-10 h-6 rounded bg-zinc-100 flex items-center justify-center text-xs text-zinc-500">
+                          +{getBannerInfo(item.data as Banner).count - 5}
                         </div>
                       )}
                     </div>
-                    <span className="font-medium text-zinc-900 truncate">
-                      {(item.data as Banner).title || "(無標題)"}
-                    </span>
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex md:items-center gap-0.5 md:gap-1 flex-shrink-0">
                 <button
                   onClick={() => moveItem(index, "up")}
                   disabled={index === 0}
-                  className="p-1 text-zinc-400 hover:text-zinc-600 disabled:opacity-30"
+                  className="w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 disabled:opacity-30 rounded"
                 >
-                  <ChevronUp size={18} />
+                  <ChevronUp size={20} />
                 </button>
                 <button
                   onClick={() => moveItem(index, "down")}
                   disabled={index === unifiedList.length - 1}
-                  className="p-1 text-zinc-400 hover:text-zinc-600 disabled:opacity-30"
+                  className="w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 disabled:opacity-30 rounded"
                 >
-                  <ChevronDown size={18} />
+                  <ChevronDown size={20} />
                 </button>
               </div>
 
@@ -416,7 +459,7 @@ export default function HomepageCMS({
                     ? toggleSectionActive(item.data as Section)
                     : toggleBannerActive(item.data as Banner)
                 }
-                className={`px-2 py-1 rounded text-xs font-medium ${
+                className={`px-2 py-1 rounded text-xs font-medium flex-shrink-0 ${
                   item.data.active
                     ? "bg-green-100 text-green-700"
                     : "bg-zinc-100 text-zinc-500"
@@ -435,9 +478,9 @@ export default function HomepageCMS({
                     setIsCreatingBanner(false);
                   }
                 }}
-                className="p-2 text-zinc-400 hover:text-zinc-600"
+                className="w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 flex-shrink-0 rounded"
               >
-                <Pencil size={16} />
+                <Pencil size={18} />
               </button>
 
               <button
@@ -446,9 +489,9 @@ export default function HomepageCMS({
                     ? deleteSection(item.data.id)
                     : deleteBanner(item.data.id)
                 }
-                className="p-2 text-zinc-400 hover:text-red-600"
+                className="w-10 h-10 flex items-center justify-center text-zinc-400 hover:text-red-600 flex-shrink-0 rounded"
               >
-                <Trash2 size={16} />
+                <Trash2 size={18} />
               </button>
             </div>
           ))}
@@ -895,18 +938,31 @@ function BannerModal({
   onSave: (b: Partial<Banner>) => void;
   onClose: () => void;
 }) {
-  const [imageUrl, setImageUrl] = useState(banner.imageUrl);
-  const [title, setTitle] = useState(banner.title || "");
-  const [subtitle, setSubtitle] = useState(banner.subtitle || "");
-  const [linkUrl, setLinkUrl] = useState(banner.linkUrl || "");
-  const [active, setActive] = useState(banner.active);
-  const [uploading, setUploading] = useState(false);
+  // Initialize slides from banner.images or fallback to old imageUrl field
+  const initialSlides: BannerSlide[] =
+    banner.images && banner.images.length > 0
+      ? (banner.images as BannerSlide[])
+      : [
+          {
+            imageUrl: banner.imageUrl || "",
+            linkUrl: banner.linkUrl || undefined,
+            title: banner.title || undefined,
+            subtitle: banner.subtitle || undefined,
+          },
+        ];
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [slides, setSlides] = useState<BannerSlide[]>(initialSlides);
+  const [active, setActive] = useState(banner.active);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
+    setUploadingIndex(index);
     const formData = new FormData();
     formData.append("file", file);
 
@@ -914,24 +970,54 @@ function BannerModal({
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (data.ok && data.data?.url) {
-        setImageUrl(data.data.url);
+        const newSlides = [...slides];
+        newSlides[index] = { ...newSlides[index], imageUrl: data.data.url };
+        setSlides(newSlides);
       } else {
         alert("上傳失敗");
       }
     } catch {
       alert("上傳失敗");
     } finally {
-      setUploading(false);
+      setUploadingIndex(null);
     }
   };
 
+  const updateSlide = (index: number, field: keyof BannerSlide, value: string) => {
+    const newSlides = [...slides];
+    newSlides[index] = { ...newSlides[index], [field]: value };
+    setSlides(newSlides);
+  };
+
+  const addSlide = () => {
+    setSlides([...slides, { imageUrl: "" }]);
+  };
+
+  const removeSlide = (index: number) => {
+    if (slides.length === 1) {
+      alert("至少需要 1 張圖片");
+      return;
+    }
+    setSlides(slides.filter((_, i) => i !== index));
+  };
+
   const handleSave = () => {
+    // Validate: all slides must have imageUrl
+    const hasEmptyImage = slides.some((s) => !s.imageUrl);
+    if (hasEmptyImage) {
+      alert("所有 slides 必須有圖片");
+      return;
+    }
+
+    // For backward compatibility, set first slide as main fields
+    const firstSlide = slides[0];
     onSave({
       id: banner.id || undefined,
-      imageUrl,
-      title: title || null,
-      subtitle: subtitle || null,
-      linkUrl: linkUrl || null,
+      imageUrl: firstSlide.imageUrl,
+      title: firstSlide.title || null,
+      subtitle: firstSlide.subtitle || null,
+      linkUrl: firstSlide.linkUrl || null,
+      images: slides,
       active,
       position: "hero",
     });
@@ -939,90 +1025,148 @@ function BannerModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-4 border-b border-zinc-200 flex justify-between items-center sticky top-0 bg-white">
-          <h3 className="font-semibold text-lg">{isNew ? "新增 Banner" : "編輯 Banner"}</h3>
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-4 border-b border-zinc-200 flex justify-between items-center sticky top-0 bg-white z-10">
+          <h3 className="font-semibold text-lg">
+            {isNew ? "新增 Banner" : "編輯 Banner"}
+          </h3>
           <button onClick={onClose} className="p-1 hover:bg-zinc-100 rounded">
             <X size={20} />
           </button>
         </div>
 
-        <div className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1">Banner 圖片</label>
-            <div className="border-2 border-dashed border-zinc-200 rounded-xl p-4">
-              {imageUrl ? (
-                <div className="relative">
-                  <img src={imageUrl} alt="" className="w-full h-40 object-cover rounded-lg" />
-                  <button
-                    onClick={() => setImageUrl("")}
-                    className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ) : (
-                <label className="flex flex-col items-center justify-center h-32 cursor-pointer hover:bg-zinc-50 rounded-lg">
-                  <ImageIcon size={32} className="text-zinc-400 mb-2" />
-                  <span className="text-sm text-zinc-500">{uploading ? "上傳中..." : "點擊上傳圖片"}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    disabled={uploading}
-                  />
-                </label>
-              )}
+        <div className="p-4 space-y-6">
+          {/* Slides */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-zinc-700">
+                Slides ({slides.length})
+              </label>
+              <button
+                onClick={addSlide}
+                className="flex items-center gap-1 px-3 py-1.5 bg-olive-600 text-white rounded-lg text-sm hover:bg-olive-700"
+              >
+                <Plus size={14} /> 新增 Slide
+              </button>
             </div>
-            <input
-              type="text"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="或貼上圖片 URL"
-              className="w-full mt-2 px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
-            />
+
+            {slides.map((slide, index) => (
+              <div
+                key={index}
+                className="border border-zinc-200 rounded-xl p-4 space-y-3 bg-zinc-50"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-zinc-700">
+                    Slide {index + 1}
+                  </span>
+                  {slides.length > 1 && (
+                    <button
+                      onClick={() => removeSlide(index)}
+                      className="text-red-600 hover:text-red-700 text-sm flex items-center gap-1"
+                    >
+                      <Trash2 size={14} />
+                      刪除
+                    </button>
+                  )}
+                </div>
+
+                {/* Image upload */}
+                <div>
+                  <label className="block text-xs text-zinc-600 mb-1">圖片 *</label>
+                  <div className="border-2 border-dashed border-zinc-200 rounded-xl p-3">
+                    {slide.imageUrl ? (
+                      <div className="relative">
+                        <img
+                          src={slide.imageUrl}
+                          alt=""
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <button
+                          onClick={() => updateSlide(index, "imageUrl", "")}
+                          className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center h-24 cursor-pointer hover:bg-zinc-100 rounded-lg">
+                        <ImageIcon size={24} className="text-zinc-400 mb-1" />
+                        <span className="text-xs text-zinc-500">
+                          {uploadingIndex === index ? "上傳中..." : "點擊上傳"}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, index)}
+                          className="hidden"
+                          disabled={uploadingIndex === index}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={slide.imageUrl}
+                    onChange={(e) => updateSlide(index, "imageUrl", e.target.value)}
+                    placeholder="或貼上圖片 URL"
+                    className="w-full mt-2 px-2 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                  />
+                </div>
+
+                {/* Link URL */}
+                <div>
+                  <label className="block text-xs text-zinc-600 mb-1">
+                    連結 URL (選填)
+                  </label>
+                  <input
+                    type="text"
+                    value={slide.linkUrl || ""}
+                    onChange={(e) => updateSlide(index, "linkUrl", e.target.value)}
+                    placeholder="例如：/products?category=Air+Jordan"
+                    className="w-full px-2 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                  />
+                </div>
+
+                {/* Title */}
+                <div>
+                  <label className="block text-xs text-zinc-600 mb-1">
+                    標題 (選填)
+                  </label>
+                  <input
+                    type="text"
+                    value={slide.title || ""}
+                    onChange={(e) => updateSlide(index, "title", e.target.value)}
+                    placeholder="例如：Air Jordan 系列"
+                    className="w-full px-2 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                  />
+                </div>
+
+                {/* Subtitle */}
+                <div>
+                  <label className="block text-xs text-zinc-600 mb-1">
+                    副標題 (選填)
+                  </label>
+                  <input
+                    type="text"
+                    value={slide.subtitle || ""}
+                    onChange={(e) => updateSlide(index, "subtitle", e.target.value)}
+                    placeholder="例如：新品上架"
+                    className="w-full px-2 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                  />
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1">標題 (選填)</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
-              placeholder="例如：最新波鞋"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1">副標題 (選填)</label>
-            <input
-              type="text"
-              value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
-              className="w-full px-3 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
-              placeholder="例如：正品保證 · 免運費滿$600"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1">連結 URL (選填)</label>
-            <input
-              type="text"
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              className="w-full px-3 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
-              placeholder="例如：/products?category=Air+Jordan"
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
+          {/* Active toggle */}
+          <div className="flex items-center justify-between pt-4 border-t border-zinc-200">
             <span className="text-sm font-medium text-zinc-700">啟用</span>
             <button
               type="button"
               onClick={() => setActive(!active)}
-              className={`w-12 h-6 rounded-full transition-colors ${active ? "bg-olive-600" : "bg-zinc-300"}`}
+              className={`w-12 h-6 rounded-full transition-colors ${
+                active ? "bg-olive-600" : "bg-zinc-300"
+              }`}
             >
               <div
                 className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
@@ -1034,10 +1178,15 @@ function BannerModal({
         </div>
 
         <div className="p-4 border-t border-zinc-200 flex gap-2 justify-end sticky bottom-0 bg-white">
-          <button onClick={onClose} className="px-4 py-2 text-zinc-700 hover:bg-zinc-100 rounded-xl">取消</button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-zinc-700 hover:bg-zinc-100 rounded-xl"
+          >
+            取消
+          </button>
           <button
             onClick={handleSave}
-            disabled={saving || !imageUrl}
+            disabled={saving}
             className="px-4 py-2 bg-olive-600 text-white rounded-xl hover:bg-olive-700 disabled:opacity-50"
           >
             {saving ? "儲存中..." : "儲存"}

@@ -276,10 +276,11 @@ model HomepageSection {
 
 model HomepageBanner {
   id        String   @id @default(cuid())
-  imageUrl  String   // banner image URL
+  imageUrl  String   // banner image URL (fallback for single image)
   title     String?  // overlay text
   subtitle  String?  // overlay subtitle
   linkUrl   String?  // click destination (optional, no button)
+  images    Json?    // array of slides: [{ imageUrl, linkUrl, title, subtitle }, ...]
   sortOrder Int      @default(0)
   active    Boolean  @default(true)
   position  String   @default("hero") // "hero" = top carousel, "mid" = mid-page

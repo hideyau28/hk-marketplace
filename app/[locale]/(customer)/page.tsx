@@ -152,24 +152,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   unifiedItems.sort((a, b) => a.data.sortOrder - b.data.sortOrder);
 
+  // No need to group banners anymore - each banner can have multiple images
   type RenderItem =
     | { type: "section"; data: any; products: any[] }
-    | { type: "banner-group"; banners: any[] };
+    | { type: "banner"; data: any };
 
-  const renderItems: RenderItem[] = [];
-
-  for (const item of unifiedItems) {
-    if (item.type === "banner") {
-      const lastItem = renderItems[renderItems.length - 1];
-      if (lastItem && lastItem.type === "banner-group") {
-        lastItem.banners.push(item.data);
-      } else {
-        renderItems.push({ type: "banner-group", banners: [item.data] });
-      }
-    } else {
-      renderItems.push(item);
-    }
-  }
+  const renderItems: RenderItem[] = unifiedItems;
 
   const saleProducts = allProducts
     .filter((p) => p.originalPrice && p.originalPrice > p.price)
@@ -197,37 +185,52 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   return (
     <div className="pb-16">
       {renderItems.map((item) => {
-        if (item.type === "banner-group") {
-          const banners = item.banners;
+        if (item.type === "banner") {
+          const banner = item.data;
 
-          if (banners.length === 1) {
-            const banner = banners[0];
-            return (
-              <div key={`banner-${banner.id}`} className="px-4 pt-4">
-                <PromoBannerFull
-                  locale={l}
-                  headline={banner.title || ""}
-                  subtext={banner.subtitle || ""}
-                  imageUrl={banner.imageUrl}
-                  linkUrl={banner.linkUrl}
-                />
-              </div>
-            );
-          } else {
-            const slides = banners.map((banner: any) => ({
-              key: banner.id,
-              title: banner.title || "",
-              subtitle: banner.subtitle || undefined,
-              buttonLink: banner.linkUrl || undefined,
-              imageUrl: banner.imageUrl || undefined,
+          // Get slides from banner.images or fallback to old imageUrl field
+          const slides =
+            banner.images && banner.images.length > 0
+              ? banner.images
+              : [
+                  {
+                    imageUrl: banner.imageUrl,
+                    linkUrl: banner.linkUrl,
+                    title: banner.title,
+                    subtitle: banner.subtitle,
+                  },
+                ];
+
+          // If 2+ slides, render as carousel
+          if (slides.length > 1) {
+            const carouselSlides = slides.map((slide: any, idx: number) => ({
+              key: `${banner.id}-${idx}`,
+              title: slide.title || "",
+              subtitle: slide.subtitle || undefined,
+              buttonLink: slide.linkUrl || undefined,
+              imageUrl: slide.imageUrl || undefined,
             }));
 
             return (
-              <div key={`carousel-${banners[0].id}`} className="px-4 pt-4">
-                <HeroCarouselCMS slides={slides} locale={l} />
+              <div key={`carousel-${banner.id}`} className="px-4 pt-4">
+                <HeroCarouselCMS slides={carouselSlides} locale={l} />
               </div>
             );
           }
+
+          // Single slide - render as static banner
+          const slide = slides[0];
+          return (
+            <div key={`banner-${banner.id}`} className="px-4 pt-4">
+              <PromoBannerFull
+                locale={l}
+                headline={slide.title || ""}
+                subtext={slide.subtitle || ""}
+                imageUrl={slide.imageUrl}
+                linkUrl={slide.linkUrl}
+              />
+            </div>
+          );
         }
 
         const section = item.data;
