@@ -23,13 +23,18 @@ export type OrderWithPayments = Order & {
 };
 
 const ORDER_STATUSES = [
+  // New status flow
   "PENDING",
-  "PAID",
-  "FULFILLING",
+  "CONFIRMED",
+  "PROCESSING",
   "SHIPPED",
+  "DELIVERED",
   "COMPLETED",
   "CANCELLED",
   "REFUNDED",
+  // Legacy statuses
+  "PAID",
+  "FULFILLING",
   "DISPUTED",
 ] as const;
 
@@ -74,7 +79,7 @@ function getApiBaseUrl() {
   return "http://localhost:3012";
 }
 
-export async function fetchOrders(status?: string): Promise<FetchOrdersResult> {
+export async function fetchOrders(status?: string, search?: string): Promise<FetchOrdersResult> {
   const adminSecret = process.env.ADMIN_SECRET;
 
   if (!adminSecret) {
@@ -85,6 +90,9 @@ export async function fetchOrders(status?: string): Promise<FetchOrdersResult> {
     const url = new URL("/api/orders", getApiBaseUrl());
     if (status) {
       url.searchParams.set("status", status);
+    }
+    if (search) {
+      url.searchParams.set("q", search);
     }
 
     const response = await fetch(url.toString(), {

@@ -75,6 +75,16 @@ model Order {
   paymentMethod           String?          // "fps", "payme", "alipay"
   paymentProof            String?          // uploaded image URL/path
   paymentStatus           String           @default("pending") // pending, uploaded, confirmed, rejected
+  // New status timestamps
+  confirmedAt             DateTime?
+  deliveredAt             DateTime?
+  processingAt            DateTime?
+  // Admin management fields
+  adminNotes              String?          // JSON array of {timestamp, note, author}
+  trackingNumber          String?
+  cancelReason            String?
+  refundReason            String?
+  statusHistory           String?          // JSON array of {timestamp, fromStatus, toStatus}
 
   @@index([status])
   @@index([createdAt])
@@ -190,13 +200,18 @@ model SiteContent {
 }
 
 enum OrderStatus {
+  // New status flow
   PENDING
-  PAID
-  FULFILLING
+  CONFIRMED
+  PROCESSING
   SHIPPED
+  DELIVERED
   COMPLETED
   CANCELLED
   REFUNDED
+  // Legacy statuses (backward compatibility)
+  PAID
+  FULFILLING
   DISPUTED
 }
 

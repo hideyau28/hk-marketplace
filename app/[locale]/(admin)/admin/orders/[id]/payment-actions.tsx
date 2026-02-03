@@ -28,13 +28,13 @@ export default function PaymentActions({ orderId, paymentMethod, paymentStatus, 
   const [loading, setLoading] = useState(false);
 
   const handleConfirm = async () => {
-    if (!confirm("確定確認收款？訂單狀態將會更新為「已付款」")) return;
+    if (!confirm("確定確認收款？訂單狀態將會更新為「已確認」")) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/orders/${orderId}/payment`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentStatus: "confirmed", status: "PAID" }),
+        body: JSON.stringify({ action: "confirm" }),
       });
       if (res.ok) {
         router.refresh();
@@ -54,10 +54,10 @@ export default function PaymentActions({ orderId, paymentMethod, paymentStatus, 
     if (reason === null) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/orders/${orderId}/payment`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentStatus: "rejected", note: reason || undefined }),
+        body: JSON.stringify({ action: "reject", note: reason || undefined }),
       });
       if (res.ok) {
         router.refresh();

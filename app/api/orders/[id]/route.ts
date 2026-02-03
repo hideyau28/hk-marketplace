@@ -5,13 +5,18 @@ import { prisma } from "@/lib/prisma";
 import { isValidTransition, getTransitionError } from "@/lib/orders/status-transitions";
 
 const ORDER_STATUSES = [
+    // New status flow
     "PENDING",
-    "PAID",
-    "FULFILLING",
+    "CONFIRMED",
+    "PROCESSING",
     "SHIPPED",
+    "DELIVERED",
     "COMPLETED",
     "CANCELLED",
     "REFUNDED",
+    // Legacy statuses
+    "PAID",
+    "FULFILLING",
     "DISPUTED",
 ] as const;
 
@@ -60,6 +65,11 @@ export const GET = withApi(
 
 // Map status to its corresponding timestamp field
 const STATUS_TIMESTAMP_MAP: Record<string, string> = {
+    // New statuses
+    CONFIRMED: "confirmedAt",
+    PROCESSING: "processingAt",
+    DELIVERED: "deliveredAt",
+    // Existing statuses
     FULFILLING: "fulfillingAt",
     SHIPPED: "shippedAt",
     COMPLETED: "completedAt",
@@ -94,16 +104,21 @@ export const PATCH = withApi(
         const status = normalizeStatus(body?.status);
         const paymentStatus = normalizePaymentStatus(body?.paymentStatus);
         const note = typeof body?.note === "string" ? body.note.trim() : null;
+        const trackingNumber = typeof body?.trackingNumber === "string" ? body.trackingNumber.trim() : undefined;
+        const cancelReason = typeof body?.cancelReason === "string" ? body.cancelReason.trim() : undefined;
+        const refundReason = typeof body?.refundReason === "string" ? body.refundReason.trim() : undefined;
 
         // At least one field must be provided
-        if (!status && !paymentStatus) {
-            throw new ApiError(400, "BAD_REQUEST", "status or paymentStatus is required");
+        const hasAnyUpdate = status || paymentStatus || note !== null ||
+            trackingNumber !== undefined || cancelReason !== undefined || refundReason !== undefined;
+        if (!hasAnyUpdate) {
+            throw new ApiError(400, "BAD_REQUEST", "At least one field is required");
         }
 
         // Fetch current order to validate transition
         const currentOrder = await prisma.order.findUnique({
             where: { id },
-            select: { status: true, paymentStatus: true },
+            select: { status: true, paymentStatus: true, statusHistory: true },
         });
 
         if (!currentOrder) {
@@ -133,10 +148,21 @@ export const PATCH = withApi(
                 }
             }
 
-            // Set paidAt when transitioning to PAID
-            if (status === "PAID") {
+            // Set paidAt when transitioning to PAID or CONFIRMED (confirms payment)
+            if (status === "PAID" || status === "CONFIRMED") {
                 updateData.paidAt = new Date();
             }
+
+            // Record status history
+            const history = currentOrder.statusHistory
+                ? JSON.parse(currentOrder.statusHistory)
+                : [];
+            history.push({
+                timestamp: new Date().toISOString(),
+                fromStatus: currentOrder.status,
+                toStatus: status,
+            });
+            updateData.statusHistory = JSON.stringify(history);
         }
 
         // Handle payment status update
@@ -147,6 +173,21 @@ export const PATCH = withApi(
         // Handle note update (for rejection reason, etc.)
         if (note !== null) {
             updateData.note = note;
+        }
+
+        // Handle tracking number
+        if (trackingNumber !== undefined) {
+            updateData.trackingNumber = trackingNumber || null;
+        }
+
+        // Handle cancel reason
+        if (cancelReason !== undefined) {
+            updateData.cancelReason = cancelReason || null;
+        }
+
+        // Handle refund reason
+        if (refundReason !== undefined) {
+            updateData.refundReason = refundReason || null;
         }
 
         const order = await prisma.order.update({

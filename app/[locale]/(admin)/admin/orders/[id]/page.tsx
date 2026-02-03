@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import OrderStatusUpdate from "./order-status-update";
 import PaymentActions from "./payment-actions";
+import AdminNotes from "./admin-notes";
 import type { Locale } from "@/lib/i18n";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 
@@ -103,7 +104,17 @@ export default async function OrderDetailPage({ params }: PageProps) {
         {/* Order Status */}
         <div className="bg-white rounded-2xl border border-zinc-200 p-6">
           <h3 className="text-lg font-semibold text-zinc-900 mb-4">Order Status</h3>
-          <OrderStatusUpdate order={order} locale={l} />
+          <OrderStatusUpdate
+            order={{
+              id: order.id,
+              status: order.status,
+              trackingNumber: order.trackingNumber,
+              cancelReason: order.cancelReason,
+              refundReason: order.refundReason,
+              statusHistory: order.statusHistory,
+            }}
+            locale={l}
+          />
         </div>
 
         {/* Fulfillment Info */}
@@ -214,6 +225,15 @@ export default async function OrderDetailPage({ params }: PageProps) {
           />
         </div>
       )}
+
+      {/* Admin Notes */}
+      <div className="mt-6">
+        <AdminNotes
+          orderId={order.id}
+          notes={order.adminNotes ? JSON.parse(order.adminNotes) : []}
+          locale={l}
+        />
+      </div>
 
       {/* Payment Attempts */}
       {order.paymentAttempts.length > 0 && (

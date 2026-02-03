@@ -39,13 +39,18 @@ async function generateOrderNumber(): Promise<string> {
 }
 
 const ORDER_STATUSES = [
+    // New status flow
     "PENDING",
-    "PAID",
-    "FULFILLING",
+    "CONFIRMED",
+    "PROCESSING",
     "SHIPPED",
+    "DELIVERED",
     "COMPLETED",
     "CANCELLED",
     "REFUNDED",
+    // Legacy statuses
+    "PAID",
+    "FULFILLING",
     "DISPUTED",
 ] as const;
 
@@ -290,6 +295,7 @@ export const GET = withApi(
     async (req) => {
         const { searchParams } = new URL(req.url);
         const status = normalizeStatus(searchParams.get("status"));
+        const search = searchParams.get("q")?.trim() || null;
         const limitParam = searchParams.get("limit");
         const limit = limitParam ? Number(limitParam) : 50;
 
@@ -297,8 +303,21 @@ export const GET = withApi(
             throw new ApiError(400, "BAD_REQUEST", "limit must be between 1 and 200");
         }
 
+        // Build where clause
+        const where: any = {};
+        if (status) {
+            where.status = status;
+        }
+        if (search) {
+            // Search by orderNumber or phone (case-insensitive)
+            where.OR = [
+                { orderNumber: { contains: search, mode: "insensitive" } },
+                { phone: { contains: search, mode: "insensitive" } },
+            ];
+        }
+
         const orders = await prisma.order.findMany({
-            where: status ? { status } : undefined,
+            where: Object.keys(where).length > 0 ? where : undefined,
             orderBy: { createdAt: "desc" },
             take: limit,
             include: {
