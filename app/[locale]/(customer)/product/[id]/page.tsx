@@ -90,6 +90,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     stock: (product as any).stock ?? 0,
     shoeType: product.shoeType || null,
     isKids,
+    promotionBadges: (product as any).promotionBadges || [],
   };
 
   // Get translated category name

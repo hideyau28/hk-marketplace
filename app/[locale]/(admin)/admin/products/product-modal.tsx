@@ -169,6 +169,22 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     setImages(images.filter((_, i) => i !== index));
   };
 
+  // Swap an extra image to become the main image
+  const handleSetAsMainImage = (index: number) => {
+    const newMainImage = images[index];
+    const oldMainImage = imageUrl;
+
+    // Set the selected image as main
+    setImageUrl(newMainImage);
+
+    // Remove the selected image from extras and add old main if it exists
+    const newImages = images.filter((_, i) => i !== index);
+    if (oldMainImage) {
+      newImages.unshift(oldMainImage); // Add old main to beginning of extras
+    }
+    setImages(newImages);
+  };
+
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
   };
@@ -413,12 +429,21 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                           onDragStart={() => handleDragStart(index)}
                           onDragOver={(e) => handleDragOver(e, index)}
                           onDragEnd={handleDragEnd}
-                          className={`relative aspect-square rounded-xl overflow-hidden border cursor-move transition-all ${
+                          className={`group relative aspect-square rounded-xl overflow-hidden border cursor-move transition-all ${
                             draggedIndex === index ? "border-olive-500 ring-2 ring-olive-200" : "border-zinc-200"
                           }`}
                         >
                           <img src={img} alt={`Image ${index + 1}`} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
+                          {/* Set as main image button - shows on hover */}
+                          <button
+                            type="button"
+                            onClick={() => handleSetAsMainImage(index)}
+                            disabled={isPending}
+                            className="absolute inset-x-1 bottom-6 py-1 px-1 text-[10px] font-medium text-white bg-[#6B7A2F]/90 hover:bg-[#6B7A2F] rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                          >
+                            ⭐ 設為主圖
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleRemoveImage(index)}

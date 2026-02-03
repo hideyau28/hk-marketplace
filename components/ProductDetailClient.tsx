@@ -24,9 +24,20 @@ type ProductDetailClientProps = {
     sizes: any;
     stock: number;
     isKids?: boolean;
+    promotionBadges?: string[];
   };
   locale: string;
   t: Translations;
+};
+
+// Badge color mapping for product detail page
+const BADGE_COLORS: Record<string, string> = {
+  "店長推介": "bg-[#6B7A2F] text-white",
+  "今期熱賣": "bg-orange-500 text-white",
+  "新品上架": "bg-blue-500 text-white",
+  "限時優惠": "bg-red-500 text-white",
+  "人氣之選": "bg-purple-500 text-white",
+  "快將售罄": "bg-red-600 text-white",
 };
 
 export default function ProductDetailClient({ product, locale, t }: ProductDetailClientProps) {
@@ -97,6 +108,31 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
 
       {/* Title */}
       <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{product.title}</h1>
+
+      {/* Promotion Badges - show all badges */}
+      {(() => {
+        const badges: string[] = [];
+        if (product.promotionBadges && product.promotionBadges.length > 0) {
+          badges.push(...product.promotionBadges);
+        }
+        // Auto-add "快將售罄" if stock <= 5 and > 0
+        if (product.stock > 0 && product.stock <= 5 && !badges.includes("快將售罄")) {
+          badges.push("快將售罄");
+        }
+        if (badges.length === 0) return null;
+        return (
+          <div className="flex flex-wrap gap-2">
+            {badges.map((badge, idx) => (
+              <span
+                key={idx}
+                className={`rounded-full px-3 py-1 text-sm font-medium ${BADGE_COLORS[badge] || "bg-zinc-500 text-white"}`}
+              >
+                {badge === "快將售罄" ? `🔥 ${badge}` : badge}
+              </span>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Price */}
       <div className="flex items-center gap-2 flex-wrap">

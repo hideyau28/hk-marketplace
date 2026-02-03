@@ -4,7 +4,6 @@ import { useState, useRef, useMemo } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 import { addToCart } from "@/lib/cart";
-import { Badge } from "./Badge";
 import { useCurrency } from "@/lib/currency";
 import { useToast } from "@/components/Toast";
 import WishlistHeart from "@/components/WishlistHeart";
@@ -21,11 +20,26 @@ type ProductCardProps = {
     stock?: number;
     badges?: string[];
     badge?: string;
+    promotionBadges?: string[];
     sizes?: Record<string, number> | null;
   };
   // For grid layouts - makes card fill container width
   fillWidth?: boolean;
 };
+
+// Badge color mapping
+const BADGE_COLORS: Record<string, string> = {
+  "店長推介": "bg-[#6B7A2F] text-white",
+  "今期熱賣": "bg-orange-500 text-white",
+  "新品上架": "bg-blue-500 text-white",
+  "限時優惠": "bg-red-500 text-white",
+  "人氣之選": "bg-purple-500 text-white",
+  "快將售罄": "bg-red-600 text-white",
+};
+
+function getBadgeClasses(badge: string): string {
+  return BADGE_COLORS[badge] || "bg-zinc-500 text-white";
+}
 
 function CartIcon() {
   return (
@@ -171,27 +185,48 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
               </div>
             )}
 
+            {/* Sold out overlay */}
             {p.stock === 0 && (
-              <div className="absolute left-2 top-2 rounded-full bg-zinc-900/80 px-2 py-1 text-xs font-semibold text-white">
-                Out of Stock
+              <div className="absolute inset-0 bg-zinc-900/60 flex items-center justify-center">
+                <span className="text-white font-semibold text-sm">已售罄</span>
               </div>
             )}
 
-            {/* Low stock badge with pulse animation */}
-            {p.stock !== undefined && p.stock > 0 && p.stock <= 5 && (
-              <div
-                className="absolute left-2 top-2 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white"
-                style={{
-                  animation: "lowStockPulse 8s ease-in-out infinite",
-                }}
-              >
-                🔥 快將售罄
+            {/* Promotion badges - top-left, stacked vertically (max 2) */}
+            {p.stock !== 0 && (
+              <div className="absolute left-1.5 top-1.5 flex flex-col gap-1">
+                {(() => {
+                  // Build badges array: promotionBadges + auto low-stock badge
+                  const badges: string[] = [];
+
+                  // Add promotion badges from DB
+                  if (p.promotionBadges && p.promotionBadges.length > 0) {
+                    badges.push(...p.promotionBadges);
+                  }
+
+                  // Auto-add "快將售罄" if stock <= 5 and > 0
+                  const isLowStock = p.stock !== undefined && p.stock > 0 && p.stock <= 5;
+                  if (isLowStock && !badges.includes("快將售罄")) {
+                    badges.push("快將售罄");
+                  }
+
+                  // Show max 2 badges
+                  return badges.slice(0, 2).map((badge, idx) => (
+                    <span
+                      key={idx}
+                      className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold shadow-sm ${getBadgeClasses(badge)}`}
+                      style={badge === "快將售罄" ? { animation: "lowStockPulse 8s ease-in-out infinite" } : undefined}
+                    >
+                      {badge === "快將售罄" ? `🔥 ${badge}` : badge}
+                    </span>
+                  ));
+                })()}
               </div>
             )}
 
-            {/* Discount badge - only show when not low stock */}
-            {isOnSale && p.stock !== 0 && !(p.stock !== undefined && p.stock > 0 && p.stock <= 5) && (
-              <div className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white">
+            {/* Discount percentage badge - top-right */}
+            {isOnSale && p.stock !== 0 && (
+              <div className="absolute right-1.5 top-1.5 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm">
                 -{discountPercent}%
               </div>
             )}
@@ -279,21 +314,6 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
         </div>
       </div>
 
-      {/* Badges */}
-      {p.badges && p.badges.length > 0 && (
-        <div className="px-2.5 pb-2 flex gap-1 flex-wrap">
-          {p.badges.slice(0, 2).map((badge, idx) => (
-            <Badge key={idx}>{badge}</Badge>
-          ))}
-        </div>
-      )}
-
-      {/* Legacy single badge support */}
-      {!p.badges && p.badge && (
-        <div className="px-2.5 pb-2">
-          <Badge>{p.badge}</Badge>
-        </div>
-      )}
 
       <style jsx>{`
         @keyframes fade-in {
