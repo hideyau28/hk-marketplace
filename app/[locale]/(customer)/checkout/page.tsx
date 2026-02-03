@@ -44,7 +44,7 @@ const DEFAULT_SHIPPING_FEE = 40;
 const DEFAULT_FREE_SHIPPING_THRESHOLD = 600;
 const OUTLYING_ISLANDS_SURCHARGE = 20;
 
-const SAVED_ADDRESS_KEY = "hkmarket_saved_address";
+const SAVED_ADDRESS_KEY = "hk_last_address";
 
 function getSavedAddress(): SavedAddress | null {
   if (typeof window === "undefined") return null;
@@ -97,6 +97,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [street, setStreet] = useState("");
   const [unit, setUnit] = useState("");
   const [savedAddress, setSavedAddress] = useState<SavedAddress | null>(null);
+  const [savedAddressDismissed, setSavedAddressDismissed] = useState(false);
   const addressInputRef = useRef<HTMLInputElement>(null);
 
   // Section 3: Order note
@@ -745,13 +746,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                   <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">送貨地址</h2>
 
                   {/* Saved address quick-fill */}
-                  {savedAddress && (
-                    <button
-                      type="button"
-                      onClick={useSavedAddressHandler}
-                      className="mb-4 w-full flex items-center gap-3 rounded-xl border border-olive-200 bg-olive-50 p-3 text-left hover:bg-olive-100 dark:border-olive-800 dark:bg-olive-900/20"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-olive-100 dark:bg-olive-800 flex items-center justify-center">
+                  {savedAddress && !savedAddressDismissed && (
+                    <div className="mb-4 flex items-center gap-3 rounded-xl border border-olive-200 bg-olive-50 p-3 dark:border-olive-800 dark:bg-olive-900/20">
+                      <div className="w-8 h-8 rounded-full bg-olive-100 dark:bg-olive-800 flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-olive-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -761,7 +758,24 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                         <div className="text-sm font-medium text-olive-700 dark:text-olive-300">使用上次地址</div>
                         <div className="text-xs text-olive-600 dark:text-olive-400 truncate">{savedAddress.fullAddress}</div>
                       </div>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={useSavedAddressHandler}
+                        className="px-3 py-1.5 text-sm font-medium text-olive-700 bg-olive-100 hover:bg-olive-200 rounded-lg dark:bg-olive-800 dark:text-olive-300 dark:hover:bg-olive-700"
+                      >
+                        使用
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSavedAddressDismissed(true)}
+                        className="p-1 text-olive-500 hover:text-olive-700 dark:text-olive-400 dark:hover:text-olive-300"
+                        aria-label="關閉"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   )}
 
                   <div className="space-y-4">
@@ -795,22 +809,28 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                         </div>
 
                         {/* Address suggestions dropdown */}
-                        {showSuggestions && addressSuggestions.length > 0 && (
-                          <div className="absolute z-10 mt-1 w-full rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800 max-h-60 overflow-y-auto">
-                            {addressSuggestions.map((suggestion, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                onMouseDown={(e) => e.preventDefault()}
-                                onClick={() => selectAddress(suggestion)}
-                                className="w-full px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 first:rounded-t-xl last:rounded-b-xl"
-                              >
-                                <div className="text-sm text-zinc-900 dark:text-zinc-100">{suggestion.fullAddress}</div>
-                                <div className="text-xs text-zinc-500 mt-0.5">
-                                  {suggestion.region} {suggestion.district && `· ${suggestion.district}`}
-                                </div>
-                              </button>
-                            ))}
+                        {showSuggestions && addressQuery.length >= 2 && (
+                          <div className="absolute z-50 mt-1 w-full rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800 max-h-60 overflow-y-auto">
+                            {isLoadingAddresses ? (
+                              <div className="px-4 py-3 text-sm text-zinc-500">搜尋中...</div>
+                            ) : addressSuggestions.length > 0 ? (
+                              addressSuggestions.map((suggestion, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => selectAddress(suggestion)}
+                                  className="w-full px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 first:rounded-t-xl last:rounded-b-xl"
+                                >
+                                  <div className="text-sm text-zinc-900 dark:text-zinc-100">{suggestion.fullAddress}</div>
+                                  <div className="text-xs text-zinc-500 mt-0.5">
+                                    {suggestion.region} {suggestion.district && `· ${suggestion.district}`}
+                                  </div>
+                                </button>
+                              ))
+                            ) : (
+                              <div className="px-4 py-3 text-sm text-zinc-500">找不到地址</div>
+                            )}
                           </div>
                         )}
 
