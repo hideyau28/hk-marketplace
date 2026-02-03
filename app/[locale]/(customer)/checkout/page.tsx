@@ -39,8 +39,27 @@ interface SavedAddress {
 const HK_REGIONS = ["香港島", "九龍", "新界", "離島"] as const;
 type HKRegion = (typeof HK_REGIONS)[number];
 
+type DeliveryMethod = "home" | "sfLocker";
+
+interface SavedCheckoutData {
+  deliveryMethod: DeliveryMethod;
+  name: string;
+  phone: string;
+  // For home delivery
+  region?: string;
+  district?: string;
+  street?: string;
+  building?: string;
+  block?: string;
+  floor?: string;
+  unit?: string;
+  // For SF locker
+  lockerCode?: string;
+}
+
 // Shipping fee constants (will be overridden by store settings)
-const DEFAULT_SHIPPING_FEE = 40;
+const DEFAULT_SHIPPING_FEE_HOME = 40;
+const DEFAULT_SHIPPING_FEE_LOCKER = 35;
 const DEFAULT_FREE_SHIPPING_THRESHOLD = 600;
 const OUTLYING_ISLANDS_SURCHARGE = 20;
 
@@ -65,6 +84,25 @@ function saveAddress(address: SavedAddress): void {
   }
 }
 
+function getSavedCheckoutData(): SavedCheckoutData | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const saved = localStorage.getItem(SAVED_ADDRESS_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCheckoutData(data: SavedCheckoutData): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(SAVED_ADDRESS_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 export default function CheckoutPage({ params }: { params: Promise<{ locale: string }> }) {
   const [locale, setLocale] = useState<Locale>("en");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -75,7 +113,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const { format } = useCurrency();
 
   // Store settings
-  const [shippingFee, setShippingFee] = useState(DEFAULT_SHIPPING_FEE);
+  const [shippingFeeHome, setShippingFeeHome] = useState(DEFAULT_SHIPPING_FEE_HOME);
+  const [shippingFeeLocker, setShippingFeeLocker] = useState(DEFAULT_SHIPPING_FEE_LOCKER);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(DEFAULT_FREE_SHIPPING_THRESHOLD);
 
   // Checkout step state
@@ -86,7 +125,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
 
-  // Section 2: Delivery address
+  // Delivery method
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("home");
+
+  // Section 2: Delivery address (for home delivery)
   const [addressQuery, setAddressQuery] = useState("");
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -95,10 +137,16 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [region, setRegion] = useState<HKRegion | "">("");
   const [district, setDistrict] = useState("");
   const [street, setStreet] = useState("");
+  const [building, setBuilding] = useState("");
+  const [block, setBlock] = useState("");
+  const [floor, setFloor] = useState("");
   const [unit, setUnit] = useState("");
   const [savedAddress, setSavedAddress] = useState<SavedAddress | null>(null);
   const [savedAddressDismissed, setSavedAddressDismissed] = useState(false);
   const addressInputRef = useRef<HTMLInputElement>(null);
+
+  // SF Locker code (for SF locker delivery)
+  const [lockerCode, setLockerCode] = useState("");
 
   // Section 3: Order note
   const [orderNote, setOrderNote] = useState("");
@@ -161,14 +209,15 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       .then((res) => res.json())
       .then((data) => {
         if (data.ok && data.data) {
-          if (data.data.shippingFee) setShippingFee(data.data.shippingFee);
+          // Use store settings for home delivery as default
+          if (data.data.shippingFee) setShippingFeeHome(data.data.shippingFee);
           if (data.data.freeShippingThreshold) setFreeShippingThreshold(data.data.freeShippingThreshold);
         }
       })
       .catch(console.error);
   }, []);
 
-  // Pre-fill form with user data when logged in
+  // Pre-fill form with user data when logged in OR from localStorage
   useEffect(() => {
     if (user && !prefilled) {
       if (user.name) setCustomerName(user.name);
@@ -187,6 +236,23 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
           setUseManualEntry(true);
           setStreet(user.address);
         }
+      }
+      setPrefilled(true);
+    } else if (!user && !prefilled) {
+      // Try to load from localStorage if not logged in
+      const savedCheckout = getSavedCheckoutData();
+      if (savedCheckout) {
+        setCustomerName(savedCheckout.name || "");
+        setPhone(savedCheckout.phone || "");
+        if (savedCheckout.deliveryMethod) setDeliveryMethod(savedCheckout.deliveryMethod);
+        if (savedCheckout.region) setRegion(savedCheckout.region as HKRegion);
+        if (savedCheckout.district) setDistrict(savedCheckout.district);
+        if (savedCheckout.street) setStreet(savedCheckout.street);
+        if (savedCheckout.building) setBuilding(savedCheckout.building);
+        if (savedCheckout.block) setBlock(savedCheckout.block);
+        if (savedCheckout.floor) setFloor(savedCheckout.floor);
+        if (savedCheckout.unit) setUnit(savedCheckout.unit);
+        if (savedCheckout.lockerCode) setLockerCode(savedCheckout.lockerCode);
       }
       setPrefilled(true);
     }
@@ -334,10 +400,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
 
   // Calculate shipping
   const subtotal = getCartTotal(cart);
-  const isOutlyingIslands = region === "離島";
+  const isOutlyingIslands = deliveryMethod === "home" && region === "離島";
   const qualifiesForFreeShipping = subtotal >= freeShippingThreshold;
-  const baseShipping = qualifiesForFreeShipping ? 0 : shippingFee;
-  const islandSurcharge = isOutlyingIslands ? OUTLYING_ISLANDS_SURCHARGE : 0;
+  const baseFee = deliveryMethod === "home" ? shippingFeeHome : shippingFeeLocker;
+  const baseShipping = qualifiesForFreeShipping ? 0 : baseFee;
+  const islandSurcharge = isOutlyingIslands && !qualifiesForFreeShipping ? OUTLYING_ISLANDS_SURCHARGE : 0;
   const calculatedShipping = baseShipping + islandSurcharge;
   const amountToFreeShipping = freeShippingThreshold - subtotal;
   const total = Math.max(0, subtotal + calculatedShipping - discount);
@@ -479,8 +546,24 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       const result = await response.json();
 
       if (result.ok) {
-        // Save address for next time
-        saveAddress(addressData);
+        // Save checkout data for next time
+        const checkoutData: SavedCheckoutData = {
+          deliveryMethod,
+          name: customerName,
+          phone,
+          ...(deliveryMethod === "home" ? {
+            region,
+            district,
+            street,
+            building,
+            block,
+            floor,
+            unit,
+          } : {
+            lockerCode,
+          }),
+        };
+        saveCheckoutData(checkoutData);
 
         clearCart();
         showToast("訂單已提交！我們會盡快確認您的付款。");
@@ -741,9 +824,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                   </div>
                 </div>
 
-                {/* Section 2: Delivery Address */}
+                {/* Section 3: Delivery Address (conditional) */}
                 <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">送貨地址</h2>
+                  {deliveryMethod === "home" ? (
+                    <>
+                      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">送貨地址</h2>
 
                   {/* Saved address quick-fill */}
                   {savedAddress && !savedAddressDismissed && (
@@ -846,80 +931,153 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                       </div>
                     )}
 
-                    {/* Manual entry fallback */}
+                    {/* Manual entry toggle */}
                     {useManualEntry && (
-                      <>
-                        <div>
-                          <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                            地區 <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            value={region}
-                            onChange={(e) => setRegion(e.target.value as HKRegion)}
-                            className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-                          >
-                            <option value="">選擇地區</option>
-                            {HK_REGIONS.map((r) => (
-                              <option key={r} value={r}>
-                                {r}
-                                {r === "離島" && " (+$20)"}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                            街道/大廈 <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={street}
-                            onChange={(e) => setStreet(e.target.value)}
-                            placeholder="例：觀塘道123號創紀之城"
-                            className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-                          />
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setUseManualEntry(false);
-                            setAddressQuery("");
-                          }}
-                          className="text-sm text-olive-600 hover:text-olive-700 dark:text-olive-400"
-                        >
-                          ← 返回地址搜尋
-                        </button>
-                      </>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUseManualEntry(false);
+                          setAddressQuery("");
+                        }}
+                        className="text-sm text-olive-600 hover:text-olive-700 dark:text-olive-400 mb-4"
+                      >
+                        ← 返回地址搜尋
+                      </button>
                     )}
 
-                    {/* Unit (always shown) */}
+                    {/* Region */}
                     <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">樓層/單位（選填）</label>
+                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
+                        地區 <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={region}
+                        onChange={(e) => setRegion(e.target.value as HKRegion)}
+                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                      >
+                        <option value="">選擇地區</option>
+                        {HK_REGIONS.map((r) => (
+                          <option key={r} value={r}>
+                            {r}
+                          </option>
+                        ))}
+                      </select>
+                      {region === "離島" && (
+                        <p className="mt-1 text-xs text-amber-600">離島附加費 +${OUTLYING_ISLANDS_SURCHARGE}</p>
+                      )}
+                    </div>
+
+                    {/* District */}
+                    <div>
+                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
+                        區域 <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
-                        value={unit}
-                        onChange={(e) => setUnit(e.target.value)}
-                        placeholder="例：12樓 A室"
+                        value={district}
+                        onChange={(e) => setDistrict(e.target.value)}
+                        placeholder="例：旺角"
                         className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
                       />
                     </div>
 
-                    {/* Region display (when selected via autocomplete) */}
-                    {region && !useManualEntry && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-zinc-500">送貨地區：</span>
-                        <span className={`font-medium ${region === "離島" ? "text-amber-600" : "text-zinc-900 dark:text-zinc-100"}`}>
-                          {region}
-                          {region === "離島" && " (附加費 +$20)"}
-                        </span>
-                      </div>
-                    )}
+                    {/* Street */}
+                    <div>
+                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
+                        街道/屋苑 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={street}
+                        onChange={(e) => setStreet(e.target.value)}
+                        placeholder="例：彌敦道 688號"
+                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                      />
+                    </div>
+
+                    {/* Building (optional) */}
+                    <div>
+                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
+                        大廈名稱（選填）
+                      </label>
+                      <input
+                        type="text"
+                        value={building}
+                        onChange={(e) => setBuilding(e.target.value)}
+                        placeholder="例：旺角中心"
+                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                      />
+                    </div>
+
+                    {/* Block (optional) */}
+                    <div>
+                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
+                        座數（選填）
+                      </label>
+                      <input
+                        type="text"
+                        value={block}
+                        onChange={(e) => setBlock(e.target.value)}
+                        placeholder="例：A座"
+                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                      />
+                    </div>
+
+                    {/* Floor */}
+                    <div>
+                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
+                        樓層 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={floor}
+                        onChange={(e) => setFloor(e.target.value)}
+                        placeholder="例：12"
+                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                      />
+                    </div>
+
+                    {/* Unit */}
+                    <div>
+                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
+                        單位 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={unit}
+                        onChange={(e) => setUnit(e.target.value)}
+                        placeholder="例：A"
+                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                      />
+                    </div>
+
+                    {addressTouched && addressError && <p className="text-xs text-red-500">{addressError}</p>}
                   </div>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">智能櫃資料</h2>
+                      <div>
+                        <label className="block text-zinc-700 text-sm dark:text-zinc-300">
+                          智能櫃/順豐站編號 <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={lockerCode}
+                          onChange={(e) => setLockerCode(e.target.value)}
+                          placeholder="例：H852F001"
+                          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                        />
+                        {addressTouched && addressError && <p className="mt-1 text-xs text-red-500">{addressError}</p>}
+                        <p className="mt-2 text-xs text-zinc-500">
+                          請輸入您選擇的順豐智能櫃或順豐站編號
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                {/* Section 3: Order Note */}
+                {/* Section 4: Order Note */}
                 <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
                   <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">訂單備註</h2>
                   <textarea
