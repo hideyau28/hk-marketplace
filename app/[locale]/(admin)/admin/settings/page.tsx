@@ -1,7 +1,7 @@
 "use client";
 
 import { getDict, type Locale } from "@/lib/i18n";
-import { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, memo } from "react";
 import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare, Phone, Clock, MapPin, Truck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
@@ -54,21 +54,24 @@ function Description({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Input component with forwardRef for proper focus handling
-function InputField({
+// Memoized input component to prevent re-renders on parent state changes
+const InputField = memo(function InputField({
   value,
   onChange,
   className,
+  name,
   ...props
 }: {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, name: string) => void;
   className?: string;
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value">) {
+  name: string;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value" | "name">) {
   return (
     <input
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      name={name}
+      onChange={(e) => onChange(e.target.value, name)}
       className={cn(
         "flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
         className
@@ -76,22 +79,26 @@ function InputField({
       {...props}
     />
   );
-}
+});
 
-function TextareaField({
+// Memoized textarea component to prevent re-renders on parent state changes
+const TextareaField = memo(function TextareaField({
   value,
   onChange,
   className,
+  name,
   ...props
 }: {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, name: string) => void;
   className?: string;
-} & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "onChange" | "value">) {
+  name: string;
+} & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "onChange" | "value" | "name">) {
   return (
     <textarea
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      name={name}
+      onChange={(e) => onChange(e.target.value, name)}
       className={cn(
         "flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 ring-offset-white placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50",
         className
@@ -99,7 +106,7 @@ function TextareaField({
       {...props}
     />
   );
-}
+});
 
 export default function AdminSettings({ params }: { params: Promise<{ locale: string }> }) {
   const [locale, setLocale] = useState<Locale>("en");
@@ -168,8 +175,18 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
     }
   }
 
-  // Update individual setting field
-  const updateSetting = useCallback(<K extends keyof StoreSettings>(key: K, value: StoreSettings[K]) => {
+  // Update individual setting field - stable callback for memoized inputs
+  const handleFieldChange = useCallback((value: string, name: string) => {
+    setSettings((prev) => ({ ...prev, [name]: value }));
+  }, []);
+
+  // Update numeric field
+  const handleNumericChange = useCallback((value: string, name: string) => {
+    setSettings((prev) => ({ ...prev, [name]: Number(value) || 0 }));
+  }, []);
+
+  // Update boolean field
+  const updateBooleanSetting = useCallback((key: keyof StoreSettings, value: boolean) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }, []);
 
@@ -300,8 +317,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>{t.admin.settings.storeName}</Label>
                   <InputField
+                    name="storeName"
                     value={settings.storeName || ""}
-                    onChange={(value) => updateSetting("storeName", value)}
+                    onChange={handleFieldChange}
                     placeholder="e.g. Yau Store"
                   />
                   <Description>Visible in the navigation bar and browser title.</Description>
@@ -310,8 +328,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>{t.admin.settings.tagline}</Label>
                   <InputField
+                    name="tagline"
                     value={settings.tagline || ""}
-                    onChange={(value) => updateSetting("tagline", value)}
+                    onChange={handleFieldChange}
                     placeholder="e.g. Premium Tech & Lifestyle"
                   />
                   <Description>Featured prominently on the homepage hero section.</Description>
@@ -335,8 +354,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>{t.admin.settings.returnsPolicy}</Label>
                   <TextareaField
+                    name="returnsPolicy"
                     value={settings.returnsPolicy || ""}
-                    onChange={(value) => updateSetting("returnsPolicy", value)}
+                    onChange={handleFieldChange}
                     rows={4}
                     placeholder="e.g. Items can be returned within 30 days of delivery..."
                     className="font-mono text-sm resize-y min-h-[120px]"
@@ -347,8 +367,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>{t.admin.settings.shippingPolicy}</Label>
                   <TextareaField
+                    name="shippingPolicy"
                     value={settings.shippingPolicy || ""}
-                    onChange={(value) => updateSetting("shippingPolicy", value)}
+                    onChange={handleFieldChange}
                     rows={4}
                     placeholder="e.g. Standard shipping takes 3-5 business days..."
                     className="font-mono text-sm resize-y min-h-[120px]"
@@ -380,7 +401,7 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                     type="button"
                     role="switch"
                     aria-checked={settings.welcomePopupEnabled}
-                    onClick={() => updateSetting("welcomePopupEnabled", !settings.welcomePopupEnabled)}
+                    onClick={() => updateBooleanSetting("welcomePopupEnabled", !settings.welcomePopupEnabled)}
                     className={cn(
                       "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
                       settings.welcomePopupEnabled ? "bg-olive-600" : "bg-zinc-300"
@@ -398,8 +419,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>Welcome Popup Title</Label>
                   <InputField
+                    name="welcomePopupTitle"
                     value={settings.welcomePopupTitle || ""}
-                    onChange={(value) => updateSetting("welcomePopupTitle", value)}
+                    onChange={handleFieldChange}
                     placeholder="歡迎來到 HK•Market"
                   />
                   <Description>Main heading of the welcome popup.</Description>
@@ -408,8 +430,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>Welcome Popup Subtitle</Label>
                   <InputField
+                    name="welcomePopupSubtitle"
                     value={settings.welcomePopupSubtitle || ""}
-                    onChange={(value) => updateSetting("welcomePopupSubtitle", value)}
+                    onChange={handleFieldChange}
                     placeholder="探索最新波鞋及運動裝備，正品保證！"
                   />
                   <Description>Subheading displayed below the title.</Description>
@@ -418,8 +441,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>Welcome Popup Promo Text</Label>
                   <InputField
+                    name="welcomePopupPromoText"
                     value={settings.welcomePopupPromoText || ""}
-                    onChange={(value) => updateSetting("welcomePopupPromoText", value)}
+                    onChange={handleFieldChange}
                     placeholder="🎉 訂單滿 $600 免運費！"
                   />
                   <Description>Promotional text shown in the highlighted box.</Description>
@@ -428,8 +452,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>Welcome Popup Button Text</Label>
                   <InputField
+                    name="welcomePopupButtonText"
                     value={settings.welcomePopupButtonText || ""}
-                    onChange={(value) => updateSetting("welcomePopupButtonText", value)}
+                    onChange={handleFieldChange}
                     placeholder="開始購物"
                   />
                   <Description>Text on the call-to-action button.</Description>
@@ -453,8 +478,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>WhatsApp Number</Label>
                   <InputField
+                    name="whatsappNumber"
                     value={settings.whatsappNumber || ""}
-                    onChange={(value) => updateSetting("whatsappNumber", value)}
+                    onChange={handleFieldChange}
                     placeholder="+852 1234 5678"
                   />
                   <Description>Include country code (+852).</Description>
@@ -463,8 +489,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>Instagram URL</Label>
                   <InputField
+                    name="instagramUrl"
                     value={settings.instagramUrl || ""}
-                    onChange={(value) => updateSetting("instagramUrl", value)}
+                    onChange={handleFieldChange}
                     placeholder="https://instagram.com/yourstore"
                   />
                   <Description>Full Instagram profile URL.</Description>
@@ -473,8 +500,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>Facebook URL</Label>
                   <InputField
+                    name="facebookUrl"
                     value={settings.facebookUrl || ""}
-                    onChange={(value) => updateSetting("facebookUrl", value)}
+                    onChange={handleFieldChange}
                     placeholder="https://facebook.com/yourstore"
                   />
                   <Description>Full Facebook page URL.</Description>
@@ -498,8 +526,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>Opening Hours</Label>
                   <TextareaField
+                    name="openingHours"
                     value={settings.openingHours || ""}
-                    onChange={(value) => updateSetting("openingHours", value)}
+                    onChange={handleFieldChange}
                     placeholder="星期一至五: 10:00 - 20:00&#10;星期六日: 12:00 - 18:00"
                     rows={3}
                   />
@@ -509,8 +538,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>Pickup Hours</Label>
                   <TextareaField
+                    name="pickupHours"
                     value={settings.pickupHours || ""}
-                    onChange={(value) => updateSetting("pickupHours", value)}
+                    onChange={handleFieldChange}
                     placeholder="星期一至五: 14:00 - 19:00&#10;星期六: 14:00 - 17:00"
                     rows={3}
                   />
@@ -534,8 +564,9 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
               <div className="space-y-3">
                 <Label>Pickup Address</Label>
                 <TextareaField
+                  name="pickupAddress"
                   value={settings.pickupAddress || ""}
-                  onChange={(value) => updateSetting("pickupAddress", value)}
+                  onChange={handleFieldChange}
                   placeholder="九龍旺角彌敦道XXX號&#10;XX大廈XX樓XX室"
                   rows={3}
                 />
@@ -559,11 +590,12 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>Shipping Fee ($)</Label>
                   <InputField
+                    name="shippingFee"
                     type="number"
                     min={0}
                     step={1}
                     value={String(settings.shippingFee)}
-                    onChange={(value) => updateSetting("shippingFee", Number(value) || 0)}
+                    onChange={handleNumericChange}
                     placeholder="40"
                   />
                   <Description>Standard shipping fee in HKD. Default: $40</Description>
@@ -572,11 +604,12 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <div className="space-y-3">
                   <Label>Free Shipping Threshold ($)</Label>
                   <InputField
+                    name="freeShippingThreshold"
                     type="number"
                     min={0}
                     step={1}
                     value={String(settings.freeShippingThreshold)}
-                    onChange={(value) => updateSetting("freeShippingThreshold", Number(value) || 0)}
+                    onChange={handleNumericChange}
                     placeholder="600"
                   />
                   <Description>Orders above this amount get free shipping. Default: $600</Description>

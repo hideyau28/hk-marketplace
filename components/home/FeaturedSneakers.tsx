@@ -71,16 +71,16 @@ function LargeCardItem({ product, locale, isFirst, isLast }: { product: Product;
   };
 
   return (
-    <div className={`group shrink-0 snap-start flex flex-col ${isFirst ? "ml-4" : ""} ${isLast ? "mr-4" : ""}`}>
-      {/* Large card: 220px mobile, 280px desktop with taller image */}
-      <Link href={`/${locale}/product/${product.id}`}>
-        <div className="w-[220px] min-w-[220px] md:w-[280px] md:min-w-[280px] overflow-hidden rounded-xl bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
-          <div className="relative aspect-[4/5] overflow-hidden">
+    <div className={`group shrink-0 snap-start ${isFirst ? "ml-4" : ""} ${isLast ? "mr-4" : ""}`}>
+      {/* Large card: 220px mobile, 280px desktop - all content inside card border */}
+      <div className="w-[220px] min-w-[220px] md:w-[280px] md:min-w-[280px] overflow-hidden rounded-xl bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
+        <Link href={`/${locale}/product/${product.id}`}>
+          <div className="relative aspect-[4/5] overflow-hidden bg-zinc-50 dark:bg-zinc-800">
             <Image
               src={product.image}
               alt={product.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform"
+              className="object-contain group-hover:scale-105 transition-transform"
               sizes="(max-width: 768px) 220px, 280px"
             />
             <WishlistHeart productId={product.id} size="sm" />
@@ -96,50 +96,50 @@ function LargeCardItem({ product, locale, isFirst, isLast }: { product: Product;
               </button>
             )}
           </div>
-          <div className="p-3 flex flex-col">
+          <div className="p-3 pb-1 flex flex-col">
             <p className="text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p>
             <h3 className="text-sm font-medium text-zinc-900 line-clamp-2 leading-tight min-h-[2.5rem] dark:text-zinc-100">
               {product.title}
             </h3>
           </div>
-        </div>
-      </Link>
-      {/* Price row with size dropdown - OUTSIDE Link to prevent navigation */}
-      <div
-        className="w-[220px] md:w-[280px] mt-1 px-3 flex items-center justify-between gap-1"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <p className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-          {formatPrice(product.price)}
-        </p>
-        {availableSizes.length > 0 && (
-          <div
-            className="relative"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            <select
-              value={selectedSize}
-              onChange={handleSizeChange}
+        </Link>
+        {/* Price row with size dropdown - INSIDE card, uses stopPropagation */}
+        <div
+          className="px-3 pb-3 flex items-center justify-between gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+            {formatPrice(product.price)}
+          </p>
+          {availableSizes.length > 0 && (
+            <div
+              className="relative"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
               }}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium px-2 py-1 pr-5 rounded-lg cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus:outline-none"
             >
-              <option value="">尺碼</option>
-              {availableSizes.map((size) => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
-            <svg className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        )}
+              <select
+                value={selectedSize}
+                onChange={handleSizeChange}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium px-2 py-1 pr-5 rounded-lg cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus:outline-none"
+              >
+                <option value="">尺碼</option>
+                {availableSizes.map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              <svg className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          )}
+        </div>
       </div>
       <style jsx>{`
         @keyframes fadeIn {

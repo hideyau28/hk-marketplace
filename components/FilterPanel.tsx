@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 
 type FilterPanelProps = {
@@ -54,6 +54,8 @@ const SHOE_TYPE_MAP: Record<string, string[]> = {
 
 export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedShoeType, setSelectedShoeType] = useState<string | null>(null);
@@ -63,6 +65,7 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
   const [loading, setLoading] = useState(true);
 
   const isZh = locale === "zh-HK";
+  const isSearchPage = pathname?.includes("/search");
 
   // Fetch filter options on mount
   useEffect(() => {
@@ -80,6 +83,13 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
   // Fetch count when selection changes
   const fetchCount = useCallback(async () => {
     const params = new URLSearchParams();
+
+    // Include search query if on search page
+    const existingQuery = searchParams?.get("q");
+    if (isSearchPage && existingQuery) {
+      params.set("q", existingQuery);
+    }
+
     if (selectedCategories.length > 0) {
       params.set("category", selectedCategories.join(","));
     }
@@ -102,7 +112,7 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
     const res = await fetch(url);
     const data = await res.json();
     setCount(data.count || 0);
-  }, [selectedCategories, selectedShoeType, selectedPriceRange, selectedSizes]);
+  }, [selectedCategories, selectedShoeType, selectedPriceRange, selectedSizes, searchParams, isSearchPage]);
 
   useEffect(() => {
     if (isOpen) {
@@ -149,6 +159,13 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
 
   const applyFilters = () => {
     const params = new URLSearchParams();
+
+    // Preserve search query if on search page
+    const existingQuery = searchParams?.get("q");
+    if (isSearchPage && existingQuery) {
+      params.set("q", existingQuery);
+    }
+
     if (selectedCategories.length > 0) {
       params.set("category", selectedCategories.join(","));
     }
@@ -168,7 +185,10 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
       params.set("sizes", selectedSizes.join(","));
     }
     const queryString = params.toString();
-    router.push(`/${locale}/products${queryString ? `?${queryString}` : ""}`);
+
+    // Stay on current page (search or products)
+    const targetPath = isSearchPage ? `/${locale}/search` : `/${locale}/products`;
+    router.push(`${targetPath}${queryString ? `?${queryString}` : ""}`);
     onClose();
   };
 

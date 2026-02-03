@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const queryParam = searchParams.get("q");
     const brandsParam = searchParams.get("brand");
     const categoriesParam = searchParams.get("category");
     const shoeTypeParam = searchParams.get("shoeType");
@@ -11,6 +12,7 @@ export async function GET(request: NextRequest) {
     const maxPriceParam = searchParams.get("maxPrice");
     const sizesParam = searchParams.get("sizes");
 
+    const query = queryParam?.trim() || "";
     const brands = brandsParam ? brandsParam.split(",").filter(Boolean) : [];
     const categories = categoriesParam ? categoriesParam.split(",").filter(Boolean) : [];
     const shoeTypes = shoeTypeParam ? shoeTypeParam.split(",").filter(Boolean) : [];
@@ -20,6 +22,14 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: any = { active: true };
+
+    // Text search filter
+    if (query) {
+      where.OR = [
+        { title: { contains: query, mode: "insensitive" } },
+        { brand: { contains: query, mode: "insensitive" } },
+      ];
+    }
 
     if (brands.length > 0) {
       where.brand = { in: brands };

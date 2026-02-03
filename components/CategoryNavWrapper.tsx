@@ -11,12 +11,13 @@ type CategoryNavWrapperProps = {
 export default function CategoryNavWrapper({ locale }: CategoryNavWrapperProps) {
   const pathname = usePathname();
 
-  // Only show CategoryNav on homepage and products listing pages
-  // Hide on: /product/[id], /cart, /checkout, /orders, /collections, /search, /track, /profile
+  // Show CategoryNav on homepage, products listing, and search pages
+  // Hide on: /product/[id], /cart, /checkout, /orders, /collections, /track, /profile
   const showCategoryNav =
     pathname === `/${locale}` ||
     pathname === `/${locale}/` ||
-    pathname?.startsWith(`/${locale}/products`);
+    pathname?.startsWith(`/${locale}/products`) ||
+    pathname?.startsWith(`/${locale}/search`);
 
   // Exclude individual product pages (which would be /product/[id])
   const isProductDetailPage = pathname?.match(/^\/[a-z-]+\/product\/[^/]+$/);

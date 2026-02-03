@@ -14,27 +14,86 @@ export default async function SearchPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    category?: string;
+    shoeType?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    sizes?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const { q } = await searchParams;
+  const { q, category, shoeType, minPrice, maxPrice, sizes } = await searchParams;
   const l = locale as Locale;
   const query = q?.trim() || "";
 
-  // Fetch products matching query
-  let products: any[] = [];
+  // Build base filter
+  const where: any = { active: true };
+
+  // Text search filter
   if (query) {
-    const dbProducts = await prisma.product.findMany({
-      where: {
-        active: true,
-        OR: [
-          { title: { contains: query, mode: "insensitive" } },
-          { brand: { contains: query, mode: "insensitive" } },
-        ],
-      },
+    where.OR = [
+      { title: { contains: query, mode: "insensitive" } },
+      { brand: { contains: query, mode: "insensitive" } },
+    ];
+  }
+
+  // Category filter
+  if (category) {
+    const categories = category.split(",").map((c) => c.trim()).filter(Boolean);
+    if (categories.length > 1) {
+      where.category = { in: categories };
+    } else {
+      where.category = category;
+    }
+  }
+
+  // ShoeType filter
+  if (shoeType) {
+    const types = shoeType.split(",").map((t) => t.trim()).filter(Boolean);
+    if (types.length > 1) {
+      where.shoeType = { in: types };
+    } else if (shoeType === "kids") {
+      where.shoeType = { in: ["grade_school", "preschool", "toddler"] };
+    } else {
+      where.shoeType = shoeType;
+    }
+  }
+
+  // Price range filter
+  if (minPrice || maxPrice) {
+    where.price = {};
+    if (minPrice) {
+      where.price.gte = parseFloat(minPrice);
+    }
+    if (maxPrice) {
+      where.price.lte = parseFloat(maxPrice);
+    }
+  }
+
+  // Fetch products
+  let products: any[] = [];
+  const hasFilters = query || category || shoeType || minPrice || maxPrice || sizes;
+
+  if (hasFilters) {
+    let dbProducts = await prisma.product.findMany({
+      where,
       orderBy: { createdAt: "desc" },
-      take: 50,
+      take: 100,
     });
+
+    // Size filter (in memory since sizes is JSON)
+    if (sizes) {
+      const sizeList = sizes.split(",").map((s) => s.trim()).filter(Boolean);
+      if (sizeList.length > 0) {
+        dbProducts = dbProducts.filter((p) => {
+          if (!p.sizes || typeof p.sizes !== "object") return false;
+          const productSizes = Object.keys(p.sizes as Record<string, number>);
+          return sizeList.some((size) => productSizes.includes(size));
+        });
+      }
+    }
 
     products = dbProducts.map((p) => ({
       id: p.id,

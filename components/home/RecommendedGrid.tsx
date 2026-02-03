@@ -71,11 +71,11 @@ function ProductCardItem({ product, locale, isFirst, isLast }: { product: Produc
   };
 
   return (
-    <div className={`group shrink-0 snap-start flex flex-col ${isFirst ? "ml-4" : ""} ${isLast ? "mr-4" : ""}`}>
-      {/* Small card: 160px mobile, 180px desktop */}
-      <Link href={`/${locale}/product/${product.id}`}>
-        <div className="w-[160px] min-w-[160px] md:w-[180px] md:min-w-[180px] overflow-hidden rounded-xl bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
-          <div className="relative aspect-square overflow-hidden">
+    <div className={`group shrink-0 snap-start ${isFirst ? "ml-4" : ""} ${isLast ? "mr-4" : ""}`}>
+      {/* Small card: 160px mobile, 180px desktop - all content inside card border */}
+      <div className="w-[160px] min-w-[160px] md:w-[180px] md:min-w-[180px] overflow-hidden rounded-xl bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
+        <Link href={`/${locale}/product/${product.id}`}>
+          <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-800">
             <Image
               src={product.image}
               alt={product.title}
@@ -96,47 +96,47 @@ function ProductCardItem({ product, locale, isFirst, isLast }: { product: Produc
               </button>
             )}
           </div>
-          <div className="p-2.5 flex flex-col">
+          <div className="p-2.5 pb-1 flex flex-col">
             <p className="text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p>
             <h3 className="text-xs font-medium text-zinc-900 line-clamp-2 leading-tight min-h-[2rem] dark:text-zinc-100">
               {product.title}
             </h3>
           </div>
-        </div>
-      </Link>
-      {/* Price row with size dropdown - OUTSIDE Link to prevent navigation */}
-      <div
-        className="w-[160px] md:w-[180px] mt-1 px-2.5 flex items-center justify-between gap-1"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-          {formatPrice(product.price)}
-        </p>
-        {availableSizes.length > 0 && (
-          <div
-            className="relative"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            <select
-              value={selectedSize}
-              onChange={handleSizeChange}
+        </Link>
+        {/* Price row with size dropdown - INSIDE card, uses stopPropagation */}
+        <div
+          className="px-2.5 pb-2.5 flex items-center justify-between gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            {formatPrice(product.price)}
+          </p>
+          {availableSizes.length > 0 && (
+            <div
+              className="relative"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
               }}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-1.5 py-1 pr-4 rounded-md cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus:outline-none"
             >
-              <option value="">尺碼 ▼</option>
-              {availableSizes.map((size) => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
-          </div>
-        )}
+              <select
+                value={selectedSize}
+                onChange={handleSizeChange}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-1.5 py-1 pr-4 rounded-md cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus:outline-none"
+              >
+                <option value="">尺碼 ▼</option>
+                {availableSizes.map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
       </div>
       <style jsx>{`
         @keyframes fadeIn {
