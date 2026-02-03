@@ -47,6 +47,19 @@ model IdempotencyKey {
   @@index([createdAt])
 }
 
+model User {
+  id        String   @id @default(cuid())
+  phone     String   @unique // HK phone: +852XXXXXXXX
+  name      String?
+  email     String?
+  address   String?  // default shipping address (JSON)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([phone])
+}
+
 model Order {
   id                      String           @id @default(cuid())
   orderNumber             String?          @unique
@@ -85,6 +98,9 @@ model Order {
   cancelReason            String?
   refundReason            String?
   statusHistory           String?          // JSON array of {timestamp, fromStatus, toStatus}
+  // Member system
+  userId                  String?
+  user                    User?            @relation(fields: [userId], references: [id])
 
   @@index([status])
   @@index([createdAt])
@@ -93,6 +109,7 @@ model Order {
   @@index([phone])
   @@index([orderNumber])
   @@index([paymentStatus])
+  @@index([userId])
 }
 
 model PaymentAttempt {

@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import { CurrencyProvider } from "@/lib/currency";
 import { ThemeProvider } from "@/lib/theme-context";
 import { FilterProvider } from "@/lib/filter-context";
+import { AuthProvider } from "@/lib/auth-context";
 import Analytics from "@/components/Analytics";
 import WelcomePopup from "@/components/WelcomePopup";
 import SocialProofPopup from "@/components/SocialProofPopup";
@@ -58,17 +59,19 @@ export default async function CustomerLayout({
     <ThemeProvider>
       <CurrencyProvider>
         <FilterProvider>
-          <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-            <Analytics />
-            <TopNav locale={l} t={t} storeName={storeName} />
-            <CategoryNavWrapper locale={l} />
-            <main>{children}</main>
-            <Footer locale={l} t={t} storeName={storeName} />
-            <BottomTab t={t} />
-            <WelcomePopup config={welcomePopupConfig} />
-            <SocialProofPopup products={socialProofProducts} />
-            <CartFlyAnimation />
-          </div>
+          <AuthProvider>
+            <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+              <Analytics />
+              <TopNav locale={l} t={t} storeName={storeName} />
+              <CategoryNavWrapper locale={l} />
+              <main>{children}</main>
+              <Footer locale={l} t={t} storeName={storeName} />
+              <BottomTab t={t} />
+              <WelcomePopup config={welcomePopupConfig} />
+              <SocialProofPopup products={socialProofProducts} />
+              <CartFlyAnimation />
+            </div>
+          </AuthProvider>
         </FilterProvider>
       </CurrencyProvider>
     </ThemeProvider>

@@ -2,10 +2,13 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { getCart, getCartTotal, clearCart, type CartItem } from "@/lib/cart";
 import { getDict, type Locale } from "@/lib/i18n";
 import { useToast } from "@/components/Toast";
 import { useCurrency } from "@/lib/currency";
+import { useAuth } from "@/lib/auth-context";
+import { User } from "lucide-react";
 
 type FulfillmentType = "pickup" | "delivery";
 type CheckoutStep = "info" | "payment" | "confirm";
@@ -62,6 +65,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
   const [uploadingProof, setUploadingProof] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [prefilled, setPrefilled] = useState(false);
+
+  const { user } = useAuth();
 
   useEffect(() => {
     params.then(({ locale: l }) => {
@@ -75,6 +81,25 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       }
     });
   }, [params, router]);
+
+  // Pre-fill form with user data when logged in
+  useEffect(() => {
+    if (user && !prefilled) {
+      if (user.name) setCustomerName(user.name);
+      if (user.phone) setPhone(user.phone.replace("+852", ""));
+      if (user.email) setEmail(user.email);
+      if (user.address) {
+        try {
+          const addr = JSON.parse(user.address);
+          if (addr.line1) setAddressLine1(addr.line1);
+          if (addr.district) setDistrict(addr.district);
+        } catch {
+          setAddressLine1(user.address);
+        }
+      }
+      setPrefilled(true);
+    }
+  }, [user, prefilled]);
 
   // Fetch payment methods
   useEffect(() => {
@@ -220,6 +245,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
         customerName,
         phone,
         email: email || undefined,
+        userId: user?.id,
         items: cart.map((item) => ({
           productId: item.productId,
           name: item.title,
@@ -345,6 +371,16 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
         {step === "info" && (
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="space-y-6">
+              {!user && (
+                <Link href={`/${locale}/login?redirect=/${locale}/checkout`} className="flex items-center gap-3 rounded-2xl border border-olive-200 bg-olive-50 p-4 hover:bg-olive-100 dark:border-olive-800 dark:bg-olive-900/20 dark:hover:bg-olive-900/30 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-olive-100 dark:bg-olive-800 flex items-center justify-center"><User size={18} className="text-olive-600 dark:text-olive-400" /></div>
+                  <div className="flex-1">
+                    <div className="font-medium text-olive-800 dark:text-olive-300">{locale === "zh-HK" ? "登入以獲得更好體驗" : "Login for a better experience"}</div>
+                    <div className="text-sm text-olive-600 dark:text-olive-400">{locale === "zh-HK" ? "追蹤訂單、儲存地址" : "Track orders, save address"}</div>
+                  </div>
+                </Link>
+              )}
+
               <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
                 <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{t.checkout.customerInfo}</h2>
                 <div className="mt-4 space-y-4">

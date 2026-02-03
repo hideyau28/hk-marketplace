@@ -91,6 +91,7 @@ type CreateOrderPayload = {
     customerName: string;
     phone: string;
     email?: string | null;
+    userId?: string | null; // Link to user account if logged in
     items: Array<{ productId: string; name: string; unitPrice: number; quantity: number }>;
     amounts: {
         subtotal: number;
@@ -205,6 +206,7 @@ function parseCreatePayload(body: any): CreateOrderPayload {
         customerName: body.customerName.trim(),
         phone: body.phone.trim(),
         email: typeof body.email === "string" && body.email.trim().length > 0 ? body.email.trim() : undefined,
+        userId: typeof body.userId === "string" && body.userId.trim().length > 0 ? body.userId.trim() : undefined,
         items: body.items,
         amounts: {
             ...body.amounts,
@@ -392,6 +394,7 @@ export const POST = withApi(async (req) => {
             customerName: payload.customerName,
             phone: payload.phone,
             email: payload.email ?? null,
+            userId: payload.userId ?? null,
             items: repriced.items,
             amounts: repriced.amounts,
             fulfillmentType: payload.fulfillment.type === "pickup" ? "PICKUP" : "DELIVERY",
