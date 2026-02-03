@@ -134,7 +134,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Image Carousel with floating effect */}
-        <ProductImageCarousel images={p.images} alt={p.title} stock={p.stock} />
+        <ProductImageCarousel images={p.images} alt={p.title} stock={p.stock} productId={p.id} />
         <div className="px-4 md:px-0">
           <ProductDetailClient
             product={p}
