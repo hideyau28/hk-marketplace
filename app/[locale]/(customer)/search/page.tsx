@@ -24,10 +24,12 @@ export default async function SearchPage({
     minPrice?: string;
     maxPrice?: string;
     sizes?: string;
+    badge?: string;
+    sale?: string;
   }>;
 }) {
   const { locale } = await params;
-  const { q, category, shoeType, minPrice, maxPrice, sizes } = await searchParams;
+  const { q, category, shoeType, minPrice, maxPrice, sizes, badge, sale } = await searchParams;
   const l = locale as Locale;
   const query = q?.trim() || "";
 
@@ -75,9 +77,14 @@ export default async function SearchPage({
     }
   }
 
+  // Badge filter (e.g., 今期熱賣)
+  if (badge) {
+    where.promotionBadges = { has: badge };
+  }
+
   // Fetch products
   let products: any[] = [];
-  const hasFilters = query || category || shoeType || minPrice || maxPrice || sizes;
+  const hasFilters = query || category || shoeType || minPrice || maxPrice || sizes || badge || sale;
 
   if (hasFilters) {
     let dbProducts = await prisma.product.findMany({
@@ -85,6 +92,14 @@ export default async function SearchPage({
       orderBy: { createdAt: "desc" },
       take: 100,
     });
+
+    // Sale filter (originalPrice > price) - must be done in memory
+    if (sale === "true") {
+      dbProducts = dbProducts.filter((p) => {
+        if (!p.originalPrice) return false;
+        return p.originalPrice > p.price;
+      });
+    }
 
     // Size filter (in memory since sizes is JSON)
     if (sizes) {

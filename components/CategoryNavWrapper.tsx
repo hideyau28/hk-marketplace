@@ -34,9 +34,11 @@ function ActiveFilterPills({ locale }: { locale: Locale }) {
   const minPrice = searchParams?.get("minPrice");
   const maxPrice = searchParams?.get("maxPrice");
   const sizes = searchParams?.get("sizes");
+  const badge = searchParams?.get("badge");
+  const sale = searchParams?.get("sale");
 
   // Check if any filters are active
-  const hasFilters = shoeType || category || minPrice || sizes;
+  const hasFilters = shoeType || category || minPrice || sizes || badge || sale;
   if (!hasFilters) return null;
 
   // Build list of active filter pills
@@ -48,6 +50,17 @@ function ActiveFilterPills({ locale }: { locale: Locale }) {
     const firstType = types[0];
     const label = SHOE_TYPE_LABELS[firstType]?.[locale] || firstType;
     pills.push({ key: "shoeType", label, param: "shoeType" });
+  }
+
+  // Badge pill (熱賣)
+  if (badge) {
+    const badgeLabel = badge === "今期熱賣" ? (isZh ? "熱賣" : "Hot") : badge;
+    pills.push({ key: "badge", label: badgeLabel, param: "badge" });
+  }
+
+  // Sale pill (減價)
+  if (sale === "true") {
+    pills.push({ key: "sale", label: isZh ? "減價" : "Sale", param: "sale" });
   }
 
   // Category pills
@@ -75,6 +88,10 @@ function ActiveFilterPills({ locale }: { locale: Locale }) {
 
     if (param === "shoeType") {
       params.delete("shoeType");
+    } else if (param === "badge") {
+      params.delete("badge");
+    } else if (param === "sale") {
+      params.delete("sale");
     } else if (param === "price") {
       params.delete("minPrice");
       params.delete("maxPrice");

@@ -151,6 +151,16 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
       params.set("q", existingQuery);
     }
 
+    // Include badge and sale params from quick filters
+    const existingBadge = searchParams?.get("badge");
+    const existingSale = searchParams?.get("sale");
+    if (existingBadge) {
+      params.set("badge", existingBadge);
+    }
+    if (existingSale) {
+      params.set("sale", existingSale);
+    }
+
     if (selectedCategories.length > 0) {
       params.set("category", selectedCategories.join(","));
     }
@@ -225,6 +235,16 @@ export default function FilterPanel({ isOpen, onClose, locale, t }: FilterPanelP
     const existingQuery = searchParams?.get("q");
     if (isSearchPage && existingQuery) {
       params.set("q", existingQuery);
+    }
+
+    // Preserve badge and sale params from CategoryNav quick filters
+    const existingBadge = searchParams?.get("badge");
+    const existingSale = searchParams?.get("sale");
+    if (existingBadge) {
+      params.set("badge", existingBadge);
+    }
+    if (existingSale) {
+      params.set("sale", existingSale);
     }
 
     if (selectedCategories.length > 0) {

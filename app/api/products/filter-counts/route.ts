@@ -11,6 +11,8 @@ export async function GET(request: NextRequest) {
     const minPriceParam = searchParams.get("minPrice");
     const maxPriceParam = searchParams.get("maxPrice");
     const sizesParam = searchParams.get("sizes");
+    const badgeParam = searchParams.get("badge");
+    const saleParam = searchParams.get("sale");
 
     const query = queryParam?.trim() || "";
     const brands = brandsParam ? brandsParam.split(",").filter(Boolean) : [];
@@ -19,6 +21,8 @@ export async function GET(request: NextRequest) {
     const sizes = sizesParam ? sizesParam.split(",").filter(Boolean) : [];
     const minPrice = minPriceParam ? parseFloat(minPriceParam) : null;
     const maxPrice = maxPriceParam ? parseFloat(maxPriceParam) : null;
+    const badge = badgeParam?.trim() || "";
+    const sale = saleParam === "true";
 
     // Build where clause
     const where: any = { active: true };
@@ -53,23 +57,44 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // For sizes, we need to do a more complex query since sizes is a JSON field
-    // We'll fetch products and filter in memory for now
+    // Badge filter (e.g., 今期熱賣)
+    if (badge) {
+      where.promotionBadges = { has: badge };
+    }
+
+    // For sizes and sale, we need to filter in memory
+    const needsMemoryFilter = sizes.length > 0 || sale;
+
     let count = 0;
 
-    if (sizes.length > 0) {
+    if (needsMemoryFilter) {
       // Fetch products matching other criteria
       const products = await prisma.product.findMany({
         where,
-        select: { sizes: true },
+        select: { sizes: true, price: true, originalPrice: true },
       });
 
+      // Apply memory filters
+      let filtered = products;
+
       // Filter by sizes - check if any of the selected sizes exist in the product's sizes
-      count = products.filter((p) => {
-        if (!p.sizes || typeof p.sizes !== "object") return false;
-        const productSizes = Object.keys(p.sizes as Record<string, number>);
-        return sizes.some((size) => productSizes.includes(size));
-      }).length;
+      if (sizes.length > 0) {
+        filtered = filtered.filter((p) => {
+          if (!p.sizes || typeof p.sizes !== "object") return false;
+          const productSizes = Object.keys(p.sizes as Record<string, number>);
+          return sizes.some((size) => productSizes.includes(size));
+        });
+      }
+
+      // Filter by sale (originalPrice > price)
+      if (sale) {
+        filtered = filtered.filter((p) => {
+          if (!p.originalPrice) return false;
+          return p.originalPrice > p.price;
+        });
+      }
+
+      count = filtered.length;
     } else {
       count = await prisma.product.count({ where });
     }
