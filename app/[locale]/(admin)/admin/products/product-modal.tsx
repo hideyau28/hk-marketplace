@@ -9,8 +9,8 @@ import { GripVertical, X, Plus, Trash2 } from "lucide-react";
 
 // Shoe size systems with default sizes
 const SIZE_SYSTEMS: Record<string, { label: string; sizes: string[] }> = {
-  mens_us: { label: "Men's US", sizes: ["US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 9.5", "US 10", "US 10.5", "US 11", "US 11.5", "US 12", "US 13"] },
-  womens_us: { label: "Women's US", sizes: ["US 5", "US 5.5", "US 6", "US 6.5", "US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 9.5", "US 10"] },
+  mens_us: { label: "Men's US", sizes: ["US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 9.5", "US 10", "US 10.5", "US 11", "US 11.5", "US 12", "US 13", "US 14"] },
+  womens_us: { label: "Women's US", sizes: ["US 5", "US 5.5", "US 6", "US 6.5", "US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 9.5", "US 10", "US 10.5", "US 11"] },
   gs_youth: { label: "GS Youth", sizes: ["3.5Y", "4Y", "4.5Y", "5Y", "5.5Y", "6Y", "6.5Y", "7Y"] },
   ps_kids: { label: "PS Kids", sizes: ["10.5C", "11C", "11.5C", "12C", "12.5C", "13C", "13.5C", "1Y", "1.5Y", "2Y", "2.5Y", "3Y"] },
   td_toddler: { label: "TD Toddler", sizes: ["2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "10C"] },
@@ -48,6 +48,27 @@ const PROMOTION_BADGES = [
   { value: "人氣之選", label: "人氣之選" },
 ];
 
+// Auto-detect size system from existing keys
+function detectSizeSystem(sizeInventory: Record<string, number>): string {
+  const keys = Object.keys(sizeInventory);
+  if (keys.length === 0) return "";
+
+  // Check for EU sizes
+  if (keys.some(k => k.startsWith("EU "))) return "eu";
+  // Check for toddler sizes (C suffix without Y)
+  if (keys.some(k => /^\d+C$/.test(k) || /^US \d+C$/.test(k))) return "td_toddler";
+  // Check for PS kids sizes (Y suffix with small numbers or C suffix)
+  if (keys.some(k => /^(1|2|3)(\.5)?Y$/.test(k))) return "ps_kids";
+  // Check for GS youth sizes (Y suffix with larger numbers)
+  if (keys.some(k => /^(3\.5|[4-7])(\.5)?Y$/.test(k))) return "gs_youth";
+  // Check for women's US sizes (smaller US numbers)
+  if (keys.some(k => k.match(/^US (5|5\.5|6|6\.5)$/))) return "womens_us";
+  // Default to men's US
+  if (keys.some(k => k.startsWith("US "))) return "mens_us";
+
+  return "";
+}
+
 type ProductModalProps = {
   product: Product | null;
   onClose: () => void;
@@ -59,8 +80,21 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const [brand, setBrand] = useState(product?.brand || "");
+  // Parse existing sizeInventory
+  const existingSizeInventory = (() => {
+    const sizes = (product as any)?.sizes;
+    if (sizes && typeof sizes === "object" && !Array.isArray(sizes)) {
+      return sizes as Record<string, number>;
+    }
+    return {};
+  })();
+
+  // Auto-detect size system from existing inventory
+  const detectedSizeSystem = detectSizeSystem(existingSizeInventory);
+
+  const [brand, setBrand] = useState(product?.brand || "Nike");
   const [title, setTitle] = useState(product?.title || "");
+  const [sku, setSku] = useState((product as any)?.sku || "");
   const [price, setPrice] = useState(product?.price.toString() || "");
   const [originalPrice, setOriginalPrice] = useState(
     product?.originalPrice?.toString() || ""
@@ -78,20 +112,19 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [featured, setFeatured] = useState((product as any)?.featured ?? false);
   // shoeType
   const [shoeType, setShoeType] = useState((product as any)?.shoeType || "");
-  // Size system
-  const [sizeSystem, setSizeSystem] = useState((product as any)?.sizeSystem || "");
+  // Size system - auto-detect from existing inventory
+  const [sizeSystem, setSizeSystem] = useState(detectedSizeSystem);
 
   // Size inventory: { "US 7": 5, "US 8": 10, ... }
-  const [sizeInventory, setSizeInventory] = useState<Record<string, number>>(() => {
-    const existingSizes = (product as any)?.sizes;
-    if (existingSizes && typeof existingSizes === "object" && !Array.isArray(existingSizes)) {
-      return existingSizes as Record<string, number>;
-    }
-    return {};
-  });
+  const [sizeInventory, setSizeInventory] = useState<Record<string, number>>(existingSizeInventory);
 
-  // Custom sizes added by user
-  const [customSizes, setCustomSizes] = useState<string[]>([]);
+  // Custom sizes added by user (sizes in inventory that aren't in the current system)
+  const [customSizes, setCustomSizes] = useState<string[]>(() => {
+    if (!detectedSizeSystem) return [];
+    const systemSizes = SIZE_SYSTEMS[detectedSizeSystem]?.sizes || [];
+    const existingKeys = Object.keys(existingSizeInventory);
+    return existingKeys.filter(k => !systemSizes.includes(k));
+  });
   const [newCustomSize, setNewCustomSize] = useState("");
 
   // Promotion badges as checkboxes
@@ -196,14 +229,12 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     });
   };
 
-  // When size system changes, reset inventory to new system's sizes
+  // When size system changes, preserve existing inventory if switching to a compatible system
   const handleSizeSystemChange = (newSystem: string) => {
     setSizeSystem(newSystem);
     if (!newSystem) {
-      setSizeInventory({});
-      setCustomSizes([]);
+      // Don't clear inventory, just change display
     }
-    // Don't auto-populate - let user select sizes they want
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -259,6 +290,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       const productData = {
         brand: brand.trim(),
         title: title.trim(),
+        sku: sku.trim() || undefined,
         price: priceNum,
         originalPrice: originalPriceNum,
         imageUrl: imageUrl.trim() || null,
@@ -305,18 +337,13 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     >
       <div
         ref={modalRef}
-        className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-3xl border border-zinc-200 bg-white"
+        className="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-3xl border border-zinc-200 bg-white"
       >
         {/* Sticky header with X button */}
-        <div className="sticky top-0 z-10 flex items-start justify-between rounded-t-3xl border-b border-zinc-100 bg-white px-6 py-4">
-          <div>
-            <h2 className="text-xl font-semibold text-zinc-900">
-              {product ? "Edit Product" : "Create Product"}
-            </h2>
-            <p className="mt-1 text-zinc-500 text-sm">
-              {product ? "Update product details" : "Add a new product to your catalog"}
-            </p>
-          </div>
+        <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl border-b border-zinc-100 bg-white px-6 py-4">
+          <h2 className="text-xl font-semibold text-zinc-900">
+            {product ? "Edit Product" : "Create Product"}
+          </h2>
           <button
             onClick={onClose}
             disabled={isPending}
@@ -335,245 +362,318 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             </div>
           )}
 
-          <form id="product-form" onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">Brand *</label>
-              <input
-                type="text"
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-                disabled={isPending}
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                placeholder="Nike / Adidas / Uniqlo"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">Model / Description *</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                disabled={isPending}
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                placeholder="Air Jordan 1 Retro High OG"
-                required
-              />
-            </div>
-
-            {/* Price section with discount preview */}
-            <div className="rounded-2xl border border-zinc-200 p-4 space-y-3">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">售價 (HKD) *</label>
-                  <input
-                    type="number"
-                    step="1"
-                    min="0"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+          <form id="product-form" onSubmit={handleSubmit}>
+            {/* Two-column layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* LEFT COLUMN - Images */}
+              <div className="space-y-4">
+                {/* Main Product Image */}
+                <div className="rounded-2xl border border-zinc-200 p-4">
+                  <label className="block text-zinc-700 text-sm font-medium mb-3">主圖 (Main Image)</label>
+                  <ImageUpload
+                    currentUrl={imageUrl}
+                    onUpload={(url) => setImageUrl(url)}
                     disabled={isPending}
-                    className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                    placeholder="899"
-                    required
+                  />
+                  {imageUrl && (
+                    <div className="mt-3 relative">
+                      <img src={imageUrl} alt="Main" className="w-full h-48 object-contain rounded-xl border border-zinc-200 bg-zinc-50" />
+                      <button
+                        type="button"
+                        onClick={() => setImageUrl("")}
+                        className="absolute top-2 right-2 p-1 rounded-full bg-white/90 text-zinc-500 hover:text-red-500 hover:bg-white shadow-sm"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  )}
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    disabled={isPending}
+                    className="mt-3 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                    placeholder="Or paste image URL here"
                   />
                 </div>
-                <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">原價 (HKD)</label>
-                  <input
-                    type="number"
-                    step="1"
-                    min="0"
-                    value={originalPrice}
-                    onChange={(e) => setOriginalPrice(e.target.value)}
-                    disabled={isPending}
-                    className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                    placeholder="1299"
-                  />
+
+                {/* Additional Images (max 10) */}
+                <div className="rounded-2xl border border-zinc-200 p-4">
+                  <label className="block text-zinc-700 text-sm font-medium mb-3">
+                    額外圖片 <span className="text-zinc-400 font-normal">({images.length}/10)</span>
+                  </label>
+
+                  {/* Image thumbnails grid */}
+                  {images.length > 0 && (
+                    <div className="grid grid-cols-4 gap-2 mb-3">
+                      {images.map((img, index) => (
+                        <div
+                          key={index}
+                          draggable
+                          onDragStart={() => handleDragStart(index)}
+                          onDragOver={(e) => handleDragOver(e, index)}
+                          onDragEnd={handleDragEnd}
+                          className={`relative aspect-square rounded-xl overflow-hidden border cursor-move transition-all ${
+                            draggedIndex === index ? "border-olive-500 ring-2 ring-olive-200" : "border-zinc-200"
+                          }`}
+                        >
+                          <img src={img} alt={`Image ${index + 1}`} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors" />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            disabled={isPending}
+                            className="absolute top-1 right-1 p-1 rounded-full bg-white/90 text-zinc-500 hover:text-red-500 hover:bg-white shadow-sm disabled:opacity-50"
+                          >
+                            <X size={12} />
+                          </button>
+                          <div className="absolute bottom-1 left-1 p-0.5 rounded bg-white/80">
+                            <GripVertical size={10} className="text-zinc-400" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add new image */}
+                  {images.length < 10 && (
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        disabled={isPending}
+                        className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                        placeholder="Paste additional image URL"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddImage();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddImage}
+                        disabled={isPending || !newImageUrl.trim()}
+                        className="rounded-xl bg-zinc-100 px-3 py-2 text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Discount preview */}
-              {isOnSale ? (
-                <div className="rounded-xl bg-red-50 border border-red-200 p-3">
-                  <div className="text-sm text-zinc-600 mb-1">減價預覽：</div>
+              {/* RIGHT COLUMN - Form Fields */}
+              <div className="space-y-4">
+                {/* Brand */}
+                <div>
+                  <label className="block text-zinc-700 text-sm font-medium mb-2">Brand *</label>
+                  <input
+                    type="text"
+                    value={brand}
+                    onChange={(e) => setBrand(e.target.value)}
+                    disabled={isPending}
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                    placeholder="Nike"
+                    required
+                  />
+                </div>
+
+                {/* Model / Description */}
+                <div>
+                  <label className="block text-zinc-700 text-sm font-medium mb-2">Model / Description *</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    disabled={isPending}
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                    placeholder="Air Jordan 1 Retro High OG"
+                    required
+                  />
+                </div>
+
+                {/* SKU / Model Number */}
+                <div>
+                  <label className="block text-zinc-700 text-sm font-medium mb-2">SKU / Model Number</label>
+                  <input
+                    type="text"
+                    value={sku}
+                    onChange={(e) => setSku(e.target.value)}
+                    disabled={isPending}
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                    placeholder="553558-067"
+                  />
+                </div>
+
+                {/* Price section */}
+                <div className="rounded-xl border border-zinc-200 p-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-zinc-700 text-sm font-medium mb-2">售價 HKD *</label>
+                      <input
+                        type="number"
+                        step="1"
+                        min="0"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        disabled={isPending}
+                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                        placeholder="899"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-zinc-700 text-sm font-medium mb-2">原價 HKD</label>
+                      <input
+                        type="number"
+                        step="1"
+                        min="0"
+                        value={originalPrice}
+                        onChange={(e) => setOriginalPrice(e.target.value)}
+                        disabled={isPending}
+                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                        placeholder="1299"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Discount preview */}
+                  {isOnSale ? (
+                    <div className="rounded-lg bg-red-50 border border-red-200 p-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-zinc-400 line-through text-sm">${Math.round(originalPriceNum)}</span>
+                        <span className="text-lg font-bold text-red-600">${Math.round(priceNum)}</span>
+                        <span className="bg-red-500 text-white text-xs font-medium px-2 py-0.5 rounded-full">-{discountPercent}%</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-zinc-400 text-xs">設定原價高於售價，會顯示為減價產品</p>
+                  )}
+                </div>
+
+                {/* Category Dropdown */}
+                <div>
+                  <label className="block text-zinc-700 text-sm font-medium mb-2">Category *</label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    disabled={isPending}
+                    required
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                  >
+                    <option value="">-- 選擇類別 --</option>
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Shoe Type Dropdown */}
+                <div>
+                  <label className="block text-zinc-700 text-sm font-medium mb-2">鞋類 / Shoe Type *</label>
+                  <select
+                    value={shoeType}
+                    onChange={(e) => setShoeType(e.target.value)}
+                    disabled={isPending}
+                    required
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                  >
+                    <option value="">-- 選擇鞋類 --</option>
+                    {SHOE_TYPES.map((type) => (
+                      <option key={type.value} value={type.value}>{type.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Promotion Badges */}
+                <div>
+                  <label className="block text-zinc-700 text-sm font-medium mb-2">推廣標籤</label>
+                  <div className="flex flex-wrap gap-2">
+                    {PROMOTION_BADGES.map((badge) => {
+                      const isSelected = promotionBadges.includes(badge.value);
+                      return (
+                        <button
+                          key={badge.value}
+                          type="button"
+                          onClick={() => togglePromotionBadge(badge.value)}
+                          disabled={isPending}
+                          className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors border disabled:opacity-50 ${
+                            isSelected
+                              ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
+                              : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
+                          }`}
+                        >
+                          {badge.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-1.5">「快將售罄」會在庫存 ≤ 5 時自動顯示</p>
+                </div>
+
+                {/* Active & Featured toggles */}
+                <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
-                    <span className="text-zinc-400 line-through">
-                      ${Math.round(originalPriceNum)}
-                    </span>
-                    <span className="text-xl font-bold text-red-600">
-                      ${Math.round(priceNum)}
-                    </span>
-                    <span className="bg-red-500 text-white text-xs font-medium px-2 py-0.5 rounded-full">
-                      -{discountPercent}%
-                    </span>
-                    <span className="text-zinc-500 text-sm ml-auto">
-                      ({Math.round(100 - discountPercent) / 10}折)
-                    </span>
+                    <input
+                      type="checkbox"
+                      id="active"
+                      checked={active}
+                      onChange={(e) => setActive(e.target.checked)}
+                      disabled={isPending}
+                      className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50"
+                    />
+                    <label htmlFor="active" className="text-zinc-700 text-sm">Active</label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="featured"
+                      checked={featured}
+                      onChange={(e) => setFeatured(e.target.checked)}
+                      disabled={isPending}
+                      className="h-4 w-4 accent-yellow-500 disabled:opacity-50"
+                    />
+                    <label htmlFor="featured" className="text-zinc-700 text-sm">⭐ Featured</label>
                   </div>
                 </div>
-              ) : (
-                <p className="text-zinc-400 text-xs">設定原價高於售價，會顯示為減價產品</p>
-              )}
+              </div>
             </div>
 
-            {/* Main Product Image */}
-            <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">主圖 (Main Image)</label>
-              <ImageUpload
-                currentUrl={imageUrl}
-                onUpload={(url) => setImageUrl(url)}
-                disabled={isPending}
-              />
-              <input
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                disabled={isPending}
-                className="mt-3 w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                placeholder="Or paste image URL here"
-              />
-            </div>
-
-            {/* Additional Images (max 10) */}
-            <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">
-                額外圖片 <span className="text-zinc-400 font-normal">({images.length}/10)</span>
-              </label>
-
-              {/* Image list with drag-to-reorder */}
-              {images.length > 0 && (
-                <div className="space-y-2 mb-3">
-                  {images.map((img, index) => (
-                    <div
-                      key={index}
-                      draggable
-                      onDragStart={() => handleDragStart(index)}
-                      onDragOver={(e) => handleDragOver(e, index)}
-                      onDragEnd={handleDragEnd}
-                      className={`flex items-center gap-2 rounded-xl border p-2 cursor-move transition-colors ${
-                        draggedIndex === index ? "border-olive-500 bg-olive-50" : "border-zinc-200 bg-zinc-50"
-                      }`}
-                    >
-                      <GripVertical size={16} className="text-zinc-400 flex-shrink-0" />
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-white border border-zinc-200 flex-shrink-0">
-                        <img src={img} alt={`Image ${index + 1}`} className="w-full h-full object-cover" />
-                      </div>
-                      <span className="flex-1 text-xs text-zinc-600 truncate">{img}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(index)}
-                        disabled={isPending}
-                        className="p-1.5 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-50"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Add new image */}
-              {images.length < 10 && (
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    disabled={isPending}
-                    className="flex-1 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                    placeholder="Paste additional image URL"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddImage();
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddImage}
-                    disabled={isPending || !newImageUrl.trim()}
-                    className="rounded-xl bg-zinc-100 px-3 py-2.5 text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
-                  >
-                    <Plus size={18} />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Category Dropdown (FIX 4) */}
-            <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">
-                Category *
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                disabled={isPending}
-                required
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-              >
-                <option value="">-- 選擇類別 --</option>
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Shoe Type Dropdown (FIX 5) */}
-            <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">
-                鞋類 / Shoe Type *
-              </label>
-              <select
-                value={shoeType}
-                onChange={(e) => setShoeType(e.target.value)}
-                disabled={isPending}
-                required
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-              >
-                <option value="">-- 選擇鞋類 --</option>
-                {SHOE_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Size System Table (FIX 2) */}
-            <div className="rounded-2xl border border-zinc-200 p-4 space-y-3">
+            {/* FULL WIDTH - Size System Table */}
+            <div className="mt-6 rounded-2xl border border-zinc-200 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <label className="block text-zinc-700 text-sm font-medium">尺碼系統</label>
-                <select
-                  value={sizeSystem}
-                  onChange={(e) => handleSizeSystemChange(e.target.value)}
-                  disabled={isPending}
-                  className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                >
-                  <option value="">No sizes</option>
-                  {Object.entries(SIZE_SYSTEMS).map(([key, val]) => (
-                    <option key={key} value={key}>
-                      {val.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex items-center gap-3">
+                  <select
+                    value={sizeSystem}
+                    onChange={(e) => handleSizeSystemChange(e.target.value)}
+                    disabled={isPending}
+                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                  >
+                    <option value="">No sizes</option>
+                    {Object.entries(SIZE_SYSTEMS).map(([key, val]) => (
+                      <option key={key} value={key}>{val.label}</option>
+                    ))}
+                  </select>
+                  <div className="text-sm text-zinc-600">
+                    總庫存: <span className="font-semibold text-zinc-900">{totalStock}</span>
+                  </div>
+                </div>
               </div>
 
               {sizeSystem && (
                 <>
                   {/* Size inventory table */}
-                  <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
+                  <div className="overflow-x-auto max-h-[250px] overflow-y-auto border border-zinc-100 rounded-xl">
                     <table className="w-full text-sm">
-                      <thead className="sticky top-0 bg-white">
+                      <thead className="sticky top-0 bg-zinc-50">
                         <tr className="text-zinc-500 border-b border-zinc-200">
-                          <th className="py-2 text-center font-medium w-12">✓</th>
-                          <th className="py-2 text-left font-medium">Size</th>
-                          <th className="py-2 text-right font-medium w-24">Stock</th>
+                          <th className="py-2 px-3 text-center font-medium w-12">✓</th>
+                          <th className="py-2 px-3 text-left font-medium">Size</th>
+                          <th className="py-2 px-3 text-right font-medium w-24">Stock</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -582,8 +682,8 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                           const stock = sizeInventory[size] || 0;
                           const isCustom = customSizes.includes(size);
                           return (
-                            <tr key={size} className="border-b border-zinc-100">
-                              <td className="py-2 text-center">
+                            <tr key={size} className="border-b border-zinc-100 hover:bg-zinc-50">
+                              <td className="py-2 px-3 text-center">
                                 <input
                                   type="checkbox"
                                   checked={isChecked}
@@ -592,7 +692,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                                   className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50"
                                 />
                               </td>
-                              <td className="py-2 text-zinc-900">
+                              <td className="py-2 px-3 text-zinc-900">
                                 <div className="flex items-center gap-2">
                                   {size}
                                   {isCustom && (
@@ -606,7 +706,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                                   )}
                                 </div>
                               </td>
-                              <td className="py-2 text-right">
+                              <td className="py-2 px-3 text-right">
                                 <input
                                   type="number"
                                   min="0"
@@ -625,7 +725,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                   </div>
 
                   {/* Add custom size */}
-                  <div className="flex gap-2 pt-2 border-t border-zinc-100">
+                  <div className="flex gap-2 pt-2">
                     <input
                       type="text"
                       value={newCustomSize}
@@ -649,69 +749,8 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       ＋ 自訂尺碼
                     </button>
                   </div>
-
-                  {/* Total stock display */}
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
-                    <span className="text-sm text-zinc-600">總庫存:</span>
-                    <span className="text-lg font-semibold text-zinc-900">{totalStock}</span>
-                  </div>
                 </>
               )}
-            </div>
-
-            {/* Promotion Badges as Checkboxes (FIX 3) */}
-            <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">推廣標籤</label>
-              <div className="flex flex-wrap gap-2">
-                {PROMOTION_BADGES.map((badge) => {
-                  const isSelected = promotionBadges.includes(badge.value);
-                  return (
-                    <button
-                      key={badge.value}
-                      type="button"
-                      onClick={() => togglePromotionBadge(badge.value)}
-                      disabled={isPending}
-                      className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors border disabled:opacity-50 ${
-                        isSelected
-                          ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
-                          : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
-                      }`}
-                    >
-                      {badge.label}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="text-xs text-zinc-400 mt-2">「快將售罄」會在庫存 ≤ 5 時自動顯示</p>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="active"
-                  checked={active}
-                  onChange={(e) => setActive(e.target.checked)}
-                  disabled={isPending}
-                  className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50"
-                />
-                <label htmlFor="active" className="text-zinc-700 text-sm">
-                  Active (visible to customers)
-                </label>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="featured"
-                  checked={featured}
-                  onChange={(e) => setFeatured(e.target.checked)}
-                  disabled={isPending}
-                  className="h-4 w-4 accent-yellow-500 disabled:opacity-50"
-                />
-                <label htmlFor="featured" className="text-zinc-700 text-sm">
-                  ⭐ Featured (為你推薦)
-                </label>
-              </div>
             </div>
           </form>
         </div>
@@ -723,7 +762,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="flex-1 rounded-2xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+              className="flex-1 rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
             >
               Cancel
             </button>
@@ -731,7 +770,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               type="submit"
               form="product-form"
               disabled={isPending}
-              className="flex-1 rounded-2xl bg-[#6B7A2F] px-4 py-3 text-sm text-white font-semibold hover:bg-[#5a6827] disabled:opacity-50"
+              className="flex-1 rounded-xl bg-[#6B7A2F] px-4 py-3 text-sm text-white font-semibold hover:bg-[#5a6827] disabled:opacity-50"
             >
               {isPending ? "Saving..." : product ? "Update" : "Create"}
             </button>

@@ -16,6 +16,7 @@ const ITEMS_PER_PAGE = 50;
 type ProductWithBadges = Product & {
   promotionBadges?: string[];
   featured?: boolean;
+  images?: string[];
 };
 
 type ProductsTableProps = {
@@ -34,41 +35,48 @@ function escapeCsvField(value: string): string {
 
 function exportProductsToCsv(products: ProductWithBadges[]): void {
   const headers = [
-    "id",
-    "sku",
-    "title",
-    "brand",
-    "category",
+    "SKU",
+    "Brand",
+    "Title",
+    "Category",
     "shoeType",
-    "price",
+    "Price",
     "originalPrice",
-    "stock",
-    "active",
-    "sizes",
     "imageUrl",
+    "images",
+    "sizeInventory",
+    "Stock",
     "promotionBadges",
+    "featured",
+    "active",
+    "updatedAt",
   ];
 
   const rows = products.map((product) => {
     const sizesJson = product.sizes ? JSON.stringify(product.sizes) : "";
+    const imagesStr = Array.isArray(product.images)
+      ? product.images.join("|")
+      : "";
     const promotionBadges = Array.isArray(product.promotionBadges)
       ? product.promotionBadges.join(",")
       : "";
 
     return [
-      product.id,
       product.sku || "",
-      product.title,
       product.brand || "",
+      product.title,
       product.category || "",
       product.shoeType || "",
       String(product.price),
       product.originalPrice != null ? String(product.originalPrice) : "",
-      String(product.stock ?? 0),
-      String(product.active),
-      sizesJson,
       product.imageUrl || "",
+      imagesStr,
+      sizesJson,
+      String(product.stock ?? 0),
       promotionBadges,
+      String(product.featured ?? false),
+      String(product.active),
+      new Date(product.updatedAt).toISOString(),
     ].map(escapeCsvField);
   });
 
@@ -268,12 +276,14 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
 
       <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
-          <table className="min-w-[900px] w-full text-sm">
+          <table className="min-w-[1100px] w-full text-sm">
             <thead>
               <tr className="text-zinc-500 border-b border-zinc-200">
                 <th className="px-4 py-3 text-left">{t.admin.products.product}</th>
                 <th className="px-4 py-3 text-left">{t.admin.products.category}</th>
-                <th className="px-4 py-3 text-right">{t.admin.products.price}</th>
+                <th className="px-4 py-3 text-right">原價</th>
+                <th className="px-4 py-3 text-right">售價</th>
+                <th className="px-4 py-3 text-center">折扣</th>
                 <th className="px-4 py-3 text-right">{t.admin.products.stock}</th>
                 <th className="px-4 py-3 text-left">{t.admin.products.status}</th>
                 <th className="px-4 py-3 text-left">{t.admin.products.updatedAt}</th>
@@ -284,35 +294,54 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
             <tbody>
               {paginatedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-zinc-500">
+                  <td colSpan={9} className="px-4 py-12 text-center text-zinc-500">
                     {searchQuery ? "找不到符合的產品" : t.admin.common.noData}
                   </td>
                 </tr>
               ) : (
                 paginatedProducts.map((product) => {
                   const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
+                  const discountPercent = isOnSale ? Math.round((1 - product.price / product.originalPrice!) * 100) : 0;
                   return (
                   <tr key={product.id} className="border-t border-zinc-200 hover:bg-zinc-50">
+                    {/* Product: thumbnail + Brand (bold) + SKU (gray) */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {product.imageUrl && (
-                          <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
+                          <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 flex-shrink-0">
                             <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="40px" />
                           </div>
                         )}
-                        <div>
-                          <div className="text-zinc-900 font-medium">{product.title}</div>
+                        <div className="min-w-0">
+                          <div className="text-zinc-900 font-semibold text-sm">{product.brand || "Nike"}</div>
                           {product.sku && (
-                            <div className="text-zinc-400 text-xs">{product.sku}</div>
+                            <div className="text-zinc-400 text-xs truncate">{product.sku}</div>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-zinc-600">{product.category || "—"}</td>
+                    {/* Category */}
+                    <td className="px-4 py-3 text-zinc-600 text-sm">{product.category || "—"}</td>
+                    {/* 原價 (strikethrough if exists) */}
+                    <td className="px-4 py-3 text-right text-sm">
+                      {product.originalPrice != null ? (
+                        <span className="text-zinc-400 line-through">${Math.round(product.originalPrice)}</span>
+                      ) : (
+                        <span className="text-zinc-300">—</span>
+                      )}
+                    </td>
+                    {/* 售價 (editable on click) */}
                     <td className="px-4 py-3 text-right">
                       {editingPriceId === product.id ? (
                         <div className="flex flex-col items-end gap-1">
                           <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              value={editOriginalPrice}
+                              onChange={(e) => setEditOriginalPrice(e.target.value)}
+                              className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right text-zinc-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
+                              placeholder="原價"
+                            />
                             <input
                               type="number"
                               value={editPrice}
@@ -320,13 +349,6 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                               className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-olive-500"
                               placeholder="售價"
                               autoFocus
-                            />
-                            <input
-                              type="number"
-                              value={editOriginalPrice}
-                              onChange={(e) => setEditOriginalPrice(e.target.value)}
-                              className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right text-zinc-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
-                              placeholder="原價"
                             />
                           </div>
                           <div className="flex items-center gap-1">
@@ -348,30 +370,27 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                         </div>
                       ) : (
                         <div
-                          className="group cursor-pointer"
+                          className="group cursor-pointer inline-flex items-center gap-1"
                           onClick={() => startEditingPrice(product)}
                         >
-                          {isOnSale ? (
-                            <div className="flex flex-col items-end gap-0.5">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-zinc-900 font-medium">${Math.round(product.price)}</span>
-                                <span className="text-zinc-400 text-xs line-through">${Math.round(product.originalPrice!)}</span>
-                                <Pencil size={12} className="text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                              <span className="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-600">
-                                減價
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-end gap-1">
-                              <span className="text-zinc-900 font-medium">${Math.round(product.price)}</span>
-                              <Pencil size={12} className="text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
-                          )}
+                          <span className="text-zinc-900 font-medium">${Math.round(product.price)}</span>
+                          <Pencil size={12} className="text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right text-zinc-700">{product.stock ?? 0}</td>
+                    {/* 折扣 */}
+                    <td className="px-4 py-3 text-center">
+                      {isOnSale ? (
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
+                          -{discountPercent}%
+                        </span>
+                      ) : (
+                        <span className="text-zinc-300">—</span>
+                      )}
+                    </td>
+                    {/* 庫存 */}
+                    <td className="px-4 py-3 text-right text-zinc-700 text-sm">{product.stock ?? 0}</td>
+                    {/* Status */}
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${
@@ -383,36 +402,44 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                         {product.active ? t.admin.common.active : t.admin.common.inactive}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-zinc-600">
-                      {new Date(product.updatedAt).toISOString().slice(0, 16).replace("T", " ")}
+                    {/* Updated */}
+                    <td className="px-4 py-3 text-zinc-500 text-xs">
+                      {new Date(product.updatedAt).toISOString().slice(0, 10)}
                     </td>
+                    {/* Actions: Edit + Featured star + 熱賣 fire (compact row) */}
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => handleEditProduct(product)}
+                          className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50"
+                        >
+                          {t.admin.common.edit}
+                        </button>
                         {/* Featured toggle (star) */}
                         <button
-                          onClick={() => handleToggleFeatured(product.id, (product as ProductWithBadges).featured ?? false)}
+                          onClick={() => handleToggleFeatured(product.id, product.featured ?? false)}
                           disabled={togglingFeatured === product.id}
-                          className={`p-2 rounded-lg transition-colors ${
-                            (product as ProductWithBadges).featured
+                          className={`p-1.5 rounded-lg transition-colors ${
+                            product.featured
                               ? "text-yellow-500 bg-yellow-50 hover:bg-yellow-100"
                               : "text-zinc-400 hover:text-yellow-500 hover:bg-zinc-100"
                           } disabled:opacity-50`}
-                          title={(product as ProductWithBadges).featured ? "Remove from featured" : "Mark as featured"}
+                          title={product.featured ? "Remove from featured" : "Mark as featured"}
                         >
                           <Star
-                            size={16}
-                            fill={(product as ProductWithBadges).featured ? "currentColor" : "none"}
+                            size={14}
+                            fill={product.featured ? "currentColor" : "none"}
                           />
                         </button>
                         {/* Hot selling toggle (fire) */}
                         {(() => {
-                          const badges = (product as ProductWithBadges).promotionBadges || [];
+                          const badges = product.promotionBadges || [];
                           const isHot = badges.includes("今期熱賣");
                           return (
                             <button
                               onClick={() => handleToggleHotSelling(product.id, badges, isHot)}
                               disabled={togglingHotSelling === product.id}
-                              className={`p-2 rounded-lg transition-colors ${
+                              className={`p-1.5 rounded-lg transition-colors ${
                                 isHot
                                   ? "text-orange-500 bg-orange-50 hover:bg-orange-100"
                                   : "text-zinc-400 hover:text-orange-500 hover:bg-zinc-100"
@@ -420,18 +447,12 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                               title={isHot ? "移除熱賣" : "設為熱賣"}
                             >
                               <Flame
-                                size={16}
+                                size={14}
                                 fill={isHot ? "currentColor" : "none"}
                               />
                             </button>
                           );
                         })()}
-                        <button
-                          onClick={() => handleEditProduct(product)}
-                          className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50"
-                        >
-                          {t.admin.common.edit}
-                        </button>
                       </div>
                     </td>
                   </tr>
