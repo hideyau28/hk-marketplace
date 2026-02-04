@@ -487,10 +487,10 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           <table className="min-w-[1400px] w-full text-sm">
             <thead>
               <tr className="text-zinc-500 border-b border-zinc-200">
-                <th className="px-4 py-1.5 text-left">Photo</th>
-                <th className="px-4 py-1.5 text-left">Brand</th>
-                <th className="px-4 py-1.5 text-left">Style</th>
-                <th className="px-4 py-1.5 text-left relative">
+                <th className="px-2 py-1.5 text-left">Photo</th>
+                <th className="px-2 py-1.5 text-left">Brand</th>
+                <th className="px-2 py-1.5 text-left">Style</th>
+                <th className="px-2 py-1.5 text-left relative">
                   <button
                     type="button"
                     onClick={() => setOpenFilter(openFilter === "category" ? null : "category")}
@@ -519,7 +519,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     </div>
                   )}
                 </th>
-                <th className="px-4 py-1.5 text-right">
+                <th className="px-2 py-1.5 text-right">
                   <button
                     type="button"
                     onClick={() => toggleSort("originalPrice")}
@@ -528,7 +528,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     Orig. Price <span className="text-xs">{getSortIndicator("originalPrice")}</span>
                   </button>
                 </th>
-                <th className="px-4 py-1.5 text-right">
+                <th className="px-2 py-1.5 text-right">
                   <button
                     type="button"
                     onClick={() => toggleSort("price")}
@@ -537,8 +537,8 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     Price <span className="text-xs">{getSortIndicator("price")}</span>
                   </button>
                 </th>
-                <th className="px-4 py-1.5 text-center">Discount</th>
-                <th className="px-4 py-1.5 text-right relative">
+                <th className="px-2 py-1.5 text-center">Discount</th>
+                <th className="px-2 py-1.5 text-right relative">
                   <button
                     type="button"
                     onClick={() => setOpenFilter(openFilter === "stock" ? null : "stock")}
@@ -567,8 +567,8 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     </div>
                   )}
                 </th>
-                <th className="px-4 py-1.5 text-left">Badges</th>
-                <th className="px-4 py-1.5 text-left relative">
+                <th className="px-2 py-1.5 text-left">Badges</th>
+                <th className="px-2 py-1.5 text-left relative">
                   <button
                     type="button"
                     onClick={() => setOpenFilter(openFilter === "status" ? null : "status")}
@@ -597,7 +597,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     </div>
                   )}
                 </th>
-                <th className="px-4 py-1.5 text-left">Updated</th>
+                <th className="px-2 py-1.5 text-left">Updated</th>
               </tr>
             </thead>
 
@@ -629,7 +629,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                   return (
                   <tr key={product.id} className="border-t border-zinc-200 hover:bg-zinc-50">
                     {/* Photo */}
-                    <td className="px-4 py-1.5">
+                    <td className="px-2 py-1.5">
                       {product.imageUrl ? (
                         <div className="relative h-[36px] w-[36px] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
                           <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="36px" />
@@ -639,13 +639,13 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       )}
                     </td>
                     {/* Brand */}
-                    <td className="px-4 py-1.5 text-zinc-900 font-semibold text-sm">{product.brand || "—"}</td>
+                    <td className="px-2 py-1.5 text-zinc-900 font-semibold text-sm">{product.brand || "—"}</td>
                     {/* Style */}
-                    <td className="px-4 py-1.5 text-zinc-500 text-sm">{product.sku || "—"}</td>
+                    <td className="px-2 py-1.5 text-zinc-500 text-sm">{product.sku || "—"}</td>
                     {/* Category */}
-                    <td className="px-4 py-1.5 text-zinc-600 text-sm">{product.category || "—"}</td>
+                    <td className="px-2 py-1.5 text-zinc-600 text-sm">{product.category || "—"}</td>
                     {/* Orig. Price */}
-                    <td className="px-4 py-1.5 text-right text-sm">
+                    <td className="px-2 py-1.5 text-right text-sm">
                       {product.originalPrice != null ? (
                         <span className="text-zinc-600">${Math.round(product.originalPrice)}</span>
                       ) : (
@@ -653,7 +653,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       )}
                     </td>
                     {/* Price (editable on click) */}
-                    <td className="px-4 py-1.5 text-right">
+                    <td className="px-2 py-1.5 text-right">
                       {editingPriceId === product.id ? (
                         <div className="flex flex-col items-end gap-1">
                           <div className="flex items-center gap-1">
@@ -701,13 +701,13 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       )}
                     </td>
                     {/* Discount */}
-                    <td className="px-4 py-1.5 text-center text-sm text-zinc-600">
+                    <td className="px-2 py-1.5 text-center text-sm text-zinc-600">
                       {isOnSale ? `-${discountPercent}%` : ""}
                     </td>
                     {/* Stock */}
-                    <td className="px-4 py-1.5 text-right text-zinc-700 text-sm">{product.stock ?? 0}</td>
+                    <td className="px-2 py-1.5 text-right text-zinc-700 text-sm">{product.stock ?? 0}</td>
                     {/* Badges */}
-                    <td className="px-4 py-1.5">
+                    <td className="px-2 py-1.5">
                       {badgeDisplay.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5">
                           {badgeDisplay.map((badge) => (
@@ -727,7 +727,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       )}
                     </td>
                     {/* Status */}
-                    <td className="px-4 py-1.5">
+                    <td className="px-2 py-1.5">
                       <span
                         className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${
                           product.active
@@ -739,7 +739,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       </span>
                     </td>
                     {/* Updated */}
-                    <td className="px-4 py-1.5 text-zinc-500 text-xs">
+                    <td className="px-2 py-1.5 text-zinc-500 text-xs">
                       <div className="flex items-center justify-between gap-3">
                         <span>{new Date(product.updatedAt).toISOString().slice(0, 10)}</span>
                         <div className="flex items-center justify-end gap-1">
