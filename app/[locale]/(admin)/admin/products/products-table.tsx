@@ -307,7 +307,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
         setBadgeError(json?.error?.message || "Failed to load badges.");
         return;
       }
-      setBadges(json.badges || []);
+      setBadges(json.data?.badges || []);
     } catch (error) {
       console.error("Failed to load badges:", error);
       setBadgeError("Failed to load badges.");
