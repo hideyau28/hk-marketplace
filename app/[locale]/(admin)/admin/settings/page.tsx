@@ -17,6 +17,8 @@ function cn(...inputs: ClassValue[]) {
 type StoreSettings = {
   id: string;
   storeName: string | null;
+  storeNameEn: string | null;
+  storeLogo: string | null;
   tagline: string | null;
   returnsPolicy: string | null;
   shippingPolicy: string | null;
@@ -31,8 +33,15 @@ type StoreSettings = {
   openingHours: string | null;
   pickupHours: string | null;
   pickupAddress: string | null;
+  pickupAddressZh: string | null;
+  pickupAddressEn: string | null;
   shippingFee: number;
   freeShippingThreshold: number;
+  homeDeliveryFee: number | null;
+  homeDeliveryFreeAbove: number | null;
+  homeDeliveryIslandExtra: number | null;
+  sfLockerFee: number | null;
+  sfLockerFreeAbove: number | null;
 };
 
 type SaveState = "idle" | "saving" | "success" | "error";
@@ -40,6 +49,8 @@ type SaveState = "idle" | "saving" | "success" | "error";
 const DEFAULT_SETTINGS: StoreSettings = {
   id: "default",
   storeName: "",
+  storeNameEn: "",
+  storeLogo: "",
   tagline: "",
   returnsPolicy: "",
   shippingPolicy: "",
@@ -54,8 +65,15 @@ const DEFAULT_SETTINGS: StoreSettings = {
   openingHours: "",
   pickupHours: "",
   pickupAddress: "",
+  pickupAddressZh: "",
+  pickupAddressEn: "",
   shippingFee: 40,
   freeShippingThreshold: 600,
+  homeDeliveryFee: 40,
+  homeDeliveryFreeAbove: 600,
+  homeDeliveryIslandExtra: 20,
+  sfLockerFee: 35,
+  sfLockerFreeAbove: 600,
 };
 
 // --- UI Components (outside main component) ---
@@ -385,6 +403,175 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 />
                 <Description>Inform customers about delivery times and costs.</Description>
               </div>
+            </div>
+          </div>
+
+          {/* Store Identity */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <Store className="h-5 w-5 text-zinc-600" />
+                Store Identity
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                Branding details for English-facing store identity.
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <Label>Store Name (English)</Label>
+                <SettingsInput
+                  id="storeNameEn"
+                  value={formData.storeNameEn || ""}
+                  onChange={handleChange}
+                  placeholder="e.g. Yau Store"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label>Store Logo</Label>
+                <SettingsInput
+                  id="storeLogo"
+                  value={formData.storeLogo || ""}
+                  onChange={handleChange}
+                  placeholder="https://example.com/logo.png"
+                />
+                {formData.storeLogo ? (
+                  <img src={formData.storeLogo} alt="Store logo preview" className="h-16 mt-2 rounded" />
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          {/* Pickup Address */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-zinc-600" />
+                Pickup Address
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                Pickup address details in both Chinese and English.
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <Label>Pickup Address (Chinese)</Label>
+                <SettingsTextarea
+                  id="pickupAddressZh"
+                  value={formData.pickupAddressZh || ""}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="例：九龍旺角彌敦道XXX號 XX大廈XX樓XX室"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label>Pickup Address (English)</Label>
+                <SettingsTextarea
+                  id="pickupAddressEn"
+                  value={formData.pickupAddressEn || ""}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="e.g. Unit XX, XX/F, XX Building, XXX Nathan Road, Mong Kok, Kowloon"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Shipping Settings */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <Truck className="h-5 w-5 text-zinc-600" />
+                Shipping Settings
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                Configure delivery fees and free shipping thresholds.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-zinc-800">Home Delivery (送貨上門)</h4>
+                <div className="grid gap-6 md:grid-cols-3">
+                  <div className="space-y-3">
+                    <Label>Shipping Fee ($)</Label>
+                    <SettingsInput
+                      id="homeDeliveryFee"
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={String(formData.homeDeliveryFee ?? "")}
+                      onChange={handleNumericChange}
+                      placeholder="40"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>Free Shipping Above ($)</Label>
+                    <SettingsInput
+                      id="homeDeliveryFreeAbove"
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={String(formData.homeDeliveryFreeAbove ?? "")}
+                      onChange={handleNumericChange}
+                      placeholder="600"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>Outlying Islands Surcharge ($)</Label>
+                    <SettingsInput
+                      id="homeDeliveryIslandExtra"
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={String(formData.homeDeliveryIslandExtra ?? "")}
+                      onChange={handleNumericChange}
+                      placeholder="20"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-zinc-200 pt-6 space-y-4">
+                <h4 className="text-sm font-semibold text-zinc-800">SF Locker / Station (順豐智能櫃/站)</h4>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-3">
+                    <Label>Shipping Fee ($)</Label>
+                    <SettingsInput
+                      id="sfLockerFee"
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={String(formData.sfLockerFee ?? "")}
+                      onChange={handleNumericChange}
+                      placeholder="35"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label>Free Above ($)</Label>
+                    <SettingsInput
+                      id="sfLockerFreeAbove"
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={String(formData.sfLockerFreeAbove ?? "")}
+                      onChange={handleNumericChange}
+                      placeholder="600"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-sm text-zinc-600">
+                Self-pickup is always free — no settings needed.
+              </p>
             </div>
           </div>
 

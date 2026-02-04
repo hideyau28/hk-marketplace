@@ -20,7 +20,6 @@ const tabs: Tab[] = [
     Icon: Home,
   },
   {
-  {
     key: "wishlist",
     href: (l) => `/${l}/collections`,
     labelKey: "wishlistTab",

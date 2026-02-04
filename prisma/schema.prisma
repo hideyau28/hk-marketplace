@@ -9,6 +9,8 @@ datasource db {
 model StoreSettings {
   id                      String   @id @default("default")
   storeName               String?
+  storeNameEn             String?  // English store name
+  storeLogo               String?  // Logo URL
   tagline                 String?
   returnsPolicy           String?
   shippingPolicy          String?
@@ -26,9 +28,18 @@ model StoreSettings {
   pickupHours             String?
   // Pickup address
   pickupAddress           String?
+  pickupAddressZh         String?  // Pickup address in Chinese
+  pickupAddressEn         String?  // Pickup address in English
   // Shipping
   shippingFee             Float    @default(40)
   freeShippingThreshold   Float    @default(600)
+  // Home delivery settings
+  homeDeliveryFee         Float?   @default(40)
+  homeDeliveryFreeAbove   Float?   @default(600)
+  homeDeliveryIslandExtra Float?   @default(20)
+  // SF Locker/Station settings
+  sfLockerFee             Float?   @default(35)
+  sfLockerFreeAbove       Float?   @default(600)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }

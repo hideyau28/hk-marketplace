@@ -5,6 +5,37 @@ import { prisma } from "@/lib/prisma";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 
 const ROUTE = "/api/store-settings";
+const SETTINGS_SELECT = {
+  id: true,
+  storeName: true,
+  storeNameEn: true,
+  storeLogo: true,
+  tagline: true,
+  returnsPolicy: true,
+  shippingPolicy: true,
+  welcomePopupEnabled: true,
+  welcomePopupTitle: true,
+  welcomePopupSubtitle: true,
+  welcomePopupPromoText: true,
+  welcomePopupButtonText: true,
+  whatsappNumber: true,
+  instagramUrl: true,
+  facebookUrl: true,
+  openingHours: true,
+  pickupHours: true,
+  pickupAddress: true,
+  pickupAddressZh: true,
+  pickupAddressEn: true,
+  shippingFee: true,
+  freeShippingThreshold: true,
+  homeDeliveryFee: true,
+  homeDeliveryFreeAbove: true,
+  homeDeliveryIslandExtra: true,
+  sfLockerFee: true,
+  sfLockerFreeAbove: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
 function stableStringify(input: unknown): string {
   const seen = new WeakSet<object>();
@@ -32,7 +63,10 @@ function sha256(s: string) {
 
 // GET /api/store-settings
 export const GET = withApi(async (req) => {
-  const row = await prisma.storeSettings.findUnique({ where: { id: "default" } }).catch(() => null);
+  const row = await prisma.storeSettings.findUnique({
+    where: { id: "default" },
+    select: SETTINGS_SELECT,
+  }).catch(() => null);
   return ok(req, row ?? null);
 }, { admin: true });
 
@@ -75,10 +109,40 @@ export const PUT = withApi(
     }
 
     // 5) first-time => do write
+    const data = {
+      storeName: body?.storeName,
+      storeNameEn: body?.storeNameEn,
+      storeLogo: body?.storeLogo,
+      tagline: body?.tagline,
+      returnsPolicy: body?.returnsPolicy,
+      shippingPolicy: body?.shippingPolicy,
+      welcomePopupEnabled: body?.welcomePopupEnabled,
+      welcomePopupTitle: body?.welcomePopupTitle,
+      welcomePopupSubtitle: body?.welcomePopupSubtitle,
+      welcomePopupPromoText: body?.welcomePopupPromoText,
+      welcomePopupButtonText: body?.welcomePopupButtonText,
+      whatsappNumber: body?.whatsappNumber,
+      instagramUrl: body?.instagramUrl,
+      facebookUrl: body?.facebookUrl,
+      openingHours: body?.openingHours,
+      pickupHours: body?.pickupHours,
+      pickupAddress: body?.pickupAddress,
+      pickupAddressZh: body?.pickupAddressZh,
+      pickupAddressEn: body?.pickupAddressEn,
+      shippingFee: body?.shippingFee,
+      freeShippingThreshold: body?.freeShippingThreshold,
+      homeDeliveryFee: body?.homeDeliveryFee,
+      homeDeliveryFreeAbove: body?.homeDeliveryFreeAbove,
+      homeDeliveryIslandExtra: body?.homeDeliveryIslandExtra,
+      sfLockerFee: body?.sfLockerFee,
+      sfLockerFreeAbove: body?.sfLockerFreeAbove,
+    };
+
     const updated = await prisma.storeSettings.upsert({
       where: { id: (body?.id ?? "default") as string },
-      update: body ?? {},
-      create: { id: (body?.id ?? "default") as string, ...(body ?? {}) },
+      update: data,
+      create: { id: (body?.id ?? "default") as string, ...data },
+      select: SETTINGS_SELECT,
     });
 
     // 6) persist idempotency record
