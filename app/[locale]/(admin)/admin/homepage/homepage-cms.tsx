@@ -22,11 +22,8 @@ import {
   GripVertical,
   Plus,
   Pencil,
-  Trash2,
   X,
   Image as ImageIcon,
-  ChevronUp,
-  ChevronDown,
   LayoutGrid,
   ImageIcon as BannerIcon,
   Search,
@@ -96,9 +93,16 @@ export default function HomepageCMS({
   const [isCreatingSection, setIsCreatingSection] = useState(false);
   const [isCreatingBanner, setIsCreatingBanner] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showLongPressHint, setShowLongPressHint] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
 
-  // Sensors for drag-and-drop
+  // Haptic feedback helper
+  const vibrate = (pattern: number | number[]) => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(pattern);
+    }
+  };
+
+  // Sensors for drag-and-drop (ONLY active in edit mode)
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -107,7 +111,7 @@ export default function HomepageCMS({
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 500, // Mobile: long-press 500ms
+        delay: 300, // Mobile: long-press 300ms (shorter since already in edit mode)
         tolerance: 5,
       },
     })
@@ -184,6 +188,12 @@ export default function HomepageCMS({
     return Math.max(maxSection, maxBanner) + 1;
   };
 
+  // Toggle edit mode
+  const toggleEditMode = () => {
+    setIsEditMode(!isEditMode);
+    vibrate(50);
+  };
+
   // SECTION CRUD
   const saveSection = async (section: Partial<Section>, isNew: boolean) => {
     setSaving(true);
@@ -211,8 +221,9 @@ export default function HomepageCMS({
     }
   };
 
-  const deleteSection = async (id: string) => {
-    if (!confirm("確定要刪除呢個 Section？")) return;
+  const deleteSection = async (id: string, title: string) => {
+    if (!confirm(`確定刪除「${title || "未命名 Section"}」？`)) return;
+    vibrate(100);
     try {
       const res = await fetch(`/api/homepage/sections/${id}`, {
         method: "DELETE",
@@ -263,8 +274,9 @@ export default function HomepageCMS({
     }
   };
 
-  const deleteBanner = async (id: string) => {
-    if (!confirm("確定要刪除呢個 Banner？")) return;
+  const deleteBanner = async (id: string, title: string) => {
+    if (!confirm(`確定刪除「${title || "未命名 Banner"}」？`)) return;
+    vibrate(100);
     try {
       const res = await fetch(`/api/homepage/banners/${id}`, {
         method: "DELETE",
@@ -288,96 +300,16 @@ export default function HomepageCMS({
     });
   };
 
-  // Move item up/down in unified list
-  const moveItem = async (index: number, direction: "up" | "down") => {
-    if (direction === "up" && index === 0) return;
-    if (direction === "down" && index === unifiedList.length - 1) return;
-
-    const swapIndex = direction === "up" ? index - 1 : index + 1;
-    const item1 = unifiedList[index];
-    const item2 = unifiedList[swapIndex];
-
-    const newOrder1 = item2.data.sortOrder;
-    const newOrder2 = item1.data.sortOrder;
-
-    if (item1.type === "section") {
-      setSections((prev) =>
-        prev.map((s) =>
-          s.id === item1.data.id ? { ...s, sortOrder: newOrder1 } : s
-        )
-      );
-    } else {
-      setBanners((prev) =>
-        prev.map((b) =>
-          b.id === item1.data.id ? { ...b, sortOrder: newOrder1 } : b
-        )
-      );
-    }
-
-    if (item2.type === "section") {
-      setSections((prev) =>
-        prev.map((s) =>
-          s.id === item2.data.id ? { ...s, sortOrder: newOrder2 } : s
-        )
-      );
-    } else {
-      setBanners((prev) =>
-        prev.map((b) =>
-          b.id === item2.data.id ? { ...b, sortOrder: newOrder2 } : b
-        )
-      );
-    }
-
-    const updates: Promise<Response>[] = [];
-
-    if (item1.type === "section") {
-      updates.push(
-        fetch(`/api/homepage/sections/${item1.data.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sortOrder: newOrder1 }),
-        })
-      );
-    } else {
-      updates.push(
-        fetch(`/api/homepage/banners/${item1.data.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sortOrder: newOrder1 }),
-        })
-      );
-    }
-
-    if (item2.type === "section") {
-      updates.push(
-        fetch(`/api/homepage/sections/${item2.data.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sortOrder: newOrder2 }),
-        })
-      );
-    } else {
-      updates.push(
-        fetch(`/api/homepage/banners/${item2.data.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sortOrder: newOrder2 }),
-        })
-      );
-    }
-
-    await Promise.all(updates);
+  // Handle drag and drop (ONLY in edit mode)
+  const handleDragStart = () => {
+    vibrate(30);
   };
 
-  // Handle drag and drop
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    // Vibrate if available (mobile feedback)
-    if (typeof navigator !== "undefined" && navigator.vibrate) {
-      navigator.vibrate(50);
-    }
+    vibrate([30, 50, 30]);
 
     const oldIndex = unifiedList.findIndex((item) => `${item.type}-${item.data.id}` === active.id);
     const newIndex = unifiedList.findIndex((item) => `${item.type}-${item.data.id}` === over.id);
@@ -455,120 +387,96 @@ export default function HomepageCMS({
       transform,
       transition,
       isDragging,
-    } = useSortable({ id: `${item.type}-${item.data.id}` });
+    } = useSortable({ id: `${item.type}-${item.data.id}`, disabled: !isEditMode });
 
     const style = {
       transform: CSS.Transform.toString(transform),
       transition,
       opacity: isDragging ? 0.5 : 1,
+      touchAction: isEditMode ? ("none" as const) : ("auto" as const),
     };
 
     const bannerInfo = item.type === "banner" ? getBannerInfo(item.data as Banner) : null;
-    const firstSlideUrl = bannerInfo?.slides[0]?.imageUrl;
+    const itemTitle = item.type === "section"
+      ? (item.data as Section).title || "未命名 Section"
+      : bannerInfo!.title;
+
+    // Color coding: olive green for Section, purple for Banner
+    const borderColor = item.type === "section" ? "border-[#6B7A2F]" : "border-purple-500";
+    const badgeBg = item.type === "section" ? "bg-[#6B7A2F]/10" : "bg-purple-100";
+    const badgeText = item.type === "section" ? "text-[#6B7A2F]" : "text-purple-700";
 
     return (
       <div
         ref={setNodeRef}
         style={style}
-        className={`flex flex-col md:flex-row items-start gap-2 md:items-center md:gap-3 p-3 md:p-4 hover:bg-zinc-50 border-b border-zinc-200 last:border-b-0 ${isDragging ? "shadow-lg scale-105 bg-white z-10 rounded-xl" : ""}`}
+        className={`
+          flex items-center gap-2 md:gap-3 p-3 md:p-4
+          border-l-4 ${borderColor} border-b border-zinc-200 last:border-b-0
+          ${!isEditMode ? "hover:bg-zinc-50" : ""}
+          ${isDragging ? "shadow-lg scale-105 bg-white z-10 rounded-xl !border-l-4" : ""}
+          ${isEditMode && !isDragging ? "wiggle" : ""}
+        `}
       >
-        {/* Drag handle - desktop only */}
-        <div
-          {...attributes}
-          {...listeners}
-          className="hidden md:block cursor-grab active:cursor-grabbing flex-shrink-0"
-        >
-          <GripVertical size={20} className="text-zinc-400" />
-        </div>
+        {/* Edit mode: Drag handle on left */}
+        {isEditMode && (
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing flex-shrink-0"
+          >
+            <GripVertical size={20} className="text-zinc-400" />
+          </div>
+        )}
 
-        {/* Type badge + title + info */}
-        <div className="flex items-start gap-2 flex-1 min-w-0 w-full">
-          {/* Type badge */}
-          {item.type === "section" ? (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium flex-shrink-0">
-              <LayoutGrid size={14} />
-              <span className="hidden md:inline">Section</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-purple-50 text-purple-700 rounded text-xs font-medium flex-shrink-0">
-              <BannerIcon size={14} />
-              <span className="hidden md:inline">Banner</span>
-            </div>
-          )}
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
+        {/* Normal mode: Type badge */}
+        {!isEditMode && (
+          <div className={`flex items-center gap-1.5 px-2 py-1 ${badgeBg} ${badgeText} rounded text-xs font-medium flex-shrink-0`}>
             {item.type === "section" ? (
-              <div>
-                <div className="text-sm font-bold text-zinc-900 truncate">
-                  {(item.data as Section).title || "未命名 Section"}
-                </div>
-                <div className="text-xs text-zinc-500">
-                  {(item.data as Section).cardSize === "large" ? "大卡" : "細卡"} ·{" "}
-                  {(item.data as Section).filterType === "featured"
-                    ? "featured: true"
-                    : (item.data as Section).filterType
-                      ? `${(item.data as Section).filterType}: ${(item.data as Section).filterValue || "all"}`
-                      : getSectionProductInfo(item.data as Section)}
-                </div>
-              </div>
+              <>
+                <LayoutGrid size={14} />
+                <span className="hidden md:inline">Section</span>
+              </>
             ) : (
-              <div className="flex items-center gap-2 w-full">
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-zinc-900 truncate">
-                    {bannerInfo!.title}
-                  </div>
-                  <div className="text-xs text-zinc-500">
-                    {bannerInfo!.count} 張圖片
-                  </div>
-                </div>
-                {firstSlideUrl && (
-                  <div className="w-10 h-6 rounded overflow-hidden bg-zinc-100 flex-shrink-0">
-                    <img
-                      src={firstSlideUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-              </div>
+              <>
+                <BannerIcon size={14} />
+                <span className="hidden md:inline">Banner</span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Title + subtitle */}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-bold text-zinc-900 truncate">
+            {itemTitle}
+          </div>
+          <div className="text-xs text-zinc-500">
+            {item.type === "section" ? (
+              <>
+                {(item.data as Section).cardSize === "large" ? "大卡" : "細卡"} ·{" "}
+                {(item.data as Section).filterType === "featured"
+                  ? "featured: true"
+                  : (item.data as Section).filterType
+                    ? `${(item.data as Section).filterType}: ${(item.data as Section).filterValue || "all"}`
+                    : getSectionProductInfo(item.data as Section)}
+              </>
+            ) : (
+              `${bannerInfo!.count} 張圖片`
             )}
           </div>
         </div>
 
-        {/* Actions row */}
-        <div className="flex items-center gap-1 flex-shrink-0 w-full md:w-auto justify-between md:justify-end">
-          {/* Arrow buttons */}
-          <div className="flex items-center gap-0.5">
-            <button
-              onClick={() => moveItem(index, "up")}
-              disabled={index === 0}
-              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 disabled:opacity-30 rounded"
-              title="向上"
-            >
-              <ChevronUp size={16} className="md:hidden" />
-              <ChevronUp size={20} className="hidden md:block" />
-            </button>
-            <button
-              onClick={() => moveItem(index, "down")}
-              disabled={index === unifiedList.length - 1}
-              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 disabled:opacity-30 rounded"
-              title="向下"
-            >
-              <ChevronDown size={16} className="md:hidden" />
-              <ChevronDown size={20} className="hidden md:block" />
-            </button>
-          </div>
-
-          {/* Status + Edit + Delete */}
-          <div className="flex items-center gap-1">
+        {/* Normal mode: 啟用 + ✏️ */}
+        {!isEditMode && (
+          <div className="flex items-center gap-1 flex-shrink-0">
             <button
               onClick={() =>
                 item.type === "section"
                   ? toggleSectionActive(item.data as Section)
                   : toggleBannerActive(item.data as Banner)
               }
-              className={`px-2 py-1 rounded text-xs font-medium flex-shrink-0 ${
+              className={`px-2 py-1 rounded text-xs font-medium ${
                 item.data.active
                   ? "bg-green-100 text-green-700"
                   : "bg-zinc-100 text-zinc-500"
@@ -587,33 +495,50 @@ export default function HomepageCMS({
                   setIsCreatingBanner(false);
                 }
               }}
-              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 flex-shrink-0 rounded"
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 rounded"
               title="編輯"
             >
               <Pencil size={16} className="md:hidden" />
               <Pencil size={18} className="hidden md:block" />
             </button>
-
-            <button
-              onClick={() =>
-                item.type === "section"
-                  ? deleteSection(item.data.id)
-                  : deleteBanner(item.data.id)
-              }
-              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-red-600 flex-shrink-0 rounded"
-              title="刪除"
-            >
-              <Trash2 size={16} className="md:hidden" />
-              <Trash2 size={18} className="hidden md:block" />
-            </button>
           </div>
-        </div>
+        )}
+
+        {/* Edit mode: ✕ delete button */}
+        {isEditMode && (
+          <button
+            onClick={() =>
+              item.type === "section"
+                ? deleteSection(item.data.id, (item.data as Section).title)
+                : deleteBanner(item.data.id, bannerInfo!.title)
+            }
+            className="w-6 h-6 flex items-center justify-center text-white bg-red-500 hover:bg-red-600 rounded-full flex-shrink-0"
+            title="刪除"
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
     );
   };
 
   return (
     <div>
+      {/* Wiggle animation CSS */}
+      <style jsx global>{`
+        @keyframes wiggle {
+          0% { transform: rotate(0deg); }
+          25% { transform: rotate(-1deg); }
+          50% { transform: rotate(0deg); }
+          75% { transform: rotate(1deg); }
+          100% { transform: rotate(0deg); }
+        }
+
+        .wiggle {
+          animation: wiggle 0.3s ease-in-out infinite;
+        }
+      `}</style>
+
       <div className="flex gap-2 mb-6">
         <button
           onClick={() => {
@@ -655,34 +580,34 @@ export default function HomepageCMS({
       </div>
 
       <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-        <div className="p-4 border-b border-zinc-200">
-          <h2 className="font-semibold text-zinc-900">首頁內容排序</h2>
-          <p className="text-sm text-zinc-500 mt-1">
-            <span className="hidden md:inline">拖拉或用箭嘴調整順序</span>
-            <span className="md:hidden">長按拖拉排序</span>
-            ，順序即係首頁顯示嘅順序
-          </p>
-          {showLongPressHint && unifiedList.length > 0 && (
-            <div className="mt-2 md:hidden bg-olive-50 border border-olive-200 rounded-lg p-2 text-xs text-olive-700 flex items-center justify-between">
-              <span>💡 長按項目 0.5 秒可拖拉排序</span>
-              <button
-                onClick={() => setShowLongPressHint(false)}
-                className="text-olive-600 hover:text-olive-800 ml-2"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          )}
+        <div className="p-4 border-b border-zinc-200 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-zinc-900">首頁內容排序</h2>
+            <p className="text-sm text-zinc-500 mt-1">
+              {isEditMode ? "拖拉排序，順序即係首頁顯示嘅順序" : "點擊 [編輯排序] 開始調整順序"}
+            </p>
+          </div>
+          <button
+            onClick={toggleEditMode}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+              isEditMode
+                ? "bg-[#6B7A2F] text-white hover:bg-[#5a6527]"
+                : "border border-zinc-300 text-zinc-700 hover:bg-zinc-50"
+            }`}
+          >
+            {isEditMode ? "完成" : "編輯排序"}
+          </button>
         </div>
 
         {unifiedList.length === 0 ? (
           <div className="p-8 text-center text-zinc-500">
             未有任何內容，請新增 Section 或 Banner
           </div>
-        ) : (
+        ) : isEditMode ? (
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
             <SortableContext
@@ -694,6 +619,10 @@ export default function HomepageCMS({
               ))}
             </SortableContext>
           </DndContext>
+        ) : (
+          unifiedList.map((item, index) => (
+            <SortableItem key={`${item.type}-${item.data.id}`} item={item} index={index} />
+          ))
         )}
       </div>
 
@@ -1263,7 +1192,7 @@ function BannerModal({
                       onClick={() => removeSlide(index)}
                       className="text-red-600 hover:text-red-700 text-sm flex items-center gap-1"
                     >
-                      <Trash2 size={14} />
+                      <X size={14} />
                       刪除
                     </button>
                   )}
@@ -1336,7 +1265,7 @@ function BannerModal({
                     value={slide.title || ""}
                     onChange={(e) => updateSlide(index, "title", e.target.value)}
                     placeholder="例如：Air Jordan 系列"
-                    className="w-full px-2 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                    className="w-full px-2 py-1.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
                   />
                 </div>
 
