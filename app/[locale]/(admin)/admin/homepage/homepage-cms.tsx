@@ -422,7 +422,7 @@ export default function HomepageCMS({
         <div
           className={`
             flex items-center gap-2 md:gap-3 p-3 md:p-4 min-h-[44px]
-            ${isEditMode && !isDragging ? "wiggle" : ""}
+            
           `}
         >
           {/* Edit mode: Drag handle on left */}
@@ -534,7 +534,8 @@ export default function HomepageCMS({
     <div>
       {/* Wiggle animation CSS */}
       <style jsx global>{`
-        @keyframes wiggle {
+        /* wiggle removed */
+        @keyframes wiggle-disabled {
           0% { transform: rotate(0deg); }
           25% { transform: rotate(-1deg); }
           50% { transform: rotate(0deg); }
@@ -542,8 +543,8 @@ export default function HomepageCMS({
           100% { transform: rotate(0deg); }
         }
 
-        .wiggle {
-          animation: wiggle 0.3s ease-in-out infinite;
+        .wiggle-disabled {
+          /* animation removed */
         }
       `}</style>
 
