@@ -210,12 +210,6 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
               </div>
             )}
 
-            {/* Discount percentage badge - top-right */}
-            {isOnSale && p.stock !== 0 && (
-              <div className="absolute right-1.5 top-1.5 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm">
-                -{discountPercent}%
-              </div>
-            )}
           </div>
         </Link>
 
@@ -263,6 +257,7 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
                   {format(originalPriceValue!)}
                 </span>
                 <span className="text-sm font-bold text-red-600">{format(priceValue!)}</span>
+                <span className="text-[10px] font-semibold text-red-500">-{discountPercent}%</span>
               </>
             ) : (
               <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
