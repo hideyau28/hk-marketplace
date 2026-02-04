@@ -9,7 +9,7 @@
     "stripe:listen": "stripe listen --forward-to http://localhost:3012/api/stripe/webhook",
     "stripe:trigger:checkout": "stripe trigger checkout.session.completed",
     "postinstall": "prisma generate",
-    "build": "DATABASE_URL=postgresql://localhost:5432/placeholder TURBOPACK=0 next build",
+    "build": "next build",
     "start": "next start -p 3012",
     "lint": "eslint",
     "prebuild": "node scripts/assert-single-app-root.mjs",
