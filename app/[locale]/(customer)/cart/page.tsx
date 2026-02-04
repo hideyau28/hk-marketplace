@@ -22,6 +22,7 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [mounted, setMounted] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState<RecommendedProduct[]>([]);
+  const [hotProducts, setHotProducts] = useState<RecommendedProduct[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { format } = useCurrency();
@@ -44,6 +45,20 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
             // Shuffle and pick 6 random products
             const shuffled = data.data.products.sort(() => Math.random() - 0.5);
             setRecommendedProducts(shuffled.slice(0, 6));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [mounted, cart.length]);
+
+  // Fetch hot products for cart page
+  useEffect(() => {
+    if (mounted && cart.length > 0) {
+      fetch("/api/products?limit=8&sort=stock")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.ok && data.data?.products) {
+            setHotProducts(data.data.products.slice(0, 8));
           }
         })
         .catch(() => {});
@@ -187,7 +202,9 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
                   <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{item.title}</h3>
                   {item.size && item.sizeSystem && (
                     <p className="mt-0.5 text-zinc-500 text-xs dark:text-zinc-400">
-                      {item.sizeSystem}: {item.size}
+                      {item.sizeSystem === "US" && item.size.startsWith("US")
+                        ? item.size
+                        : `${item.sizeSystem}: ${item.size}`}
                     </p>
                   )}
                   <p className="mt-1 text-zinc-600 text-sm dark:text-zinc-400">{format(item.unitPrice)}</p>
@@ -237,6 +254,52 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
             {t.cart.checkout}
           </Link>
         </div>
+
+        {hotProducts.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+              {locale === "en" ? "Hot Products" : "熱賣產品"}
+            </h2>
+            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4">
+              {hotProducts.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/${locale}/product/${product.id}`}
+                  className="min-w-[160px] flex-shrink-0 snap-start rounded-2xl border border-zinc-200 bg-white overflow-hidden hover:shadow-md transition-shadow dark:border-zinc-800 dark:bg-zinc-900"
+                >
+                  <div className="relative aspect-square bg-zinc-100 dark:bg-zinc-800">
+                    {product.imageUrl ? (
+                      <Image
+                        src={product.imageUrl}
+                        alt={product.title}
+                        fill
+                        className="object-cover"
+                        sizes="160px"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-zinc-400">
+                        <span className="text-xs">No image</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    {product.brand && (
+                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                        {product.brand}
+                      </p>
+                    )}
+                    <h3 className="text-xs font-medium text-zinc-900 dark:text-zinc-100 line-clamp-2 leading-tight">
+                      {product.title}
+                    </h3>
+                    <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      {format(product.price)}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
