@@ -393,7 +393,7 @@ export default function HomepageCMS({
       transform: CSS.Transform.toString(transform),
       transition,
       opacity: isDragging ? 0.5 : 1,
-      touchAction: isEditMode ? ("none" as const) : ("auto" as const),
+      touchAction: isEditMode ? ("none" as const) : ("auto" as const), userSelect: isEditMode ? ("none" as const) : ("auto" as const),
     };
 
     const bannerInfo = item.type === "banner" ? getBannerInfo(item.data as Banner) : null;
