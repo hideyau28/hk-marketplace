@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getDict, type Locale } from "@/lib/i18n";
+import { type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
@@ -97,10 +97,8 @@ function exportProductsToCsv(products: ProductWithBadges[]): void {
   URL.revokeObjectURL(url);
 }
 
-export function ProductsTable({ products, locale, currentActive, showAddButton }: ProductsTableProps) {
+export function ProductsTable({ products, locale, showAddButton }: ProductsTableProps) {
   const router = useRouter();
-  const t = getDict(locale);
-  const [selectedActive, setSelectedActive] = useState(currentActive || "");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isCsvOpen, setIsCsvOpen] = useState(false);
@@ -108,22 +106,90 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
   const [togglingHotSelling, setTogglingHotSelling] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [stockFilter, setStockFilter] = useState("All");
+  const [openFilter, setOpenFilter] = useState<"category" | "status" | "stock" | null>(null);
+  const [sortKey, setSortKey] = useState<"originalPrice" | "price" | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
   // Inline price editing
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState("");
   const [editOriginalPrice, setEditOriginalPrice] = useState("");
   const [savingPrice, setSavingPrice] = useState(false);
 
-  // Filter products by search query
+  const CATEGORY_OPTIONS = [
+    "All",
+    "Air Jordan",
+    "Dunk/SB",
+    "Air Max",
+    "Air Force",
+    "Running",
+    "Basketball",
+    "Lifestyle",
+    "Training",
+    "Sandals",
+  ];
+
+  const STATUS_OPTIONS = ["All", "Active", "Inactive"];
+  const STOCK_OPTIONS = ["All", "In Stock", "Out of Stock"];
+
+  const hasStock = (product: ProductWithBadges) => {
+    const sizes = (product as { sizes?: Record<string, number> | null }).sizes;
+    if (sizes && typeof sizes === "object" && !Array.isArray(sizes)) {
+      return Object.values(sizes).some((value) => typeof value === "number" && value > 0);
+    }
+    return (product.stock ?? 0) > 0;
+  };
+
+  const getBadgeStyles = (badge: string) => {
+    if (badge === "今期熱賣" || badge.toLowerCase() === "hot") {
+      return "bg-orange-100 text-orange-700";
+    }
+    if (badge === "新品上架" || badge.toLowerCase() === "new") {
+      return "bg-blue-100 text-blue-700";
+    }
+    if (badge === "快將售罄" || badge.toLowerCase() === "low") {
+      return "bg-red-100 text-red-700";
+    }
+    if (badge === "店長推介" || badge.toLowerCase() === "featured") {
+      return "bg-olive-100 text-olive-700";
+    }
+    return "bg-zinc-100 text-zinc-700";
+  };
+
+  // Filter and sort products
   const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return products;
-    const query = searchQuery.toLowerCase();
-    return products.filter((p) =>
-      p.title.toLowerCase().includes(query) ||
-      (p.sku && p.sku.toLowerCase().includes(query)) ||
-      (p.brand && p.brand.toLowerCase().includes(query))
-    );
-  }, [products, searchQuery]);
+    const query = searchQuery.trim().toLowerCase();
+    let result = products.filter((p) => {
+      const matchesSearch = !query
+        || p.title.toLowerCase().includes(query)
+        || (p.sku && p.sku.toLowerCase().includes(query))
+        || (p.brand && p.brand.toLowerCase().includes(query));
+
+      const matchesCategory = categoryFilter === "All" || (p.category || "") === categoryFilter;
+      const matchesStatus = statusFilter === "All"
+        || (statusFilter === "Active" ? p.active : !p.active);
+      const matchesStock = stockFilter === "All"
+        || (stockFilter === "In Stock" ? hasStock(p) : !hasStock(p));
+
+      return matchesSearch && matchesCategory && matchesStatus && matchesStock;
+    });
+
+    if (sortKey && sortDirection) {
+      result = [...result].sort((a, b) => {
+        const aValue = sortKey === "originalPrice"
+          ? (a.originalPrice ?? 0)
+          : a.price;
+        const bValue = sortKey === "originalPrice"
+          ? (b.originalPrice ?? 0)
+          : b.price;
+        return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+      });
+    }
+
+    return result;
+  }, [products, searchQuery, categoryFilter, statusFilter, stockFilter, sortKey, sortDirection]);
 
   // Paginate filtered products
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -193,18 +259,6 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
     }
   };
 
-  const ACTIVE_FILTERS = [
-    { value: "", label: t.admin.products.allProducts },
-    { value: "true", label: t.admin.common.active },
-    { value: "false", label: t.admin.common.inactive },
-  ];
-
-  const handleActiveChange = (active: string) => {
-    setSelectedActive(active);
-    const url = active ? `/${locale}/admin/products?active=${active}` : `/${locale}/admin/products`;
-    router.push(url);
-  };
-
   const handleEditProduct = (product: Product) => {
     setSelectedProduct(product);
   };
@@ -218,57 +272,70 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
     setIsCreating(false);
   };
 
+  const toggleSort = (key: "originalPrice" | "price") => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDirection("asc");
+      setCurrentPage(1);
+      return;
+    }
+    if (sortDirection === "asc") {
+      setSortDirection("desc");
+      setCurrentPage(1);
+      return;
+    }
+    if (sortDirection === "desc") {
+      setSortKey(null);
+      setSortDirection(null);
+      setCurrentPage(1);
+    }
+  };
+
+  const getSortIndicator = (key: "originalPrice" | "price") => {
+    if (sortKey !== key) return "↕";
+    if (sortDirection === "asc") return "↑";
+    if (sortDirection === "desc") return "↓";
+    return "↕";
+  };
+
   return (
     <>
-      {/* Search bar */}
-      <div className="mt-6 relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          placeholder="搜尋產品名稱、SKU、品牌..."
-          className="w-full rounded-2xl border border-zinc-200 bg-white pl-12 pr-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-        />
-      </div>
-
-      <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <select
-          value={selectedActive}
-          onChange={(e) => handleActiveChange(e.target.value)}
-          className="w-full md:max-w-xs rounded-2xl border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-        >
-          {ACTIVE_FILTERS.map((f) => (
-            <option key={f.value} value={f.value}>
-              {f.label}
-            </option>
-          ))}
-        </select>
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Search by name, SKU, brand..."
+            className="w-full rounded-2xl border border-zinc-200 bg-white pl-12 pr-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2 justify-end">
           <button
             onClick={() => exportProductsToCsv(products)}
             className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
           >
-            {t.admin.products.exportCsv}
+            Export CSV
           </button>
           <a
             href="/api/admin/products/csv-template"
             className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
           >
-            {t.admin.products.downloadTemplate}
+            Download Template
           </a>
           <button
             onClick={() => setIsCsvOpen(true)}
             className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
           >
-            {t.admin.products.importCsv}
+            Import CSV
           </button>
           {showAddButton && (
             <button
               onClick={handleCreateProduct}
               className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700 transition-colors whitespace-nowrap"
             >
-              + {t.admin.products.addProduct}
+              + Add Product
             </button>
           )}
         </div>
@@ -276,61 +343,164 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
 
       <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
-          <table className="min-w-[1100px] w-full text-sm">
+          <table className="min-w-[1400px] w-full text-sm">
             <thead>
               <tr className="text-zinc-500 border-b border-zinc-200">
-                <th className="px-4 py-3 text-left">{t.admin.products.product}</th>
-                <th className="px-4 py-3 text-left">{t.admin.products.category}</th>
-                <th className="px-4 py-3 text-right">原價</th>
-                <th className="px-4 py-3 text-right">售價</th>
-                <th className="px-4 py-3 text-center">折扣</th>
-                <th className="px-4 py-3 text-right">{t.admin.products.stock}</th>
-                <th className="px-4 py-3 text-left">{t.admin.products.status}</th>
-                <th className="px-4 py-3 text-left">{t.admin.products.updatedAt}</th>
-                <th className="px-4 py-3 text-right">{t.admin.common.actions}</th>
+                <th className="px-4 py-3 text-left">Photo</th>
+                <th className="px-4 py-3 text-left">Brand</th>
+                <th className="px-4 py-3 text-left">Style</th>
+                <th className="px-4 py-3 text-left relative">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFilter(openFilter === "category" ? null : "category")}
+                    className="inline-flex items-center gap-1 hover:text-zinc-700"
+                  >
+                    Category <span className="text-xs">▼</span>
+                  </button>
+                  {openFilter === "category" && (
+                    <div className="absolute left-0 mt-2 w-48 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
+                      {CATEGORY_OPTIONS.map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => {
+                            setCategoryFilter(option);
+                            setOpenFilter(null);
+                            setCurrentPage(1);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
+                            categoryFilter === option ? "text-olive-700 font-semibold" : "text-zinc-600"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </th>
+                <th className="px-4 py-3 text-right">
+                  <button
+                    type="button"
+                    onClick={() => toggleSort("originalPrice")}
+                    className="inline-flex items-center gap-1 hover:text-zinc-700"
+                  >
+                    Orig. Price <span className="text-xs">{getSortIndicator("originalPrice")}</span>
+                  </button>
+                </th>
+                <th className="px-4 py-3 text-right">
+                  <button
+                    type="button"
+                    onClick={() => toggleSort("price")}
+                    className="inline-flex items-center gap-1 hover:text-zinc-700"
+                  >
+                    Price <span className="text-xs">{getSortIndicator("price")}</span>
+                  </button>
+                </th>
+                <th className="px-4 py-3 text-center">Discount</th>
+                <th className="px-4 py-3 text-right relative">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFilter(openFilter === "stock" ? null : "stock")}
+                    className="inline-flex items-center gap-1 hover:text-zinc-700"
+                  >
+                    Stock <span className="text-xs">▼</span>
+                  </button>
+                  {openFilter === "stock" && (
+                    <div className="absolute left-0 mt-2 w-40 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
+                      {STOCK_OPTIONS.map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => {
+                            setStockFilter(option);
+                            setOpenFilter(null);
+                            setCurrentPage(1);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
+                            stockFilter === option ? "text-olive-700 font-semibold" : "text-zinc-600"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </th>
+                <th className="px-4 py-3 text-left">Badges</th>
+                <th className="px-4 py-3 text-left relative">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFilter(openFilter === "status" ? null : "status")}
+                    className="inline-flex items-center gap-1 hover:text-zinc-700"
+                  >
+                    Status <span className="text-xs">▼</span>
+                  </button>
+                  {openFilter === "status" && (
+                    <div className="absolute left-0 mt-2 w-36 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
+                      {STATUS_OPTIONS.map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => {
+                            setStatusFilter(option);
+                            setOpenFilter(null);
+                            setCurrentPage(1);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
+                            statusFilter === option ? "text-olive-700 font-semibold" : "text-zinc-600"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </th>
+                <th className="px-4 py-3 text-left">Updated</th>
               </tr>
             </thead>
 
             <tbody>
               {paginatedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-zinc-500">
-                    {searchQuery ? "找不到符合的產品" : t.admin.common.noData}
+                  <td colSpan={11} className="px-4 py-12 text-center text-zinc-500">
+                    {searchQuery ? "No products match your search." : "No data available."}
                   </td>
                 </tr>
               ) : (
                 paginatedProducts.map((product) => {
                   const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
                   const discountPercent = isOnSale ? Math.round((1 - product.price / product.originalPrice!) * 100) : 0;
+                  const productBadges = Array.isArray((product as { badges?: string[] }).badges)
+                    ? (product as { badges: string[] }).badges
+                    : [];
                   return (
                   <tr key={product.id} className="border-t border-zinc-200 hover:bg-zinc-50">
-                    {/* Product: thumbnail + Brand (bold) + SKU (gray) */}
+                    {/* Photo */}
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        {product.imageUrl && (
-                          <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 flex-shrink-0">
-                            <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="40px" />
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <div className="text-zinc-900 font-semibold text-sm">{product.brand || "Nike"}</div>
-                          {product.sku && (
-                            <div className="text-zinc-400 text-xs truncate">{product.sku}</div>
-                          )}
+                      {product.imageUrl ? (
+                        <div className="relative h-[52px] w-[52px] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+                          <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="52px" />
                         </div>
-                      </div>
+                      ) : (
+                        <div className="h-[52px] w-[52px] rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
+                      )}
                     </td>
+                    {/* Brand */}
+                    <td className="px-4 py-3 text-zinc-900 font-semibold text-sm">{product.brand || "—"}</td>
+                    {/* Style */}
+                    <td className="px-4 py-3 text-zinc-500 text-sm">{product.sku || "—"}</td>
                     {/* Category */}
                     <td className="px-4 py-3 text-zinc-600 text-sm">{product.category || "—"}</td>
-                    {/* 原價 (strikethrough if exists) */}
+                    {/* Orig. Price */}
                     <td className="px-4 py-3 text-right text-sm">
                       {product.originalPrice != null ? (
-                        <span className="text-zinc-400 line-through">${Math.round(product.originalPrice)}</span>
+                        <span className="text-zinc-600">${Math.round(product.originalPrice)}</span>
                       ) : (
                         <span className="text-zinc-300">—</span>
                       )}
                     </td>
-                    {/* 售價 (editable on click) */}
+                    {/* Price (editable on click) */}
                     <td className="px-4 py-3 text-right">
                       {editingPriceId === product.id ? (
                         <div className="flex flex-col items-end gap-1">
@@ -340,14 +510,14 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                               value={editOriginalPrice}
                               onChange={(e) => setEditOriginalPrice(e.target.value)}
                               className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right text-zinc-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
-                              placeholder="原價"
+                              placeholder="Orig."
                             />
                             <input
                               type="number"
                               value={editPrice}
                               onChange={(e) => setEditPrice(e.target.value)}
                               className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-olive-500"
-                              placeholder="售價"
+                              placeholder="Price"
                               autoFocus
                             />
                           </div>
@@ -378,18 +548,29 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                         </div>
                       )}
                     </td>
-                    {/* 折扣 */}
-                    <td className="px-4 py-3 text-center">
-                      {isOnSale ? (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
-                          -{discountPercent}%
-                        </span>
+                    {/* Discount */}
+                    <td className="px-4 py-3 text-center text-sm text-zinc-600">
+                      {isOnSale ? `-${discountPercent}%` : ""}
+                    </td>
+                    {/* Stock */}
+                    <td className="px-4 py-3 text-right text-zinc-700 text-sm">{product.stock ?? 0}</td>
+                    {/* Badges */}
+                    <td className="px-4 py-3">
+                      {productBadges.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {productBadges.map((badge) => (
+                            <span
+                              key={badge}
+                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeStyles(badge)}`}
+                            >
+                              {badge}
+                            </span>
+                          ))}
+                        </div>
                       ) : (
                         <span className="text-zinc-300">—</span>
                       )}
                     </td>
-                    {/* 庫存 */}
-                    <td className="px-4 py-3 text-right text-zinc-700 text-sm">{product.stock ?? 0}</td>
                     {/* Status */}
                     <td className="px-4 py-3">
                       <span
@@ -399,21 +580,19 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                             : "bg-zinc-100 text-zinc-600 border-zinc-200"
                         }`}
                       >
-                        {product.active ? t.admin.common.active : t.admin.common.inactive}
+                        {product.active ? "Active" : "Inactive"}
                       </span>
                     </td>
                     {/* Updated */}
                     <td className="px-4 py-3 text-zinc-500 text-xs">
-                      {new Date(product.updatedAt).toISOString().slice(0, 10)}
-                    </td>
-                    {/* Actions: Edit + Featured star + 熱賣 fire (compact row) */}
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <span>{new Date(product.updatedAt).toISOString().slice(0, 10)}</span>
+                        <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleEditProduct(product)}
                           className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50"
                         >
-                          {t.admin.common.edit}
+                          Edit
                         </button>
                         {/* Featured toggle (star) */}
                         <button
@@ -444,7 +623,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                                   ? "text-orange-500 bg-orange-50 hover:bg-orange-100"
                                   : "text-zinc-400 hover:text-orange-500 hover:bg-zinc-100"
                               } disabled:opacity-50`}
-                              title={isHot ? "移除熱賣" : "設為熱賣"}
+                              title={isHot ? "Remove hot selling" : "Mark as hot selling"}
                             >
                               <Flame
                                 size={14}
@@ -453,6 +632,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                             </button>
                           );
                         })()}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -464,8 +644,8 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
 
         <div className="flex flex-col md:flex-row items-center justify-between border-t border-zinc-200 px-4 py-3 text-zinc-500 text-sm gap-3">
           <div>
-            顯示 {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} / 共 {filteredProducts.length} 件產品
-            {searchQuery && ` (搜尋結果)`}
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
+            {searchQuery && " (filtered)"}
           </div>
           {totalPages > 1 && (
             <div className="flex items-center gap-1">
@@ -474,7 +654,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                 disabled={currentPage === 1}
                 className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
               >
-                上一頁
+                Previous
               </button>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                 let pageNum: number;
@@ -509,7 +689,7 @@ export function ProductsTable({ products, locale, currentActive, showAddButton }
                 disabled={currentPage === totalPages}
                 className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
               >
-                下一頁
+                Next
               </button>
             </div>
           )}
