@@ -532,9 +532,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                   <button
                     type="button"
                     onClick={() => toggleSort("price")}
-                    className="inline-flex items-center gap-1 hover:text-zinc-700"
+                    className="inline-flex items-center gap-1 hover:text-zinc-700 ml-auto"
                   >
-                    Price <span className="text-xs">{getSortIndicator("price")}</span>
+                    Net Price <span className="text-xs">{getSortIndicator("price")}</span>
                   </button>
                 </th>
                 <th className="px-2 py-1.5 text-center">Discount</th>
