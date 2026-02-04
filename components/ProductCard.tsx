@@ -256,8 +256,10 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
                 <span className="text-[10px] text-zinc-400 line-through">
                   {format(originalPriceValue!)}
                 </span>
-                <span className="text-sm font-bold text-red-600">{format(priceValue!)}</span>
-                <span className="text-[10px] font-semibold text-red-500">-{discountPercent}%</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-sm font-bold text-red-600">{format(priceValue!)}</span>
+                  <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">-{discountPercent}%</span>
+                </div>
               </>
             ) : (
               <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
