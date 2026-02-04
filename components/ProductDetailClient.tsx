@@ -5,7 +5,6 @@ import { Heart } from "lucide-react";
 import { addToCart } from "@/lib/cart";
 import { useToast } from "@/components/Toast";
 import ProductSizeSelector from "@/components/ProductSizeSelector";
-import SizeChartButton from "@/components/SizeChartButton";
 import { useCurrency } from "@/lib/currency";
 import type { Translations } from "@/lib/translations";
 import { isWishlisted as checkWishlisted, toggleWishlist } from "@/lib/wishlist";
@@ -160,15 +159,13 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
       ) : null}
 
 
-      {/* Size Chart Button */}
-      <SizeChartButton isKids={product.isKids || false} locale={locale} />
-
       {/* Size Selector */}
       {product.sizes && (
         <ProductSizeSelector
           sizeSystem={product.sizeSystem}
           sizes={product.sizes}
           locale={locale}
+          isKids={product.isKids || false}
           onSizeSelect={handleSizeSelect}
           selectedSize={selectedSize}
           selectedSystem={selectedSystem}
