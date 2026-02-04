@@ -631,11 +631,11 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     {/* Photo */}
                     <td className="px-4 py-1.5">
                       {product.imageUrl ? (
-                        <div className="relative h-[52px] w-[52px] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
-                          <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="52px" />
+                        <div className="relative h-[36px] w-[36px] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+                          <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="36px" />
                         </div>
                       ) : (
-                        <div className="h-[52px] w-[52px] rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
+                        <div className="h-[36px] w-[36px] rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
                       )}
                     </td>
                     {/* Brand */}
