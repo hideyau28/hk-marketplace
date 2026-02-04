@@ -50,8 +50,9 @@ export default function HeroCarouselCMS({
   if (slides.length === 0) return null;
 
   return (
-    <section className="mt-4">
-      <div className="relative overflow-hidden rounded-3xl">
+    <section className="pt-4">
+      <div className="px-4">
+        <div className="relative overflow-hidden rounded-3xl">
         {/* Slides Container */}
         <div
           className="flex transition-transform duration-500 ease-out"
@@ -59,7 +60,10 @@ export default function HeroCarouselCMS({
         >
           {slides.map((slide) => {
             const Inner = (
-              <div className="relative w-full shrink-0 h-48 md:h-72">
+              <div className="relative w-full shrink-0 aspect-[16/9]">
+                {!slide.imageUrl && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-olive-600 to-olive-700" />
+                )}
                 {/* Background Image */}
                 {slide.imageUrl && (
                   <Image
@@ -117,6 +121,7 @@ export default function HeroCarouselCMS({
             ))}
           </div>
         )}
+        </div>
       </div>
     </section>
   );

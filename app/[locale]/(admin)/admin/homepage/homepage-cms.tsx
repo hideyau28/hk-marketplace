@@ -401,8 +401,10 @@ export default function HomepageCMS({
       ? (item.data as Section).title || "未命名 Section"
       : bannerInfo!.title;
 
-    // Color coding: olive green for Section, purple for Banner
-    const borderColor = item.type === "section" ? "border-[#6B7A2F]" : "border-purple-500";
+    // Color coding: green for Section, purple for Banner
+    const borderColor = item.type === "section" ? "border-green-400" : "border-purple-400";
+    const rowBg = item.type === "section" ? "bg-white" : "bg-purple-50";
+    const rowHover = item.type === "section" ? "hover:bg-zinc-50" : "hover:bg-purple-100";
     const badgeBg = item.type === "section" ? "bg-[#6B7A2F]/10" : "bg-purple-100";
     const badgeText = item.type === "section" ? "text-[#6B7A2F]" : "text-purple-700";
 
@@ -411,113 +413,119 @@ export default function HomepageCMS({
         ref={setNodeRef}
         style={style}
         className={`
-          flex items-center gap-2 md:gap-3 p-3 md:p-4
           border-l-4 ${borderColor} border-b border-zinc-200 last:border-b-0
-          ${!isEditMode ? "hover:bg-zinc-50" : ""}
-          ${isDragging ? "shadow-lg scale-105 bg-white z-10 rounded-xl !border-l-4" : ""}
-          ${isEditMode && !isDragging ? "wiggle" : ""}
+          ${rowBg}
+          ${!isEditMode ? rowHover : ""}
+          ${isDragging ? "shadow-lg scale-105 z-10 rounded-xl !border-l-4" : ""}
         `}
       >
-        {/* Edit mode: Drag handle on left */}
-        {isEditMode && (
-          <div
-            {...attributes}
-            {...listeners}
-            className="cursor-grab active:cursor-grabbing flex-shrink-0"
-          >
-            <GripVertical size={20} className="text-zinc-400" />
-          </div>
-        )}
+        <div
+          className={`
+            flex items-center gap-2 md:gap-3 p-3 md:p-4 min-h-[44px]
+            ${isEditMode && !isDragging ? "wiggle" : ""}
+          `}
+        >
+          {/* Edit mode: Drag handle on left */}
+          {isEditMode && (
+            <div
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing flex-shrink-0"
+            >
+              <GripVertical size={20} className="text-zinc-400" />
+            </div>
+          )}
 
-        {/* Normal mode: Type badge */}
-        {!isEditMode && (
-          <div className={`flex items-center gap-1.5 px-2 py-1 ${badgeBg} ${badgeText} rounded text-xs font-medium flex-shrink-0`}>
-            {item.type === "section" ? (
-              <>
-                <LayoutGrid size={14} />
-                <span className="hidden md:inline">Section</span>
-              </>
-            ) : (
-              <>
-                <BannerIcon size={14} />
-                <span className="hidden md:inline">Banner</span>
-              </>
-            )}
-          </div>
-        )}
+          {/* Normal mode: Type badge */}
+          {!isEditMode && (
+            <div className={`flex items-center gap-1.5 px-2 py-1 ${badgeBg} ${badgeText} rounded text-xs font-medium flex-shrink-0`}>
+              {item.type === "section" ? (
+                <>
+                  <LayoutGrid size={14} />
+                  <span className="hidden md:inline">Section</span>
+                </>
+              ) : (
+                <>
+                  <BannerIcon size={14} />
+                  <span className="hidden md:inline">Banner</span>
+                </>
+              )}
+            </div>
+          )}
 
-        {/* Title + subtitle */}
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-bold text-zinc-900 truncate">
-            {itemTitle}
+          {/* Title + subtitle */}
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-zinc-900 truncate">
+              {itemTitle}
+            </div>
+            <div className="text-xs text-zinc-500">
+              {item.type === "section" ? (
+                <>
+                  {(item.data as Section).cardSize === "large" ? "大卡" : "細卡"} ·{" "}
+                  {(item.data as Section).filterType === "featured"
+                    ? "featured: true"
+                    : (item.data as Section).filterType
+                      ? `${(item.data as Section).filterType}: ${(item.data as Section).filterValue || "all"}`
+                      : getSectionProductInfo(item.data as Section)}
+                </>
+              ) : (
+                `${bannerInfo!.count} 張圖片`
+              )}
+            </div>
           </div>
-          <div className="text-xs text-zinc-500">
-            {item.type === "section" ? (
-              <>
-                {(item.data as Section).cardSize === "large" ? "大卡" : "細卡"} ·{" "}
-                {(item.data as Section).filterType === "featured"
-                  ? "featured: true"
-                  : (item.data as Section).filterType
-                    ? `${(item.data as Section).filterType}: ${(item.data as Section).filterValue || "all"}`
-                    : getSectionProductInfo(item.data as Section)}
-              </>
-            ) : (
-              `${bannerInfo!.count} 張圖片`
-            )}
-          </div>
-        </div>
 
-        {/* Normal mode: 啟用 + ✏️ */}
-        {!isEditMode && (
-          <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Normal mode: 啟用 + ✏️ */}
+          {!isEditMode && (
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={() =>
+                  item.type === "section"
+                    ? toggleSectionActive(item.data as Section)
+                    : toggleBannerActive(item.data as Banner)
+                }
+                className={`px-2 py-1 rounded text-xs font-medium ${
+                  item.data.active
+                    ? "bg-green-100 text-green-700"
+                    : "bg-zinc-100 text-zinc-500"
+                }`}
+              >
+                {item.data.active ? "啟用" : "停用"}
+              </button>
+
+              <button
+                onClick={() => {
+                  if (item.type === "section") {
+                    setEditingSection(item.data as Section);
+                    setIsCreatingSection(false);
+                  } else {
+                    setEditingBanner(item.data as Banner);
+                    setIsCreatingBanner(false);
+                  }
+                }}
+                className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 rounded"
+                title="編輯"
+              >
+                <Pencil size={16} className="md:hidden" />
+                <Pencil size={18} className="hidden md:block" />
+              </button>
+            </div>
+          )}
+
+          {/* Edit mode: ✕ delete button */}
+          {isEditMode && (
             <button
               onClick={() =>
                 item.type === "section"
-                  ? toggleSectionActive(item.data as Section)
-                  : toggleBannerActive(item.data as Banner)
+                  ? deleteSection(item.data.id, (item.data as Section).title)
+                  : deleteBanner(item.data.id, bannerInfo!.title)
               }
-              className={`px-2 py-1 rounded text-xs font-medium ${
-                item.data.active
-                  ? "bg-green-100 text-green-700"
-                  : "bg-zinc-100 text-zinc-500"
-              }`}
+              className="w-6 h-6 flex items-center justify-center text-white bg-red-500 hover:bg-red-600 rounded-full flex-shrink-0"
+              title="刪除"
             >
-              {item.data.active ? "啟用" : "停用"}
+              <X size={14} />
             </button>
-
-            <button
-              onClick={() => {
-                if (item.type === "section") {
-                  setEditingSection(item.data as Section);
-                  setIsCreatingSection(false);
-                } else {
-                  setEditingBanner(item.data as Banner);
-                  setIsCreatingBanner(false);
-                }
-              }}
-              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 rounded"
-              title="編輯"
-            >
-              <Pencil size={16} className="md:hidden" />
-              <Pencil size={18} className="hidden md:block" />
-            </button>
-          </div>
-        )}
-
-        {/* Edit mode: ✕ delete button */}
-        {isEditMode && (
-          <button
-            onClick={() =>
-              item.type === "section"
-                ? deleteSection(item.data.id, (item.data as Section).title)
-                : deleteBanner(item.data.id, bannerInfo!.title)
-            }
-            className="w-6 h-6 flex items-center justify-center text-white bg-red-500 hover:bg-red-600 rounded-full flex-shrink-0"
-            title="刪除"
-          >
-            <X size={14} />
-          </button>
-        )}
+          )}
+        </div>
       </div>
     );
   };

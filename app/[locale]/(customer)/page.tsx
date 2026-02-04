@@ -8,7 +8,6 @@ import SportsApparel from "@/components/home/SportsApparel";
 import RecentlyViewed from "@/components/home/RecentlyViewed";
 import SaleZone from "@/components/home/SaleZone";
 import KidsSection from "@/components/home/KidsSection";
-import PromoBannerFull from "@/components/home/PromoBannerFull";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -201,35 +200,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   },
                 ];
 
-          // If 2+ slides, render as carousel
-          if (slides.length > 1) {
-            const carouselSlides = slides.map((slide: any, idx: number) => ({
-              key: `${banner.id}-${idx}`,
-              title: slide.title || "",
-              subtitle: slide.subtitle || undefined,
-              buttonLink: slide.linkUrl || undefined,
-              imageUrl: slide.imageUrl || undefined,
-            }));
+          const carouselSlides = slides.map((slide: any, idx: number) => ({
+            key: `${banner.id}-${idx}`,
+            title: slide.title || "",
+            subtitle: slide.subtitle || undefined,
+            buttonLink: slide.linkUrl || undefined,
+            imageUrl: slide.imageUrl || undefined,
+          }));
 
-            return (
-              <div key={`carousel-${banner.id}`} className="px-4 pt-4">
-                <HeroCarouselCMS slides={carouselSlides} locale={l} />
-              </div>
-            );
-          }
-
-          // Single slide - render as static banner
-          const slide = slides[0];
           return (
-            <div key={`banner-${banner.id}`} className="px-4 pt-4">
-              <PromoBannerFull
-                locale={l}
-                headline={slide.title || ""}
-                subtext={slide.subtitle || ""}
-                imageUrl={slide.imageUrl}
-                linkUrl={slide.linkUrl}
-              />
-            </div>
+            <HeroCarouselCMS key={`banner-${banner.id}`} slides={carouselSlides} locale={l} />
           );
         }
 
