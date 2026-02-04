@@ -170,7 +170,7 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
       <div className="relative">
         <Link href={`/${locale}/product/${p.id}`}>
           <div
-            className="relative overflow-hidden bg-zinc-100 aspect-square dark:bg-zinc-800"
+            className="relative overflow-hidden rounded-t-2xl bg-zinc-100 aspect-square dark:bg-zinc-800"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
