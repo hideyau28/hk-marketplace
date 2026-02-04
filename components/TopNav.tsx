@@ -19,7 +19,7 @@ function swapLocale(pathname: string, nextLocale: Locale) {
   return "/" + parts.join("/");
 }
 
-export default function TopNav({ locale, t, storeName = "May's Shop" }: { locale: Locale; t: Translations; storeName?: string }) {
+export default function TopNav({ locale, t, storeName: initialStoreName = "HK•Market" }: { locale: Locale; t: Translations; storeName?: string }) {
   const pathname = usePathname() || `/${locale}`;
   const router = useRouter();
   const [cartCount, setCartCount] = useState(0);
@@ -27,6 +27,8 @@ export default function TopNav({ locale, t, storeName = "May's Shop" }: { locale
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartBounce, setCartBounce] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [storeLogo, setStoreLogo] = useState<string | null>(null);
+  const [storeName, setStoreName] = useState(initialStoreName);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { resolved, cycleMode } = useTheme();
   const { user, loading: authLoading, logout } = useAuth();
@@ -74,6 +76,18 @@ export default function TopNav({ locale, t, storeName = "May's Shop" }: { locale
     };
   }, []);
 
+  useEffect(() => {
+    fetch("/api/store-settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.data) {
+          if (data.data.storeLogo) setStoreLogo(data.data.storeLogo);
+          if (data.data.storeName) setStoreName(data.data.storeName);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -90,9 +104,19 @@ export default function TopNav({ locale, t, storeName = "May's Shop" }: { locale
           {/* Logo */}
           <Link
             href={`/${locale}`}
-            className="text-base font-bold tracking-wide text-zinc-900 dark:text-zinc-100"
+            className="flex items-center gap-2 shrink-0"
           >
-            {storeName}
+            {storeLogo ? (
+              <img
+                src={storeLogo}
+                alt={storeName}
+                className="h-8 w-auto max-w-[120px] object-contain"
+              />
+            ) : (
+              <span className="text-base font-bold tracking-wide text-zinc-900 dark:text-zinc-100">
+                {storeName}
+              </span>
+            )}
           </Link>
 
           {/* Desktop search bar */}
