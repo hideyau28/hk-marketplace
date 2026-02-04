@@ -119,7 +119,7 @@ function parseCreatePayload(body: any): CreateProductPayload {
     originalPrice = body.originalPrice;
   }
 
-  const badges = parseBadges(body.badges);
+  const badges = body.badges === undefined ? undefined : parseBadges(body.badges);
 
   const brand =
     typeof body.brand === "string" && body.brand.trim().length > 0
@@ -161,7 +161,7 @@ function parseCreatePayload(body: any): CreateProductPayload {
     originalPrice,
     imageUrl: typeof body.imageUrl === "string" && body.imageUrl.trim().length > 0 ? body.imageUrl.trim() : null,
     category,
-    badges: badges.length > 0 ? badges : undefined,
+    badges: badges === undefined ? undefined : badges,
     sizeSystem,
     sizes: sizes ?? undefined,
     stock: body.stock !== undefined ? body.stock : undefined,

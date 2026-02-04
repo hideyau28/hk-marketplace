@@ -207,6 +207,7 @@ export default function ProductsPage() {
     originalPrice: p.originalPrice,
     stock: p.stock ?? 0,
     badges: p.badges && Array.isArray(p.badges) ? p.badges : undefined,
+    resolvedBadges: (p as { resolvedBadges?: { nameZh: string; nameEn: string; color: string }[] }).resolvedBadges,
     sizes: p.sizes,
   }));
 

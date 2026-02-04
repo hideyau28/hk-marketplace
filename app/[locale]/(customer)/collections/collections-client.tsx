@@ -14,6 +14,7 @@ type Product = {
   price: number;
   stock?: number;
   badges?: string[];
+  resolvedBadges?: { nameZh: string; nameEn: string; color: string }[];
 };
 
 type CollectionsClientProps = {

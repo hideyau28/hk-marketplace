@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { type Locale } from "@/lib/i18n";
@@ -25,6 +25,24 @@ type ProductsTableProps = {
   currentActive?: string;
   showAddButton?: boolean;
 };
+
+type Badge = {
+  id: string;
+  nameZh: string;
+  nameEn: string;
+  color: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+const BADGE_PRESETS = [
+  { key: "red", color: "#EF4444", label: "限量/熱賣" },
+  { key: "green", color: "#22C55E", label: "現貨/新品" },
+  { key: "black", color: "#18181B", label: "經典" },
+  { key: "blue", color: "#3B82F6", label: "推薦" },
+  { key: "orange", color: "#F97316", label: "優惠" },
+];
 
 function escapeCsvField(value: string): string {
   if (value.includes(",") || value.includes('"') || value.includes("\n")) {
@@ -102,6 +120,16 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isCsvOpen, setIsCsvOpen] = useState(false);
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [badgeLoading, setBadgeLoading] = useState(false);
+  const [badgeError, setBadgeError] = useState<string | null>(null);
+  const [badgeFormError, setBadgeFormError] = useState<string | null>(null);
+  const [editingBadgeId, setEditingBadgeId] = useState<string | null>(null);
+  const [badgeNameZh, setBadgeNameZh] = useState("");
+  const [badgeNameEn, setBadgeNameEn] = useState("");
+  const [badgeColor, setBadgeColor] = useState(BADGE_PRESETS[0]?.color || "#EF4444");
+  const [badgeSaving, setBadgeSaving] = useState(false);
   const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
   const [togglingHotSelling, setTogglingHotSelling] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -133,6 +161,8 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
 
   const STATUS_OPTIONS = ["All", "Active", "Inactive"];
   const STOCK_OPTIONS = ["All", "In Stock", "Out of Stock"];
+
+  const badgeMap = useMemo(() => new Map(badges.map((badge) => [badge.id, badge])), [badges]);
 
   const hasStock = (product: ProductWithBadges) => {
     const sizes = (product as { sizes?: Record<string, number> | null }).sizes;
@@ -259,6 +289,111 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     }
   };
 
+  const resetBadgeForm = () => {
+    setEditingBadgeId(null);
+    setBadgeNameZh("");
+    setBadgeNameEn("");
+    setBadgeColor(BADGE_PRESETS[0]?.color || "#EF4444");
+    setBadgeFormError(null);
+  };
+
+  const loadBadges = async () => {
+    setBadgeLoading(true);
+    setBadgeError(null);
+    try {
+      const res = await fetch("/api/admin/badges");
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setBadgeError(json?.error?.message || "Failed to load badges.");
+        return;
+      }
+      setBadges(json.badges || []);
+    } catch (error) {
+      console.error("Failed to load badges:", error);
+      setBadgeError("Failed to load badges.");
+    } finally {
+      setBadgeLoading(false);
+    }
+  };
+
+  const handleEditBadge = (badge: Badge) => {
+    setEditingBadgeId(badge.id);
+    setBadgeNameZh(badge.nameZh);
+    setBadgeNameEn(badge.nameEn);
+    setBadgeColor(badge.color);
+    setBadgeFormError(null);
+  };
+
+  const handleDeleteBadge = async (badge: Badge) => {
+    const confirmed = window.confirm(`Delete badge "${badge.nameZh}"?`);
+    if (!confirmed) return;
+    const res = await fetch(`/api/admin/badges/${badge.id}`, { method: "DELETE" });
+    const json = await res.json();
+    if (!res.ok || !json.ok) {
+      alert(json?.error?.message || "Failed to delete badge.");
+      return;
+    }
+    if (editingBadgeId === badge.id) {
+      resetBadgeForm();
+    }
+    await loadBadges();
+  };
+
+  const handleSaveBadge = async () => {
+    setBadgeFormError(null);
+    if (!badgeNameZh.trim() || !badgeNameEn.trim()) {
+      setBadgeFormError("Please provide both Chinese and English names.");
+      return;
+    }
+    if (!badgeColor.trim()) {
+      setBadgeFormError("Please provide a color.");
+      return;
+    }
+    if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(badgeColor.trim())) {
+      setBadgeFormError("Color must be a valid hex value (e.g. #EF4444).");
+      return;
+    }
+
+    setBadgeSaving(true);
+    try {
+      const payload = {
+        nameZh: badgeNameZh.trim(),
+        nameEn: badgeNameEn.trim(),
+        color: badgeColor.trim(),
+      };
+      const res = await fetch(
+        editingBadgeId ? `/api/admin/badges/${editingBadgeId}` : "/api/admin/badges",
+        {
+          method: editingBadgeId ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setBadgeFormError(json?.error?.message || "Failed to save badge.");
+        return;
+      }
+      await loadBadges();
+      resetBadgeForm();
+    } catch (error) {
+      console.error("Failed to save badge:", error);
+      setBadgeFormError("Failed to save badge.");
+    } finally {
+      setBadgeSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    loadBadges();
+  }, []);
+
+  useEffect(() => {
+    if (isBadgeModalOpen && badges.length === 0) {
+      loadBadges();
+    }
+  }, [isBadgeModalOpen, badges.length]);
+
   const handleEditProduct = (product: Product) => {
     setSelectedProduct(product);
   };
@@ -312,6 +447,12 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           />
         </div>
         <div className="flex flex-wrap items-center gap-2 justify-end">
+          <button
+            onClick={() => setIsBadgeModalOpen(true)}
+            className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 font-semibold hover:bg-zinc-50"
+          >
+            Manage Badges
+          </button>
           <button
             onClick={() => exportProductsToCsv(products)}
             className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
@@ -474,6 +615,17 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                   const productBadges = Array.isArray((product as { badges?: string[] }).badges)
                     ? (product as { badges: string[] }).badges
                     : [];
+                  const badgeDisplay = productBadges.map((badge) => {
+                    const mapped = badgeMap.get(badge);
+                    if (mapped) {
+                      return {
+                        key: mapped.id,
+                        label: `${mapped.nameZh} / ${mapped.nameEn}`,
+                        color: mapped.color,
+                      };
+                    }
+                    return { key: badge, label: badge, color: null };
+                  });
                   return (
                   <tr key={product.id} className="border-t border-zinc-200 hover:bg-zinc-50">
                     {/* Photo */}
@@ -556,14 +708,17 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     <td className="px-4 py-3 text-right text-zinc-700 text-sm">{product.stock ?? 0}</td>
                     {/* Badges */}
                     <td className="px-4 py-3">
-                      {productBadges.length > 0 ? (
+                      {badgeDisplay.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5">
-                          {productBadges.map((badge) => (
+                          {badgeDisplay.map((badge) => (
                             <span
-                              key={badge}
-                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${getBadgeStyles(badge)}`}
+                              key={badge.key}
+                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                badge.color ? "text-white" : getBadgeStyles(badge.label)
+                              }`}
+                              style={badge.color ? { backgroundColor: badge.color } : undefined}
                             >
-                              {badge}
+                              {badge.label}
                             </span>
                           ))}
                         </div>
@@ -695,6 +850,196 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           )}
         </div>
       </div>
+
+      {isBadgeModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setIsBadgeModalOpen(false);
+            }
+          }}
+        >
+          <div className="w-full max-w-4xl rounded-3xl border border-zinc-200 bg-white p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-zinc-900">Manage Badges</h2>
+                <p className="mt-1 text-sm text-zinc-500">Create, edit, and organize product badges.</p>
+              </div>
+              <button
+                onClick={() => setIsBadgeModalOpen(false)}
+                className="text-zinc-400 hover:text-zinc-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {badgeError && (
+              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                {badgeError}
+              </div>
+            )}
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-zinc-800">Badge List</h3>
+                  <button
+                    onClick={loadBadges}
+                    disabled={badgeLoading}
+                    className="text-xs text-zinc-500 hover:text-zinc-700 disabled:opacity-50"
+                  >
+                    Refresh
+                  </button>
+                </div>
+                {badgeLoading ? (
+                  <div className="py-8 text-center text-sm text-zinc-500">Loading badges...</div>
+                ) : badges.length === 0 ? (
+                  <div className="py-8 text-center text-sm text-zinc-500">No badges yet</div>
+                ) : (
+                  <div className="space-y-2">
+                    {badges.map((badge) => (
+                      <div
+                        key={badge.id}
+                        className="flex items-center justify-between rounded-xl border border-zinc-100 bg-zinc-50 px-3 py-2"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span
+                            className="h-4 w-4 rounded-full"
+                            style={{ backgroundColor: badge.color }}
+                          />
+                          <div>
+                            <div className="text-sm font-medium text-zinc-900">
+                              {badge.nameZh} / {badge.nameEn}
+                            </div>
+                            <div className="text-xs text-zinc-400">{badge.color}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleEditBadge(badge)}
+                            className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBadge(badge)}
+                            className="rounded-lg border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-600 hover:bg-red-100"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-zinc-800">
+                    {editingBadgeId ? "Edit Badge" : "Add Badge"}
+                  </h3>
+                  {editingBadgeId && (
+                    <button
+                      onClick={resetBadgeForm}
+                      className="text-xs text-zinc-500 hover:text-zinc-700"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
+
+                {badgeFormError && (
+                  <div className="mt-3 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                    {badgeFormError}
+                  </div>
+                )}
+
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">Name (Chinese)</label>
+                    <input
+                      value={badgeNameZh}
+                      onChange={(e) => setBadgeNameZh(e.target.value)}
+                      className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      placeholder="店長推介"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">Name (English)</label>
+                    <input
+                      value={badgeNameEn}
+                      onChange={(e) => setBadgeNameEn(e.target.value)}
+                      className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      placeholder="Staff Pick"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">Color Presets</label>
+                    <div className="flex flex-wrap gap-2">
+                      {BADGE_PRESETS.map((preset) => {
+                        const isSelected = badgeColor.toUpperCase() === preset.color.toUpperCase();
+                        return (
+                          <button
+                            key={preset.key}
+                            type="button"
+                            onClick={() => setBadgeColor(preset.color)}
+                            className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs ${
+                              isSelected
+                                ? "border-olive-500 bg-olive-50 text-olive-700"
+                                : "border-zinc-200 bg-white text-zinc-700"
+                            }`}
+                          >
+                            <span className="h-4 w-4 rounded-full" style={{ backgroundColor: preset.color }} />
+                            {preset.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">Custom Hex</label>
+                    <input
+                      value={badgeColor}
+                      onChange={(e) => setBadgeColor(e.target.value)}
+                      className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      placeholder="#EF4444"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">Live Preview</label>
+                    <div className="h-20 w-20 rounded-xl bg-zinc-200 relative overflow-hidden">
+                      <span
+                        className="absolute top-1 left-1 px-2 py-0.5 text-[10px] font-semibold text-white rounded"
+                        style={{ backgroundColor: badgeColor || "#6B7A2F" }}
+                      >
+                        {(badgeNameZh || badgeNameEn || "Badge").slice(0, 6)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2">
+                    <button
+                      onClick={handleSaveBadge}
+                      disabled={badgeSaving}
+                      className="rounded-xl bg-olive-600 px-4 py-2 text-sm text-white font-semibold hover:bg-olive-700 disabled:opacity-50"
+                    >
+                      {editingBadgeId ? "Save Changes" : "Add Badge"}
+                    </button>
+                    <button
+                      onClick={resetBadgeForm}
+                      type="button"
+                      className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {(selectedProduct || isCreating) && (
         <ProductModal product={selectedProduct} onClose={handleCloseModal} locale={locale} />
