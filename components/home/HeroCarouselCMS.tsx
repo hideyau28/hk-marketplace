@@ -60,7 +60,7 @@ export default function HeroCarouselCMS({
         >
           {slides.map((slide) => {
             const Inner = (
-              <div className="relative w-full shrink-0 aspect-[16/9]">
+              <div className="relative w-full shrink-0 aspect-[16/9] max-h-[480px]">
                 {!slide.imageUrl && (
                   <div className="absolute inset-0 bg-gradient-to-br from-olive-600 to-olive-700" />
                 )}
