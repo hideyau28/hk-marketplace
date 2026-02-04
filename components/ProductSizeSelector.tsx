@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import SizeGuideModal from "./SizeGuideModal";
+import SizeChartModal from "./SizeChartModal";
 import type { Translations } from "@/lib/translations";
 
 type SizeSelectorProps = {
   sizeSystem: string | null;
   sizes: Record<string, number> | string[] | null;
   locale: string;
+  isKids?: boolean;
   onSizeSelect: (size: string, system: string) => void;
   selectedSize: string | null;
   selectedSystem: string | null;
@@ -19,6 +20,7 @@ export default function ProductSizeSelector({
   sizeSystem,
   sizes,
   locale,
+  isKids = false,
   onSizeSelect,
   selectedSize,
   selectedSystem,
@@ -69,8 +71,19 @@ export default function ProductSizeSelector({
   // Grid columns: 5 for shoes, 4 for clothing
   const gridCols = (isUKShoes || isUSShoes) ? "grid-cols-5" : "grid-cols-4";
 
-  // Determine size guide type
-  const sizeGuideType = (isUKShoes || isUSShoes) ? "shoes" : "clothing";
+  const sortedSizes = [...currentSizes].sort((a, b) => {
+    const aMatch = a.match(/^US\s*([0-9]+(?:\.[0-9]+)?)/i);
+    const bMatch = b.match(/^US\s*([0-9]+(?:\.[0-9]+)?)/i);
+    const aNum = aMatch ? Number.parseFloat(aMatch[1]) : Number.NaN;
+    const bNum = bMatch ? Number.parseFloat(bMatch[1]) : Number.NaN;
+
+    if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) {
+      return aNum - bNum;
+    }
+    if (!Number.isNaN(aNum)) return -1;
+    if (!Number.isNaN(bNum)) return 1;
+    return a.localeCompare(b, undefined, { numeric: true });
+  });
 
   return (
     <div className="space-y-3">
@@ -88,7 +101,7 @@ export default function ProductSizeSelector({
 
       {/* Size grid */}
       <div className={`grid ${gridCols} gap-0`}>
-        {currentSizes.map((size, index) => {
+        {sortedSizes.map((size, index) => {
           const isSelected = selectedSize === size;
 
           return (
@@ -114,10 +127,10 @@ export default function ProductSizeSelector({
       </div>
 
       {/* Size Guide Modal */}
-      <SizeGuideModal
+      <SizeChartModal
         isOpen={showSizeGuide}
         onClose={() => setShowSizeGuide(false)}
-        type={sizeGuideType}
+        isKids={isKids}
         locale={locale}
       />
     </div>
