@@ -1,16 +1,31 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { User } from "lucide-react";
 import { getCart, getCartTotal, clearCart, type CartItem } from "@/lib/cart";
 import { getDict, type Locale } from "@/lib/i18n";
 import { useToast } from "@/components/Toast";
 import { useCurrency } from "@/lib/currency";
 import { useAuth } from "@/lib/auth-context";
-import { User } from "lucide-react";
 
-type CheckoutStep = "info" | "payment" | "confirm";
+type FulfillmentType = "delivery" | "sf-locker" | "pickup";
+
+type CheckoutFulfillment =
+  | {
+      type: "delivery";
+      address: {
+        line1: string;
+        district?: string;
+        region?: string;
+        unit?: string;
+        notes?: string;
+        building?: string;
+        floor?: string;
+      };
+    }
+  | { type: "pickup" };
 
 interface PaymentMethod {
   id: string;
@@ -20,88 +35,16 @@ interface PaymentMethod {
   accountInfo: string | null;
 }
 
-interface AddressSuggestion {
-  fullAddress: string;
-  region: string;
-  district: string;
-  street: string;
-  building: string;
-}
+const DEFAULT_HOME_DELIVERY_FEE = 40;
+const DEFAULT_HOME_DELIVERY_FREE_ABOVE = 600;
+const DEFAULT_HOME_DELIVERY_ISLAND_EXTRA = 20;
+const DEFAULT_SF_LOCKER_FEE = 35;
+const DEFAULT_SF_LOCKER_FREE_ABOVE = 600;
 
-interface SavedAddress {
-  region: string;
-  district: string;
-  street: string;
-  unit: string;
-  fullAddress: string;
-}
+const DISTRICTS_ZH = ["香港島", "九龍", "新界", "離島"] as const;
+const DISTRICTS_EN = ["Hong Kong Island", "Kowloon", "New Territories", "Outlying Islands"] as const;
 
-const HK_REGIONS = ["香港島", "九龍", "新界", "離島"] as const;
-type HKRegion = (typeof HK_REGIONS)[number];
-
-type DeliveryMethod = "home" | "sfLocker";
-
-interface SavedCheckoutData {
-  deliveryMethod: DeliveryMethod;
-  name: string;
-  phone: string;
-  // For home delivery
-  region?: string;
-  district?: string;
-  street?: string;
-  building?: string;
-  block?: string;
-  floor?: string;
-  unit?: string;
-  // For SF locker
-  lockerCode?: string;
-}
-
-// Shipping fee constants (will be overridden by store settings)
-const DEFAULT_SHIPPING_FEE_HOME = 40;
-const DEFAULT_SHIPPING_FEE_LOCKER = 35;
-const DEFAULT_FREE_SHIPPING_THRESHOLD = 600;
-const OUTLYING_ISLANDS_SURCHARGE = 20;
-
-const SAVED_ADDRESS_KEY = "hk_last_address";
-
-function getSavedAddress(): SavedAddress | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const saved = localStorage.getItem(SAVED_ADDRESS_KEY);
-    return saved ? JSON.parse(saved) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveAddress(address: SavedAddress): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(SAVED_ADDRESS_KEY, JSON.stringify(address));
-  } catch {
-    // Ignore storage errors
-  }
-}
-
-function getSavedCheckoutData(): SavedCheckoutData | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const saved = localStorage.getItem(SAVED_ADDRESS_KEY);
-    return saved ? JSON.parse(saved) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveCheckoutData(data: SavedCheckoutData): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(SAVED_ADDRESS_KEY, JSON.stringify(data));
-  } catch {
-    // Ignore storage errors
-  }
-}
+type District = (typeof DISTRICTS_ZH)[number] | (typeof DISTRICTS_EN)[number] | "";
 
 export default function CheckoutPage({ params }: { params: Promise<{ locale: string }> }) {
   const [locale, setLocale] = useState<Locale>("en");
@@ -111,79 +54,57 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const router = useRouter();
   const { showToast } = useToast();
   const { format } = useCurrency();
+  const { user } = useAuth();
 
-  // Store settings
-  const [shippingFeeHome, setShippingFeeHome] = useState(DEFAULT_SHIPPING_FEE_HOME);
-  const [shippingFeeLocker, setShippingFeeLocker] = useState(DEFAULT_SHIPPING_FEE_LOCKER);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(DEFAULT_FREE_SHIPPING_THRESHOLD);
+  const [storeSettings, setStoreSettings] = useState<any>(null);
 
-  // Checkout step state
-  const [step, setStep] = useState<CheckoutStep>("info");
-
-  // Section 1: Contact info
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
 
-  // Delivery method
-  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("home");
+  const [sameAsContact, setSameAsContact] = useState(true);
+  const [receiverName, setReceiverName] = useState("");
+  const [receiverPhone, setReceiverPhone] = useState("");
 
-  // Section 2: Delivery address (for home delivery)
-  const [addressQuery, setAddressQuery] = useState("");
-  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
-  const [useManualEntry, setUseManualEntry] = useState(false);
-  const [region, setRegion] = useState<HKRegion | "">("");
-  const [district, setDistrict] = useState("");
-  const [street, setStreet] = useState("");
+  const [fulfillmentType, setFulfillmentType] = useState<FulfillmentType>("delivery");
+  const [district, setDistrict] = useState<District>("");
+  const [addressLine, setAddressLine] = useState("");
   const [building, setBuilding] = useState("");
-  const [block, setBlock] = useState("");
   const [floor, setFloor] = useState("");
   const [unit, setUnit] = useState("");
-  const [savedAddress, setSavedAddress] = useState<SavedAddress | null>(null);
-  const [savedAddressDismissed, setSavedAddressDismissed] = useState(false);
-  const addressInputRef = useRef<HTMLInputElement>(null);
+  const [deliveryNote, setDeliveryNote] = useState("");
+  const [sfLockerCode, setSfLockerCode] = useState("");
 
-  // SF Locker code (for SF locker delivery)
-  const [lockerCode, setLockerCode] = useState("");
-
-  // Section 3: Order note
   const [orderNote, setOrderNote] = useState("");
 
-  // Validation states
   const [nameTouched, setNameTouched] = useState(false);
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
+  const [receiverNameTouched, setReceiverNameTouched] = useState(false);
+  const [receiverPhoneTouched, setReceiverPhoneTouched] = useState(false);
   const [addressTouched, setAddressTouched] = useState(false);
+
   const [nameError, setNameError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [receiverNameError, setReceiverNameError] = useState<string | null>(null);
+  const [receiverPhoneError, setReceiverPhoneError] = useState<string | null>(null);
   const [addressError, setAddressError] = useState<string | null>(null);
 
-  // Coupon
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponApplied, setCouponApplied] = useState(false);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
-  // Payment state
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
   const [uploadingProof, setUploadingProof] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [prefilled, setPrefilled] = useState(false);
 
-  const { user } = useAuth();
-
-  // Mobile order summary toggle
-  const [showMobileSummary, setShowMobileSummary] = useState(false);
-
-  // Address lookup debounce
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const t = getDict(locale);
 
   useEffect(() => {
     params.then(({ locale: l }) => {
@@ -195,70 +116,25 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       } else {
         setCart(cartItems);
       }
-      // Load saved address
-      const saved = getSavedAddress();
-      if (saved) {
-        setSavedAddress(saved);
-      }
     });
   }, [params, router]);
 
-  // Fetch store settings
   useEffect(() => {
     fetch("/api/store-settings")
       .then((res) => res.json())
       .then((data) => {
-        if (data.ok && data.data) {
-          // Use store settings for home delivery as default
-          if (data.data.shippingFee) setShippingFeeHome(data.data.shippingFee);
-          if (data.data.freeShippingThreshold) setFreeShippingThreshold(data.data.freeShippingThreshold);
-        }
+        if (data?.data) setStoreSettings(data.data);
       })
-      .catch(console.error);
+      .catch(() => {});
   }, []);
 
-  // Pre-fill form with user data when logged in OR from localStorage
   useEffect(() => {
-    if (user && !prefilled) {
-      if (user.name) setCustomerName(user.name);
-      if (user.phone) setPhone(user.phone.replace("+852", ""));
-      if (user.email) setEmail(user.email);
-      if (user.address) {
-        try {
-          const addr = JSON.parse(user.address);
-          if (addr.fullAddress) setAddressQuery(addr.fullAddress);
-          if (addr.region) setRegion(addr.region as HKRegion);
-          if (addr.district) setDistrict(addr.district);
-          if (addr.street) setStreet(addr.street);
-          if (addr.unit) setUnit(addr.unit);
-        } catch {
-          setAddressQuery(user.address);
-          setUseManualEntry(true);
-          setStreet(user.address);
-        }
-      }
-      setPrefilled(true);
-    } else if (!user && !prefilled) {
-      // Try to load from localStorage if not logged in
-      const savedCheckout = getSavedCheckoutData();
-      if (savedCheckout) {
-        setCustomerName(savedCheckout.name || "");
-        setPhone(savedCheckout.phone || "");
-        if (savedCheckout.deliveryMethod) setDeliveryMethod(savedCheckout.deliveryMethod);
-        if (savedCheckout.region) setRegion(savedCheckout.region as HKRegion);
-        if (savedCheckout.district) setDistrict(savedCheckout.district);
-        if (savedCheckout.street) setStreet(savedCheckout.street);
-        if (savedCheckout.building) setBuilding(savedCheckout.building);
-        if (savedCheckout.block) setBlock(savedCheckout.block);
-        if (savedCheckout.floor) setFloor(savedCheckout.floor);
-        if (savedCheckout.unit) setUnit(savedCheckout.unit);
-        if (savedCheckout.lockerCode) setLockerCode(savedCheckout.lockerCode);
-      }
-      setPrefilled(true);
-    }
-  }, [user, prefilled]);
+    if (!user) return;
+    if (user.name) setCustomerName(user.name);
+    if (user.phone) setPhone(user.phone.replace("+852", ""));
+    if (user.email) setEmail(user.email);
+  }, [user]);
 
-  // Fetch payment methods
   useEffect(() => {
     fetch("/api/payment-methods")
       .then((res) => res.json())
@@ -273,143 +149,96 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       .catch(console.error);
   }, []);
 
-  // Address lookup with debounce
-  const lookupAddress = useCallback(async (query: string) => {
-    if (query.length < 2) {
-      setAddressSuggestions([]);
-      return;
-    }
-
-    setIsLoadingAddresses(true);
-    try {
-      const res = await fetch(`/api/address/lookup?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      if (data.ok && data.data?.addresses) {
-        setAddressSuggestions(data.data.addresses);
-        if (data.data.addresses.length === 0) {
-          // No results - switch to manual entry
-          setUseManualEntry(true);
-        }
-      } else {
-        setUseManualEntry(true);
-      }
-    } catch {
-      setUseManualEntry(true);
-    } finally {
-      setIsLoadingAddresses(false);
-    }
-  }, []);
-
-  const handleAddressInputChange = (value: string) => {
-    setAddressQuery(value);
-    setShowSuggestions(true);
-
-    // Clear previous timeout
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    // Debounce the lookup
-    debounceRef.current = setTimeout(() => {
-      lookupAddress(value);
-    }, 300);
-  };
-
-  const selectAddress = (suggestion: AddressSuggestion) => {
-    setAddressQuery(suggestion.fullAddress);
-    setRegion(suggestion.region as HKRegion);
-    setDistrict(suggestion.district);
-    setStreet(suggestion.building || suggestion.street);
-    setShowSuggestions(false);
-    setUseManualEntry(false);
-    setAddressError(null);
-  };
-
-  const useSavedAddressHandler = () => {
-    if (savedAddress) {
-      setAddressQuery(savedAddress.fullAddress);
-      setRegion(savedAddress.region as HKRegion);
-      setDistrict(savedAddress.district);
-      setStreet(savedAddress.street);
-      setUnit(savedAddress.unit);
-      setUseManualEntry(false);
-      setAddressError(null);
-    }
-  };
-
-  // Validation functions
   const validateName = (value: string): string | null => {
-    if (value.trim().length < 2) return "請輸入姓名（至少2個字）";
+    if (value.trim().length < 2) {
+      return locale === "zh-HK" ? "請輸入姓名（至少2個字）" : "Please enter a name (min 2 chars)";
+    }
     return null;
   };
 
   const validatePhone = (value: string): string | null => {
     const digitsOnly = value.replace(/\D/g, "");
-    if (digitsOnly.length !== 8) return "請輸入有效嘅8位電話號碼";
+    if (digitsOnly.length !== 8) {
+      return locale === "zh-HK" ? "請輸入有效嘅8位電話號碼" : "Please enter a valid 8-digit phone number";
+    }
     return null;
   };
 
   const validateEmail = (value: string): string | null => {
     if (!value.trim()) return null;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value.trim())) return "請輸入有效嘅電郵地址";
+    if (!emailRegex.test(value.trim())) {
+      return locale === "zh-HK" ? "請輸入有效嘅電郵地址" : "Please enter a valid email";
+    }
     return null;
   };
 
   const validateAddress = (): string | null => {
-    if (!region && !street && !addressQuery) {
-      return "請輸入送貨地址";
+    if (fulfillmentType === "delivery") {
+      if (!district || !addressLine.trim()) {
+        return locale === "zh-HK" ? "請輸入送貨地址" : "Please enter the delivery address";
+      }
     }
-    if (useManualEntry && !region) {
-      return "請選擇地區";
-    }
-    if (useManualEntry && !street.trim()) {
-      return "請輸入街道/大廈";
+    if (fulfillmentType === "sf-locker") {
+      if (!sfLockerCode.trim()) {
+        return locale === "zh-HK" ? "請輸入順豐智能櫃/站編號" : "Please enter the SF Locker/Station code";
+      }
     }
     return null;
   };
 
-  const handleNameBlur = () => {
-    setNameTouched(true);
-    setNameError(validateName(customerName));
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showToast(locale === "zh-HK" ? "只接受圖片檔案" : "Images only");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast(locale === "zh-HK" ? "檔案太大，最大 5MB" : "File too large (max 5MB)");
+      return;
+    }
+
+    setPaymentProofFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setPaymentProofPreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
-  const handlePhoneBlur = () => {
-    setPhoneTouched(true);
-    setPhoneError(validatePhone(phone));
-  };
+  const homeDeliveryFee = storeSettings?.homeDeliveryFee ?? DEFAULT_HOME_DELIVERY_FEE;
+  const homeDeliveryFreeAbove = storeSettings?.homeDeliveryFreeAbove ?? DEFAULT_HOME_DELIVERY_FREE_ABOVE;
+  const homeDeliveryIslandExtra = storeSettings?.homeDeliveryIslandExtra ?? DEFAULT_HOME_DELIVERY_ISLAND_EXTRA;
+  const sfLockerFee = storeSettings?.sfLockerFee ?? DEFAULT_SF_LOCKER_FEE;
+  const sfLockerFreeAbove = storeSettings?.sfLockerFreeAbove ?? DEFAULT_SF_LOCKER_FREE_ABOVE;
 
-  const handleEmailBlur = () => {
-    setEmailTouched(true);
-    setEmailError(validateEmail(email));
-  };
-
-  const handleAddressBlur = () => {
-    setAddressTouched(true);
-    setShowSuggestions(false);
-    setAddressError(validateAddress());
-  };
-
-  const isFormValid = () => {
-    const nameValid = validateName(customerName) === null;
-    const phoneValid = validatePhone(phone) === null;
-    const emailValid = validateEmail(email) === null;
-    const addressValid = validateAddress() === null;
-    return nameValid && phoneValid && emailValid && addressValid;
-  };
-
-  // Calculate shipping
   const subtotal = getCartTotal(cart);
-  const isOutlyingIslands = deliveryMethod === "home" && region === "離島";
-  const qualifiesForFreeShipping = subtotal >= freeShippingThreshold;
-  const baseFee = deliveryMethod === "home" ? shippingFeeHome : shippingFeeLocker;
-  const baseShipping = qualifiesForFreeShipping ? 0 : baseFee;
-  const islandSurcharge = isOutlyingIslands && !qualifiesForFreeShipping ? OUTLYING_ISLANDS_SURCHARGE : 0;
-  const calculatedShipping = baseShipping + islandSurcharge;
-  const amountToFreeShipping = freeShippingThreshold - subtotal;
+  const isOutlyingIslands = district === "離島" || district === "Outlying Islands";
+  const qualifiesHomeFree = subtotal >= homeDeliveryFreeAbove;
+  const qualifiesSfFree = subtotal >= sfLockerFreeAbove;
+
+  const baseHomeFee = qualifiesHomeFree ? 0 : homeDeliveryFee;
+  const islandSurcharge = fulfillmentType === "delivery" && isOutlyingIslands ? homeDeliveryIslandExtra : 0;
+  const calculatedHomeFee = baseHomeFee + islandSurcharge;
+
+  const calculatedSfFee = qualifiesSfFree ? 0 : sfLockerFee;
+
+  const calculatedShipping =
+    fulfillmentType === "pickup" ? 0 : fulfillmentType === "sf-locker" ? calculatedSfFee : calculatedHomeFee;
+
   const total = Math.max(0, subtotal + calculatedShipping - discount);
 
-  const t = getDict(locale);
+  const deliveryMethodLabel = () => {
+    if (fulfillmentType === "pickup") return locale === "zh-HK" ? "自取" : "Pickup";
+    if (fulfillmentType === "sf-locker") return locale === "zh-HK" ? "順豐智能櫃" : "SF Locker";
+    return locale === "zh-HK" ? "送貨上門" : "Home Delivery";
+  };
+
+  const formatFeeLabel = (fee: number) => {
+    if (fee === 0) return locale === "zh-HK" ? "免費" : "Free";
+    return format(fee);
+  };
 
   const applyCoupon = async (code?: string) => {
     const finalCode = (code ?? couponCode).trim();
@@ -449,30 +278,44 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     if (!couponApplied) return;
     void applyCoupon();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [region, cart]);
+  }, [fulfillmentType, district, subtotal]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      showToast("只接受圖片檔案");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast("檔案太大，最大 5MB");
-      return;
-    }
-
-    setPaymentProofFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setPaymentProofPreview(reader.result as string);
-    reader.readAsDataURL(file);
+  const isFormValid = () => {
+    const nameValid = validateName(customerName) === null;
+    const phoneValid = validatePhone(phone) === null;
+    const emailValid = validateEmail(email) === null;
+    const receiverNameValid = sameAsContact ? true : validateName(receiverName) === null;
+    const receiverPhoneValid = sameAsContact ? true : validatePhone(receiverPhone) === null;
+    const addressValid = validateAddress() === null;
+    const paymentValid = Boolean(selectedPaymentMethod && paymentProofFile);
+    return nameValid && phoneValid && emailValid && receiverNameValid && receiverPhoneValid && addressValid && paymentValid;
   };
 
   const handleSubmit = async () => {
-    if (processing || !selectedPaymentMethod || !paymentProofFile) return;
+    if (processing) return;
+
+    setNameTouched(true);
+    setPhoneTouched(true);
+    setEmailTouched(true);
+    setReceiverNameTouched(true);
+    setReceiverPhoneTouched(true);
+    setAddressTouched(true);
+
+    setNameError(validateName(customerName));
+    setPhoneError(validatePhone(phone));
+    setEmailError(validateEmail(email));
+    if (!sameAsContact) {
+      setReceiverNameError(validateName(receiverName));
+      setReceiverPhoneError(validatePhone(receiverPhone));
+    }
+    setAddressError(validateAddress());
+
+    if (!selectedPaymentMethod || !paymentProofFile) {
+      showToast(locale === "zh-HK" ? "請選擇付款方式並上傳付款證明" : "Please select a payment method and upload proof");
+      return;
+    }
+
+    if (!isFormValid()) return;
 
     setProcessing(true);
     setUploadingProof(true);
@@ -490,18 +333,36 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
 
       const paymentProofUrl = uploadData.data.url;
 
-      // Build address object
-      const addressData = {
-        region,
-        district,
-        street,
-        unit,
-        fullAddress: addressQuery || `${street}, ${district}, ${region}`,
-      };
+      const recipientName = sameAsContact ? customerName : receiverName;
+      const recipientPhone = sameAsContact ? phone : receiverPhone;
+
+      const fulfillment: CheckoutFulfillment = (() => {
+        if (fulfillmentType === "pickup") return { type: "pickup" };
+        if (fulfillmentType === "sf-locker") {
+          return {
+            type: "delivery",
+            address: {
+              line1: `SF Locker: ${sfLockerCode}`,
+              district: locale === "zh-HK" ? "順豐智能櫃" : "SF Locker",
+            },
+          };
+        }
+        return {
+          type: "delivery",
+          address: {
+            line1: addressLine,
+            district: district || undefined,
+            unit: unit || undefined,
+            notes: deliveryNote || undefined,
+            building: building || undefined,
+            floor: floor || undefined,
+          },
+        };
+      })();
 
       const payload = {
-        customerName,
-        phone,
+        customerName: recipientName,
+        phone: recipientPhone,
         email: email || undefined,
         userId: user?.id,
         items: cart.map((item) => ({
@@ -521,16 +382,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
           currency: "HKD",
           couponCode: couponApplied ? couponCode.trim().toUpperCase() : undefined,
         },
-        fulfillment: {
-          type: "delivery" as const,
-          address: {
-            line1: addressData.fullAddress,
-            district: addressData.district || undefined,
-            region: addressData.region || undefined,
-            unit: addressData.unit || undefined,
-            notes: undefined,
-          },
-        },
+        fulfillment,
         note: orderNote || undefined,
         paymentMethod: selectedPaymentMethod,
         paymentProof: paymentProofUrl,
@@ -546,27 +398,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       const result = await response.json();
 
       if (result.ok) {
-        // Save checkout data for next time
-        const checkoutData: SavedCheckoutData = {
-          deliveryMethod,
-          name: customerName,
-          phone,
-          ...(deliveryMethod === "home" ? {
-            region,
-            district,
-            street,
-            building,
-            block,
-            floor,
-            unit,
-          } : {
-            lockerCode,
-          }),
-        };
-        saveCheckoutData(checkoutData);
-
         clearCart();
-        showToast("訂單已提交！我們會盡快確認您的付款。");
+        showToast(locale === "zh-HK" ? "訂單已提交！我們會盡快確認您的付款。" : "Order submitted! We'll confirm your payment shortly.");
         router.push(`/${locale}/orders/${result.data.id}`);
       } else {
         alert(`${t.common.error}: ${result.error?.code || "ERROR"}: ${result.error?.message || t.common.unknownError}`);
@@ -574,7 +407,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       }
     } catch (error) {
       console.error("Order creation failed:", error);
-      showToast(error instanceof Error ? error.message : "訂單創建失敗");
+      showToast(error instanceof Error ? error.message : locale === "zh-HK" ? "訂單創建失敗" : "Order failed");
       setProcessing(false);
       setUploadingProof(false);
     }
@@ -583,689 +416,633 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   if (!mounted) {
     return (
       <div className="px-4 py-6">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-5xl">
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Loading...</h1>
         </div>
       </div>
     );
   }
 
+  const districtOptions = locale === "zh-HK" ? DISTRICTS_ZH : DISTRICTS_EN;
   const selectedMethod = paymentMethods.find((m) => m.type === selectedPaymentMethod);
 
-  const StepIndicator = () => (
-    <div className="flex items-center justify-center gap-2 mb-6">
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${step === "info" ? "bg-olive-600 text-white" : "bg-olive-100 text-olive-600"}`}>1</div>
-      <div className={`w-8 h-1 ${step !== "info" ? "bg-olive-600" : "bg-zinc-200"}`} />
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${step === "payment" ? "bg-olive-600 text-white" : step === "confirm" ? "bg-olive-100 text-olive-600" : "bg-zinc-200 text-zinc-400"}`}>2</div>
-      <div className={`w-8 h-1 ${step === "confirm" ? "bg-olive-600" : "bg-zinc-200"}`} />
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${step === "confirm" ? "bg-olive-600 text-white" : "bg-zinc-200 text-zinc-400"}`}>3</div>
-    </div>
-  );
+  const OrderSummary = ({ sticky = false }: { sticky?: boolean }) => (
+    <div
+      className={`rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 ${
+        sticky ? "lg:sticky lg:top-4" : ""
+      }`}
+    >
+      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+        {locale === "zh-HK" ? "訂單摘要" : "Order Summary"}
+      </h2>
 
-  const OrderSummary = ({ compact = false }: { compact?: boolean }) => (
-    <div className={`rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900 ${!compact ? "lg:sticky lg:top-6" : ""}`}>
-      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{t.checkout.orderSummary}</h2>
-
-      {/* Product list */}
-      <div className="mt-4 space-y-3 max-h-60 overflow-y-auto">
+      <div className="mt-4 space-y-4">
         {cart.map((item) => (
           <div key={`${item.productId}-${item.size || "default"}`} className="flex gap-3">
-            <div className="w-10 h-10 rounded-md bg-zinc-50 dark:bg-zinc-800 overflow-hidden flex-shrink-0">
+            <div className="h-14 w-14 rounded-xl bg-zinc-50 dark:bg-zinc-800 overflow-hidden flex-shrink-0">
               {item.imageUrl ? (
-                <img src={item.imageUrl} alt="" className="w-full h-full object-contain" />
+                <img src={item.imageUrl} alt="" className="h-full w-full object-contain" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-zinc-300">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <div className="h-full w-full flex items-center justify-center text-zinc-300">
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
                   </svg>
                 </div>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm text-zinc-900 dark:text-zinc-100 truncate">{item.title.split(" - ")[0]}</div>
-              <div className="flex items-center justify-between text-xs text-zinc-500 mt-0.5">
+              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                {item.title.split(" - ")[0]}
+              </div>
+              <div className="mt-1 flex items-center justify-between text-xs text-zinc-500">
                 <span>{item.size ? `${item.size} × ${item.qty}` : `× ${item.qty}`}</span>
-                <span className="text-zinc-900 dark:text-zinc-100 font-medium">{format(item.unitPrice * item.qty)}</span>
+                <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  {format(item.unitPrice * item.qty)}
+                </span>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Coupon section */}
-      {!compact && (
-        <div className="mt-4 border-t border-zinc-200 dark:border-zinc-700 pt-4">
-          <div className="flex items-center gap-2">
-            <input
-              value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value)}
-              placeholder={t.checkout.couponCode}
-              className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-            />
-            <button
-              type="button"
-              onClick={() => applyCoupon()}
-              disabled={applyingCoupon}
-              className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-            >
-              {applyingCoupon ? t.checkout.applying : t.checkout.apply}
-            </button>
-          </div>
-          {couponError && <div className="mt-2 text-xs text-red-600">{couponError}</div>}
-          {couponApplied && discount > 0 && <div className="mt-2 text-xs text-olive-700">已套用優惠碼</div>}
+      <div className="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+        <div className="flex items-center gap-2">
+          <input
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value)}
+            placeholder={t.checkout.couponCode}
+            className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+          />
+          <button
+            type="button"
+            onClick={() => applyCoupon()}
+            disabled={applyingCoupon}
+            className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+          >
+            {applyingCoupon ? t.checkout.applying : t.checkout.apply}
+          </button>
         </div>
-      )}
+        {couponError && <div className="mt-2 text-xs text-red-600">{couponError}</div>}
+        {couponApplied && discount > 0 && (
+          <div className="mt-2 text-xs text-olive-700">
+            {locale === "zh-HK" ? "已套用優惠碼" : "Coupon applied"}
+          </div>
+        )}
+      </div>
 
-      {/* Totals */}
-      <div className={`${!compact ? "mt-4 border-t border-zinc-200 dark:border-zinc-700 pt-4" : "mt-4"} space-y-2`}>
-        <div className="flex justify-between text-sm">
+      <div className="mt-4 space-y-2 border-t border-zinc-200 pt-4 text-sm dark:border-zinc-700">
+        <div className="flex justify-between">
           <span className="text-zinc-600 dark:text-zinc-400">{t.cart.subtotal}</span>
           <span className="text-zinc-900 dark:text-zinc-100">{format(subtotal)}</span>
         </div>
-
-        {/* Shipping */}
-        <div className="flex justify-between text-sm">
-          <span className="text-zinc-600 dark:text-zinc-400">{t.cart.deliveryFee}</span>
-          {qualifiesForFreeShipping && !isOutlyingIslands ? (
-            <span className="text-green-600 font-medium">免運費</span>
-          ) : (
-            <span className="text-zinc-900 dark:text-zinc-100">
-              {format(calculatedShipping)}
-              {isOutlyingIslands && <span className="text-xs text-zinc-500 ml-1">(含離島附加費)</span>}
-            </span>
-          )}
+        <div className="flex justify-between">
+          <span className="text-zinc-600 dark:text-zinc-400">
+            {locale === "zh-HK" ? "運費" : "Delivery"} ({deliveryMethodLabel()})
+          </span>
+          <span className="text-zinc-900 dark:text-zinc-100">
+            {formatFeeLabel(calculatedShipping)}
+            {fulfillmentType === "delivery" && islandSurcharge > 0 && (
+              <span className="ml-1 text-xs text-zinc-500">({locale === "zh-HK" ? "含離島附加費" : "incl. island extra"})</span>
+            )}
+          </span>
         </div>
-
-        {/* Free shipping hint - only show when close to threshold ($400-$599) */}
-        {!qualifiesForFreeShipping && amountToFreeShipping > 0 && amountToFreeShipping <= 200 && (
-          <div className="text-xs text-olive-600 bg-olive-50 dark:bg-olive-900/20 px-2 py-1.5 rounded-lg">
-            再買 {format(amountToFreeShipping)} 即可免運費
-          </div>
-        )}
-
-        {/* Discount */}
         {discount > 0 && (
-          <div className="flex justify-between text-sm text-olive-700">
-            <span>折扣</span>
+          <div className="flex justify-between text-olive-700">
+            <span>{locale === "zh-HK" ? "折扣" : "Discount"}</span>
             <span>-{format(discount)}</span>
           </div>
         )}
-
-        {/* Total */}
-        <div className="flex justify-between border-t border-zinc-200 dark:border-zinc-700 pt-2 text-lg font-semibold">
+        <div className="flex justify-between border-t border-zinc-200 pt-2 text-base font-semibold dark:border-zinc-700">
           <span className="text-zinc-900 dark:text-zinc-100">{t.cart.total}</span>
           <span className="text-zinc-900 dark:text-zinc-100">{format(total)}</span>
         </div>
       </div>
-    </div>
-  );
 
-  // Mobile summary toggle
-  const MobileSummaryHeader = () => (
-    <div className="lg:hidden mb-4">
       <button
         type="button"
-        onClick={() => setShowMobileSummary(!showMobileSummary)}
-        className="w-full flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+        onClick={handleSubmit}
+        disabled={processing || !isFormValid()}
+        className="mt-6 w-full rounded-xl bg-olive-600 py-3.5 text-center font-semibold text-white hover:bg-olive-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-zinc-600 dark:text-zinc-400">訂單摘要</span>
-          <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">({cart.length} 件商品)</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-zinc-900 dark:text-zinc-100">{format(total)}</span>
-          <svg className={`w-5 h-5 text-zinc-400 transition-transform ${showMobileSummary ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
+        {uploadingProof
+          ? locale === "zh-HK"
+            ? "上傳中..."
+            : "Uploading..."
+          : processing
+            ? locale === "zh-HK"
+              ? "處理中..."
+              : "Processing..."
+            : locale === "zh-HK"
+              ? "提交訂單"
+              : "Place Order"}
       </button>
-      {showMobileSummary && (
-        <div className="mt-2">
-          <OrderSummary compact />
-        </div>
-      )}
     </div>
   );
 
   return (
-    <div className="px-4 py-6 pb-32 lg:pb-6">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">{t.checkout.title}</h1>
-        <StepIndicator />
+    <div className="px-4 py-6 pb-24 lg:pb-6">
+      <div className="mx-auto max-w-5xl">
+        <h1 className="mb-4 text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{t.checkout.title}</h1>
 
-        {step === "info" && (
-          <>
-            <MobileSummaryHeader />
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="space-y-6">
-                {/* Login prompt for guests */}
-                {!user && (
-                  <Link href={`/${locale}/login?redirect=/${locale}/checkout`} className="flex items-center gap-3 rounded-2xl border border-olive-200 bg-olive-50 p-4 hover:bg-olive-100 dark:border-olive-800 dark:bg-olive-900/20 dark:hover:bg-olive-900/30 transition-colors">
-                    <div className="w-10 h-10 rounded-full bg-olive-100 dark:bg-olive-800 flex items-center justify-center"><User size={18} className="text-olive-600 dark:text-olive-400" /></div>
-                    <div className="flex-1">
-                      <div className="font-medium text-olive-800 dark:text-olive-300">{locale === "zh-HK" ? "登入以獲得更好體驗" : "Login for a better experience"}</div>
-                      <div className="text-sm text-olive-600 dark:text-olive-400">{locale === "zh-HK" ? "追蹤訂單、儲存地址" : "Track orders, save address"}</div>
-                    </div>
-                  </Link>
-                )}
+        {!user && (
+          <div className="mb-6 flex items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-olive-100">
+              <User size={18} className="text-olive-700" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {locale === "zh-HK" ? "已有帳號？" : "Have an account?"}
+              </p>
+              <p className="text-xs text-zinc-500">
+                {locale === "zh-HK" ? "登入以自動填寫資料" : "Sign in to autofill your info"}
+              </p>
+            </div>
+            <Link
+              href={`/${locale}/login?redirect=checkout`}
+              className="ml-auto text-sm font-semibold text-olive-600 hover:text-olive-700"
+            >
+              {locale === "zh-HK" ? "登入" : "Sign in"}
+            </Link>
+          </div>
+        )}
 
-                {/* Section 1: Contact Info */}
-                <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">聯絡資料</h2>
-                  <div className="space-y-4">
-                    {/* Name */}
-                    <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                        姓名 <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={customerName}
-                        onChange={(e) => {
-                          setCustomerName(e.target.value);
-                          if (nameTouched) setNameError(validateName(e.target.value));
-                        }}
-                        onBlur={handleNameBlur}
-                        placeholder="請輸入收件人姓名"
-                        className={`mt-1 w-full rounded-xl border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
-                          nameTouched && nameError ? "border-red-500" : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
-                        }`}
-                      />
-                      {nameTouched && nameError && <p className="mt-1 text-xs text-red-500">{nameError}</p>}
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                        電話 <span className="text-red-500">*</span>
-                      </label>
-                      <div className="mt-1 flex">
-                        <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-zinc-200 bg-zinc-50 text-zinc-500 text-sm dark:border-zinc-800 dark:bg-zinc-800">
-                          +852
-                        </span>
-                        <input
-                          type="tel"
-                          required
-                          value={phone}
-                          onChange={(e) => {
-                            const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
-                            setPhone(digits);
-                            if (phoneTouched) setPhoneError(validatePhone(digits));
-                          }}
-                          onBlur={handlePhoneBlur}
-                          placeholder="8位電話號碼"
-                          className={`flex-1 rounded-r-xl border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
-                            phoneTouched && phoneError ? "border-red-500" : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
-                          }`}
-                        />
-                      </div>
-                      {phoneTouched && phoneError && <p className="mt-1 text-xs text-red-500">{phoneError}</p>}
-                    </div>
-
-                    {/* Email */}
-                    <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">電郵（選填）</label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          if (emailTouched) setEmailError(validateEmail(e.target.value));
-                        }}
-                        onBlur={handleEmailBlur}
-                        placeholder="用於接收訂單確認"
-                        className={`mt-1 w-full rounded-xl border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
-                          emailTouched && emailError ? "border-red-500" : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
-                        }`}
-                      />
-                      {emailTouched && emailError && <p className="mt-1 text-xs text-red-500">{emailError}</p>}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Section 3: Delivery Address (conditional) */}
-                <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                  {deliveryMethod === "home" ? (
-                    <>
-                      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">送貨地址</h2>
-
-                  {/* Saved address quick-fill */}
-                  {savedAddress && !savedAddressDismissed && (
-                    <div className="mb-4 flex items-center gap-3 rounded-xl border border-olive-200 bg-olive-50 p-3 dark:border-olive-800 dark:bg-olive-900/20">
-                      <div className="w-8 h-8 rounded-full bg-olive-100 dark:bg-olive-800 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-olive-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-olive-700 dark:text-olive-300">使用上次地址</div>
-                        <div className="text-xs text-olive-600 dark:text-olive-400 truncate">{savedAddress.fullAddress}</div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={useSavedAddressHandler}
-                        className="px-3 py-1.5 text-sm font-medium text-olive-700 bg-olive-100 hover:bg-olive-200 rounded-lg dark:bg-olive-800 dark:text-olive-300 dark:hover:bg-olive-700"
-                      >
-                        使用
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSavedAddressDismissed(true)}
-                        className="p-1 text-olive-500 hover:text-olive-700 dark:text-olive-400 dark:hover:text-olive-300"
-                        aria-label="關閉"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    {/* Address search input */}
-                    {!useManualEntry && (
-                      <div className="relative">
-                        <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                          搜尋地址 <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative mt-1">
-                          <input
-                            ref={addressInputRef}
-                            type="text"
-                            value={addressQuery}
-                            onChange={(e) => handleAddressInputChange(e.target.value)}
-                            onFocus={() => setShowSuggestions(true)}
-                            onBlur={handleAddressBlur}
-                            placeholder="輸入街道、大廈或屋苑名稱..."
-                            className={`w-full rounded-xl border bg-white px-4 py-3 pr-10 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
-                              addressTouched && addressError ? "border-red-500" : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
-                            }`}
-                          />
-                          {isLoadingAddresses && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                              <svg className="w-5 h-5 animate-spin text-zinc-400" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                              </svg>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Address suggestions dropdown */}
-                        {showSuggestions && addressQuery.length >= 2 && (
-                          <div className="absolute z-50 mt-1 w-full rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800 max-h-60 overflow-y-auto">
-                            {isLoadingAddresses ? (
-                              <div className="px-4 py-3 text-sm text-zinc-500">搜尋中...</div>
-                            ) : addressSuggestions.length > 0 ? (
-                              addressSuggestions.map((suggestion, idx) => (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  onMouseDown={(e) => e.preventDefault()}
-                                  onClick={() => selectAddress(suggestion)}
-                                  className="w-full px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 first:rounded-t-xl last:rounded-b-xl"
-                                >
-                                  <div className="text-sm text-zinc-900 dark:text-zinc-100">{suggestion.fullAddress}</div>
-                                  <div className="text-xs text-zinc-500 mt-0.5">
-                                    {suggestion.region} {suggestion.district && `· ${suggestion.district}`}
-                                  </div>
-                                </button>
-                              ))
-                            ) : (
-                              <div className="px-4 py-3 text-sm text-zinc-500">找不到地址</div>
-                            )}
-                          </div>
-                        )}
-
-                        {addressTouched && addressError && <p className="mt-1 text-xs text-red-500">{addressError}</p>}
-
-                        <button
-                          type="button"
-                          onClick={() => setUseManualEntry(true)}
-                          className="mt-2 text-sm text-olive-600 hover:text-olive-700 dark:text-olive-400"
-                        >
-                          找不到？手動輸入地址
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Manual entry toggle */}
-                    {useManualEntry && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUseManualEntry(false);
-                          setAddressQuery("");
-                        }}
-                        className="text-sm text-olive-600 hover:text-olive-700 dark:text-olive-400 mb-4"
-                      >
-                        ← 返回地址搜尋
-                      </button>
-                    )}
-
-                    {/* Region */}
-                    <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                        地區 <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={region}
-                        onChange={(e) => setRegion(e.target.value as HKRegion)}
-                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-                      >
-                        <option value="">選擇地區</option>
-                        {HK_REGIONS.map((r) => (
-                          <option key={r} value={r}>
-                            {r}
-                          </option>
-                        ))}
-                      </select>
-                      {region === "離島" && (
-                        <p className="mt-1 text-xs text-amber-600">離島附加費 +${OUTLYING_ISLANDS_SURCHARGE}</p>
-                      )}
-                    </div>
-
-                    {/* District */}
-                    <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                        區域 <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={district}
-                        onChange={(e) => setDistrict(e.target.value)}
-                        placeholder="例：旺角"
-                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
-
-                    {/* Street */}
-                    <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                        街道/屋苑 <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={street}
-                        onChange={(e) => setStreet(e.target.value)}
-                        placeholder="例：彌敦道 688號"
-                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
-
-                    {/* Building (optional) */}
-                    <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                        大廈名稱（選填）
-                      </label>
-                      <input
-                        type="text"
-                        value={building}
-                        onChange={(e) => setBuilding(e.target.value)}
-                        placeholder="例：旺角中心"
-                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
-
-                    {/* Block (optional) */}
-                    <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                        座數（選填）
-                      </label>
-                      <input
-                        type="text"
-                        value={block}
-                        onChange={(e) => setBlock(e.target.value)}
-                        placeholder="例：A座"
-                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
-
-                    {/* Floor */}
-                    <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                        樓層 <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={floor}
-                        onChange={(e) => setFloor(e.target.value)}
-                        placeholder="例：12"
-                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
-
-                    {/* Unit */}
-                    <div>
-                      <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                        單位 <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={unit}
-                        onChange={(e) => setUnit(e.target.value)}
-                        placeholder="例：A"
-                        className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-                      />
-                    </div>
-
-                    {addressTouched && addressError && <p className="text-xs text-red-500">{addressError}</p>}
-                  </div>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">智能櫃資料</h2>
-                      <div>
-                        <label className="block text-zinc-700 text-sm dark:text-zinc-300">
-                          智能櫃/順豐站編號 <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={lockerCode}
-                          onChange={(e) => setLockerCode(e.target.value)}
-                          placeholder="例：H852F001"
-                          className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-                        />
-                        {addressTouched && addressError && <p className="mt-1 text-xs text-red-500">{addressError}</p>}
-                        <p className="mt-2 text-xs text-zinc-500">
-                          請輸入您選擇的順豐智能櫃或順豐站編號
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Section 4: Order Note */}
-                <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">訂單備註</h2>
-                  <textarea
-                    value={orderNote}
-                    onChange={(e) => setOrderNote(e.target.value)}
-                    rows={3}
-                    placeholder="送貨時間偏好、特別要求..."
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
+              <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                {locale === "zh-HK" ? "聯絡資料" : "Contact Info"}
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-zinc-700 dark:text-zinc-300">
+                    {locale === "zh-HK" ? "姓名" : "Name"} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={customerName}
+                    onChange={(e) => {
+                      setCustomerName(e.target.value);
+                      if (nameTouched) setNameError(validateName(e.target.value));
+                    }}
+                    onBlur={() => {
+                      setNameTouched(true);
+                      setNameError(validateName(customerName));
+                    }}
+                    placeholder={locale === "zh-HK" ? "請輸入收件人姓名" : "Full name"}
+                    className={`mt-1 w-full rounded-xl border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
+                      nameTouched && nameError
+                        ? "border-red-500"
+                        : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
+                    }`}
                   />
+                  {nameTouched && nameError && <p className="mt-1 text-xs text-red-500">{nameError}</p>}
                 </div>
 
-                {/* Continue button - Desktop */}
-                <button
-                  type="button"
-                  onClick={() => setStep("payment")}
-                  disabled={!isFormValid()}
-                  className="hidden lg:block w-full rounded-2xl bg-olive-600 py-4 text-white font-semibold hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  下一步：選擇付款方式
-                </button>
-              </div>
-
-              {/* Desktop Order Summary */}
-              <div className="hidden lg:block">
-                <OrderSummary />
-              </div>
-            </div>
-
-            {/* Mobile sticky button */}
-            <div className="fixed bottom-16 left-0 right-0 p-4 bg-white border-t border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800 lg:hidden">
-              <button
-                type="button"
-                onClick={() => setStep("payment")}
-                disabled={!isFormValid()}
-                className="w-full rounded-2xl bg-olive-600 py-4 text-white font-semibold hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                下一步：選擇付款方式
-              </button>
-            </div>
-          </>
-        )}
-
-        {step === "payment" && (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="space-y-6">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">選擇付款方式</h2>
-                <div className="mt-4 grid grid-cols-3 gap-3">
-                  {paymentMethods.map((method) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => setSelectedPaymentMethod(method.type)}
-                      className={`rounded-xl border-2 p-3 text-center transition-all ${
-                        selectedPaymentMethod === method.type
-                          ? "border-olive-600 bg-olive-50 dark:bg-olive-900/20"
-                          : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800"
+                <div>
+                  <label className="block text-sm text-zinc-700 dark:text-zinc-300">
+                    {locale === "zh-HK" ? "電話" : "Phone"} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="mt-1 grid grid-cols-[72px_1fr] gap-2">
+                    <div className="flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800">
+                      +852
+                    </div>
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+                        setPhone(digits);
+                        if (phoneTouched) setPhoneError(validatePhone(digits));
+                      }}
+                      onBlur={() => {
+                        setPhoneTouched(true);
+                        setPhoneError(validatePhone(phone));
+                      }}
+                      placeholder={locale === "zh-HK" ? "8位電話號碼" : "8-digit phone"}
+                      className={`w-full rounded-lg border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
+                        phoneTouched && phoneError
+                          ? "border-red-500"
+                          : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
                       }`}
-                    >
-                      <div className="text-2xl mb-1">
-                        {method.type === "fps" && "💳"}
-                        {method.type === "payme" && "📱"}
-                        {method.type === "alipay" && "🔵"}
-                      </div>
-                      <div className="text-xs font-medium text-zinc-900 dark:text-zinc-100">{method.name}</div>
-                    </button>
-                  ))}
-                </div>
-                {selectedMethod && (
-                  <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-700">
-                    <div className="text-center">
-                      <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-4">{selectedMethod.name}</h3>
-                      {selectedMethod.qrImage && (
-                        <div className="mx-auto w-48 h-48 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-white">
-                          <img src={selectedMethod.qrImage} alt={selectedMethod.name} className="w-full h-full object-contain" />
-                        </div>
-                      )}
-                      {selectedMethod.accountInfo && (
-                        <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">{selectedMethod.accountInfo}</p>
-                      )}
-                      <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-                        請使用以上方式付款 <span className="font-semibold text-zinc-900 dark:text-zinc-100">{format(total)}</span>
-                      </p>
-                    </div>
+                    />
                   </div>
-                )}
-              </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setStep("info")}
-                  className="flex-1 rounded-2xl border border-zinc-200 bg-white py-4 text-zinc-700 font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                >
-                  返回
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep("confirm")}
-                  disabled={!selectedPaymentMethod}
-                  className="flex-1 rounded-2xl bg-olive-600 py-4 text-white font-semibold hover:bg-olive-700 disabled:opacity-50"
-                >
-                  下一步：上傳付款證明
-                </button>
-              </div>
-            </div>
-            <div>
-              <OrderSummary compact />
-            </div>
-          </div>
-        )}
+                  {phoneTouched && phoneError && <p className="mt-1 text-xs text-red-500">{phoneError}</p>}
+                </div>
 
-        {step === "confirm" && (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="space-y-6">
+                <div>
+                  <label className="block text-sm text-zinc-700 dark:text-zinc-300">
+                    {locale === "zh-HK" ? "電郵（選填）" : "Email (optional)"}
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (emailTouched) setEmailError(validateEmail(e.target.value));
+                    }}
+                    onBlur={() => {
+                      setEmailTouched(true);
+                      setEmailError(validateEmail(email));
+                    }}
+                    placeholder={locale === "zh-HK" ? "用於接收訂單確認" : "For order confirmation"}
+                    className={`mt-1 w-full rounded-xl border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
+                      emailTouched && emailError
+                        ? "border-red-500"
+                        : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
+                    }`}
+                  />
+                  {emailTouched && emailError && <p className="mt-1 text-xs text-red-500">{emailError}</p>}
+                </div>
+              </div>
+            </div>
+
+            <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
+              <input
+                type="checkbox"
+                checked={sameAsContact}
+                onChange={() => setSameAsContact((prev) => !prev)}
+                className="h-4.5 w-4.5 accent-olive-600"
+              />
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                {locale === "zh-HK" ? "收貨人同聯絡人相同" : "Receiver is same as contact person"}
+              </span>
+            </label>
+
+            {!sameAsContact && (
               <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">上傳付款截圖</h2>
-                <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">完成付款後，請上傳付款截圖以確認您的訂單</p>
-                <div className="mt-6">
-                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-                  {paymentProofPreview ? (
-                    <div className="relative">
-                      <img
-                        src={paymentProofPreview}
-                        alt="Payment proof"
-                        className="w-full max-h-64 object-contain rounded-xl border border-zinc-200 dark:border-zinc-700"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPaymentProofFile(null);
-                          setPaymentProofPreview(null);
+                <h3 className="mb-4 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                  {locale === "zh-HK" ? "收貨人資料" : "Receiver Info"}
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-zinc-700 dark:text-zinc-300">
+                      {locale === "zh-HK" ? "收貨人姓名" : "Receiver Name"} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={receiverName}
+                      onChange={(e) => {
+                        setReceiverName(e.target.value);
+                        if (receiverNameTouched) setReceiverNameError(validateName(e.target.value));
+                      }}
+                      onBlur={() => {
+                        setReceiverNameTouched(true);
+                        setReceiverNameError(validateName(receiverName));
+                      }}
+                      className={`mt-1 w-full rounded-xl border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
+                        receiverNameTouched && receiverNameError
+                          ? "border-red-500"
+                          : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
+                      }`}
+                    />
+                    {receiverNameTouched && receiverNameError && (
+                      <p className="mt-1 text-xs text-red-500">{receiverNameError}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-zinc-700 dark:text-zinc-300">
+                      {locale === "zh-HK" ? "收貨人電話" : "Receiver Phone"} <span className="text-red-500">*</span>
+                    </label>
+                    <div className="mt-1 grid grid-cols-[72px_1fr] gap-2">
+                      <div className="flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800">
+                        +852
+                      </div>
+                      <input
+                        type="tel"
+                        required
+                        value={receiverPhone}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+                          setReceiverPhone(digits);
+                          if (receiverPhoneTouched) setReceiverPhoneError(validatePhone(digits));
                         }}
-                        className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600"
-                      >
-                        ✕
-                      </button>
+                        onBlur={() => {
+                          setReceiverPhoneTouched(true);
+                          setReceiverPhoneError(validatePhone(receiverPhone));
+                        }}
+                        className={`w-full rounded-lg border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
+                          receiverPhoneTouched && receiverPhoneError
+                            ? "border-red-500"
+                            : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
+                        }`}
+                      />
                     </div>
-                  ) : (
+                    {receiverPhoneTouched && receiverPhoneError && (
+                      <p className="mt-1 text-xs text-red-500">{receiverPhoneError}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
+              <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                {locale === "zh-HK" ? "送貨方式" : "Fulfillment"}
+              </h2>
+
+              <div className="grid grid-cols-3 gap-2 mb-5">
+                {[
+                  {
+                    key: "delivery",
+                    icon: "🚚",
+                    label: "送貨上門",
+                    labelEn: "Home Delivery",
+                    price: formatFeeLabel(calculatedHomeFee),
+                  },
+                  {
+                    key: "sf-locker",
+                    icon: "📦",
+                    label: "順豐智能櫃",
+                    labelEn: "SF Locker",
+                    price: formatFeeLabel(calculatedSfFee),
+                  },
+                  {
+                    key: "pickup",
+                    icon: "🏪",
+                    label: "自取",
+                    labelEn: "Pickup",
+                    price: locale === "zh-HK" ? "免費" : "Free",
+                  },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => {
+                      setFulfillmentType(opt.key as FulfillmentType);
+                      setAddressTouched(false);
+                      setAddressError(null);
+                    }}
+                    className={`rounded-xl border-2 p-3 text-center transition-all ${
+                      fulfillmentType === opt.key
+                        ? "border-olive-600 bg-olive-50 dark:bg-olive-900/20"
+                        : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900"
+                    }`}
+                  >
+                    <div className="text-xl mb-1">{opt.icon}</div>
+                    <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {locale === "zh-HK" ? opt.label : opt.labelEn}
+                    </div>
+                    <div className="text-xs text-olive-600 font-medium mt-0.5">{opt.price}</div>
+                  </button>
+                ))}
+              </div>
+
+              {fulfillmentType === "delivery" && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-zinc-700 dark:text-zinc-300">
+                      {locale === "zh-HK" ? "地區" : "District"} <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value as District)}
+                      onBlur={() => {
+                        setAddressTouched(true);
+                        setAddressError(validateAddress());
+                      }}
+                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                    >
+                      <option value="">{locale === "zh-HK" ? "選擇地區" : "Select district"}</option>
+                      {districtOptions.map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-zinc-700 dark:text-zinc-300">
+                      {locale === "zh-HK" ? "地址" : "Address"} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={addressLine}
+                      onChange={(e) => setAddressLine(e.target.value)}
+                      onBlur={() => {
+                        setAddressTouched(true);
+                        setAddressError(validateAddress());
+                      }}
+                      placeholder={locale === "zh-HK" ? "街道/屋苑" : "Street address"}
+                      className={`mt-1 w-full rounded-xl border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
+                        addressTouched && addressError
+                          ? "border-red-500"
+                          : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <input
+                      type="text"
+                      value={building}
+                      onChange={(e) => setBuilding(e.target.value)}
+                      placeholder={locale === "zh-HK" ? "座數/大廈" : "Building"}
+                      className="rounded-xl border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                    />
+                    <input
+                      type="text"
+                      value={floor}
+                      onChange={(e) => setFloor(e.target.value)}
+                      placeholder={locale === "zh-HK" ? "樓層" : "Floor"}
+                      className="rounded-xl border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                    />
+                    <input
+                      type="text"
+                      value={unit}
+                      onChange={(e) => setUnit(e.target.value)}
+                      placeholder={locale === "zh-HK" ? "單位" : "Unit"}
+                      className="rounded-xl border border-zinc-200 bg-white px-3 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-zinc-700 dark:text-zinc-300">
+                      {locale === "zh-HK" ? "送貨備註（選填）" : "Delivery Notes (optional)"}
+                    </label>
+                    <textarea
+                      value={deliveryNote}
+                      onChange={(e) => setDeliveryNote(e.target.value)}
+                      rows={3}
+                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+                    />
+                  </div>
+
+                  {addressTouched && addressError && <p className="text-xs text-red-500">{addressError}</p>}
+                </div>
+              )}
+
+              {fulfillmentType === "sf-locker" && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm text-zinc-700 dark:text-zinc-300">
+                      {locale === "zh-HK" ? "智能櫃/順豐站編號" : "SF Locker/Station code"} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={sfLockerCode}
+                      onChange={(e) => setSfLockerCode(e.target.value)}
+                      onBlur={() => {
+                        setAddressTouched(true);
+                        setAddressError(validateAddress());
+                      }}
+                      placeholder={locale === "zh-HK" ? "例：H852001001" : "e.g. H852001001"}
+                      className={`mt-1 w-full rounded-xl border bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
+                        addressTouched && addressError
+                          ? "border-red-500"
+                          : "border-zinc-200 focus:border-zinc-400 dark:border-zinc-800"
+                      }`}
+                    />
+                  </div>
+                  {addressTouched && addressError && <p className="text-xs text-red-500">{addressError}</p>}
+                  <p className="text-xs text-zinc-500">
+                    {locale === "zh-HK" ? "請到" : "Check"}{" "}
+                    <a
+                      href="https://htm.sf-express.com/hk/tc/dynamic_function/S.F.Network/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-olive-600 hover:text-olive-700"
+                    >
+                      {locale === "zh-HK" ? "順豐官網" : "SF Express"}
+                    </a>{" "}
+                    {locale === "zh-HK" ? "查詢智能櫃/站編號" : "for locker/station codes"}
+                  </p>
+                </div>
+              )}
+
+              {fulfillmentType === "pickup" && (
+                <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+                  {locale === "zh-HK"
+                    ? storeSettings?.pickupAddressZh || "自取地址請聯絡店主"
+                    : storeSettings?.pickupAddressEn || "Contact store for pickup address"}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
+              <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                {locale === "zh-HK" ? "付款方式" : "Payment"}
+              </h2>
+              <div className="grid grid-cols-3 gap-3">
+                {paymentMethods.map((method) => (
+                  <button
+                    key={method.id}
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod(method.type)}
+                    className={`rounded-xl border-2 p-3 text-center transition-all ${
+                      selectedPaymentMethod === method.type
+                        ? "border-olive-600 bg-olive-50 dark:bg-olive-900/20"
+                        : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900"
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">
+                      {method.type === "fps" && "💳"}
+                      {method.type === "payme" && "📱"}
+                      {method.type === "alipay" && "🔵"}
+                    </div>
+                    <div className="text-xs font-medium text-zinc-900 dark:text-zinc-100">{method.name}</div>
+                  </button>
+                ))}
+              </div>
+              {selectedMethod && (
+                <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-700">
+                  <div className="text-center">
+                    <h3 className="mb-4 font-semibold text-zinc-900 dark:text-zinc-100">{selectedMethod.name}</h3>
+                    {selectedMethod.qrImage && (
+                      <div className="mx-auto h-48 w-48 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700">
+                        <img src={selectedMethod.qrImage} alt={selectedMethod.name} className="h-full w-full object-contain" />
+                      </div>
+                    )}
+                    {selectedMethod.accountInfo && (
+                      <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">{selectedMethod.accountInfo}</p>
+                    )}
+                    <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+                      {locale === "zh-HK" ? "請使用以上方式付款" : "Please pay"}{" "}
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">{format(total)}</span>
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                {locale === "zh-HK" ? "上傳付款截圖" : "Upload Payment Proof"}
+              </h2>
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                {locale === "zh-HK"
+                  ? "完成付款後，請上傳付款截圖以確認您的訂單"
+                  : "After payment, upload a screenshot to confirm your order"}
+              </p>
+              <div className="mt-6">
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                {paymentProofPreview ? (
+                  <div className="relative">
+                    <img
+                      src={paymentProofPreview}
+                      alt="Payment proof"
+                      className="w-full max-h-64 object-contain rounded-xl border border-zinc-200 dark:border-zinc-700"
+                    />
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 p-8 text-center hover:border-olive-500 hover:bg-olive-50 dark:border-zinc-600 dark:bg-zinc-800"
+                      onClick={() => {
+                        setPaymentProofFile(null);
+                        setPaymentProofPreview(null);
+                      }}
+                      className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
                     >
-                      <div className="text-4xl mb-2">📷</div>
-                      <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">點擊上傳付款截圖</div>
-                      <div className="text-xs text-zinc-500 mt-1">支持 JPG, PNG, HEIC (最大 5MB)</div>
+                      ✕
                     </button>
-                  )}
-                </div>
-                {selectedMethod && (
-                  <div className="mt-4 rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800">
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl">
-                        {selectedMethod.type === "fps" && "💳"}
-                        {selectedMethod.type === "payme" && "📱"}
-                        {selectedMethod.type === "alipay" && "🔵"}
-                      </div>
-                      <div>
-                        <div className="font-medium text-zinc-900 dark:text-zinc-100">{selectedMethod.name}</div>
-                        <div className="text-sm text-zinc-500">{selectedMethod.accountInfo}</div>
-                      </div>
-                    </div>
                   </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 p-8 text-center hover:border-olive-500 hover:bg-olive-50 dark:border-zinc-600 dark:bg-zinc-800"
+                  >
+                    <div className="text-4xl mb-2">📷</div>
+                    <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      {locale === "zh-HK" ? "點擊上傳付款截圖" : "Click to upload"}
+                    </div>
+                    <div className="text-xs text-zinc-500 mt-1">
+                      {locale === "zh-HK" ? "支持 JPG, PNG, HEIC (最大 5MB)" : "JPG, PNG, HEIC (max 5MB)"}
+                    </div>
+                  </button>
                 )}
               </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setStep("payment")}
-                  className="flex-1 rounded-2xl border border-zinc-200 bg-white py-4 text-zinc-700 font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                >
-                  返回
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={processing || !paymentProofFile}
-                  className="flex-1 rounded-2xl bg-olive-600 py-4 text-white font-semibold hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {uploadingProof ? "上傳中..." : processing ? "處理中..." : "確認訂單"}
-                </button>
-              </div>
             </div>
-            <div>
-              <OrderSummary compact />
+
+            <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
+              <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                {locale === "zh-HK" ? "備註（選填）" : "Order Notes (optional)"}
+              </h2>
+              <textarea
+                value={orderNote}
+                onChange={(e) => setOrderNote(e.target.value)}
+                rows={3}
+                placeholder={locale === "zh-HK" ? "送貨時間偏好、特別要求..." : "Delivery time, special requests..."}
+                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
+              />
             </div>
           </div>
-        )}
+
+          <div className="hidden lg:block">
+            <OrderSummary sticky />
+          </div>
+        </div>
+
+        <div className="mt-6 lg:hidden">
+          <OrderSummary />
+        </div>
       </div>
     </div>
   );
