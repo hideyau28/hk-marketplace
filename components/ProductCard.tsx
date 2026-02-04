@@ -77,10 +77,16 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
       .map(([size]) => size);
   }, [p.sizes]);
 
+  const priceValue = p.price ?? null;
+  const originalPriceValue = p.originalPrice ?? null;
+
   // Calculate sale status
-  const isOnSale = p.originalPrice != null && p.price != null && p.originalPrice > p.price;
+  const isOnSale =
+    originalPriceValue != null &&
+    priceValue != null &&
+    Math.round(originalPriceValue * 100) > Math.round(priceValue * 100);
   const discountPercent = isOnSale
-    ? Math.round((1 - p.price! / p.originalPrice!) * 100)
+    ? Math.round((1 - priceValue! / originalPriceValue!) * 100)
     : 0;
 
   const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -157,7 +163,7 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
   return (
     <div
       ref={cardRef}
-      className={`group flex flex-col h-full ${cardWidthClass} rounded-2xl overflow-hidden border border-zinc-200/50 bg-white shadow-sm dark:bg-zinc-900 dark:border-zinc-800 ${
+      className={`group flex flex-col h-full ${cardWidthClass} rounded-2xl border border-zinc-200/50 bg-white shadow-sm dark:bg-zinc-900 dark:border-zinc-800 ${
         isOnSale
           ? "ring-1 ring-red-200 bg-red-50/30 dark:ring-red-900/50 dark:bg-red-950/20"
           : ""
@@ -250,7 +256,7 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
       </div>
 
       {/* Content - title links to product, price/size outside Link */}
-      <div className="flex flex-col flex-1 p-2.5">
+      <div className="flex flex-col flex-1 p-2.5 pb-3">
         {/* Brand */}
         {p.brand ? (
           <div className="text-xs font-medium tracking-wide text-zinc-500 truncate dark:text-zinc-400">
@@ -273,12 +279,14 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
           <div className="flex flex-col leading-tight">
             {isOnSale ? (
               <>
-                <span className="text-[10px] text-zinc-400 line-through">{format(p.originalPrice!)}</span>
-                <span className="text-sm font-bold text-red-600">{format(p.price!)}</span>
+                <span className="text-[10px] text-zinc-400 line-through">
+                  {format(originalPriceValue!)}
+                </span>
+                <span className="text-sm font-bold text-red-600">{format(priceValue!)}</span>
               </>
             ) : (
               <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                {p.price != null ? format(p.price) : "—"}
+                {priceValue != null ? format(priceValue) : "—"}
               </span>
             )}
           </div>
