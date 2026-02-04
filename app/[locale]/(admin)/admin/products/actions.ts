@@ -103,7 +103,7 @@ export async function createProduct(
     originalPrice?: number | null;
     imageUrl?: string;
     images?: string[];
-    badges?: string;
+    badges?: string[];
     category?: string | null;
     active?: boolean;
     featured?: boolean;
@@ -164,7 +164,7 @@ export async function updateProduct(
     originalPrice?: number | null;
     imageUrl?: string | null;
     images?: string[];
-    badges?: string;
+    badges?: string[];
     category?: string | null;
     active?: boolean;
     featured?: boolean;

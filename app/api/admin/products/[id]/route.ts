@@ -164,7 +164,7 @@ export const PATCH = withApi(
 
     if (body.badges !== undefined) {
       const badges = parseBadges(body.badges);
-      updateData.badges = badges.length > 0 ? badges : undefined;
+      updateData.badges = badges;
     }
 
     if (body.sizeSystem !== undefined || body.sizes !== undefined) {

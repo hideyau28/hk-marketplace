@@ -19,6 +19,7 @@ type ProductCardProps = {
     originalPrice?: number | null;
     stock?: number;
     badges?: string[];
+    resolvedBadges?: { nameZh: string; nameEn: string; color: string }[];
     badge?: string;
     promotionBadges?: string[];
     sizes?: Record<string, number> | null;
@@ -27,19 +28,7 @@ type ProductCardProps = {
   fillWidth?: boolean;
 };
 
-// Badge color mapping
-const BADGE_COLORS: Record<string, string> = {
-  "店長推介": "bg-[#6B7A2F] text-white",
-  "今期熱賣": "bg-orange-500 text-white",
-  "新品上架": "bg-blue-500 text-white",
-  "限時優惠": "bg-red-500 text-white",
-  "人氣之選": "bg-purple-500 text-white",
-  "快將售罄": "bg-red-600 text-white",
-};
-
-function getBadgeClasses(badge: string): string {
-  return BADGE_COLORS[badge] || "bg-zinc-500 text-white";
-}
+const DEFAULT_BADGE_COLOR = "#6B7A2F";
 
 function CartIcon() {
   return (
@@ -88,6 +77,14 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
   const discountPercent = isOnSale
     ? Math.round((1 - priceValue! / originalPriceValue!) * 100)
     : 0;
+
+  const badgeList = Array.isArray(p.resolvedBadges) && p.resolvedBadges.length > 0
+    ? p.resolvedBadges
+    : Array.isArray(p.badges)
+      ? p.badges.map((badge) => ({ nameZh: badge, nameEn: badge, color: DEFAULT_BADGE_COLOR }))
+      : [];
+  const displayBadges = badgeList.slice(0, 2);
+  const isZh = locale.startsWith("zh");
 
   const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
@@ -198,35 +195,18 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
               </div>
             )}
 
-            {/* Promotion badges - top-left, stacked vertically (max 2) */}
-            {p.stock !== 0 && (
-              <div className="absolute left-1.5 top-1.5 flex flex-col gap-1">
-                {(() => {
-                  // Build badges array: promotionBadges + auto low-stock badge
-                  const badges: string[] = [];
-
-                  // Add promotion badges from DB
-                  if (p.promotionBadges && p.promotionBadges.length > 0) {
-                    badges.push(...p.promotionBadges);
-                  }
-
-                  // Auto-add "快將售罄" if stock <= 5 and > 0
-                  const isLowStock = p.stock !== undefined && p.stock > 0 && p.stock <= 5;
-                  if (isLowStock && !badges.includes("快將售罄")) {
-                    badges.push("快將售罄");
-                  }
-
-                  // Show max 2 badges
-                  return badges.slice(0, 2).map((badge, idx) => (
-                    <span
-                      key={idx}
-                      className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold shadow-sm ${getBadgeClasses(badge)}`}
-                      style={badge === "快將售罄" ? { animation: "lowStockPulse 8s ease-in-out infinite" } : undefined}
-                    >
-                      {badge === "快將售罄" ? `🔥 ${badge}` : badge}
-                    </span>
-                  ));
-                })()}
+            {/* Product badges - top-left, stacked vertically (max 2) */}
+            {p.stock !== 0 && displayBadges.length > 0 && (
+              <div className="absolute top-2 left-2 flex flex-col gap-1">
+                {displayBadges.map((badge, idx) => (
+                  <span
+                    key={`${badge.nameEn}-${idx}`}
+                    className="px-2 py-0.5 text-xs font-semibold rounded text-white"
+                    style={{ backgroundColor: badge.color || DEFAULT_BADGE_COLOR }}
+                  >
+                    {isZh ? badge.nameZh : badge.nameEn}
+                  </span>
+                ))}
               </div>
             )}
 

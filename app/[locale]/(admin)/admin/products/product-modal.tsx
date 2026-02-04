@@ -48,6 +48,30 @@ const PROMOTION_BADGES = [
   { value: "人氣之選", label: "人氣之選" },
 ];
 
+type BadgeOption = {
+  id: string;
+  nameZh: string;
+  nameEn: string;
+  color: string;
+};
+
+function isCuid(value: string) {
+  return value.startsWith("c") && value.length >= 25;
+}
+
+function extractBadgeIds(input: unknown): string[] {
+  if (Array.isArray(input)) {
+    return input.filter((item): item is string => typeof item === "string" && isCuid(item));
+  }
+  if (typeof input === "string") {
+    return input
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => item && isCuid(item));
+  }
+  return [];
+}
+
 // Auto-detect size system from existing keys
 function detectSizeSystem(sizeInventory: Record<string, number>): string {
   const keys = Object.keys(sizeInventory);
@@ -133,6 +157,13 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       ? ((product as any).promotionBadges as string[])
       : []
   );
+  const [badgeOptions, setBadgeOptions] = useState<BadgeOption[]>([]);
+  const [badgeLoading, setBadgeLoading] = useState(false);
+  const [badgeError, setBadgeError] = useState<string | null>(null);
+  const [selectedBadgeIds, setSelectedBadgeIds] = useState<string[]>(
+    extractBadgeIds((product as any)?.badges)
+  );
+  const [isBadgeDropdownOpen, setIsBadgeDropdownOpen] = useState(false);
   // Drag state for image reordering
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
@@ -156,6 +187,36 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isPending, onClose]);
+
+  useEffect(() => {
+    setSelectedBadgeIds(extractBadgeIds((product as any)?.badges));
+  }, [product?.id]);
+
+  useEffect(() => {
+    let isActive = true;
+    const loadBadges = async () => {
+      setBadgeLoading(true);
+      setBadgeError(null);
+      try {
+        const res = await fetch("/api/admin/badges");
+        const json = await res.json();
+        if (!res.ok || !json.ok) {
+          if (isActive) setBadgeError(json?.error?.message || "Failed to load badges.");
+          return;
+        }
+        if (isActive) setBadgeOptions(json.badges || []);
+      } catch (error) {
+        console.error("Failed to load badges:", error);
+        if (isActive) setBadgeError("Failed to load badges.");
+      } finally {
+        if (isActive) setBadgeLoading(false);
+      }
+    };
+    loadBadges();
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   // Image management
   const handleAddImage = () => {
@@ -210,6 +271,12 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     } else {
       setPromotionBadges([...promotionBadges, badge]);
     }
+  };
+
+  const toggleProductBadge = (badgeId: string) => {
+    setSelectedBadgeIds((prev) =>
+      prev.includes(badgeId) ? prev.filter((id) => id !== badgeId) : [...prev, badgeId]
+    );
   };
 
   // Size inventory handlers
@@ -312,6 +379,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         imageUrl: imageUrl.trim() || null,
         images: images.length > 0 ? images : undefined,
         category: category || null,
+        badges: selectedBadgeIds,
         active,
         featured,
         shoeType: shoeType || null,
@@ -611,6 +679,80 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* Product Badges */}
+                <div>
+                  <label className="block text-zinc-700 text-sm font-medium mb-2">產品標籤</label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsBadgeDropdownOpen((prev) => !prev)}
+                      className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-left text-sm text-zinc-900 flex items-center justify-between"
+                    >
+                      <span>
+                        {selectedBadgeIds.length > 0
+                          ? `${selectedBadgeIds.length} badges selected`
+                          : "Select badges"}
+                      </span>
+                      <span className="text-xs text-zinc-400">▼</span>
+                    </button>
+
+                    {isBadgeDropdownOpen && (
+                      <div className="absolute z-20 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-lg">
+                        {badgeLoading ? (
+                          <div className="px-3 py-3 text-sm text-zinc-500">Loading badges...</div>
+                        ) : badgeOptions.length === 0 ? (
+                          <div className="px-3 py-3 text-sm text-zinc-500">No badges available</div>
+                        ) : (
+                          badgeOptions.map((badge) => {
+                            const isSelected = selectedBadgeIds.includes(badge.id);
+                            return (
+                              <button
+                                key={badge.id}
+                                type="button"
+                                onClick={() => toggleProductBadge(badge.id)}
+                                className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 ${
+                                  isSelected ? "bg-olive-50" : ""
+                                }`}
+                              >
+                                <span
+                                  className="h-3 w-3 rounded-full"
+                                  style={{ backgroundColor: badge.color }}
+                                />
+                                <span className="text-zinc-800">
+                                  {badge.nameZh} / {badge.nameEn}
+                                </span>
+                                {isSelected && <span className="ml-auto text-olive-600">✓</span>}
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {badgeError && (
+                    <p className="mt-2 text-xs text-red-600">{badgeError}</p>
+                  )}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {selectedBadgeIds.map((id) => {
+                      const badge = badgeOptions.find((option) => option.id === id);
+                      const label = badge ? `${badge.nameZh} / ${badge.nameEn}` : id;
+                      const color = badge?.color || "#6B7A2F";
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          onClick={() => toggleProductBadge(id)}
+                          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs text-white"
+                          style={{ backgroundColor: color }}
+                        >
+                          <span>{label}</span>
+                          <span className="text-white/80">✕</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Promotion Badges */}
