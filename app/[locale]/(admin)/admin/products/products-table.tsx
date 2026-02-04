@@ -749,44 +749,8 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                         >
                           Edit
                         </button>
-                        {/* Featured toggle (star) */}
-                        <button
-                          onClick={() => handleToggleFeatured(product.id, product.featured ?? false)}
-                          disabled={togglingFeatured === product.id}
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            product.featured
-                              ? "text-yellow-500 bg-yellow-50 hover:bg-yellow-100"
-                              : "text-zinc-400 hover:text-yellow-500 hover:bg-zinc-100"
-                          } disabled:opacity-50`}
-                          title={product.featured ? "Remove from featured" : "Mark as featured"}
-                        >
-                          <Star
-                            size={14}
-                            fill={product.featured ? "currentColor" : "none"}
-                          />
-                        </button>
-                        {/* Hot selling toggle (fire) */}
-                        {(() => {
-                          const badges = product.promotionBadges || [];
-                          const isHot = badges.includes("今期熱賣");
-                          return (
-                            <button
-                              onClick={() => handleToggleHotSelling(product.id, badges, isHot)}
-                              disabled={togglingHotSelling === product.id}
-                              className={`p-1.5 rounded-lg transition-colors ${
-                                isHot
-                                  ? "text-orange-500 bg-orange-50 hover:bg-orange-100"
-                                  : "text-zinc-400 hover:text-orange-500 hover:bg-zinc-100"
-                              } disabled:opacity-50`}
-                              title={isHot ? "Remove hot selling" : "Mark as hot selling"}
-                            >
-                              <Flame
-                                size={14}
-                                fill={isHot ? "currentColor" : "none"}
-                              />
-                            </button>
-                          );
-                        })()}
+
+
                         </div>
                       </div>
                     </td>
