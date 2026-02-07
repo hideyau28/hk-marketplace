@@ -6,8 +6,30 @@ datasource db {
   provider = "postgresql"
 }
 
+model Tenant {
+  id                String             @id @default(cuid())
+  name              String
+  slug              String?            @unique
+  active            Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  // Relations
+  products          Product[]
+  orders            Order[]
+  coupons           Coupon[]
+  adminLogs         AdminLog[]
+  siteContents      SiteContent[]
+  storeSettings     StoreSettings[]
+  idempotencyKeys   IdempotencyKey[]
+
+  @@index([slug])
+  @@index([active])
+}
+
 model StoreSettings {
   id                      String   @id @default("default")
+  tenantId                String?
+  tenant                  Tenant?  @relation(fields: [tenantId], references: [id])
   storeName               String?
   storeNameEn             String?  // English store name
   storeLogo               String?  // Logo URL
@@ -42,10 +64,14 @@ model StoreSettings {
   sfLockerFreeAbove       Float?   @default(600)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 model IdempotencyKey {
   id           String   @id @default(cuid())
+  tenantId     String?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
   key          String
   route        String
   method       String
@@ -56,6 +82,7 @@ model IdempotencyKey {
 
   @@unique([key, route, method])
   @@index([createdAt])
+  @@index([tenantId])
 }
 
 model User {
@@ -73,6 +100,8 @@ model User {
 
 model Order {
   id                      String           @id @default(cuid())
+  tenantId                String?
+  tenant                  Tenant?          @relation(fields: [tenantId], references: [id])
   orderNumber             String?          @unique
   customerName            String
   phone                   String
@@ -121,6 +150,7 @@ model Order {
   @@index([orderNumber])
   @@index([paymentStatus])
   @@index([userId])
+  @@index([tenantId])
 }
 
 model PaymentAttempt {
@@ -151,6 +181,8 @@ model PaymentAttempt {
 
 model Product {
   id              String   @id @default(cuid())
+  tenantId        String?
+  tenant          Tenant?  @relation(fields: [tenantId], references: [id])
   title           String
   price           Float
   imageUrl        String?
@@ -175,6 +207,7 @@ model Product {
   @@index([brand])
   @@index([category])
   @@index([featured])
+  @@index([tenantId])
 }
 
 model Badge {
@@ -189,6 +222,8 @@ model Badge {
 
 model Coupon {
   id            String             @id @default(cuid())
+  tenantId      String?
+  tenant        Tenant?            @relation(fields: [tenantId], references: [id])
   code          String             @unique
   discountType  CouponDiscountType
   discountValue Float
@@ -199,10 +234,13 @@ model Coupon {
 
   @@index([active])
   @@index([code])
+  @@index([tenantId])
 }
 
 model AdminLog {
   id         String   @id @default(cuid())
+  tenantId   String?
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
   action     String
   resource   String?
   resourceId String?
@@ -214,10 +252,13 @@ model AdminLog {
   @@index([createdAt])
   @@index([action])
   @@index([resource])
+  @@index([tenantId])
 }
 
 model SiteContent {
   id           String   @id @default(cuid())
+  tenantId     String?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
   key          String   @unique
   type         String
   titleEn      String
@@ -235,6 +276,7 @@ model SiteContent {
 
   @@index([type, active])
   @@index([sortOrder])
+  @@index([tenantId])
 }
 
 enum OrderStatus {
