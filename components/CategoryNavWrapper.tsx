@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import CategoryNav from "./CategoryNav";
+import CategoryBrowseNav from "./CategoryBrowseNav";
 import type { Locale } from "@/lib/i18n";
 
 type CategoryNavWrapperProps = {
@@ -19,12 +20,23 @@ export default function CategoryNavWrapper({ locale }: CategoryNavWrapperProps) 
     pathname?.startsWith(`/${locale}/products`) ||
     pathname?.startsWith(`/${locale}/search`);
 
+  // Show CategoryBrowseNav on category pages and homepage
+  const showBrowseNav =
+    pathname === `/${locale}` ||
+    pathname === `/${locale}/` ||
+    pathname?.startsWith(`/${locale}/categories`);
+
   // Exclude individual product pages (which would be /product/[id])
   const isProductDetailPage = pathname?.match(/^\/[a-z-]+\/product\/[^/]+$/);
 
-  if (!showCategoryNav || isProductDetailPage) {
+  if (isProductDetailPage) {
     return null;
   }
 
-  return <CategoryNav locale={locale} />;
+  return (
+    <>
+      {showCategoryNav && <CategoryNav locale={locale} />}
+      {showBrowseNav && <CategoryBrowseNav locale={locale} />}
+    </>
+  );
 }
