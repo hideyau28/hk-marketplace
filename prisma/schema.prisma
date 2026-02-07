@@ -42,6 +42,11 @@ model StoreSettings {
   sfLockerFreeAbove       Float?   @default(600)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
+  // Multi-tenant
+  tenantId                String?
+  tenant                  Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
 }
 
 model IdempotencyKey {
@@ -53,9 +58,13 @@ model IdempotencyKey {
   status       Int
   responseJson Json
   createdAt    DateTime @default(now())
+  // Multi-tenant
+  tenantId     String?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@unique([key, route, method])
   @@index([createdAt])
+  @@index([tenantId])
 }
 
 model User {
@@ -67,8 +76,12 @@ model User {
   orders    Order[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // Multi-tenant
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([phone])
+  @@index([tenantId])
 }
 
 model Order {
@@ -112,6 +125,9 @@ model Order {
   // Member system
   userId                  String?
   user                    User?            @relation(fields: [userId], references: [id])
+  // Multi-tenant
+  tenantId                String?
+  tenant                  Tenant?          @relation(fields: [tenantId], references: [id])
 
   @@index([status])
   @@index([createdAt])
@@ -121,6 +137,7 @@ model Order {
   @@index([orderNumber])
   @@index([paymentStatus])
   @@index([userId])
+  @@index([tenantId])
 }
 
 model PaymentAttempt {
@@ -170,11 +187,15 @@ model Product {
   sku             String?  @unique
   featured        Boolean  @default(false)
   promotionBadges String[] @default([])
+  // Multi-tenant
+  tenantId        String?
+  tenant          Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([active])
   @@index([brand])
   @@index([category])
   @@index([featured])
+  @@index([tenantId])
 }
 
 model Badge {
@@ -185,6 +206,11 @@ model Badge {
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // Multi-tenant
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
 }
 
 model Coupon {
@@ -196,9 +222,13 @@ model Coupon {
   active        Boolean            @default(true)
   expiresAt     DateTime?
   createdAt     DateTime           @default(now())
+  // Multi-tenant
+  tenantId      String?
+  tenant        Tenant?            @relation(fields: [tenantId], references: [id])
 
   @@index([active])
   @@index([code])
+  @@index([tenantId])
 }
 
 model AdminLog {
@@ -210,10 +240,14 @@ model AdminLog {
   ipAddress  String?
   userAgent  String?
   createdAt  DateTime @default(now())
+  // Multi-tenant
+  tenantId   String?
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([createdAt])
   @@index([action])
   @@index([resource])
+  @@index([tenantId])
 }
 
 model SiteContent {
@@ -232,9 +266,60 @@ model SiteContent {
   sortOrder    Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  // Multi-tenant
+  tenantId     String?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([type, active])
   @@index([sortOrder])
+  @@index([tenantId])
+}
+
+model Tenant {
+  id                   String    @id @default(cuid())
+  name                 String
+  slug                 String    @unique
+  customDomain         String?   @unique
+  region               String    @default("HK")
+  currency             String    @default("HKD")
+  timezone             String    @default("Asia/Hong_Kong")
+  languages            String[]  @default(["zh-HK", "en"])
+  taxRate              Float     @default(0)
+  themeColor           String    @default("#6B7B3A")
+  logoUrl              String?
+  status               String    @default("active")
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  subscriptionEndsAt   DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  admins            TenantAdmin[]
+  products          Product[]
+  orders            Order[]
+  users             User[]
+  badges            Badge[]
+  coupons           Coupon[]
+  adminLogs         AdminLog[]
+  siteContents      SiteContent[]
+  storeSettings     StoreSettings[]
+  homepageSections  HomepageSection[]
+  homepageBanners   HomepageBanner[]
+  paymentMethods    PaymentMethod[]
+  idempotencyKeys   IdempotencyKey[]
+}
+
+model TenantAdmin {
+  id           String   @id @default(cuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  email        String   @unique
+  passwordHash String
+  role         String   @default("owner")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId])
 }
 
 enum OrderStatus {
@@ -290,9 +375,13 @@ model HomepageSection {
   filterValue String?  // e.g. "adult", "Air Jordan"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  // Multi-tenant
+  tenantId    String?
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([sortOrder])
   @@index([active])
+  @@index([tenantId])
 }
 
 model HomepageBanner {
@@ -307,9 +396,13 @@ model HomepageBanner {
   position  String   @default("hero") // "hero" = top carousel, "mid" = mid-page
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  // Multi-tenant
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([position, sortOrder])
   @@index([active])
+  @@index([tenantId])
 }
 
 model PaymentMethod {
@@ -322,6 +415,10 @@ model PaymentMethod {
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  // Multi-tenant
+  tenantId    String?
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([active, sortOrder])
+  @@index([tenantId])
 }
