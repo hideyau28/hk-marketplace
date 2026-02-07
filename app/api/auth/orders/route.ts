@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   try {
@@ -13,9 +14,11 @@ export async function GET(request: Request) {
       );
     }
 
+    const tenantId = await getTenantId(request);
+
     // Get user's orders, newest first
     const orders = await prisma.order.findMany({
-      where: { userId: session.userId },
+      where: { userId: session.userId, tenantId },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,

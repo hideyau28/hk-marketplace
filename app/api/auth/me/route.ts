@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: Request) {
   try {
@@ -13,9 +14,11 @@ export async function GET(request: Request) {
       );
     }
 
+    const tenantId = await getTenantId(request);
+
     // Get fresh user data from database
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
+    const user = await prisma.user.findFirst({
+      where: { id: session.userId, tenantId },
     });
 
     if (!user) {

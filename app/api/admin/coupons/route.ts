@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 type CouponPayload = {
   code?: unknown;
@@ -46,7 +47,10 @@ export const GET = withApi(async (req) => {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
+  const tenantId = await getTenantId(req);
+
   const coupons = await prisma.coupon.findMany({
+    where: { tenantId },
     orderBy: { createdAt: "desc" },
   });
 
@@ -60,6 +64,8 @@ export const POST = withApi(async (req) => {
   if (!isAuthenticated) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  const tenantId = await getTenantId(req);
 
   let body: CouponPayload;
   try {
@@ -101,6 +107,7 @@ export const POST = withApi(async (req) => {
       minOrder,
       active,
       expiresAt,
+      tenantId,
     },
   });
 

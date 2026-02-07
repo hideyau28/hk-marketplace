@@ -6,6 +6,7 @@ import { getSessionFromCookie, validateAdminSecret } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
 import { parseBadges } from "@/lib/parse-badges";
 import crypto from "node:crypto";
+import { getTenantId } from "@/lib/tenant";
 
 const ROUTE = "/api/admin/products";
 
@@ -178,6 +179,8 @@ export const GET = withApi(
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
+    const tenantId = await getTenantId(req);
+
     const { searchParams } = new URL(req.url);
     const limitParam = searchParams.get("limit");
     const activeParam = searchParams.get("active");
@@ -200,7 +203,7 @@ export const GET = withApi(
     }
 
     const products = await prisma.product.findMany({
-      where: active !== undefined ? { active } : undefined,
+      where: { tenantId, ...(active !== undefined ? { active } : {}) },
       orderBy: { updatedAt: "desc" },
       take: limit,
     });
@@ -218,6 +221,8 @@ export const POST = withApi(
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
+    const tenantId = await getTenantId(req);
+
     let body: any = null;
     try {
       body = await req.json();
@@ -234,10 +239,8 @@ export const POST = withApi(
 
     const requestHash = sha256(stableStringify({ route: ROUTE, method: "POST", body: payload }));
 
-    const existing = await prisma.idempotencyKey.findUnique({
-      where: {
-        key_route_method: { key: idemKey, route: ROUTE, method: "POST" },
-      },
+    const existing = await prisma.idempotencyKey.findFirst({
+      where: { key: idemKey, route: ROUTE, method: "POST", tenantId },
     });
 
     if (existing) {
@@ -249,6 +252,7 @@ export const POST = withApi(
 
     const product = await prisma.product.create({
       data: {
+        tenantId,
         brand: payload.brand,
         title: payload.title,
         price: payload.price,
@@ -265,6 +269,7 @@ export const POST = withApi(
 
     await prisma.idempotencyKey.create({
       data: {
+        tenantId,
         key: idemKey,
         route: ROUTE,
         method: "POST",

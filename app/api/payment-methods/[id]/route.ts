@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 // PUT /api/payment-methods/[id] - Update payment method (admin only)
 export async function PUT(
@@ -22,7 +23,14 @@ export async function PUT(
       );
     }
 
+    const tenantId = await getTenantId(req);
     const { id } = await params;
+
+    const existing = await prisma.paymentMethod.findFirst({ where: { id, tenantId } });
+    if (!existing) {
+      return NextResponse.json({ ok: false, error: { code: "NOT_FOUND", message: "找不到付款方式" } }, { status: 404 });
+    }
+
     const body = await req.json();
 
     const { qrImage, accountInfo, active } = body;
@@ -62,10 +70,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const tenantId = await getTenantId(req);
     const { id } = await params;
 
-    const method = await prisma.paymentMethod.findUnique({
-      where: { id },
+    const method = await prisma.paymentMethod.findFirst({
+      where: { id, tenantId },
     });
 
     if (!method) {

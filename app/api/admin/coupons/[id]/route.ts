@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 type CouponUpdatePayload = {
   code?: unknown;
@@ -45,8 +46,10 @@ export const GET = withApi(async (req: Request, { params }: { params: Promise<{ 
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
+  const tenantId = await getTenantId(req);
+
   const { id } = await params;
-  const coupon = await prisma.coupon.findUnique({ where: { id } });
+  const coupon = await prisma.coupon.findFirst({ where: { id, tenantId } });
   if (!coupon) throw new ApiError(404, "NOT_FOUND", "Coupon not found");
   return ok(req, coupon);
 });
@@ -57,6 +60,8 @@ export const PATCH = withApi(async (req: Request, { params }: { params: Promise<
   if (!isAuthenticated) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  const tenantId = await getTenantId(req);
 
   const { id } = await params;
   let body: CouponUpdatePayload;
@@ -109,14 +114,14 @@ export const PATCH = withApi(async (req: Request, { params }: { params: Promise<
     throw new ApiError(400, "BAD_REQUEST", "No valid fields to update");
   }
 
-  const coupon = await prisma.coupon
-    .update({
-      where: { id },
-      data: updateData,
-    })
-    .catch(() => null);
+  const existingCoupon = await prisma.coupon.findFirst({ where: { id, tenantId } });
+  if (!existingCoupon) throw new ApiError(404, "NOT_FOUND", "Coupon not found");
 
-  if (!coupon) throw new ApiError(404, "NOT_FOUND", "Coupon not found");
+  const coupon = await prisma.coupon.update({
+    where: { id },
+    data: updateData,
+  });
+
   return ok(req, coupon);
 });
 
@@ -127,11 +132,13 @@ export const DELETE = withApi(async (req: Request, { params }: { params: Promise
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = await params;
-  const coupon = await prisma.coupon
-    .delete({ where: { id } })
-    .catch(() => null);
+  const tenantId = await getTenantId(req);
 
-  if (!coupon) throw new ApiError(404, "NOT_FOUND", "Coupon not found");
-  return ok(req, coupon);
+  const { id } = await params;
+  const existingCoupon = await prisma.coupon.findFirst({ where: { id, tenantId } });
+  if (!existingCoupon) throw new ApiError(404, "NOT_FOUND", "Coupon not found");
+
+  await prisma.coupon.delete({ where: { id } });
+
+  return ok(req, { success: true });
 });

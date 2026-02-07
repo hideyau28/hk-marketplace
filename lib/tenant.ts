@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { NextRequest } from "next/server";
 
 export type TenantContext = {
   id: string;
@@ -15,7 +14,7 @@ export type TenantContext = {
 
 const DEFAULT_SLUG = "hk-marketplace";
 
-export async function resolveTenant(req?: NextRequest): Promise<TenantContext> {
+export async function resolveTenant(req?: Request): Promise<TenantContext> {
   let slug = DEFAULT_SLUG;
 
   // Future: subdomain / custom domain routing
@@ -45,7 +44,7 @@ export async function resolveTenant(req?: NextRequest): Promise<TenantContext> {
   return tenant as TenantContext;
 }
 
-export async function getTenantId(req?: NextRequest): Promise<string> {
+export async function getTenantId(req?: Request): Promise<string> {
   const tenant = await resolveTenant(req);
   return tenant.id;
 }

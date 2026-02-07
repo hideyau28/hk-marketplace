@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 export async function GET(request: NextRequest) {
   try {
+    const tenantId = await getTenantId(request);
     const { searchParams } = new URL(request.url);
     const queryParam = searchParams.get("q");
     const brandsParam = searchParams.get("brand");
@@ -25,7 +27,7 @@ export async function GET(request: NextRequest) {
     const sale = saleParam === "true";
 
     // Build where clause
-    const where: any = { active: true };
+    const where: any = { active: true, tenantId };
 
     // Text search filter
     if (query) {

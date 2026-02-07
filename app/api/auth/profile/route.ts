@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
+import { getTenantId } from "@/lib/tenant";
 
 export async function PUT(request: Request) {
   try {
@@ -25,6 +26,17 @@ export async function PUT(request: Request) {
           { status: 400 }
         );
       }
+    }
+
+    const tenantId = await getTenantId(request);
+
+    // Verify user belongs to tenant
+    const existingUser = await prisma.user.findFirst({ where: { id: session.userId, tenantId } });
+    if (!existingUser) {
+      return NextResponse.json(
+        { ok: false, error: { code: "USER_NOT_FOUND", message: "用戶不存在" } },
+        { status: 404 }
+      );
     }
 
     // Update user

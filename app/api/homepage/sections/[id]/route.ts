@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -16,10 +17,11 @@ export const PUT = withApi(async (req: Request, ctx: RouteContext) => {
     throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
   }
 
+  const tenantId = await getTenantId(req);
   const { id } = await ctx.params;
   const body = await req.json();
 
-  const existing = await prisma.homepageSection.findUnique({ where: { id } });
+  const existing = await prisma.homepageSection.findFirst({ where: { id, tenantId } });
   if (!existing) {
     throw new ApiError(404, "NOT_FOUND", "Section not found");
   }
@@ -51,9 +53,10 @@ export const DELETE = withApi(async (req: Request, ctx: RouteContext) => {
     throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
   }
 
+  const tenantId = await getTenantId(req);
   const { id } = await ctx.params;
 
-  const existing = await prisma.homepageSection.findUnique({ where: { id } });
+  const existing = await prisma.homepageSection.findFirst({ where: { id, tenantId } });
   if (!existing) {
     throw new ApiError(404, "NOT_FOUND", "Section not found");
   }

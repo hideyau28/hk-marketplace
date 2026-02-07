@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
+import { getTenantId } from "@/lib/tenant";
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -21,6 +22,7 @@ type Body = {
 
 export const POST = withApi(async (req) => {
   const stripe = getStripe();
+  const tenantId = await getTenantId(req);
 
   let body: Body;
   try {
@@ -32,7 +34,7 @@ export const POST = withApi(async (req) => {
   const orderId = (body?.orderId || "").trim();
   if (!orderId) throw new ApiError(400, "BAD_REQUEST", "orderId is required");
 
-  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  const order = await prisma.order.findFirst({ where: { id: orderId, tenantId } });
   if (!order) throw new ApiError(404, "NOT_FOUND", "Order not found");
 
   const amounts: any = order.amounts;
@@ -98,6 +100,7 @@ export const POST = withApi(async (req) => {
   await prisma.paymentAttempt.create({
     data: {
       provider: "STRIPE",
+      tenantId,
       status: "CREATED",
       orderId,
       amount: typeof session.amount_total === "number" ? session.amount_total : null,

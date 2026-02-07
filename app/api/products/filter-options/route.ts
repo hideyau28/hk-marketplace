@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const tenantId = await getTenantId(request);
     // Fetch all active products
     const products = await prisma.product.findMany({
-      where: { active: true },
+      where: { active: true, tenantId },
       select: { brand: true, category: true },
     });
 

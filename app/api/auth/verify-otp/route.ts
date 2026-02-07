@@ -6,6 +6,7 @@ import {
   normalizePhone,
   createToken,
 } from "@/lib/auth";
+import { getTenantId } from "@/lib/tenant";
 
 const COOKIE_NAME = "hk_session";
 
@@ -39,14 +40,16 @@ export async function POST(request: Request) {
       );
     }
 
+    const tenantId = await getTenantId(request);
+
     // Find or create user
-    let user = await prisma.user.findUnique({
-      where: { phone: normalizedPhone },
+    let user = await prisma.user.findFirst({
+      where: { phone: normalizedPhone, tenantId },
     });
 
     if (!user) {
       user = await prisma.user.create({
-        data: { phone: normalizedPhone },
+        data: { phone: normalizedPhone, tenantId },
       });
     }
 

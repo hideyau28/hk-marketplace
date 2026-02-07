@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
 import { saveReceiptHtml } from "@/lib/email";
+import { getTenantId } from "@/lib/tenant";
 
 const ROUTE = "/api/orders";
 
@@ -12,7 +13,7 @@ const DEFAULT_SHIPPING_FEE = 40;
 const DEFAULT_FREE_SHIPPING_THRESHOLD = 600;
 const OUTLYING_ISLANDS_SURCHARGE = 20;
 
-async function generateOrderNumber(): Promise<string> {
+async function generateOrderNumber(tenantId: string): Promise<string> {
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
     const prefix = `HK-${dateStr}-`;
@@ -23,6 +24,7 @@ async function generateOrderNumber(): Promise<string> {
             orderNumber: {
                 startsWith: prefix,
             },
+            tenantId,
         },
         orderBy: {
             orderNumber: "desc",
@@ -247,10 +249,10 @@ function calculateShippingFee(subtotal: number, region?: string): number {
     return baseShipping + islandSurcharge;
 }
 
-async function repriceOrder(payload: CreateOrderPayload): Promise<RepricedOrder> {
+async function repriceOrder(payload: CreateOrderPayload, tenantId: string): Promise<RepricedOrder> {
     const productIds = Array.from(new Set(payload.items.map((item) => item.productId)));
     const products = await prisma.product.findMany({
-        where: { id: { in: productIds } },
+        where: { id: { in: productIds }, tenantId },
         select: { id: true, title: true, price: true, active: true },
     });
 
@@ -325,6 +327,7 @@ async function repriceOrder(payload: CreateOrderPayload): Promise<RepricedOrder>
 // GET /api/orders (admin)
 export const GET = withApi(
     async (req) => {
+        const tenantId = await getTenantId(req);
         const { searchParams } = new URL(req.url);
         const status = normalizeStatus(searchParams.get("status"));
         const search = searchParams.get("q")?.trim() || null;
@@ -337,6 +340,7 @@ export const GET = withApi(
 
         // Build where clause
         const where: any = {};
+        where.tenantId = tenantId;
         if (status) {
             where.status = status;
         }
@@ -380,6 +384,7 @@ export const GET = withApi(
 
 // POST /api/orders (customer create + idempotency)
 export const POST = withApi(async (req) => {
+    const tenantId = await getTenantId(req);
     let body: any = null;
     try {
         body = await req.json();
@@ -388,7 +393,7 @@ export const POST = withApi(async (req) => {
     }
 
     const payload = parseCreatePayload(body);
-    const repriced = await repriceOrder(payload);
+    const repriced = await repriceOrder(payload, tenantId);
 
     const idemKey = getIdempotencyKey(req);
     if (!idemKey) {
@@ -399,10 +404,8 @@ export const POST = withApi(async (req) => {
         stableStringify({ route: ROUTE, method: "POST", body: payload })
     );
 
-    const existing = await prisma.idempotencyKey.findUnique({
-        where: {
-            key_route_method: { key: idemKey, route: ROUTE, method: "POST" },
-        },
+    const existing = await prisma.idempotencyKey.findFirst({
+        where: { key: idemKey, route: ROUTE, method: "POST", tenantId },
     });
 
     if (existing) {
@@ -412,7 +415,7 @@ export const POST = withApi(async (req) => {
         return ok(req, existing.responseJson);
     }
 
-    const orderNumber = await generateOrderNumber();
+    const orderNumber = await generateOrderNumber(tenantId);
 
     // Determine payment status based on whether proof is uploaded
     const hasPaymentProof = !!payload.paymentProof;
@@ -420,6 +423,7 @@ export const POST = withApi(async (req) => {
 
     const order = await prisma.order.create({
         data: {
+            tenantId,
             orderNumber,
             customerName: payload.customerName,
             phone: payload.phone,
@@ -452,6 +456,7 @@ export const POST = withApi(async (req) => {
 
     await prisma.idempotencyKey.create({
         data: {
+            tenantId,
             key: idemKey,
             route: ROUTE,
             method: "POST",

@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { ApiError, withApi } from "@/lib/api/route-helpers";
 import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 function formatDate(value: Date | string | null | undefined) {
   if (!value) return "";
@@ -37,7 +38,10 @@ export const GET = withApi(async (req: Request) => {
     throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
   }
 
+  const tenantId = await getTenantId(req);
+
   const orders = await prisma.order.findMany({
+    where: { tenantId },
     orderBy: { createdAt: "desc" },
   });
 

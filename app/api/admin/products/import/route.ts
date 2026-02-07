@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 type ImportPayload = {
   title?: unknown;
@@ -64,6 +65,8 @@ export const POST = withApi(async (req: Request) => {
     throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
   }
 
+  const tenantId = await getTenantId(req);
+
   let body: unknown;
   try {
     body = await req.json();
@@ -99,6 +102,7 @@ export const POST = withApi(async (req: Request) => {
 
       await prisma.product.create({
         data: {
+          tenantId,
           title,
           brand,
           price,

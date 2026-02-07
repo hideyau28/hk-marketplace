@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 // GET /api/payment-methods - Get active payment methods (public)
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const tenantId = await getTenantId(request);
     const methods = await prisma.paymentMethod.findMany({
-      where: { active: true },
+      where: { active: true, tenantId },
       orderBy: { sortOrder: "asc" },
       select: {
         id: true,

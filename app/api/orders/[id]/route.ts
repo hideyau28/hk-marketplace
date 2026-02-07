@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
 import { isValidTransition, getTransitionError } from "@/lib/orders/status-transitions";
+import { getTenantId } from "@/lib/tenant";
 
 const ORDER_STATUSES = [
     // New status flow
@@ -33,8 +34,9 @@ function normalizeStatus(value?: string | null) {
 export const GET = withApi(
     async (_req: Request, { params }: { params: Promise<{ id: string }> }) => {
         const { id } = await params;
-        const order = await prisma.order.findUnique({
-            where: { id },
+        const tenantId = await getTenantId(_req);
+        const order = await prisma.order.findFirst({
+            where: { id, tenantId },
             include: {
                 paymentAttempts: {
                     select: {
@@ -93,6 +95,7 @@ function normalizePaymentStatus(value?: string | null) {
 export const PATCH = withApi(
     async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
         const { id } = await params;
+        const tenantId = await getTenantId(req);
 
         let body: any = null;
         try {
@@ -116,8 +119,8 @@ export const PATCH = withApi(
         }
 
         // Fetch current order to validate transition
-        const currentOrder = await prisma.order.findUnique({
-            where: { id },
+        const currentOrder = await prisma.order.findFirst({
+            where: { id, tenantId },
             select: { status: true, paymentStatus: true, statusHistory: true },
         });
 
@@ -139,8 +142,8 @@ export const PATCH = withApi(
             // Auto-set timestamp if this status has one and it's not already set
             const timestampField = STATUS_TIMESTAMP_MAP[status];
             if (timestampField) {
-                const existing = await prisma.order.findUnique({
-                    where: { id },
+                const existing = await prisma.order.findFirst({
+                    where: { id, tenantId },
                     select: { [timestampField]: true },
                 });
                 if (existing && existing[timestampField] === null) {
@@ -193,11 +196,7 @@ export const PATCH = withApi(
         const order = await prisma.order.update({
             where: { id },
             data: updateData,
-        }).catch(() => null);
-
-        if (!order) {
-            throw new ApiError(404, "NOT_FOUND", "Order not found");
-        }
+        });
 
         return ok(req, order);
     },

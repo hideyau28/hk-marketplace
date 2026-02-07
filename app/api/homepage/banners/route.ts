@@ -3,14 +3,16 @@ export const runtime = "nodejs";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 // GET /api/homepage/banners - get all banners ordered by position and sortOrder
 export const GET = withApi(async (req) => {
+  const tenantId = await getTenantId(req);
   const { searchParams } = new URL(req.url);
   const position = searchParams.get("position"); // "hero" or "mid"
 
   const banners = await prisma.homepageBanner.findMany({
-    where: position ? { position } : undefined,
+    where: { tenantId, ...(position ? { position } : {}) },
     orderBy: [{ position: "asc" }, { sortOrder: "asc" }],
   });
   return ok(req, { banners });
@@ -26,6 +28,7 @@ export const POST = withApi(async (req) => {
     throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
   }
 
+  const tenantId = await getTenantId(req);
   const body = await req.json();
 
   if (!body.imageUrl || typeof body.imageUrl !== "string") {
@@ -35,13 +38,14 @@ export const POST = withApi(async (req) => {
   // Get max sortOrder for the position
   const position = body.position || "hero";
   const maxBanner = await prisma.homepageBanner.findFirst({
-    where: { position },
+    where: { position, tenantId },
     orderBy: { sortOrder: "desc" },
   });
   const nextSortOrder = (maxBanner?.sortOrder ?? 0) + 1;
 
   const banner = await prisma.homepageBanner.create({
     data: {
+      tenantId,
       imageUrl: body.imageUrl.trim(),
       title: body.title?.trim() || null,
       subtitle: body.subtitle?.trim() || null,
@@ -66,10 +70,18 @@ export const PATCH = withApi(async (req) => {
     throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
   }
 
+  const tenantId = await getTenantId(req);
   const body = await req.json();
 
   if (!Array.isArray(body.banners)) {
     throw new ApiError(400, "BAD_REQUEST", "banners array is required");
+  }
+
+  // Verify all banners belong to tenant
+  const bannerIds = body.banners.map((item: { id: string }) => item.id);
+  const ownedCount = await prisma.homepageBanner.count({ where: { id: { in: bannerIds }, tenantId } });
+  if (ownedCount !== bannerIds.length) {
+    throw new ApiError(404, "NOT_FOUND", "Banner not found");
   }
 
   // Update sortOrder for each banner

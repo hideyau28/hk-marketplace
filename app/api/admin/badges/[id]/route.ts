@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 type BadgeUpdatePayload = {
   nameZh?: unknown;
@@ -43,6 +44,8 @@ export const PUT = withApi(async (req: Request, { params }: { params: Promise<{ 
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
+  const tenantId = await getTenantId(req);
+
   const { id } = await params;
   let body: BadgeUpdatePayload;
   try {
@@ -71,14 +74,14 @@ export const PUT = withApi(async (req: Request, { params }: { params: Promise<{ 
     throw new ApiError(400, "BAD_REQUEST", "No valid fields to update");
   }
 
-  const badge = await prisma.badge
-    .update({
-      where: { id },
-      data: updateData,
-    })
-    .catch(() => null);
+  const existing = await prisma.badge.findFirst({ where: { id, tenantId } });
+  if (!existing) throw new ApiError(404, "NOT_FOUND", "Badge not found");
 
-  if (!badge) throw new ApiError(404, "NOT_FOUND", "Badge not found");
+  const badge = await prisma.badge.update({
+    where: { id },
+    data: updateData,
+  });
+
   return ok(req, badge);
 });
 
@@ -89,11 +92,13 @@ export const DELETE = withApi(async (req: Request, { params }: { params: Promise
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = await params;
-  const badge = await prisma.badge
-    .delete({ where: { id } })
-    .catch(() => null);
+  const tenantId = await getTenantId(req);
 
-  if (!badge) throw new ApiError(404, "NOT_FOUND", "Badge not found");
+  const { id } = await params;
+  const existing = await prisma.badge.findFirst({ where: { id, tenantId } });
+  if (!existing) throw new ApiError(404, "NOT_FOUND", "Badge not found");
+
+  await prisma.badge.delete({ where: { id } });
+
   return ok(req, { success: true });
 });

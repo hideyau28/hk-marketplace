@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 type Body = {
   code?: string;
@@ -16,6 +17,7 @@ function assertPositiveNumber(value: unknown, field: string) {
 }
 
 export const POST = withApi(async (req) => {
+  const tenantId = await getTenantId(req);
   let body: Body;
   try {
     body = (await req.json()) as Body;
@@ -36,8 +38,8 @@ export const POST = withApi(async (req) => {
   const subtotal = body.subtotal ?? 0;
   const deliveryFee = body.deliveryFee ?? 0;
 
-  const coupon = await prisma.coupon.findUnique({
-    where: { code: rawCode },
+  const coupon = await prisma.coupon.findFirst({
+    where: { code: rawCode, tenantId },
   });
 
   if (!coupon || !coupon.active) {

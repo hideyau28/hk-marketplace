@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 type ResolvedBadge = {
   nameZh: string;
@@ -20,6 +21,7 @@ function isCuid(value: string) {
 //   - category: optional category filter (1-50 chars)
 //   - sort: 'new' | 'price_asc' | 'price_desc'
 export const GET = withApi(async (req) => {
+  const tenantId = await getTenantId(req);
   const { searchParams } = new URL(req.url);
 
   const limitParam = searchParams.get("limit");
@@ -50,7 +52,7 @@ export const GET = withApi(async (req) => {
     throw new ApiError(400, "BAD_REQUEST", "sort must be one of: new, price_asc, price_desc");
   }
 
-  const where: any = { active: true };
+  const where: any = { active: true, tenantId };
 
   // Add search filter if q is provided
   if (q) {
@@ -77,7 +79,7 @@ export const GET = withApi(async (req) => {
     take: limit,
   });
 
-  const badges = await prisma.badge.findMany();
+  const badges = await prisma.badge.findMany({ where: { tenantId } });
   const badgeMap = new Map(badges.map((badge) => [badge.id, badge]));
 
   const productsWithBadges = products.map((product) => {

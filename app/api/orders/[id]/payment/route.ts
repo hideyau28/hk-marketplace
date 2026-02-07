@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
 import { isValidTransition, getTransitionError } from "@/lib/orders/status-transitions";
+import { getTenantId } from "@/lib/tenant";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -10,6 +11,7 @@ type RouteContext = { params: Promise<{ id: string }> };
 export const PATCH = withApi(
     async (req: Request, ctx: RouteContext) => {
         const { id } = await ctx.params;
+        const tenantId = await getTenantId(req);
 
         let body: any = null;
         try {
@@ -26,8 +28,8 @@ export const PATCH = withApi(
         }
 
         // Fetch current order
-        const currentOrder = await prisma.order.findUnique({
-            where: { id },
+        const currentOrder = await prisma.order.findFirst({
+            where: { id, tenantId },
             select: {
                 status: true,
                 paymentStatus: true,

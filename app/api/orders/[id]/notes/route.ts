@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -15,6 +16,7 @@ interface AdminNote {
 export const POST = withApi(
     async (req: Request, ctx: RouteContext) => {
         const { id } = await ctx.params;
+        const tenantId = await getTenantId(req);
 
         let body: any = null;
         try {
@@ -31,8 +33,8 @@ export const POST = withApi(
         }
 
         // Fetch current order
-        const currentOrder = await prisma.order.findUnique({
-            where: { id },
+        const currentOrder = await prisma.order.findFirst({
+            where: { id, tenantId },
             select: { adminNotes: true },
         });
 
@@ -67,9 +69,10 @@ export const POST = withApi(
 export const GET = withApi(
     async (req: Request, ctx: RouteContext) => {
         const { id } = await ctx.params;
+        const tenantId = await getTenantId(req);
 
-        const order = await prisma.order.findUnique({
-            where: { id },
+        const order = await prisma.order.findFirst({
+            where: { id, tenantId },
             select: { adminNotes: true },
         });
 

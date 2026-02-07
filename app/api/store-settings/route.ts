@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
+import { getTenantId } from "@/lib/tenant";
 
 const ROUTE = "/api/store-settings";
 const SETTINGS_SELECT = {
@@ -63,8 +64,9 @@ function sha256(s: string) {
 
 // GET /api/store-settings
 export const GET = withApi(async (req) => {
-  const row = await prisma.storeSettings.findUnique({
-    where: { id: "default" },
+  const tenantId = await getTenantId(req);
+  const row = await prisma.storeSettings.findFirst({
+    where: { id: "default", tenantId },
     select: SETTINGS_SELECT,
   }).catch(() => null);
   return ok(req, row ?? null);
@@ -81,6 +83,8 @@ export const PUT = withApi(
       throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
     }
 
+    const tenantId = await getTenantId(req);
+
     // 2) require idempotency key
     const idemKey = (req.headers.get("x-idempotency-key") ?? "").trim();
     if (!idemKey) {
@@ -93,10 +97,8 @@ export const PUT = withApi(
     );
 
     // 4) check prior
-    const existing = await prisma.idempotencyKey.findUnique({
-      where: {
-        key_route_method: { key: idemKey, route: ROUTE, method: "PUT" },
-      },
+    const existing = await prisma.idempotencyKey.findFirst({
+      where: { key: idemKey, route: ROUTE, method: "PUT", tenantId },
     });
 
     if (existing) {
@@ -141,7 +143,7 @@ export const PUT = withApi(
     const updated = await prisma.storeSettings.upsert({
       where: { id: (body?.id ?? "default") as string },
       update: data,
-      create: { id: (body?.id ?? "default") as string, ...data },
+      create: { id: (body?.id ?? "default") as string, tenantId, ...data },
       select: SETTINGS_SELECT,
     });
 
@@ -151,6 +153,7 @@ export const PUT = withApi(
         key: idemKey,
         route: ROUTE,
         method: "PUT",
+        tenantId,
         requestHash,
         status: 200,
         responseJson: updated as any,

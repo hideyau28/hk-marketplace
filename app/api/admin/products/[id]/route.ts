@@ -5,6 +5,7 @@ import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
 import { parseBadges } from "@/lib/parse-badges";
+import { getTenantId } from "@/lib/tenant";
 
 function assertNonEmptyString(value: unknown, field: string) {
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -68,8 +69,10 @@ export const GET = withApi(
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
+    const tenantId = await getTenantId(_req);
+
     const { id } = await params;
-    const product = await prisma.product.findUnique({ where: { id } });
+    const product = await prisma.product.findFirst({ where: { id, tenantId } });
     if (!product) {
       throw new ApiError(404, "NOT_FOUND", "Product not found");
     }
@@ -85,6 +88,8 @@ export const PATCH = withApi(
     if (!isAuthenticated) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
+
+    const tenantId = await getTenantId(req);
 
     const { id } = await params;
 
@@ -208,16 +213,15 @@ export const PATCH = withApi(
       throw new ApiError(400, "BAD_REQUEST", "No valid fields to update");
     }
 
-    const product = await prisma.product
-      .update({
-        where: { id },
-        data: updateData,
-      })
-      .catch(() => null);
-
-    if (!product) {
+    const existing = await prisma.product.findFirst({ where: { id, tenantId } });
+    if (!existing) {
       throw new ApiError(404, "NOT_FOUND", "Product not found");
     }
+
+    const product = await prisma.product.update({
+      where: { id },
+      data: updateData,
+    });
 
     return ok(req, product);
   }

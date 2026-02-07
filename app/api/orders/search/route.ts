@@ -2,9 +2,11 @@ export const runtime = "nodejs";
 
 import { ok, withApi, ApiError } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 // GET /api/orders/search?phone=12345678
 export const GET = withApi(async (req) => {
+    const tenantId = await getTenantId(req);
     const { searchParams } = new URL(req.url);
     const phone = searchParams.get("phone")?.trim();
 
@@ -19,7 +21,7 @@ export const GET = withApi(async (req) => {
     }
 
     const orders = await prisma.order.findMany({
-        where: { phone: digitsOnly },
+        where: { phone: digitsOnly, tenantId },
         orderBy: { createdAt: "desc" },
         select: {
             id: true,

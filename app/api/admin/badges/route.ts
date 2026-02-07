@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 
 type BadgePayload = {
   nameZh?: unknown;
@@ -43,7 +44,10 @@ export const GET = withApi(async (req) => {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
+  const tenantId = await getTenantId(req);
+
   const badges = await prisma.badge.findMany({
+    where: { tenantId },
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
   });
 
@@ -56,6 +60,8 @@ export const POST = withApi(async (req) => {
   if (!isAuthenticated) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
+
+  const tenantId = await getTenantId(req);
 
   let body: BadgePayload;
   try {
@@ -73,6 +79,7 @@ export const POST = withApi(async (req) => {
       nameZh: (body.nameZh as string).trim(),
       nameEn: (body.nameEn as string).trim(),
       color,
+      tenantId,
     },
   });
 
