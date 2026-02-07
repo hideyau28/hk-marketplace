@@ -77,6 +77,7 @@ export const GET = withApi(async (req) => {
     where,
     orderBy,
     take: limit,
+    include: { variants: { where: { active: true }, orderBy: { sortOrder: "asc" } } },
   });
 
   const badges = await prisma.badge.findMany({ where: { tenantId } });
