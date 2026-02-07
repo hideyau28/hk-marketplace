@@ -1,8 +1,12 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import 'dotenv/config';
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: true } });
+const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 async function main() {
-  // Upsert tenant (idempotent)
   const tenant = await prisma.tenant.upsert({
     where: { slug: 'hk-marketplace' },
     update: {},
@@ -16,33 +20,32 @@ async function main() {
       themeColor: '#6B7B3A',
       status: 'active',
     },
-  })
-  console.log(`Tenant: ${tenant.id} (${tenant.slug})`)
+  });
+  console.log(`Tenant: ${tenant.id} (${tenant.slug})`);
 
-  // Batch update all tables where tenantId IS NULL
   const tables = [
-    'Product', 'Order', 'User', 'Badge', 'Coupon',
-    'AdminLog', 'SiteContent', 'StoreSettings',
-    'HomepageSection', 'HomepageBanner', 'PaymentMethod',
-    'IdempotencyKey',
-  ]
+    'product', 'order', 'user', 'badge', 'coupon',
+    'adminLog', 'siteContent', 'storeSettings',
+    'homepageSection', 'homepageBanner', 'paymentMethod',
+    'idempotencyKey',
+  ];
 
   const results = await prisma.$transaction(
-    tables.map(table =>
-      prisma[table.charAt(0).toLowerCase() + table.slice(1)].updateMany({
+    tables.map(t =>
+      prisma[t].updateMany({
         where: { tenantId: null },
         data: { tenantId: tenant.id },
       })
     )
-  )
+  );
 
   tables.forEach((t, i) => {
-    console.log(`  ${t}: ${results[i].count} rows updated`)
-  })
+    console.log(`  ${t}: ${results[i].count} rows updated`);
+  });
 
-  console.log('Done!')
+  console.log('Done!');
 }
 
 main()
   .catch(e => { console.error(e); process.exit(1) })
-  .finally(() => prisma.$disconnect())
+  .finally(async () => { await prisma.$disconnect(); await pool.end(); });
