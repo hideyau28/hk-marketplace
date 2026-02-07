@@ -61,7 +61,10 @@ export const GET = withApi(
     const { tenantId } = await authenticateAdmin(req);
 
     const { id } = await params;
-    const product = await prisma.product.findFirst({ where: { id, tenantId } });
+    const product = await prisma.product.findFirst({
+      where: { id, tenantId },
+      include: { variants: { orderBy: { sortOrder: "asc" } } },
+    });
     if (!product) {
       throw new ApiError(404, "NOT_FOUND", "Product not found");
     }
