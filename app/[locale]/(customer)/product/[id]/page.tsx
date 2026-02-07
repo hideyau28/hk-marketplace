@@ -56,9 +56,15 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   const { locale, id } = await params;
   const t = getDict(locale as Locale);
 
-  // Fetch product from database
+  // Fetch product from database with variants
   const product = await prisma.product.findUnique({
     where: { id, active: true },
+    include: {
+      variants: {
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+      },
+    },
   });
 
   if (!product) {
@@ -91,6 +97,16 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     shoeType: product.shoeType || null,
     isKids,
     promotionBadges: (product as any).promotionBadges || [],
+    variants: product.variants.map((v: any) => ({
+      id: v.id,
+      name: v.name,
+      price: v.price,
+      compareAtPrice: v.compareAtPrice,
+      stock: v.stock,
+      options: v.options as Record<string, string> | null,
+      imageUrl: v.imageUrl,
+      active: v.active,
+    })),
   };
 
   // Get translated category name
