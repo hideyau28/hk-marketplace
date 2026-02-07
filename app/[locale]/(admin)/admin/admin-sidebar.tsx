@@ -5,6 +5,7 @@ import { usePathname, useParams, useRouter } from "next/navigation";
 import { LayoutDashboard, LayoutGrid, Package, ShoppingCart, Settings, LogOut, X, ScrollText, Ticket, CreditCard } from "lucide-react";
 import { useSidebar } from "@/components/admin/SidebarContext";
 import { getDict, type Locale } from "@/lib/i18n";
+import { useTenantBranding } from "@/lib/tenant-branding";
 
 export default function AdminSidebar() {
   const { isOpen, setIsOpen } = useSidebar();
@@ -13,6 +14,7 @@ export default function AdminSidebar() {
   const router = useRouter();
   const locale = (params.locale as string) || "en";
   const t = getDict(locale as Locale);
+  const tenantBranding = useTenantBranding();
 
   const navItems = [
     { href: "/admin", label: t.admin.sidebar.dashboard, icon: LayoutDashboard },
@@ -49,7 +51,7 @@ export default function AdminSidebar() {
       >
         {/* Logo */}
         <div className="p-4 pt-4 border-b border-zinc-800">
-          <h1 className="text-lg font-bold">HK•Market</h1>
+          <h1 className="text-lg font-bold">{tenantBranding.name}</h1>
           <p className="text-zinc-400 text-sm mt-1">Admin Panel</p>
         </div>
 

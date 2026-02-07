@@ -4,15 +4,30 @@ import { prisma } from "@/lib/prisma";
 import { CollectionsClient } from "./collections-client";
 import { Metadata } from "next";
 
+const DEFAULT_TENANT_SLUG = "hk-marketplace";
+
+async function getTenantName(): Promise<string> {
+  try {
+    const tenant = await prisma.tenant.findUnique({
+      where: { slug: DEFAULT_TENANT_SLUG },
+      select: { name: true },
+    });
+    return tenant?.name || "HK•Market";
+  } catch {
+    return "HK•Market";
+  }
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
+  const tenantName = await getTenantName();
 
   return {
-    title: "My Wishlist - HK•Market",
-    description: "Your saved products and favorites at HK•Market.",
+    title: `My Wishlist - ${tenantName}`,
+    description: `Your saved products and favorites at ${tenantName}.`,
     openGraph: {
-      title: "My Wishlist - HK•Market",
-      description: "Your saved products and favorites at HK•Market.",
+      title: `My Wishlist - ${tenantName}`,
+      description: `Your saved products and favorites at ${tenantName}.`,
       type: "website",
       locale: locale === "zh-HK" ? "zh_HK" : "en_US",
     },

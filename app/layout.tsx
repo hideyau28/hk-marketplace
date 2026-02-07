@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { prisma } from "@/lib/prisma";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,11 +13,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "HK•Market - Sports Gear for Hong Kong",
-  description: "Shop the latest sports apparel and gear from Nike, Adidas, Puma and more.",
-  manifest: "/manifest.json",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  let tenantName = "HK•Market";
+  try {
+    const tenant = await prisma.tenant.findUnique({
+      where: { slug: "hk-marketplace" },
+      select: { name: true },
+    });
+    if (tenant?.name) tenantName = tenant.name;
+  } catch {}
+
+  return {
+    title: `${tenantName} - Sports Gear for Hong Kong`,
+    description: "Shop the latest sports apparel and gear from Nike, Adidas, Puma and more.",
+    manifest: "/manifest.json",
+  };
+}
 
 export default function RootLayout({
   children,

@@ -9,6 +9,7 @@ import { getCartItemCount, getCart } from "@/lib/cart";
 import { Moon, ShoppingCart, Sun, Menu, Search, User, LogOut, ShoppingBag, ChevronDown } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
+import { useTenantBranding } from "@/lib/tenant-branding";
 import MobileMenu from "./MobileMenu";
 import SearchOverlay from "./SearchOverlay";
 
@@ -32,6 +33,7 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "HK•
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { resolved, cycleMode } = useTheme();
   const { user, loading: authLoading, logout } = useAuth();
+  const tenantBranding = useTenantBranding();
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -75,6 +77,16 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "HK•
       window.removeEventListener("cartBounce", handleCartBounce);
     };
   }, []);
+
+  // Use tenant branding as fallback for store name and logo
+  useEffect(() => {
+    if (tenantBranding.name && storeName === initialStoreName) {
+      setStoreName(tenantBranding.name);
+    }
+    if (tenantBranding.logoUrl && !storeLogo) {
+      setStoreLogo(tenantBranding.logoUrl);
+    }
+  }, [tenantBranding.name, tenantBranding.logoUrl]);
 
   useEffect(() => {
     fetch("/api/store-settings")
@@ -227,9 +239,10 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "HK•
           {/* Cart - always visible */}
           <Link
             data-cart-icon
-            className={`relative flex items-center gap-1 text-[#6B7A2F] hover:text-[#5a6827] dark:text-[#8fa03d] dark:hover:text-[#a0b44a] transition-transform duration-150 ${
+            className={`relative flex items-center gap-1 transition-transform duration-150 ${
               cartBounce ? "scale-125" : "scale-100"
             }`}
+            style={{ color: "var(--tenant-primary, #6B7A2F)" }}
             href={`/${locale}/cart`}
           >
             <ShoppingCart size={20} />

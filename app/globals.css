@@ -3,6 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  --tenant-primary: #6B7B3A;
   --background: #FAFAF7;
   --foreground: #111111;
 
