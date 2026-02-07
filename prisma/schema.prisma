@@ -186,15 +186,22 @@ model Product {
   shoeType        String?
   sku             String?  @unique
   featured        Boolean  @default(false)
-  promotionBadges String[] @default([])
+  promotionBadges String[]         @default([])
+  // Category relation
+  categoryId      String?
+  categoryRel     Category?        @relation(fields: [categoryId], references: [id])
+  // Variants & attributes
+  variants        ProductVariant[]
+  attributes      Json?
   // Multi-tenant
   tenantId        String?
-  tenant          Tenant?  @relation(fields: [tenantId], references: [id])
+  tenant          Tenant?          @relation(fields: [tenantId], references: [id])
 
   @@index([active])
   @@index([brand])
   @@index([category])
   @@index([featured])
+  @@index([categoryId])
   @@index([tenantId])
 }
 
@@ -294,19 +301,22 @@ model Tenant {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
-  admins            TenantAdmin[]
-  products          Product[]
-  orders            Order[]
-  users             User[]
-  badges            Badge[]
-  coupons           Coupon[]
-  adminLogs         AdminLog[]
-  siteContents      SiteContent[]
-  storeSettings     StoreSettings[]
-  homepageSections  HomepageSection[]
-  homepageBanners   HomepageBanner[]
-  paymentMethods    PaymentMethod[]
-  idempotencyKeys   IdempotencyKey[]
+  admins               TenantAdmin[]
+  products             Product[]
+  orders               Order[]
+  users                User[]
+  badges               Badge[]
+  coupons              Coupon[]
+  adminLogs            AdminLog[]
+  siteContents         SiteContent[]
+  storeSettings        StoreSettings[]
+  homepageSections     HomepageSection[]
+  homepageBanners      HomepageBanner[]
+  paymentMethods       PaymentMethod[]
+  idempotencyKeys      IdempotencyKey[]
+  categories           Category[]
+  productVariants      ProductVariant[]
+  attributeDefinitions AttributeDefinition[]
 }
 
 model TenantAdmin {
@@ -420,5 +430,65 @@ model PaymentMethod {
   tenant      Tenant?  @relation(fields: [tenantId], references: [id])
 
   @@index([active, sortOrder])
+  @@index([tenantId])
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  tenantId  String?
+  tenant    Tenant?    @relation(fields: [tenantId], references: [id])
+  name      String
+  slug      String
+  parentId  String?
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
+  sortOrder Int        @default(0)
+  imageUrl  String?
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  products  Product[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+}
+
+model ProductVariant {
+  id             String   @id @default(cuid())
+  tenantId       String?
+  tenant         Tenant?  @relation(fields: [tenantId], references: [id])
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku            String?
+  name           String
+  price          Float?
+  compareAtPrice Float?
+  stock          Int      @default(0)
+  options        Json?
+  imageUrl       String?
+  active         Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, sku])
+  @@index([tenantId])
+  @@index([productId])
+}
+
+model AttributeDefinition {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  name      String
+  slug      String
+  type      String   @default("select")
+  options   Json?
+  required  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, slug])
   @@index([tenantId])
 }
