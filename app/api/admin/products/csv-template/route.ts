@@ -1,18 +1,13 @@
 export const runtime = "nodejs";
 
-import { ApiError, withApi } from "@/lib/api/route-helpers";
-import { getSessionFromCookie } from "@/lib/admin/session";
+import { withApi } from "@/lib/api/route-helpers";
+import { authenticateAdmin } from "@/lib/auth/admin-auth";
 
 const HEADER =
   "title,brand,category,price,description,imageUrl,sizeSystem,sizes,active";
 
 export const GET = withApi(async (req: Request) => {
-  const headerSecret = req.headers.get("x-admin-secret");
-  const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-
-  if (!isAuthenticated) {
-    throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
-  }
+  await authenticateAdmin(req);
 
   return new Response(`${HEADER}\n`, {
     headers: {

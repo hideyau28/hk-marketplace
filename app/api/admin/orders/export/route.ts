@@ -1,9 +1,8 @@
 export const runtime = "nodejs";
 
-import { ApiError, withApi } from "@/lib/api/route-helpers";
-import { getSessionFromCookie } from "@/lib/admin/session";
+import { withApi } from "@/lib/api/route-helpers";
+import { authenticateAdmin } from "@/lib/auth/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { getTenantId } from "@/lib/tenant";
 
 function formatDate(value: Date | string | null | undefined) {
   if (!value) return "";
@@ -31,14 +30,7 @@ function toCsvValue(value: unknown) {
 }
 
 export const GET = withApi(async (req: Request) => {
-  const headerSecret = req.headers.get("x-admin-secret");
-  const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-
-  if (!isAuthenticated) {
-    throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
-  }
-
-  const tenantId = await getTenantId(req);
+  const { tenantId } = await authenticateAdmin(req);
 
   const orders = await prisma.order.findMany({
     where: { tenantId },

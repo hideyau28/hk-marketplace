@@ -1,9 +1,8 @@
 export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
-import { getSessionFromCookie } from "@/lib/admin/session";
+import { authenticateAdmin } from "@/lib/auth/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { getTenantId } from "@/lib/tenant";
 
 type ImportPayload = {
   title?: unknown;
@@ -58,14 +57,7 @@ function parseSizes(value: unknown) {
 }
 
 export const POST = withApi(async (req: Request) => {
-  const headerSecret = req.headers.get("x-admin-secret");
-  const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-
-  if (!isAuthenticated) {
-    throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
-  }
-
-  const tenantId = await getTenantId(req);
+  const { tenantId } = await authenticateAdmin(req);
 
   let body: unknown;
   try {
