@@ -1,10 +1,8 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
-import { getSessionFromCookie } from "@/lib/admin/session";
+import { authenticateAdmin } from "@/lib/auth/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { getTenantId } from "@/lib/tenant";
 
 type CouponUpdatePayload = {
   code?: unknown;
@@ -40,13 +38,7 @@ function parseDate(value: unknown) {
 }
 
 export const GET = withApi(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const headerSecret = req.headers.get("x-admin-secret");
-  const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-  if (!isAuthenticated) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantId(req);
+  const { tenantId } = await authenticateAdmin(req);
 
   const { id } = await params;
   const coupon = await prisma.coupon.findFirst({ where: { id, tenantId } });
@@ -55,13 +47,7 @@ export const GET = withApi(async (req: Request, { params }: { params: Promise<{ 
 });
 
 export const PATCH = withApi(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const headerSecret = req.headers.get("x-admin-secret");
-  const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-  if (!isAuthenticated) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantId(req);
+  const { tenantId } = await authenticateAdmin(req);
 
   const { id } = await params;
   let body: CouponUpdatePayload;
@@ -126,13 +112,7 @@ export const PATCH = withApi(async (req: Request, { params }: { params: Promise<
 });
 
 export const DELETE = withApi(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const headerSecret = req.headers.get("x-admin-secret");
-  const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-  if (!isAuthenticated) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantId(req);
+  const { tenantId } = await authenticateAdmin(req);
 
   const { id } = await params;
   const existingCoupon = await prisma.coupon.findFirst({ where: { id, tenantId } });

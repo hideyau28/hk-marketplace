@@ -1,12 +1,10 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
-import { getSessionFromCookie, validateAdminSecret } from "@/lib/admin/session";
+import { authenticateAdmin } from "@/lib/auth/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { parseBadges } from "@/lib/parse-badges";
 import crypto from "node:crypto";
-import { getTenantId } from "@/lib/tenant";
 
 const ROUTE = "/api/admin/products";
 
@@ -54,7 +52,6 @@ function assertNonNegativeInt(value: unknown, field: string) {
 
 function parseSizes(value: unknown): Record<string, number> | null {
   if (value === undefined || value === null) return null;
-  // Accept JSON object format: { "US 7": 5, "US 8": 10 }
   if (typeof value === "object" && !Array.isArray(value)) {
     const result: Record<string, number> = {};
     for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
@@ -64,7 +61,6 @@ function parseSizes(value: unknown): Record<string, number> | null {
     }
     return Object.keys(result).length > 0 ? result : null;
   }
-  // Legacy: array format ["US 7", "US 8"] - convert to object with stock 0
   if (Array.isArray(value)) {
     const result: Record<string, number> = {};
     value.forEach((v) => {
@@ -74,7 +70,6 @@ function parseSizes(value: unknown): Record<string, number> | null {
     });
     return Object.keys(result).length > 0 ? result : null;
   }
-  // Legacy: comma-separated string "US 7, US 8" - convert to object with stock 0
   if (typeof value === "string") {
     const result: Record<string, number> = {};
     value.split(",").forEach((v) => {
@@ -113,7 +108,6 @@ function parseCreatePayload(body: any): CreateProductPayload {
   assertNonEmptyString(body.title, "title");
   assertNonNegativeNumber(body.price, "price");
 
-  // Validate originalPrice: optional, non-negative number or null
   let originalPrice: number | null = null;
   if (body.originalPrice !== undefined && body.originalPrice !== null) {
     assertNonNegativeNumber(body.originalPrice, "originalPrice");
@@ -127,7 +121,6 @@ function parseCreatePayload(body: any): CreateProductPayload {
       ? body.brand.trim()
       : null;
 
-  // Validate category: optional, 1-50 chars if provided
   let category: string | null = null;
   if (body.category !== undefined && body.category !== null) {
     if (typeof body.category !== "string") {
@@ -173,13 +166,7 @@ function parseCreatePayload(body: any): CreateProductPayload {
 // GET /api/admin/products (admin)
 export const GET = withApi(
   async (req) => {
-    const headerSecret = req.headers.get("x-admin-secret");
-    const isAuthenticated = headerSecret ? (headerSecret === process.env.ADMIN_SECRET) : await getSessionFromCookie();
-    if (!isAuthenticated) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantId(req);
+    const { tenantId } = await authenticateAdmin(req);
 
     const { searchParams } = new URL(req.url);
     const limitParam = searchParams.get("limit");
@@ -215,13 +202,7 @@ export const GET = withApi(
 // POST /api/admin/products (admin create + idempotency)
 export const POST = withApi(
   async (req) => {
-    const headerSecret = req.headers.get("x-admin-secret");
-    const isAuthenticated = headerSecret ? (headerSecret === process.env.ADMIN_SECRET) : await getSessionFromCookie();
-    if (!isAuthenticated) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantId(req);
+    const { tenantId } = await authenticateAdmin(req);
 
     let body: any = null;
     try {

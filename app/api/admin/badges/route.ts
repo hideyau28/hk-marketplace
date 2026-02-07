@@ -1,10 +1,8 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
-import { getSessionFromCookie } from "@/lib/admin/session";
+import { authenticateAdmin } from "@/lib/auth/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { getTenantId } from "@/lib/tenant";
 
 type BadgePayload = {
   nameZh?: unknown;
@@ -38,13 +36,7 @@ function normalizeColor(value: unknown) {
 }
 
 export const GET = withApi(async (req) => {
-  const headerSecret = req.headers.get("x-admin-secret");
-  const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-  if (!isAuthenticated) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantId(req);
+  const { tenantId } = await authenticateAdmin(req);
 
   const badges = await prisma.badge.findMany({
     where: { tenantId },
@@ -55,13 +47,7 @@ export const GET = withApi(async (req) => {
 });
 
 export const POST = withApi(async (req) => {
-  const headerSecret = req.headers.get("x-admin-secret");
-  const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-  if (!isAuthenticated) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantId(req);
+  const { tenantId } = await authenticateAdmin(req);
 
   let body: BadgePayload;
   try {

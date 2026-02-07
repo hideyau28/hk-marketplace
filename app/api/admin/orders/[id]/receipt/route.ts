@@ -1,17 +1,12 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
 import { ApiError, withApi } from "@/lib/api/route-helpers";
-import { getSessionFromCookie } from "@/lib/admin/session";
+import { authenticateAdmin } from "@/lib/auth/admin-auth";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
 export const GET = withApi(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
-  const headerSecret = req.headers.get("x-admin-secret");
-  const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-  if (!isAuthenticated) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
+  await authenticateAdmin(req);
 
   const { id } = await params;
   const filePath = path.join("/tmp/receipts", `${id}.html`);

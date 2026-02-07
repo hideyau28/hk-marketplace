@@ -1,11 +1,9 @@
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
-import { getSessionFromCookie } from "@/lib/admin/session";
+import { authenticateAdmin } from "@/lib/auth/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { parseBadges } from "@/lib/parse-badges";
-import { getTenantId } from "@/lib/tenant";
 
 function assertNonEmptyString(value: unknown, field: string) {
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -27,7 +25,6 @@ function assertNonNegativeInt(value: unknown, field: string) {
 
 function parseSizes(value: unknown): Record<string, number> | null {
   if (value === undefined || value === null) return null;
-  // Accept JSON object format: { "US 7": 5, "US 8": 10 }
   if (typeof value === "object" && !Array.isArray(value)) {
     const result: Record<string, number> = {};
     for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
@@ -37,7 +34,6 @@ function parseSizes(value: unknown): Record<string, number> | null {
     }
     return Object.keys(result).length > 0 ? result : null;
   }
-  // Legacy: array format ["US 7", "US 8"] - convert to object with stock 0
   if (Array.isArray(value)) {
     const result: Record<string, number> = {};
     value.forEach((v) => {
@@ -47,7 +43,6 @@ function parseSizes(value: unknown): Record<string, number> | null {
     });
     return Object.keys(result).length > 0 ? result : null;
   }
-  // Legacy: comma-separated string "US 7, US 8" - convert to object with stock 0
   if (typeof value === "string") {
     const result: Record<string, number> = {};
     value.split(",").forEach((v) => {
@@ -62,34 +57,22 @@ function parseSizes(value: unknown): Record<string, number> | null {
 
 // GET /api/admin/products/:id (admin)
 export const GET = withApi(
-  async (_req: Request, { params }: { params: Promise<{ id: string }> }) => {
-    const headerSecret = _req.headers.get("x-admin-secret");
-    const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-    if (!isAuthenticated) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantId(_req);
+  async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
+    const { tenantId } = await authenticateAdmin(req);
 
     const { id } = await params;
     const product = await prisma.product.findFirst({ where: { id, tenantId } });
     if (!product) {
       throw new ApiError(404, "NOT_FOUND", "Product not found");
     }
-    return ok(_req, product);
+    return ok(req, product);
   }
 );
 
 // PATCH /api/admin/products/:id (admin update)
 export const PATCH = withApi(
   async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
-    const headerSecret = req.headers.get("x-admin-secret");
-    const isAuthenticated = headerSecret ? headerSecret === process.env.ADMIN_SECRET : await getSessionFromCookie();
-    if (!isAuthenticated) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantId(req);
+    const { tenantId } = await authenticateAdmin(req);
 
     const { id } = await params;
 
@@ -106,7 +89,6 @@ export const PATCH = withApi(
 
     const updateData: any = {};
 
-    // Validate and collect fields to update
     if (body.brand !== undefined) {
       if (body.brand === null || body.brand === "") {
         updateData.brand = null;
@@ -201,7 +183,6 @@ export const PATCH = withApi(
       if (!Array.isArray(body.promotionBadges)) {
         throw new ApiError(400, "BAD_REQUEST", "promotionBadges must be an array");
       }
-      // Validate all items are strings
       const validBadges = body.promotionBadges.every((b: unknown) => typeof b === "string");
       if (!validBadges) {
         throw new ApiError(400, "BAD_REQUEST", "promotionBadges must contain only strings");
