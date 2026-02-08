@@ -21,6 +21,7 @@ const RESERVED_SLUGS = new Set([
   "contact",
   "terms",
   "privacy",
+  "start",
   "_next",
   "favicon.ico",
 ]);
@@ -93,6 +94,12 @@ export function middleware(request: NextRequest) {
 
   // --- Skip admin guards for API routes (they handle auth themselves) ---
   const isApiRoute = pathname.startsWith("/api/");
+
+  // --- /start redirect: /start → /en/start ---
+  if (!isApiRoute && pathname === "/start") {
+    const startUrl = new URL("/en/start", request.url);
+    return NextResponse.redirect(startUrl);
+  }
 
   // --- Admin redirect: /admin → /en/admin ---
   if (!isApiRoute && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
