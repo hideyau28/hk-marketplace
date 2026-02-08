@@ -331,6 +331,7 @@ model Tenant {
   categories           Category[]
   productVariants      ProductVariant[]
   attributeDefinitions AttributeDefinition[]
+  paymentConfigs       TenantPaymentConfig[]
 }
 
 model TenantAdmin {
@@ -504,5 +505,21 @@ model AttributeDefinition {
   updatedAt DateTime @updatedAt
 
   @@unique([tenantId, slug])
+  @@index([tenantId])
+}
+
+model TenantPaymentConfig {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  providerId  String   // e.g. "stripe", "fps", "payme", "bank_transfer"
+  enabled     Boolean  @default(false)
+  config      Json?    // provider-specific settings
+  displayName String?  // 商戶自訂顯示名
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, providerId])
   @@index([tenantId])
 }
