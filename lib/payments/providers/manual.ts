@@ -268,3 +268,136 @@ registerProvider(
     instructionsZh: "銀聯付款功能即將推出。",
   })
 );
+
+// ── Crypto 加密貨幣 ──
+
+const networkOptions = [
+  { label: "TRC-20", value: "TRC-20" },
+  { label: "ERC-20", value: "ERC-20" },
+  { label: "BEP-20", value: "BEP-20" },
+  { label: "SOL", value: "SOL" },
+];
+
+registerProvider(
+  createManualProvider({
+    id: "crypto_usdt",
+    name: "USDT (Tether)",
+    nameZh: "USDT 泰達幣",
+    icon: "💲",
+    configFields: [
+      {
+        key: "walletAddress",
+        label: "Wallet Address",
+        labelZh: "錢包地址",
+        type: "text",
+        required: true,
+        placeholder: "e.g. TXyz...abc",
+      },
+      {
+        key: "network",
+        label: "Network",
+        labelZh: "網絡",
+        type: "select",
+        required: true,
+        options: networkOptions,
+      },
+      {
+        key: "qrCodeUrl",
+        label: "QR Code Image",
+        labelZh: "QR Code 圖片",
+        type: "image",
+        required: false,
+      },
+    ],
+    instructionsZh: "請轉賬 USDT 至指定錢包地址，完成後上傳截圖作為付款證明。",
+  })
+);
+
+registerProvider(
+  createManualProvider({
+    id: "crypto_usdc",
+    name: "USDC",
+    nameZh: "USDC",
+    icon: "💵",
+    configFields: [
+      {
+        key: "walletAddress",
+        label: "Wallet Address",
+        labelZh: "錢包地址",
+        type: "text",
+        required: true,
+        placeholder: "e.g. 0xAbc...123",
+      },
+      {
+        key: "network",
+        label: "Network",
+        labelZh: "網絡",
+        type: "select",
+        required: true,
+        options: networkOptions,
+      },
+      {
+        key: "qrCodeUrl",
+        label: "QR Code Image",
+        labelZh: "QR Code 圖片",
+        type: "image",
+        required: false,
+      },
+    ],
+    instructionsZh: "請轉賬 USDC 至指定錢包地址，完成後上傳截圖作為付款證明。",
+  })
+);
+
+registerProvider(
+  createManualProvider({
+    id: "crypto_btc",
+    name: "Bitcoin",
+    nameZh: "比特幣",
+    icon: "₿",
+    configFields: [
+      {
+        key: "walletAddress",
+        label: "Wallet Address",
+        labelZh: "錢包地址",
+        type: "text",
+        required: true,
+        placeholder: "e.g. bc1q...xyz",
+      },
+      {
+        key: "qrCodeUrl",
+        label: "QR Code Image",
+        labelZh: "QR Code 圖片",
+        type: "image",
+        required: false,
+      },
+    ],
+    instructionsZh: "請轉賬 BTC 至指定錢包地址，完成後上傳截圖作為付款證明。",
+  })
+);
+
+registerProvider(
+  createManualProvider({
+    id: "crypto_eth",
+    name: "Ethereum",
+    nameZh: "以太幣",
+    icon: "⟠",
+    configFields: [
+      {
+        key: "walletAddress",
+        label: "Wallet Address",
+        labelZh: "錢包地址",
+        type: "text",
+        required: true,
+        placeholder: "e.g. 0xAbc...123",
+      },
+      {
+        key: "qrCodeUrl",
+        label: "QR Code Image",
+        labelZh: "QR Code 圖片",
+        type: "image",
+        required: false,
+      },
+    ],
+    instructionsZh: "請轉賬 ETH 至指定錢包地址，完成後上傳截圖作為付款證明。",
+  })
+);
