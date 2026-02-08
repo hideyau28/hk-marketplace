@@ -7,6 +7,7 @@ export interface ConfigField {
   type: "text" | "url" | "image" | "select" | "boolean";
   required: boolean;
   placeholder?: string;
+  options?: { label: string; value: string }[];
 }
 
 export interface CreateSessionResult {
