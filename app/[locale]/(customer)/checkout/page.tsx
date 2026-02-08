@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
@@ -9,6 +9,8 @@ import { getDict, type Locale } from "@/lib/i18n";
 import { useToast } from "@/components/Toast";
 import { useCurrency } from "@/lib/currency";
 import { useAuth } from "@/lib/auth-context";
+import CheckoutPaymentSelector, { type PaymentProviderOption } from "@/components/CheckoutPaymentSelector";
+import ManualPaymentFlow from "@/components/ManualPaymentFlow";
 
 type FulfillmentType = "delivery" | "sf-locker" | "pickup";
 
@@ -26,14 +28,6 @@ type CheckoutFulfillment =
       };
     }
   | { type: "pickup" };
-
-interface PaymentMethod {
-  id: string;
-  name: string;
-  type: string;
-  qrImage: string | null;
-  accountInfo: string | null;
-}
 
 const DEFAULT_HOME_DELIVERY_FEE = 40;
 const DEFAULT_HOME_DELIVERY_FREE_ABOVE = 600;
@@ -97,12 +91,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [couponApplied, setCouponApplied] = useState(false);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<PaymentProviderOption | null>(null);
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
   const [uploadingProof, setUploadingProof] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const t = getDict(locale);
 
@@ -135,19 +127,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     if (user.email) setEmail(user.email);
   }, [user]);
 
-  useEffect(() => {
-    fetch("/api/payment-methods")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.ok) {
-          setPaymentMethods(data.data.methods);
-          if (data.data.methods.length > 0) {
-            setSelectedPaymentMethod(data.data.methods[0].type);
-          }
-        }
-      })
-      .catch(console.error);
-  }, []);
 
   const validateName = (value: string): string | null => {
     if (value.trim().length < 2) {
@@ -187,24 +166,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     return null;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      showToast(locale === "zh-HK" ? "只接受圖片檔案" : "Images only");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast(locale === "zh-HK" ? "檔案太大，最大 5MB" : "File too large (max 5MB)");
-      return;
-    }
-
+  const handlePaymentFileChange = (file: File | null, preview: string | null) => {
     setPaymentProofFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setPaymentProofPreview(reader.result as string);
-    reader.readAsDataURL(file);
+    setPaymentProofPreview(preview);
   };
 
   const homeDeliveryFee = storeSettings?.homeDeliveryFee ?? DEFAULT_HOME_DELIVERY_FEE;
@@ -287,8 +251,68 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     const receiverNameValid = sameAsContact ? true : validateName(receiverName) === null;
     const receiverPhoneValid = sameAsContact ? true : validatePhone(receiverPhone) === null;
     const addressValid = validateAddress() === null;
-    const paymentValid = Boolean(selectedPaymentMethod && paymentProofFile);
+    // Online payments don't need proof; manual payments do
+    const paymentValid = selectedProvider
+      ? selectedProvider.type === "online" || Boolean(paymentProofFile)
+      : false;
     return nameValid && phoneValid && emailValid && receiverNameValid && receiverPhoneValid && addressValid && paymentValid;
+  };
+
+  const buildOrderPayload = (paymentProofUrl?: string) => {
+    const recipientName = sameAsContact ? customerName : receiverName;
+    const recipientPhone = sameAsContact ? phone : receiverPhone;
+
+    const fulfillment: CheckoutFulfillment = (() => {
+      if (fulfillmentType === "pickup") return { type: "pickup" };
+      if (fulfillmentType === "sf-locker") {
+        return {
+          type: "delivery",
+          address: {
+            line1: `SF Locker: ${sfLockerCode}`,
+            district: locale === "zh-HK" ? "順豐智能櫃" : "SF Locker",
+          },
+        };
+      }
+      return {
+        type: "delivery",
+        address: {
+          line1: addressLine,
+          district: district || undefined,
+          unit: unit || undefined,
+          notes: deliveryNote || undefined,
+          building: building || undefined,
+          floor: floor || undefined,
+        },
+      };
+    })();
+
+    return {
+      customerName: recipientName,
+      phone: recipientPhone,
+      email: email || undefined,
+      userId: user?.id,
+      items: cart.map((item) => ({
+        productId: item.productId,
+        name: item.title,
+        unitPrice: item.unitPrice,
+        quantity: item.qty,
+        size: item.size,
+        sizeSystem: item.sizeSystem,
+        imageUrl: item.imageUrl,
+      })),
+      amounts: {
+        subtotal,
+        discount: discount > 0 ? discount : undefined,
+        deliveryFee: calculatedShipping > 0 ? calculatedShipping : undefined,
+        total,
+        currency: "HKD",
+        couponCode: couponApplied ? couponCode.trim().toUpperCase() : undefined,
+      },
+      fulfillment,
+      note: orderNote || undefined,
+      paymentMethod: selectedProvider?.providerId,
+      paymentProof: paymentProofUrl,
+    };
   };
 
   const handleSubmit = async () => {
@@ -310,84 +334,58 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     }
     setAddressError(validateAddress());
 
-    if (!selectedPaymentMethod || !paymentProofFile) {
-      showToast(locale === "zh-HK" ? "請選擇付款方式並上傳付款證明" : "Please select a payment method and upload proof");
+    if (!selectedProvider) {
+      showToast(locale === "zh-HK" ? "請選擇付款方式" : "Please select a payment method");
+      return;
+    }
+
+    if (selectedProvider.type === "manual" && !paymentProofFile) {
+      showToast(locale === "zh-HK" ? "請上傳付款證明" : "Please upload payment proof");
       return;
     }
 
     if (!isFormValid()) return;
 
     setProcessing(true);
-    setUploadingProof(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", paymentProofFile);
-      formData.append("folder", "payments");
+      // Manual flow: upload proof → create order
+      if (selectedProvider.type === "manual") {
+        setUploadingProof(true);
 
-      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-      const uploadData = await uploadRes.json();
+        const formData = new FormData();
+        formData.append("file", paymentProofFile!);
+        formData.append("folder", "payments");
 
-      if (!uploadData.ok) throw new Error(uploadData.error?.message || "上傳失敗");
-      setUploadingProof(false);
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+        const uploadData = await uploadRes.json();
 
-      const paymentProofUrl = uploadData.data.url;
+        if (!uploadData.ok) throw new Error(uploadData.error?.message || "上傳失敗");
+        setUploadingProof(false);
 
-      const recipientName = sameAsContact ? customerName : receiverName;
-      const recipientPhone = sameAsContact ? phone : receiverPhone;
+        const payload = buildOrderPayload(uploadData.data.url);
+        const idempotencyKey = `order-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+        const response = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-idempotency-key": idempotencyKey },
+          body: JSON.stringify(payload),
+        });
 
-      const fulfillment: CheckoutFulfillment = (() => {
-        if (fulfillmentType === "pickup") return { type: "pickup" };
-        if (fulfillmentType === "sf-locker") {
-          return {
-            type: "delivery",
-            address: {
-              line1: `SF Locker: ${sfLockerCode}`,
-              district: locale === "zh-HK" ? "順豐智能櫃" : "SF Locker",
-            },
-          };
+        const result = await response.json();
+
+        if (result.ok) {
+          clearCart();
+          showToast(locale === "zh-HK" ? "訂單已提交！我們會盡快確認您的付款。" : "Order submitted! We'll confirm your payment shortly.");
+          router.push(`/${locale}/orders/${result.data.id}`);
+        } else {
+          alert(`${t.common.error}: ${result.error?.code || "ERROR"}: ${result.error?.message || t.common.unknownError}`);
+          setProcessing(false);
         }
-        return {
-          type: "delivery",
-          address: {
-            line1: addressLine,
-            district: district || undefined,
-            unit: unit || undefined,
-            notes: deliveryNote || undefined,
-            building: building || undefined,
-            floor: floor || undefined,
-          },
-        };
-      })();
+        return;
+      }
 
-      const payload = {
-        customerName: recipientName,
-        phone: recipientPhone,
-        email: email || undefined,
-        userId: user?.id,
-        items: cart.map((item) => ({
-          productId: item.productId,
-          name: item.title,
-          unitPrice: item.unitPrice,
-          quantity: item.qty,
-          size: item.size,
-          sizeSystem: item.sizeSystem,
-          imageUrl: item.imageUrl,
-        })),
-        amounts: {
-          subtotal,
-          discount: discount > 0 ? discount : undefined,
-          deliveryFee: calculatedShipping > 0 ? calculatedShipping : undefined,
-          total,
-          currency: "HKD",
-          couponCode: couponApplied ? couponCode.trim().toUpperCase() : undefined,
-        },
-        fulfillment,
-        note: orderNote || undefined,
-        paymentMethod: selectedPaymentMethod,
-        paymentProof: paymentProofUrl,
-      };
-
+      // Online flow: create order → redirect to Stripe checkout
+      const payload = buildOrderPayload();
       const idempotencyKey = `order-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
       const response = await fetch("/api/orders", {
         method: "POST",
@@ -397,12 +395,30 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
 
       const result = await response.json();
 
-      if (result.ok) {
-        clearCart();
-        showToast(locale === "zh-HK" ? "訂單已提交！我們會盡快確認您的付款。" : "Order submitted! We'll confirm your payment shortly.");
-        router.push(`/${locale}/orders/${result.data.id}`);
-      } else {
+      if (!result.ok) {
         alert(`${t.common.error}: ${result.error?.code || "ERROR"}: ${result.error?.message || t.common.unknownError}`);
+        setProcessing(false);
+        return;
+      }
+
+      // Create Stripe checkout session
+      const sessionRes = await fetch("/api/checkout/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: result.data.id, locale }),
+      });
+
+      const sessionData = await sessionRes.json();
+
+      if (sessionData.ok && sessionData.data?.url) {
+        clearCart();
+        window.location.href = sessionData.data.url;
+      } else {
+        alert(
+          locale === "zh-HK"
+            ? "無法建立付款連結，請稍後再試"
+            : "Failed to create payment session. Please try again."
+        );
         setProcessing(false);
       }
     } catch (error) {
@@ -424,7 +440,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   }
 
   const districtOptions = locale === "zh-HK" ? DISTRICTS_ZH : DISTRICTS_EN;
-  const selectedMethod = paymentMethods.find((m) => m.type === selectedPaymentMethod);
 
   const OrderSummary = ({ sticky = false }: { sticky?: boolean }) => (
     <div
@@ -928,98 +943,40 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
               )}
             </div>
 
-            <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-              <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                {locale === "zh-HK" ? "付款方式" : "Payment"}
-              </h2>
-              <div className="grid grid-cols-3 gap-3">
-                {paymentMethods.map((method) => (
-                  <button
-                    key={method.id}
-                    type="button"
-                    onClick={() => setSelectedPaymentMethod(method.type)}
-                    className={`rounded-xl border-2 p-3 text-center transition-all ${
-                      selectedPaymentMethod === method.type
-                        ? "border-olive-600 bg-olive-50 dark:bg-olive-900/20"
-                        : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900"
-                    }`}
-                  >
-                    <div className="text-2xl mb-1">
-                      {method.type === "fps" && "💳"}
-                      {method.type === "payme" && "📱"}
-                      {method.type === "alipay" && "🔵"}
-                    </div>
-                    <div className="text-xs font-medium text-zinc-900 dark:text-zinc-100">{method.name}</div>
-                  </button>
-                ))}
-              </div>
-              {selectedMethod && (
-                <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-700">
-                  <div className="text-center">
-                    <h3 className="mb-4 font-semibold text-zinc-900 dark:text-zinc-100">{selectedMethod.name}</h3>
-                    {selectedMethod.qrImage && (
-                      <div className="mx-auto h-48 w-48 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700">
-                        <img src={selectedMethod.qrImage} alt={selectedMethod.name} className="h-full w-full object-contain" />
-                      </div>
-                    )}
-                    {selectedMethod.accountInfo && (
-                      <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">{selectedMethod.accountInfo}</p>
-                    )}
-                    <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-                      {locale === "zh-HK" ? "請使用以上方式付款" : "Please pay"}{" "}
-                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">{format(total)}</span>
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+            <CheckoutPaymentSelector
+              locale={locale}
+              onSelect={setSelectedProvider}
+            />
 
-            <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                {locale === "zh-HK" ? "上傳付款截圖" : "Upload Payment Proof"}
-              </h2>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                {locale === "zh-HK"
-                  ? "完成付款後，請上傳付款截圖以確認您的訂單"
-                  : "After payment, upload a screenshot to confirm your order"}
-              </p>
-              <div className="mt-6">
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-                {paymentProofPreview ? (
-                  <div className="relative">
-                    <img
-                      src={paymentProofPreview}
-                      alt="Payment proof"
-                      className="w-full max-h-64 object-contain rounded-xl border border-zinc-200 dark:border-zinc-700"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPaymentProofFile(null);
-                        setPaymentProofPreview(null);
-                      }}
-                      className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 p-8 text-center hover:border-olive-500 hover:bg-olive-50 dark:border-zinc-600 dark:bg-zinc-800"
-                  >
-                    <div className="text-4xl mb-2">📷</div>
-                    <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      {locale === "zh-HK" ? "點擊上傳付款截圖" : "Click to upload"}
-                    </div>
-                    <div className="text-xs text-zinc-500 mt-1">
-                      {locale === "zh-HK" ? "支持 JPG, PNG, HEIC (最大 5MB)" : "JPG, PNG, HEIC (max 5MB)"}
-                    </div>
-                  </button>
-                )}
+            {selectedProvider?.type === "manual" && (
+              <ManualPaymentFlow
+                provider={selectedProvider}
+                locale={locale}
+                total={total}
+                format={format}
+                onFileChange={handlePaymentFileChange}
+                paymentProofPreview={paymentProofPreview}
+              />
+            )}
+
+            {selectedProvider?.type === "online" && (
+              <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="text-center py-4">
+                  <div className="text-3xl mb-3">{selectedProvider.icon}</div>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                    {locale === "zh-HK"
+                      ? "提交訂單後將跳轉至安全支付頁面"
+                      : "You will be redirected to a secure payment page after submitting"}
+                  </p>
+                  <p className="mt-2 text-sm text-zinc-500">
+                    {locale === "zh-HK" ? "應付金額：" : "Amount: "}
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      {format(total)}
+                    </span>
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
               <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
