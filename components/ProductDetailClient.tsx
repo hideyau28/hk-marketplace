@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Heart } from "lucide-react";
 import { addToCart } from "@/lib/cart";
 import { useToast } from "@/components/Toast";
 import ProductSizeSelector from "@/components/ProductSizeSelector";
+import VariantSelector, { type VariantData } from "@/components/VariantSelector";
 import { useCurrency } from "@/lib/currency";
 import type { Translations } from "@/lib/translations";
 import { isWishlisted as checkWishlisted, toggleWishlist } from "@/lib/wishlist";
@@ -24,6 +25,7 @@ type ProductDetailClientProps = {
     stock: number;
     isKids?: boolean;
     promotionBadges?: string[];
+    variants?: VariantData[];
   };
   locale: string;
   t: Translations;
@@ -42,20 +44,32 @@ const BADGE_COLORS: Record<string, string> = {
 export default function ProductDetailClient({ product, locale, t }: ProductDetailClientProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<VariantData | null>(null);
   const [added, setAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { showToast } = useToast();
   const { format } = useCurrency();
+
+  const hasVariants = product.variants && product.variants.length > 0;
 
   // Check wishlist on mount
   useEffect(() => {
     setIsWishlisted(checkWishlisted(product.id));
   }, [product.id]);
 
+  // Derive display values from selected variant or product
+  const displayPrice = selectedVariant
+    ? (selectedVariant.price ?? product.price)
+    : product.price;
+  const displayOriginalPrice: number | null = selectedVariant
+    ? (selectedVariant.price != null ? (selectedVariant.compareAtPrice ?? null) : (product.originalPrice ?? null))
+    : (product.originalPrice ?? null);
+  const displayStock = selectedVariant ? selectedVariant.stock : product.stock;
+
   // Calculate discount percentage if on sale
-  const isOnSale = product.originalPrice && product.originalPrice > product.price;
+  const isOnSale = displayOriginalPrice != null && displayOriginalPrice > displayPrice;
   const discountPercent = isOnSale
-    ? Math.round((1 - product.price / product.originalPrice!) * 100)
+    ? Math.round((1 - displayPrice / displayOriginalPrice!) * 100)
     : 0;
 
   const handleSizeSelect = (size: string, system: string) => {
@@ -63,25 +77,50 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
     setSelectedSystem(system);
   };
 
+  const handleVariantSelect = useCallback((variant: VariantData | null) => {
+    setSelectedVariant(variant);
+    // Notify carousel of variant image change
+    window.dispatchEvent(
+      new CustomEvent("variantImageChange", {
+        detail: { imageUrl: variant?.imageUrl || null },
+      })
+    );
+  }, []);
+
   const handleAddToCart = () => {
-    if (product.stock <= 0) {
+    if (displayStock <= 0) {
       showToast(t.toast.outOfStock);
       return;
     }
-    // Check if size is required
-    if (product.sizes && !selectedSize) {
-      showToast(t.product.pleaseSelectSize);
-      return;
-    }
 
-    addToCart({
-      productId: product.id,
-      title: product.title,
-      unitPrice: product.price,
-      imageUrl: product.image,
-      size: selectedSize || undefined,
-      sizeSystem: selectedSystem || undefined,
-    });
+    if (hasVariants) {
+      // Variant product: require variant selection
+      if (!selectedVariant) {
+        showToast(locale === "zh-HK" ? "請選擇款式" : "Please select options");
+        return;
+      }
+      addToCart({
+        productId: product.id,
+        variantId: selectedVariant.id,
+        title: product.title,
+        unitPrice: displayPrice,
+        imageUrl: selectedVariant.imageUrl || product.image,
+      });
+    } else {
+      // Non-variant product: use existing size logic
+      if (product.sizes && !selectedSize) {
+        showToast(t.product.pleaseSelectSize);
+        return;
+      }
+      addToCart({
+        productId: product.id,
+        title: product.title,
+        unitPrice: product.price,
+        imageUrl: product.image,
+        size: selectedSize || undefined,
+        sizeSystem: selectedSystem || undefined,
+      });
+    }
 
     setAdded(true);
     showToast(t.product.addedToCart);
@@ -93,12 +132,14 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
     setIsWishlisted(newState);
   };
 
-  // Determine if Add to Cart should be disabled (no size selected when required)
-  const needsSize = !!product.sizes;
-  const isDisabled = product.stock <= 0 || (needsSize && !selectedSize);
+  // Determine if Add to Cart should be disabled
+  const needsSize = !hasVariants && !!product.sizes;
+  const needsVariant = hasVariants;
+  const isDisabled = displayStock <= 0 || (needsSize && !selectedSize) || (needsVariant && !selectedVariant);
 
   // Get translated button text for disabled state
   const selectSizeFirstText = locale === "zh-HK" ? "請先選擇尺碼" : "Select a size";
+  const selectVariantFirstText = locale === "zh-HK" ? "請選擇款式" : "Select options";
 
   return (
     <div className="space-y-4">
@@ -137,12 +178,12 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
       <div className="flex items-center gap-2 flex-wrap">
         {isOnSale ? (
           <>
-            <span className="text-lg text-zinc-400 line-through mr-2">{format(product.originalPrice!)}</span>
-            <span className="text-2xl font-bold text-red-600">{format(product.price)}</span>
+            <span className="text-lg text-zinc-400 line-through mr-2">{format(displayOriginalPrice!)}</span>
+            <span className="text-2xl font-bold text-red-600">{format(displayPrice)}</span>
             <span className="bg-red-500 text-white text-sm font-medium px-2 py-0.5 rounded-full ml-2">-{discountPercent}%</span>
           </>
         ) : (
-          <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{format(product.price)}</span>
+          <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{format(displayPrice)}</span>
         )}
       </div>
 
@@ -152,15 +193,25 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
         <div>✓ 訂單滿 $600 免運費</div>
       </div>
 
-      {product.stock <= 0 ? (
-        <div className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{t.product.outOfStock}</div>
-      ) : product.stock <= 5 ? (
-        <div className="text-sm font-semibold text-orange-600">🔥 快將售罄 - 僅剩 {product.stock} 件</div>
-      ) : null}
+      {!hasVariants && (
+        displayStock <= 0 ? (
+          <div className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{t.product.outOfStock}</div>
+        ) : displayStock <= 5 ? (
+          <div className="text-sm font-semibold text-orange-600">🔥 快將售罄 - 僅剩 {displayStock} 件</div>
+        ) : null
+      )}
 
+      {/* Variant Selector (when product has variants) */}
+      {hasVariants && (
+        <VariantSelector
+          variants={product.variants!}
+          locale={locale}
+          onVariantSelect={handleVariantSelect}
+        />
+      )}
 
-      {/* Size Selector */}
-      {product.sizes && (
+      {/* Size Selector (when no variants, fallback to existing behavior) */}
+      {!hasVariants && product.sizes && (
         <ProductSizeSelector
           sizeSystem={product.sizeSystem}
           sizes={product.sizes}
@@ -185,7 +236,7 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
               : "bg-olive-600 text-white hover:bg-olive-700"
           }`}
         >
-          {added ? t.product.addedToCart : (isDisabled && needsSize ? selectSizeFirstText : t.product.addToCart)}
+          {added ? t.product.addedToCart : isDisabled && needsVariant && !selectedVariant ? selectVariantFirstText : isDisabled && needsSize ? selectSizeFirstText : t.product.addToCart}
         </button>
         <button
           onClick={handleToggleWishlist}
@@ -215,7 +266,7 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
                 : "bg-olive-600 text-white hover:bg-olive-700"
             }`}
           >
-            {added ? t.product.addedToCart : (isDisabled && needsSize ? selectSizeFirstText : t.product.addToCart)}
+            {added ? t.product.addedToCart : isDisabled && needsVariant && !selectedVariant ? selectVariantFirstText : isDisabled && needsSize ? selectSizeFirstText : t.product.addToCart}
           </button>
           <button
             onClick={handleToggleWishlist}

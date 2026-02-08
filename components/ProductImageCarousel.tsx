@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import WishlistHeart from "@/components/WishlistHeart";
 
@@ -16,10 +16,25 @@ export default function ProductImageCarousel({ images, alt, stock, productId }: 
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [translateX, setTranslateX] = useState(0);
+  const [variantImage, setVariantImage] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Ensure we have at least one image
-  const imageList = images.length > 0 ? images : ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60"];
+  // Listen for variant image change events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { imageUrl } = (e as CustomEvent<{ imageUrl: string | null }>).detail;
+      setVariantImage(imageUrl);
+      if (imageUrl) setCurrentIndex(0);
+    };
+    window.addEventListener("variantImageChange", handler);
+    return () => window.removeEventListener("variantImageChange", handler);
+  }, []);
+
+  // Ensure we have at least one image, prepend variant image if present
+  const baseImages = images.length > 0 ? images : ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60"];
+  const imageList = variantImage
+    ? [variantImage, ...baseImages.filter((img) => img !== variantImage)]
+    : baseImages;
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);

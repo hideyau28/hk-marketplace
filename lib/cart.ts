@@ -8,6 +8,7 @@ export type CartItem = {
   imageUrl?: string;
   size?: string;
   sizeSystem?: string;
+  variantId?: string;
 };
 
 const CART_KEY = "hk-marketplace-cart";
@@ -37,13 +38,12 @@ export function addToCart(
   options?: AddToCartOptions
 ): void {
   const cart = getCart();
-  // Match by productId AND size (if size is provided)
-  const existing = cart.find(
-    (x) =>
-      x.productId === item.productId &&
-      x.size === item.size &&
-      x.sizeSystem === item.sizeSystem
-  );
+  // Match by productId + variantId (if present) or productId + size + sizeSystem
+  const existing = cart.find((x) => {
+    if (x.productId !== item.productId) return false;
+    if (x.variantId || item.variantId) return x.variantId === item.variantId;
+    return x.size === item.size && x.sizeSystem === item.sizeSystem;
+  });
   if (existing) {
     existing.qty += item.qty ?? 1;
   } else {
@@ -65,28 +65,24 @@ export function addToCart(
   }
 }
 
-export function removeFromCart(productId: string, size?: string, sizeSystem?: string): void {
+export function removeFromCart(productId: string, size?: string, sizeSystem?: string, variantId?: string): void {
   const cart = getCart();
   setCart(
-    cart.filter(
-      (x) =>
-        !(
-          x.productId === productId &&
-          x.size === size &&
-          x.sizeSystem === sizeSystem
-        )
-    )
+    cart.filter((x) => {
+      if (x.productId !== productId) return true;
+      if (x.variantId || variantId) return x.variantId !== variantId;
+      return !(x.size === size && x.sizeSystem === sizeSystem);
+    })
   );
 }
 
-export function updateCartItemQty(productId: string, qty: number, size?: string, sizeSystem?: string): void {
+export function updateCartItemQty(productId: string, qty: number, size?: string, sizeSystem?: string, variantId?: string): void {
   const cart = getCart();
-  const item = cart.find(
-    (x) =>
-      x.productId === productId &&
-      x.size === size &&
-      x.sizeSystem === sizeSystem
-  );
+  const item = cart.find((x) => {
+    if (x.productId !== productId) return false;
+    if (x.variantId || variantId) return x.variantId === variantId;
+    return x.size === size && x.sizeSystem === sizeSystem;
+  });
   if (item) {
     if (qty <= 0) {
       removeFromCart(productId, size, sizeSystem);
