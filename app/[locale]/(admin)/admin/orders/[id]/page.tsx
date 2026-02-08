@@ -219,9 +219,12 @@ export default async function OrderDetailPage({ params }: PageProps) {
         <div className="mt-6">
           <PaymentActions
             orderId={order.id}
+            orderStatus={order.status}
             paymentMethod={order.paymentMethod}
             paymentStatus={order.paymentStatus}
             paymentProof={order.paymentProof}
+            paymentConfirmedAt={order.paymentConfirmedAt?.toISOString() ?? null}
+            paymentConfirmedBy={order.paymentConfirmedBy ?? null}
           />
         </div>
       )}
