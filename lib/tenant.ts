@@ -12,7 +12,7 @@ export type TenantContext = {
   status: string;
 };
 
-const DEFAULT_SLUG = "hk-marketplace";
+const DEFAULT_SLUG = "maysshop";
 
 /**
  * Known hostnames that should resolve to the default tenant

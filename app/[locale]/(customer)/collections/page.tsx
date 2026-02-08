@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { CollectionsClient } from "./collections-client";
 import { Metadata } from "next";
 
-const DEFAULT_TENANT_SLUG = "hk-marketplace";
+const DEFAULT_TENANT_SLUG = "maysshop";
 
 async function getTenantName(): Promise<string> {
   try {

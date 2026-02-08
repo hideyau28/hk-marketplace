@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   let tenantName = "HK•Market";
   try {
     const tenant = await prisma.tenant.findUnique({
-      where: { slug: "hk-marketplace" },
+      where: { slug: "maysshop" },
       select: { name: true },
     });
     if (tenant?.name) tenantName = tenant.name;

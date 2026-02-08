@@ -3,13 +3,13 @@ export const runtime = "nodejs";
 import { prisma } from "@/lib/prisma";
 import { ok, fail, ApiError } from "@/lib/api/route-helpers";
 
-const DEFAULT_SLUG = "hk-marketplace";
-
 // GET /api/tenant/branding — public, no auth required
 export async function GET(req: Request) {
   try {
+    const { getTenantId } = await import("@/lib/tenant");
+    const tenantId = await getTenantId(req);
     const tenant = await prisma.tenant.findUnique({
-      where: { slug: DEFAULT_SLUG },
+      where: { id: tenantId },
       select: {
         name: true,
         slug: true,
