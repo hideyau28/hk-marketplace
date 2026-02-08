@@ -344,6 +344,7 @@ model TenantAdmin {
   tenantId     String
   tenant       Tenant   @relation(fields: [tenantId], references: [id])
   email        String   @unique
+  name         String?
   passwordHash String
   role         String   @default("owner")
   createdAt    DateTime @default(now())
