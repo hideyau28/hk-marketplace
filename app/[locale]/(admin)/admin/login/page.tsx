@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 
 function GoogleIcon() {
   return (
@@ -32,7 +32,27 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = (params.locale as string) || "en";
+
+  // Show OAuth error from redirect
+  useEffect(() => {
+    const oauthError = searchParams.get("error");
+    if (oauthError) {
+      const messages: Record<string, string> = {
+        google_denied: "Google sign-in was cancelled.",
+        no_account: "No admin account found for this Google email.",
+        tenant_inactive: "Your tenant account is not active.",
+        email_not_verified: "Google email is not verified.",
+        oauth_not_configured: "Google OAuth is not configured.",
+        token_exchange_failed: "Google authentication failed. Please try again.",
+        userinfo_failed: "Could not retrieve Google account info.",
+        invalid_state: "Session expired. Please try again.",
+        internal: "An unexpected error occurred. Please try again.",
+      };
+      setError(messages[oauthError] || "Google sign-in failed.");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
