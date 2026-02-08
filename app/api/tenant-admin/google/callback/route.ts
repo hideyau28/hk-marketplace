@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSession, setSessionCookie } from "@/lib/admin/session";
+import { createSession } from "@/lib/admin/session";
 
 export const runtime = "nodejs";
 
@@ -10,17 +10,20 @@ export const runtime = "nodejs";
  * creates an admin session, and redirects to the admin dashboard.
  */
 export async function GET(request: NextRequest) {
+  console.log("[Google OAuth] Callback hit");
+
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
   const error = searchParams.get("error");
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
   if (error) {
-    console.error("Google OAuth error:", error);
+    console.error("[Google OAuth] Error from Google:", error);
     return NextResponse.redirect(`${baseUrl}/en/admin/login?error=google_denied`);
   }
 
   if (!code) {
+    console.error("[Google OAuth] No authorization code in callback");
     return NextResponse.redirect(`${baseUrl}/en/admin/login?error=no_code`);
   }
 
@@ -29,7 +32,7 @@ export async function GET(request: NextRequest) {
   const redirectUri = `${baseUrl}/api/tenant-admin/google/callback`;
 
   if (!clientId || !clientSecret) {
-    console.error("Google OAuth credentials not configured");
+    console.error("[Google OAuth] Google OAuth credentials not configured");
     return NextResponse.redirect(`${baseUrl}/en/admin/login?error=config`);
   }
 
@@ -49,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     if (!tokenRes.ok) {
       const tokenError = await tokenRes.text();
-      console.error("Google token exchange failed:", tokenError);
+      console.error("[Google OAuth] Token exchange failed:", tokenError);
       return NextResponse.redirect(`${baseUrl}/en/admin/login?error=token_exchange`);
     }
 
@@ -61,20 +64,34 @@ export async function GET(request: NextRequest) {
     });
 
     if (!userInfoRes.ok) {
-      console.error("Failed to fetch Google user info");
+      console.error("[Google OAuth] Failed to fetch user info");
       return NextResponse.redirect(`${baseUrl}/en/admin/login?error=user_info`);
     }
 
     const userInfo = await userInfoRes.json();
-    console.log("Google OAuth login:", userInfo.email);
+    console.log("[Google OAuth] Google user email:", userInfo.email);
 
-    // Create admin session (same as secret-based login)
+    // Create admin session JWT
     const token = await createSession();
-    await setSessionCookie(token);
 
-    return NextResponse.redirect(`${baseUrl}/en/admin/products`);
+    // BUG FIX: Must set cookie directly on the redirect response.
+    // Previously used setSessionCookie() which calls cookies() from next/headers,
+    // but cookies set that way are NOT carried over to NextResponse.redirect().
+    const redirectUrl = `${baseUrl}/en/admin/products`;
+    console.log("[Google OAuth] Redirecting to:", redirectUrl);
+    const response = NextResponse.redirect(redirectUrl);
+    response.cookies.set("admin_session", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax", // "lax" required for OAuth flows (navigation from Google)
+      maxAge: 60 * 60 * 24,
+      path: "/",
+    });
+
+    console.log("[Google OAuth] admin_session cookie set, redirect ready");
+    return response;
   } catch (err) {
-    console.error("Google OAuth callback error:", err);
+    console.error("[Google OAuth] Callback error:", err);
     return NextResponse.redirect(`${baseUrl}/en/admin/login?error=callback_failed`);
   }
 }
