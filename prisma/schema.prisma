@@ -299,6 +299,7 @@ model Tenant {
   logoUrl              String?
   whatsapp             String?
   instagram            String?
+  brandColor           String?   @default("#FF9500")
   template             String    @default("default")
   status               String    @default("active")
   stripeCustomerId     String?
@@ -343,6 +344,7 @@ model TenantAdmin {
   tenantId     String
   tenant       Tenant   @relation(fields: [tenantId], references: [id])
   email        String   @unique
+  name         String?
   passwordHash String
   role         String   @default("owner")
   createdAt    DateTime @default(now())
