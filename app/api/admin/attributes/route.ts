@@ -82,7 +82,7 @@ export const POST = withApi(async (req) => {
       name,
       slug,
       type,
-      options: body.options !== undefined ? body.options : undefined,
+      options: body.options !== undefined && body.options !== null ? body.options : undefined,
       required: typeof body.required === "boolean" ? body.required : false,
       sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : 0,
     },
