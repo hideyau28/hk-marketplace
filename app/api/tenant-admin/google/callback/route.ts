@@ -4,7 +4,7 @@ import { createSession, setSessionCookie } from "@/lib/admin/session";
 export const runtime = "nodejs";
 
 /**
- * GET /api/auth/google/callback
+ * GET /api/tenant-admin/google/callback
  * Handles the OAuth 2.0 callback from Google.
  * Exchanges the authorization code for tokens, verifies the user,
  * creates an admin session, and redirects to the admin dashboard.
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = `${baseUrl}/api/auth/google/callback`;
+  const redirectUri = `${baseUrl}/api/tenant-admin/google/callback`;
 
   if (!clientId || !clientSecret) {
     console.error("Google OAuth credentials not configured");

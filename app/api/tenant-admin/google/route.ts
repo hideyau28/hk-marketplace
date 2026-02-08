@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 /**
- * GET /api/auth/google
+ * GET /api/tenant-admin/google
  * Redirects the user to the Google OAuth 2.0 consent screen.
  */
 export async function GET() {
@@ -17,7 +17,7 @@ export async function GET() {
     );
   }
 
-  const redirectUri = `${baseUrl}/api/auth/google/callback`;
+  const redirectUri = `${baseUrl}/api/tenant-admin/google/callback`;
 
   const params = new URLSearchParams({
     client_id: clientId,

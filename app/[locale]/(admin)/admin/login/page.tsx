@@ -92,7 +92,7 @@ export default function AdminLoginPage() {
             </div>
 
             <a
-              href="/api/auth/google"
+              href="/api/tenant-admin/google"
               className="mt-4 flex w-full items-center justify-center gap-3 rounded-xl border border-zinc-200 bg-white py-3 font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24">
