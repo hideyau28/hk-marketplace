@@ -1,5 +1,6 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
+import { getServerTenantId } from "@/lib/tenant";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import { formatDistanceToNow } from "date-fns";
 
@@ -19,14 +20,17 @@ export default async function AdminLogsPage({ params, searchParams }: PageProps)
   const page = parseInt(pageParam || "1");
   const skip = (page - 1) * ITEMS_PER_PAGE;
 
+  const tenantId = await getServerTenantId();
+
   // Fetch logs with pagination
   const [logs, totalCount] = await Promise.all([
     prisma.adminLog.findMany({
+      where: { tenantId },
       orderBy: { createdAt: "desc" },
       take: ITEMS_PER_PAGE,
       skip,
     }),
-    prisma.adminLog.count(),
+    prisma.adminLog.count({ where: { tenantId } }),
   ]);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);

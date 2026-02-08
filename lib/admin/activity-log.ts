@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
+import { getTenantId } from "@/lib/tenant";
 
 type LogActivityParams = {
   action: string;
@@ -8,11 +9,15 @@ type LogActivityParams = {
   resourceId?: string;
   details?: Record<string, unknown>;
   request?: NextRequest;
+  tenantId?: string;
 };
 
 export async function logAdminActivity(params: LogActivityParams): Promise<void> {
   try {
     const { action, resource, resourceId, details, request } = params;
+
+    // Resolve tenantId: explicit param > request header > default
+    const tenantId = params.tenantId || await getTenantId(request);
 
     let ipAddress: string | undefined;
     let userAgent: string | undefined;
@@ -28,6 +33,7 @@ export async function logAdminActivity(params: LogActivityParams): Promise<void>
 
     await prisma.adminLog.create({
       data: {
+        tenantId,
         action,
         resource,
         resourceId,

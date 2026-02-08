@@ -5,6 +5,27 @@ const DEFAULT_SLUG = "hk-marketplace";
 const DEFAULT_HOSTS = new Set(["hk-marketplace", "www", "localhost", "127.0.0.1"]);
 
 /**
+ * 保留字清單 — 呢啲 path segment 唔會被當成 tenant slug。
+ * 用於 /{slug} 路由（P4-F 先用到），而家預留。
+ */
+const RESERVED_SLUGS = new Set([
+  "admin",
+  "api",
+  "auth",
+  "login",
+  "signup",
+  "settings",
+  "checkout",
+  "cart",
+  "about",
+  "contact",
+  "terms",
+  "privacy",
+  "_next",
+  "favicon.ico",
+]);
+
+/**
  * Extract tenant slug from hostname.
  * Pattern: {slug}.hk-marketplace.vercel.app
  * Returns DEFAULT_SLUG for bare domain, www, or localhost.
@@ -25,6 +46,26 @@ function resolveSlugFromHostname(hostname: string): string {
   return subdomain;
 }
 
+/**
+ * Check if the first path segment could be a tenant slug (for future /{slug} routing).
+ * Returns the slug if it matches, null otherwise.
+ */
+function resolveSlugFromPath(pathname: string): string | null {
+  // Match /{slug} or /{slug}/... where slug is not a reserved word or locale
+  const match = pathname.match(/^\/([a-z0-9][\w-]*?)(?:\/|$)/);
+  if (!match) return null;
+
+  const segment = match[1];
+
+  // Skip reserved paths
+  if (RESERVED_SLUGS.has(segment)) return null;
+
+  // Skip locale prefixes (en, zh, zh-HK etc.)
+  if (/^[a-z]{2}(-[a-z]{2,4})?$/i.test(segment)) return null;
+
+  return segment;
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -39,6 +80,15 @@ export function middleware(request: NextRequest) {
     if (tenantParam) {
       tenantSlug = tenantParam;
     }
+  }
+
+  // --- Path-based slug routing (future: /{slug} → tenant storefront) ---
+  // For now, just detect and set header. P4-F will add actual rendering.
+  const pathSlug = resolveSlugFromPath(pathname);
+  let tenantPathSlug: string | null = null;
+  if (pathSlug && tenantSlug === DEFAULT_SLUG) {
+    // Path slug only takes effect when no subdomain tenant is set
+    tenantPathSlug = pathSlug;
   }
 
   // --- Skip admin guards for API routes (they handle auth themselves) ---
@@ -69,6 +119,9 @@ export function middleware(request: NextRequest) {
   // --- Forward tenant slug via request header ---
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-tenant-slug", tenantSlug);
+  if (tenantPathSlug) {
+    requestHeaders.set("x-tenant-path-slug", tenantPathSlug);
+  }
 
   return NextResponse.next({
     request: {

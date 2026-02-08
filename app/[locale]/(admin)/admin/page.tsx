@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getServerTenantId } from "@/lib/tenant";
 import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import SidebarToggle from "@/components/admin/SidebarToggle";
@@ -34,16 +35,19 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   const start7 = new Date(now);
   start7.setDate(now.getDate() - 6);
 
+  const tenantId = await getServerTenantId();
+
   // Fetch dashboard stats and recent orders
   const [totalProducts, activeProducts, totalOrders, ordersWithAmounts, recentOrders, recentOrdersForCharts] = await Promise.all([
-    prisma.product.count(),
-    prisma.product.count({ where: { active: true } }),
-    prisma.order.count(),
+    prisma.product.count({ where: { tenantId } }),
+    prisma.product.count({ where: { tenantId, active: true } }),
+    prisma.order.count({ where: { tenantId } }),
     prisma.order.findMany({
-      where: { status: { in: ["PAID", "FULFILLING", "SHIPPED", "COMPLETED"] } },
+      where: { tenantId, status: { in: ["PAID", "FULFILLING", "SHIPPED", "COMPLETED"] } },
       select: { amounts: true },
     }),
     prisma.order.findMany({
+      where: { tenantId },
       take: 5,
       orderBy: { createdAt: "desc" },
       select: {
@@ -55,7 +59,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       },
     }),
     prisma.order.findMany({
-      where: { createdAt: { gte: start30 } },
+      where: { tenantId, createdAt: { gte: start30 } },
       orderBy: { createdAt: "asc" },
       select: {
         createdAt: true,

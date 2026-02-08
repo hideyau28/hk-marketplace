@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getServerTenantId } from "@/lib/tenant";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import CouponsTable from "./coupons-table";
 import { getDict, type Locale } from "@/lib/i18n";
@@ -7,7 +8,9 @@ export default async function AdminCoupons({ params }: { params: Promise<{ local
   const { locale } = await params;
   const t = getDict(locale as Locale);
 
+  const tenantId = await getServerTenantId();
   const coupons = await prisma.coupon.findMany({
+    where: { tenantId },
     orderBy: { createdAt: "desc" },
   });
 

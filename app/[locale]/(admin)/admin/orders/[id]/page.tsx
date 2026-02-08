@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getServerTenantId } from "@/lib/tenant";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
@@ -17,9 +18,11 @@ export default async function OrderDetailPage({ params }: PageProps) {
   const { locale, id } = await params;
   const l = locale as Locale;
 
-  // Fetch order with payment attempts
-  const order = await prisma.order.findUnique({
-    where: { id },
+  const tenantId = await getServerTenantId();
+
+  // Fetch order with payment attempts (scoped to tenant)
+  const order = await prisma.order.findFirst({
+    where: { id, tenantId },
     include: {
       paymentAttempts: {
         select: {

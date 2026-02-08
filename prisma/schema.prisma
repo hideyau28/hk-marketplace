@@ -43,8 +43,8 @@ model StoreSettings {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
   // Multi-tenant
-  tenantId                String?
-  tenant                  Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId                String
+  tenant                  Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
 }
@@ -59,8 +59,8 @@ model IdempotencyKey {
   responseJson Json
   createdAt    DateTime @default(now())
   // Multi-tenant
-  tenantId     String?
-  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
 
   @@unique([key, route, method])
   @@index([createdAt])
@@ -77,8 +77,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   // Multi-tenant
-  tenantId  String?
-  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([phone])
   @@index([tenantId])
@@ -128,8 +128,8 @@ model Order {
   userId                  String?
   user                    User?            @relation(fields: [userId], references: [id])
   // Multi-tenant
-  tenantId                String?
-  tenant                  Tenant?          @relation(fields: [tenantId], references: [id])
+  tenantId                String
+  tenant                  Tenant           @relation(fields: [tenantId], references: [id])
 
   @@index([status])
   @@index([createdAt])
@@ -196,8 +196,8 @@ model Product {
   variants        ProductVariant[]
   attributes      Json?
   // Multi-tenant
-  tenantId        String?
-  tenant          Tenant?          @relation(fields: [tenantId], references: [id])
+  tenantId        String
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
 
   @@index([active])
   @@index([brand])
@@ -216,8 +216,8 @@ model Badge {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   // Multi-tenant
-  tenantId  String?
-  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
 }
@@ -232,8 +232,8 @@ model Coupon {
   expiresAt     DateTime?
   createdAt     DateTime           @default(now())
   // Multi-tenant
-  tenantId      String?
-  tenant        Tenant?            @relation(fields: [tenantId], references: [id])
+  tenantId      String
+  tenant        Tenant             @relation(fields: [tenantId], references: [id])
 
   @@index([active])
   @@index([code])
@@ -250,8 +250,8 @@ model AdminLog {
   userAgent  String?
   createdAt  DateTime @default(now())
   // Multi-tenant
-  tenantId   String?
-  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([createdAt])
   @@index([action])
@@ -276,8 +276,8 @@ model SiteContent {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   // Multi-tenant
-  tenantId     String?
-  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([type, active])
   @@index([sortOrder])
@@ -288,6 +288,7 @@ model Tenant {
   id                   String    @id @default(cuid())
   name                 String
   slug                 String    @unique
+  description          String?
   customDomain         String?   @unique
   region               String    @default("HK")
   currency             String    @default("HKD")
@@ -296,6 +297,9 @@ model Tenant {
   taxRate              Float     @default(0)
   themeColor           String    @default("#6B7B3A")
   logoUrl              String?
+  whatsapp             String?
+  instagram            String?
+  template             String    @default("default")
   status               String    @default("active")
   stripeCustomerId     String?
   stripeSubscriptionId String?
@@ -401,8 +405,8 @@ model HomepageSection {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   // Multi-tenant
-  tenantId    String?
-  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([sortOrder])
   @@index([active])
@@ -422,8 +426,8 @@ model HomepageBanner {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   // Multi-tenant
-  tenantId  String?
-  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([position, sortOrder])
   @@index([active])
@@ -441,8 +445,8 @@ model PaymentMethod {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   // Multi-tenant
-  tenantId    String?
-  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([active, sortOrder])
   @@index([tenantId])
@@ -450,8 +454,8 @@ model PaymentMethod {
 
 model Category {
   id        String     @id @default(cuid())
-  tenantId  String?
-  tenant    Tenant?    @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
   name      String
   slug      String
   parentId  String?
@@ -470,8 +474,8 @@ model Category {
 
 model ProductVariant {
   id             String   @id @default(cuid())
-  tenantId       String?
-  tenant         Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
   productId      String
   product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   sku            String?
@@ -493,8 +497,8 @@ model ProductVariant {
 
 model AttributeDefinition {
   id        String   @id @default(cuid())
-  tenantId  String?
-  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
   name      String
   slug      String
   type      String   @default("select")

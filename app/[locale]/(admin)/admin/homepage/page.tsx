@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getServerTenantId } from "@/lib/tenant";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import HomepageCMS from "./homepage-cms";
 import { getDict, type Locale } from "@/lib/i18n";
@@ -11,12 +12,16 @@ export default async function AdminHomepage({
   const { locale } = await params;
   const t = getDict(locale as Locale);
 
+  const tenantId = await getServerTenantId();
+
   // Fetch sections and banners
   const [sections, banners, products] = await Promise.all([
     prisma.homepageSection.findMany({
+      where: { tenantId },
       orderBy: { sortOrder: "asc" },
     }),
     prisma.homepageBanner.findMany({
+      where: { tenantId },
       orderBy: { sortOrder: "asc" },
       select: {
         id: true,
@@ -34,7 +39,7 @@ export default async function AdminHomepage({
     }),
     // Fetch products for manual selection with filters
     prisma.product.findMany({
-      where: { active: true },
+      where: { tenantId, active: true },
       select: { id: true, title: true, imageUrl: true, category: true, shoeType: true, sku: true },
       orderBy: { title: "asc" },
       take: 500,

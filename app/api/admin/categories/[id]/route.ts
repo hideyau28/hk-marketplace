@@ -133,9 +133,9 @@ export const DELETE = withApi(
       throw new ApiError(404, "NOT_FOUND", "Category not found");
     }
 
-    // Unlink products that reference this category
+    // Unlink products that reference this category (scoped to tenant)
     await prisma.product.updateMany({
-      where: { categoryId: id },
+      where: { categoryId: id, tenantId },
       data: { categoryId: null },
     });
 

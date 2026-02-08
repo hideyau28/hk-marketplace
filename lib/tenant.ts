@@ -114,3 +114,24 @@ export async function getTenantId(req?: Request): Promise<string> {
   const tenant = await resolveTenant(req);
   return tenant.id;
 }
+
+/**
+ * Get tenantId inside Next.js Server Components / Server Actions.
+ * Reads the x-tenant-slug header set by middleware via next/headers.
+ */
+export async function getServerTenantId(): Promise<string> {
+  const { headers } = await import("next/headers");
+  const headersList = await headers();
+  const slug = headersList.get("x-tenant-slug") || DEFAULT_SLUG;
+
+  const tenant = await prisma.tenant.findUnique({
+    where: { slug },
+    select: { id: true, status: true },
+  });
+
+  if (!tenant || tenant.status !== "active") {
+    throw new Error("Tenant not found or inactive");
+  }
+
+  return tenant.id;
+}
