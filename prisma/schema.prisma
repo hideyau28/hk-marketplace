@@ -112,6 +112,8 @@ model Order {
   paymentMethod           String?          // "fps", "payme", "alipay"
   paymentProof            String?          // uploaded image URL/path
   paymentStatus           String           @default("pending") // pending, uploaded, confirmed, rejected
+  paymentConfirmedAt      DateTime?
+  paymentConfirmedBy      String?          // admin who confirmed the payment
   // New status timestamps
   confirmedAt             DateTime?
   deliveredAt             DateTime?
@@ -298,6 +300,18 @@ model Tenant {
   stripeCustomerId     String?
   stripeSubscriptionId String?
   subscriptionEndsAt   DateTime?
+  // Stripe Connect (tenant's own Stripe account for receiving payments)
+  stripeAccountId      String?
+  stripeOnboarded      Boolean   @default(false)
+  // FPS 轉數快
+  fpsEnabled           Boolean   @default(false)
+  fpsAccountName       String?
+  fpsAccountId         String?
+  fpsQrCodeUrl         String?
+  // PayMe
+  paymeEnabled         Boolean   @default(false)
+  paymeLink            String?
+  paymeQrCodeUrl       String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
