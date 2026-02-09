@@ -9,6 +9,7 @@ export type TenantBranding = {
   logoUrl: string | null;
   currency: string;
   languages: string[];
+  mode: string;
 };
 
 const DEFAULT_BRANDING: TenantBranding = {
@@ -18,6 +19,7 @@ const DEFAULT_BRANDING: TenantBranding = {
   logoUrl: null,
   currency: "HKD",
   languages: ["zh-HK", "en"],
+  mode: "biolink",
 };
 
 const TenantBrandingContext = createContext<TenantBranding>(DEFAULT_BRANDING);
@@ -37,6 +39,7 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
             logoUrl: res.data.logoUrl ?? null,
             currency: res.data.currency || DEFAULT_BRANDING.currency,
             languages: res.data.languages || DEFAULT_BRANDING.languages,
+            mode: res.data.mode || DEFAULT_BRANDING.mode,
           });
         }
       })

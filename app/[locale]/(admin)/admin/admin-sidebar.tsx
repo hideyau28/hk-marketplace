@@ -17,16 +17,21 @@ export default function AdminSidebar() {
   const t = getDict(locale as Locale);
   const tenantBranding = useTenantBranding();
 
-  const navItems = [
-    { href: "/admin", label: t.admin.sidebar.dashboard, icon: LayoutDashboard },
-    { href: "/admin/products", label: t.admin.sidebar.products, icon: Package },
-    { href: "/admin/homepage", label: "首頁管理", icon: LayoutGrid },
-    { href: "/admin/orders", label: t.admin.sidebar.orders, icon: ShoppingCart },
-    { href: "/admin/payments", label: "付款方式", icon: CreditCard },
-    { href: "/admin/coupons", label: t.admin.sidebar.coupons, icon: Ticket },
-    { href: "/admin/logs", label: t.admin.sidebar.logs, icon: ScrollText },
-    { href: "/admin/settings", label: t.admin.sidebar.settings, icon: Settings },
+  // biolink 模式只顯示基本功能，fullstore 顯示全部
+  const allNavItems = [
+    { href: "/admin", label: t.admin.sidebar.dashboard, icon: LayoutDashboard, biolink: true },
+    { href: "/admin/products", label: t.admin.sidebar.products, icon: Package, biolink: true },
+    { href: "/admin/homepage", label: "首頁管理", icon: LayoutGrid, biolink: false },
+    { href: "/admin/orders", label: t.admin.sidebar.orders, icon: ShoppingCart, biolink: true },
+    { href: "/admin/payments", label: "付款方式", icon: CreditCard, biolink: false },
+    { href: "/admin/coupons", label: t.admin.sidebar.coupons, icon: Ticket, biolink: false },
+    { href: "/admin/logs", label: t.admin.sidebar.logs, icon: ScrollText, biolink: false },
+    { href: "/admin/settings", label: t.admin.sidebar.settings, icon: Settings, biolink: true },
   ];
+
+  const navItems = tenantBranding.mode === "fullstore"
+    ? allNavItems
+    : allNavItems.filter((item) => item.biolink);
 
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
