@@ -24,6 +24,15 @@ export default async function SlugPage({ params }: PageProps) {
       logoUrl: true,
       coverPhoto: true,
       template: true,
+      fpsEnabled: true,
+      fpsAccountName: true,
+      fpsAccountId: true,
+      fpsQrCodeUrl: true,
+      paymeEnabled: true,
+      paymeLink: true,
+      paymeQrCodeUrl: true,
+      stripeAccountId: true,
+      stripeOnboarded: true,
     },
   });
 

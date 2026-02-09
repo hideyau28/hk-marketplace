@@ -10,14 +10,28 @@ import FeaturedSection from "./FeaturedSection";
 import ProductGrid from "./ProductGrid";
 import CartBar from "./CartBar";
 import WhatsAppFAB from "./WhatsAppFAB";
+import CheckoutPanel from "./CheckoutPanel";
+import OrderConfirmation from "./OrderConfirmation";
 
 type CartItem = {
   id: string;
   title: string;
   price: number;
   variant: string | null;
+  variantId?: string;
   qty: number;
   imageUrl: string | null;
+};
+
+type OrderResult = {
+  orderId: string;
+  orderNumber: string;
+  status: string;
+  total: number;
+  storeName: string;
+  whatsapp: string | null;
+  fpsInfo?: { accountName: string | null; id: string | null; qrCode: string | null };
+  paymeInfo?: { link: string | null; qrCode: string | null };
 };
 
 type Props = {
@@ -27,13 +41,21 @@ type Props = {
 
 export default function BioLinkPage({ tenant, products }: Props) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
 
   const { featured, grid } = splitProducts(products);
 
   const addToCart = useCallback(
     (product: ProductForBioLink, variant: string | null) => {
+      // Look up variantId from product's variants by name
+      let variantId: string | undefined;
+      if (variant && product.variants) {
+        const match = product.variants.find((v) => v.name === variant);
+        if (match) variantId = match.id;
+      }
+
       setCart((prev) => {
-        const key = `${product.id}::${variant ?? ""}`;
         const exists = prev.find(
           (i) => i.id === product.id && i.variant === variant
         );
@@ -51,17 +73,28 @@ export default function BioLinkPage({ tenant, products }: Props) {
             title: product.title,
             price: product.price,
             variant,
+            variantId,
             qty: 1,
             imageUrl: product.imageUrl,
           },
         ];
       });
     },
-    []
+    [products]
   );
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+  const handleOrderComplete = (result: OrderResult) => {
+    setCheckoutOpen(false);
+    setOrderResult(result);
+    setCart([]); // Clear cart after successful order
+  };
+
+  const handleConfirmationClose = () => {
+    setOrderResult(null);
+  };
 
   return (
     <div className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden bg-[#0f0f0f]">
@@ -92,9 +125,28 @@ export default function BioLinkPage({ tenant, products }: Props) {
           count={cartCount}
           total={cartTotal}
           whatsapp={tenant.whatsapp}
+          onCheckout={() => setCheckoutOpen(true)}
         />
       ) : (
         <WhatsAppFAB whatsapp={tenant.whatsapp} />
+      )}
+
+      {/* Checkout panel (bottom sheet) */}
+      <CheckoutPanel
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        cart={cart}
+        total={cartTotal}
+        tenant={tenant}
+        onOrderComplete={handleOrderComplete}
+      />
+
+      {/* Order confirmation (FPS/PayMe payment info) */}
+      {orderResult && (
+        <OrderConfirmation
+          order={orderResult}
+          onClose={handleConfirmationClose}
+        />
       )}
 
       {/* Footer */}

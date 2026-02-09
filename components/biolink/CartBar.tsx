@@ -6,11 +6,17 @@ type Props = {
   count: number;
   total: number;
   whatsapp: string | null;
+  onCheckout?: () => void;
 };
 
-export default function CartBar({ count, total, whatsapp }: Props) {
+export default function CartBar({ count, total, whatsapp, onCheckout }: Props) {
   const handleCheckout = () => {
-    // V1: WhatsApp checkout
+    // If onCheckout callback provided, use it (checkout panel flow)
+    if (onCheckout) {
+      onCheckout();
+      return;
+    }
+    // Fallback: WhatsApp checkout
     if (!whatsapp) return;
     const phone = whatsapp.replace(/[^0-9]/g, "");
     const msg = encodeURIComponent(`Hi! 我想落單，購物車有 ${count} 件商品，總計 ${formatHKD(total)}`);
