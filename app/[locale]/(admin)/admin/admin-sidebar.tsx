@@ -8,7 +8,7 @@ import { getDict, type Locale } from "@/lib/i18n";
 import { useTenantBranding } from "@/lib/tenant-branding";
 
 export default function AdminSidebar() {
-  const { isOpen, setIsOpen } = useSidebar();
+  const { isOpen, setIsOpen, productCount } = useSidebar();
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
@@ -16,16 +16,34 @@ export default function AdminSidebar() {
   const t = getDict(locale as Locale);
   const tenantBranding = useTenantBranding();
 
-  const navItems = [
+  // 核心導航項目 — 所有商戶都見到
+  const coreItems = [
     { href: "/admin", label: t.admin.sidebar.dashboard, icon: LayoutDashboard },
     { href: "/admin/products", label: t.admin.sidebar.products, icon: Package },
-    { href: "/admin/homepage", label: "首頁管理", icon: LayoutGrid },
     { href: "/admin/orders", label: t.admin.sidebar.orders, icon: ShoppingCart },
+    { href: "/admin/settings", label: t.admin.sidebar.settings, icon: Settings },
+  ];
+
+  // 進階導航項目 — 只有 >=10 個商品嘅商戶先見到
+  const advancedItems = [
+    { href: "/admin/homepage", label: "首頁管理", icon: LayoutGrid },
     { href: "/admin/payments", label: "付款方式", icon: CreditCard },
     { href: "/admin/coupons", label: t.admin.sidebar.coupons, icon: Ticket },
     { href: "/admin/logs", label: t.admin.sidebar.logs, icon: ScrollText },
-    { href: "/admin/settings", label: t.admin.sidebar.settings, icon: Settings },
   ];
+
+  const navItems = productCount >= 10
+    ? [
+        coreItems[0], // Dashboard
+        coreItems[1], // Products
+        advancedItems[0], // 首頁管理
+        coreItems[2], // Orders
+        advancedItems[1], // 付款方式
+        advancedItems[2], // Coupons
+        advancedItems[3], // Logs
+        coreItems[3], // Settings
+      ]
+    : coreItems;
 
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });

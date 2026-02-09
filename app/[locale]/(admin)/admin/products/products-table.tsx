@@ -7,7 +7,7 @@ import { type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
-import { Star, Flame, Search, Check, X, Pencil } from "lucide-react";
+import { Star, Flame, Search, Check, X, Pencil, Package } from "lucide-react";
 import { toggleFeatured, toggleHotSelling, updatePrice } from "./actions";
 
 const ITEMS_PER_PAGE = 50;
@@ -432,6 +432,31 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     if (sortDirection === "desc") return "↓";
     return "↕";
   };
+
+  // 空白狀態 — 未有任何商品，顯示 CTA
+  if (products.length === 0 && showAddButton) {
+    return (
+      <>
+        <div className="mt-12 flex flex-col items-center justify-center text-center px-4">
+          <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center mb-5">
+            <Package size={32} className="text-[#FF9500]" />
+          </div>
+          <h2 className="text-xl font-bold text-zinc-900 mb-2">未有商品</h2>
+          <p className="text-zinc-500 mb-6">加你第一個商品，開始管理你嘅商店。</p>
+          <button
+            onClick={handleCreateProduct}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#FF9500] px-6 py-3 text-base font-semibold text-white hover:bg-[#E88800] transition-colors"
+          >
+            <Package size={20} />
+            加你第一個商品
+          </button>
+        </div>
+        {isCreating && (
+          <ProductModal product={null} onClose={handleCloseModal} locale={locale} />
+        )}
+      </>
+    );
+  }
 
   return (
     <>

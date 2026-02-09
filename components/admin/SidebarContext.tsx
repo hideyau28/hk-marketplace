@@ -6,17 +6,18 @@ type SidebarContextType = {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   toggle: () => void;
+  productCount: number;
 };
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
-export function SidebarProvider({ children }: { children: ReactNode }) {
+export function SidebarProvider({ children, productCount = 0 }: { children: ReactNode; productCount?: number }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggle = () => setIsOpen((prev) => !prev);
 
   return (
-    <SidebarContext.Provider value={{ isOpen, setIsOpen, toggle }}>
+    <SidebarContext.Provider value={{ isOpen, setIsOpen, toggle, productCount }}>
       {children}
     </SidebarContext.Provider>
   );

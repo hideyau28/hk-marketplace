@@ -133,6 +133,55 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   const revenueLast30Total = revenueLast30.reduce((sum, entry) => sum + entry.revenue, 0);
   const avgOrderAmount = paidOrdersCount > 0 ? revenueLast30Total / paidOrdersCount : 0;
 
+  // 新商戶空白狀態 — 0 products
+  if (totalProducts === 0) {
+    return (
+      <div className="p-4 pb-16 max-w-full overflow-hidden">
+        <div className="flex items-center gap-4 mb-6">
+          <SidebarToggle />
+          <div>
+            <div className="text-zinc-500 text-sm">Admin</div>
+            <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.dashboard.title}</h1>
+          </div>
+        </div>
+
+        <div className="mt-12 flex flex-col items-center justify-center text-center px-4">
+          <div className="w-20 h-20 rounded-2xl bg-orange-50 flex items-center justify-center mb-6">
+            <Package size={40} className="text-[#FF9500]" />
+          </div>
+          <h2 className="text-2xl font-bold text-zinc-900 mb-2">
+            歡迎嚟到你嘅商店！
+          </h2>
+          <p className="text-zinc-500 mb-8 max-w-md">
+            加你第一個商品開始啦。設定好商品之後，就可以分享畀客人落單。
+          </p>
+          <Link
+            href={`/${locale}/admin/products`}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#FF9500] px-6 py-3 text-base font-semibold text-white hover:bg-[#E88800] transition-colors"
+          >
+            <Package size={20} />
+            加你第一個商品
+          </Link>
+
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-lg w-full">
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500 font-bold">1</div>
+              <span className="text-sm text-zinc-600">加商品</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500 font-bold">2</div>
+              <span className="text-sm text-zinc-600">分享連結</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500 font-bold">3</div>
+              <span className="text-sm text-zinc-600">開始收單</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 pb-16 max-w-full overflow-hidden">
       <div className="flex items-center gap-4 mb-6">
