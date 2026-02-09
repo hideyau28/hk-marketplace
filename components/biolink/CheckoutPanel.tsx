@@ -29,6 +29,11 @@ type OrderResult = {
   whatsapp: string | null;
   fpsInfo?: { accountName: string | null; id: string | null; qrCode: string | null };
   paymeInfo?: { link: string | null; qrCode: string | null };
+  // Extended fields for order confirmation display
+  items?: Array<{ name: string; qty: number; unitPrice: number }>;
+  customer?: { name: string; phone: string };
+  delivery?: { method: string; label: string };
+  paymentMethod?: string;
 };
 
 type Props = {
@@ -111,7 +116,19 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
         throw new Error(json.error?.message || "落單失敗，請重試");
       }
 
-      onOrderComplete(json.data as OrderResult);
+      const deliveryOpt = DELIVERY_OPTIONS.find((d) => d.id === delivery);
+      const result: OrderResult = {
+        ...(json.data as OrderResult),
+        items: cart.map((item) => ({
+          name: item.title + (item.variant ? ` · ${item.variant}` : ""),
+          qty: item.qty,
+          unitPrice: item.price,
+        })),
+        customer: { name: name.trim(), phone: phone.trim() },
+        delivery: { method: delivery, label: deliveryOpt?.label || delivery },
+        paymentMethod: payment,
+      };
+      onOrderComplete(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "落單失敗，請重試");
     } finally {

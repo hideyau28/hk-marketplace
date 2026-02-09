@@ -6,6 +6,7 @@ import { LayoutDashboard, LayoutGrid, Package, ShoppingCart, Settings, LogOut, X
 import { useSidebar } from "@/components/admin/SidebarContext";
 import { getDict, type Locale } from "@/lib/i18n";
 import { useTenantBranding } from "@/lib/tenant-branding";
+import OrdersBadge from "@/components/admin/OrdersBadge";
 
 export default function AdminSidebar() {
   const { isOpen, setIsOpen } = useSidebar();
@@ -77,6 +78,7 @@ export default function AdminSidebar() {
               >
                 <Icon size={20} />
                 <span>{item.label}</span>
+                {item.href === "/admin/orders" && <OrdersBadge />}
               </Link>
             );
           })}

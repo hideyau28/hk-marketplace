@@ -32,6 +32,10 @@ type OrderResult = {
   whatsapp: string | null;
   fpsInfo?: { accountName: string | null; id: string | null; qrCode: string | null };
   paymeInfo?: { link: string | null; qrCode: string | null };
+  items?: Array<{ name: string; qty: number; unitPrice: number }>;
+  customer?: { name: string; phone: string };
+  delivery?: { method: string; label: string };
+  paymentMethod?: string;
 };
 
 type Props = {
