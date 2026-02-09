@@ -31,6 +31,14 @@ export type ProductForBioLink = {
   variants?: VariantForBioLink[];
 };
 
+export type DeliveryOption = {
+  id: string;
+  label: string;
+  price: number;
+  note: string;
+  enabled: boolean;
+};
+
 export type TenantForBioLink = {
   id: string;
   name: string;
@@ -52,6 +60,9 @@ export type TenantForBioLink = {
   paymeQrCodeUrl: string | null;
   stripeAccountId: string | null;
   stripeOnboarded: boolean;
+  // BioLink settings
+  socialLinks?: Array<{ url: string }> | null;
+  deliveryOptions?: DeliveryOption[] | null;
 };
 
 // ─── Image helpers ───

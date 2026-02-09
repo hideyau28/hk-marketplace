@@ -19,9 +19,10 @@ import LowStockBadge from "./LowStockBadge";
 type Props = {
   product: ProductForBioLink;
   onAdd: (product: ProductForBioLink, variant: string | null) => void;
+  onImageExpand?: (images: string[], index: number) => void;
 };
 
-export default function BioProductCard({ product, onAdd }: Props) {
+export default function BioProductCard({ product, onAdd, onImageExpand }: Props) {
   const images = getAllImages(product);
   const variants = getVisibleVariants(product);
   const variantLabel = getVariantLabel(product);
@@ -39,7 +40,11 @@ export default function BioProductCard({ product, onAdd }: Props) {
     <div className="rounded-2xl overflow-hidden bg-white shadow-sm border border-black/[0.04]">
       {/* Image */}
       <div className="relative">
-        <ImageCarousel images={images} alt={product.title} />
+        <ImageCarousel
+          images={images}
+          alt={product.title}
+          onExpand={onImageExpand ? (index) => onImageExpand(images, index) : undefined}
+        />
         {soldOut && <SoldOutOverlay />}
 
         {/* Badges */}

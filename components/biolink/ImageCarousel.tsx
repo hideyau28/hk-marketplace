@@ -9,6 +9,8 @@ type Props = {
   /** Aspect ratio class, default aspect-square */
   aspectClass?: string;
   priority?: boolean;
+  /** Called when expand icon is tapped, with current image index */
+  onExpand?: (index: number) => void;
 };
 
 export default function ImageCarousel({
@@ -16,6 +18,7 @@ export default function ImageCarousel({
   alt,
   aspectClass = "aspect-square",
   priority = false,
+  onExpand,
 }: Props) {
   const [current, setCurrent] = useState(0);
   const touchStartX = useRef(0);
@@ -58,6 +61,17 @@ export default function ImageCarousel({
           priority={priority}
           sizes="(max-width: 480px) 100vw, 240px"
         />
+        {onExpand && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onExpand(0); }}
+            className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-black/50 flex items-center justify-center z-10"
+            aria-label="Expand image"
+          >
+            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+            </svg>
+          </button>
+        )}
       </div>
     );
   }
@@ -87,6 +101,18 @@ export default function ImageCarousel({
           </div>
         ))}
       </div>
+      {/* Expand icon */}
+      {onExpand && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onExpand(current); }}
+          className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-black/50 flex items-center justify-center z-10"
+          aria-label="Expand image"
+        >
+          <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+          </svg>
+        </button>
+      )}
       {/* Dots */}
       <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
         {images.map((_, i) => (

@@ -6,9 +6,10 @@ import BioProductCard from "./BioProductCard";
 type Props = {
   products: ProductForBioLink[];
   onAdd: (product: ProductForBioLink, variant: string | null) => void;
+  onImageExpand?: (images: string[], index: number) => void;
 };
 
-export default function ProductGrid({ products, onAdd }: Props) {
+export default function ProductGrid({ products, onAdd, onImageExpand }: Props) {
   if (products.length === 0) return null;
 
   return (
@@ -16,7 +17,7 @@ export default function ProductGrid({ products, onAdd }: Props) {
       <h2 className="text-zinc-900 text-base font-bold mb-4">全部商品</h2>
       <div className="grid grid-cols-2 gap-3">
         {products.map((p) => (
-          <BioProductCard key={p.id} product={p} onAdd={onAdd} />
+          <BioProductCard key={p.id} product={p} onAdd={onAdd} onImageExpand={onImageExpand} />
         ))}
       </div>
     </section>

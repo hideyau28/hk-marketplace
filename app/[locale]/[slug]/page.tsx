@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import BioLinkPage from "@/components/biolink/BioLinkPage";
 import type { Metadata } from "next";
-import type { ProductForBioLink } from "@/lib/biolink-helpers";
+import type { ProductForBioLink, DeliveryOption } from "@/lib/biolink-helpers";
 
 type PageProps = {
   params: Promise<{ slug: string; locale: string }>;
@@ -33,6 +33,8 @@ export default async function SlugPage({ params }: PageProps) {
       paymeQrCodeUrl: true,
       stripeAccountId: true,
       stripeOnboarded: true,
+      socialLinks: true,
+      deliveryOptions: true,
     },
   });
 
@@ -83,7 +85,13 @@ export default async function SlugPage({ params }: PageProps) {
     variants: p.variants,
   }));
 
-  return <BioLinkPage tenant={tenant} products={serialized} />;
+  const tenantData = {
+    ...tenant,
+    socialLinks: (tenant.socialLinks ?? []) as Array<{ url: string }>,
+    deliveryOptions: (tenant.deliveryOptions ?? null) as DeliveryOption[] | null,
+  };
+
+  return <BioLinkPage tenant={tenantData} products={serialized} />;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

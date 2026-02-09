@@ -14,7 +14,7 @@ type CartItem = {
   imageUrl: string | null;
 };
 
-const DELIVERY_OPTIONS: Array<{ id: string; label: string; note: string }> = [
+const DEFAULT_DELIVERY_OPTIONS: Array<{ id: string; label: string; note: string }> = [
   { id: "sf-locker", label: "SF 智能櫃", note: "免運費" },
   { id: "sf-cod", label: "順豐到付", note: "到付運費" },
   { id: "meetup", label: "面交", note: "地點待確認" },
@@ -48,9 +48,19 @@ type Props = {
 };
 
 export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOrderComplete, onUpdateQty, onRemoveItem }: Props) {
+  // Use tenant delivery options if available, fallback to hardcoded defaults
+  const deliveryOptions: Array<{ id: string; label: string; note: string }> = (() => {
+    if (tenant.deliveryOptions && Array.isArray(tenant.deliveryOptions) && tenant.deliveryOptions.length > 0) {
+      return tenant.deliveryOptions
+        .filter((d) => d.enabled)
+        .map((d) => ({ id: d.id, label: d.label, note: d.note }));
+    }
+    return DEFAULT_DELIVERY_OPTIONS;
+  })();
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [delivery, setDelivery] = useState("sf-locker");
+  const [delivery, setDelivery] = useState(deliveryOptions[0]?.id || "sf-locker");
   const [payment, setPayment] = useState<"fps" | "payme" | "stripe">("fps");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -120,7 +130,7 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
         throw new Error(json.error?.message || "落單失敗，請重試");
       }
 
-      const deliveryOpt = DELIVERY_OPTIONS.find((d) => d.id === delivery);
+      const deliveryOpt = deliveryOptions.find((d) => d.id === delivery);
       const result: OrderResult = {
         ...(json.data as OrderResult),
         items: cart.map((item) => ({
@@ -242,7 +252,7 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
           <div className="mt-6">
             <h3 className="text-white/80 text-xs font-bold uppercase tracking-wider mb-3">送貨方式</h3>
             <div className="space-y-2">
-              {DELIVERY_OPTIONS.map((opt) => (
+              {deliveryOptions.map((opt) => (
                 <button
                   key={opt.id}
                   onClick={() => setDelivery(opt.id)}
