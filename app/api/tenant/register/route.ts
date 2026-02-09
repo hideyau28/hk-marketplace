@@ -3,6 +3,7 @@ import { createSession } from "@/lib/admin/session";
 import { signToken } from "@/lib/auth/jwt";
 import { withApi, ok, ApiError } from "@/lib/api/route-helpers";
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 
 export const runtime = "nodejs";
 
@@ -18,14 +19,14 @@ const WHATSAPP_REGEX = /^[0-9]{8}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST = withApi(async (req: Request) => {
-  let body: { name?: string; slug?: string; whatsapp?: string; email?: string };
+  let body: { name?: string; slug?: string; whatsapp?: string; email?: string; password?: string };
   try {
     body = await req.json();
   } catch {
     throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
   }
 
-  const { name, slug, whatsapp, email } = body;
+  const { name, slug, whatsapp, email, password } = body;
 
   // --- Validation ---
   if (!name || typeof name !== "string" || name.trim().length < 2 || name.trim().length > 50) {
@@ -53,9 +54,14 @@ export const POST = withApi(async (req: Request) => {
     throw new ApiError(400, "BAD_REQUEST", "請輸入有效嘅 email");
   }
 
+  if (!password || typeof password !== "string" || password.length < 8) {
+    throw new ApiError(400, "BAD_REQUEST", "密碼最少 8 個字");
+  }
+
   const cleanName = name.trim();
   const cleanWhatsapp = whatsapp.trim();
   const cleanEmail = email.trim().toLowerCase();
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   // --- Create Tenant + TenantAdmin atomically ---
   try {
@@ -76,7 +82,7 @@ export const POST = withApi(async (req: Request) => {
         data: {
           email: cleanEmail,
           name: cleanName,
-          passwordHash: "",
+          passwordHash: hashedPassword,
           tenantId: tenant.id,
         },
       });
