@@ -42,6 +42,16 @@ export type TenantForBioLink = {
   logoUrl: string | null;
   coverPhoto: string | null;
   template: string;
+  // Payment fields
+  fpsEnabled: boolean;
+  fpsAccountName: string | null;
+  fpsAccountId: string | null;
+  fpsQrCodeUrl: string | null;
+  paymeEnabled: boolean;
+  paymeLink: string | null;
+  paymeQrCodeUrl: string | null;
+  stripeAccountId: string | null;
+  stripeOnboarded: boolean;
 };
 
 // ─── Image helpers ───
