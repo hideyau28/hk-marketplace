@@ -297,6 +297,7 @@ model Tenant {
   taxRate              Float     @default(0)
   themeColor           String    @default("#6B7B3A")
   logoUrl              String?
+  coverPhoto           String?
   whatsapp             String?
   instagram            String?
   brandColor           String?   @default("#FF9500")

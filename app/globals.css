@@ -109,3 +109,23 @@ body {
     opacity: 0;
   }
 }
+
+/* ─── Bio Link animations ─── */
+@keyframes biolink-float-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes biolink-stock-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.biolink-float-bob {
+  animation: biolink-float-bob 3s ease-in-out infinite;
+  will-change: transform;
+}
+
+.biolink-stock-pulse {
+  animation: biolink-stock-pulse 2s ease-in-out infinite;
+}
