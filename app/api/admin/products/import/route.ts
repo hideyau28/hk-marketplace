@@ -11,6 +11,7 @@ type ImportPayload = {
   price?: unknown;
   description?: unknown;
   imageUrl?: unknown;
+  images?: unknown;
   sizeSystem?: unknown;
   sizes?: unknown;
   active?: unknown;
@@ -79,6 +80,13 @@ export const POST = withApi(async (req: Request) => {
       const brand = toOptionalString(entry.brand);
       const category = toOptionalString(entry.category);
       const imageUrl = toOptionalString(entry.imageUrl);
+      // Parse images: accept array of strings or pipe-separated string
+      let images: string[] = [];
+      if (Array.isArray(entry.images)) {
+        images = entry.images.filter((u): u is string => typeof u === "string" && u.trim().length > 0);
+      } else if (typeof entry.images === "string" && entry.images.trim()) {
+        images = entry.images.split("|").map((u) => u.trim()).filter(Boolean);
+      }
       const sizeSystem = toOptionalString(entry.sizeSystem);
       const sizes = parseSizes(entry.sizes);
       const price = parsePrice(entry.price);
@@ -100,6 +108,7 @@ export const POST = withApi(async (req: Request) => {
           price,
           category,
           imageUrl,
+          images: images.length > 0 ? images : [],
           sizeSystem,
           sizes: sizes ?? undefined,
           active: active ?? true,

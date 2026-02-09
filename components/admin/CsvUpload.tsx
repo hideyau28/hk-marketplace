@@ -10,6 +10,7 @@ const ALL_COLUMNS = [
   "price",
   "description",
   "imageUrl",
+  "images",
   "sizeSystem",
   "sizes",
   "active",
@@ -24,6 +25,7 @@ type ParsedRow = {
     price: number | null;
     description: string | null;
     imageUrl: string | null;
+    images: string[] | null;
     sizeSystem: string | null;
     sizes: string[] | null;
     active: boolean | null;
@@ -163,6 +165,12 @@ function parseRows(text: string) {
       errors.push("sizeSystem and sizes must both be provided");
     }
 
+    // Parse images (pipe-separated URLs)
+    const imagesRaw = raw.images || "";
+    const imagesList = imagesRaw
+      ? imagesRaw.split("|").map((u) => u.trim()).filter(Boolean)
+      : null;
+
     parsed.push({
       raw,
       normalized: {
@@ -172,6 +180,7 @@ function parseRows(text: string) {
         price: price === null || Number.isNaN(price) ? null : price,
         description: raw.description || null,
         imageUrl: raw.imageUrl || null,
+        images: imagesList,
         sizeSystem,
         sizes,
         active,
@@ -231,6 +240,7 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
         price: row.normalized.price,
         description: row.normalized.description,
         imageUrl: row.normalized.imageUrl,
+        images: row.normalized.images,
         sizeSystem: row.normalized.sizeSystem,
         sizes: row.normalized.sizes,
         active: row.normalized.active ?? true,

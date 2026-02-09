@@ -5,7 +5,7 @@ import type { Product } from "@prisma/client";
 import type { Locale } from "@/lib/i18n";
 import { createProduct, updateProduct } from "./actions";
 import ImageUpload from "@/components/admin/ImageUpload";
-import { GripVertical, X, Plus, Trash2 } from "lucide-react";
+import { GripVertical, X, Plus, Trash2, Upload, Loader2 } from "lucide-react";
 
 // Shoe size systems with default sizes
 const SIZE_SYSTEMS: Record<string, { label: string; sizes: string[] }> = {
@@ -218,11 +218,38 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     };
   }, []);
 
+  const [isUploadingExtra, setIsUploadingExtra] = useState(false);
+
   // Image management
   const handleAddImage = () => {
-    if (newImageUrl.trim() && images.length < 10) {
+    if (newImageUrl.trim() && images.length < 4) {
       setImages([...images, newImageUrl.trim()]);
       setNewImageUrl("");
+    }
+  };
+
+  const handleExtraImageUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 5 * 1024 * 1024) return;
+    if (images.length >= 4) return;
+
+    setIsUploadingExtra(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/admin/upload", {
+        method: "POST",
+        headers: { "x-admin-secret": process.env.NEXT_PUBLIC_ADMIN_SECRET || "" },
+        body: formData,
+      });
+      const data = await response.json();
+      if (response.ok && data.ok) {
+        setImages((prev) => [...prev, data.data.url]);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setIsUploadingExtra(false);
     }
   };
 
@@ -483,9 +510,10 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
                 {/* Additional Images (max 10) */}
                 <div className="rounded-2xl border border-zinc-200 p-4">
-                  <label className="block text-zinc-700 text-sm font-medium mb-3">
-                    額外圖片 <span className="text-zinc-400 font-normal">({images.length}/10)</span>
+                  <label className="block text-zinc-700 text-sm font-medium mb-1">
+                    額外圖片 <span className="text-zinc-400 font-normal">({images.length}/4)</span>
                   </label>
+                  <p className="text-xs text-zinc-400 mb-3">連同主圖最多 5 張。第一張為主圖。</p>
 
                   {/* Image thumbnails grid */}
                   {images.length > 0 && (
@@ -529,30 +557,62 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                   )}
 
                   {/* Add new image */}
-                  {images.length < 10 && (
-                    <div className="flex gap-2">
-                      <input
-                        type="url"
-                        value={newImageUrl}
-                        onChange={(e) => setNewImageUrl(e.target.value)}
-                        disabled={isPending}
-                        className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                        placeholder="Paste additional image URL"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddImage();
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddImage}
-                        disabled={isPending || !newImageUrl.trim()}
-                        className="rounded-xl bg-zinc-100 px-3 py-2 text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                  {images.length < 4 && (
+                    <div className="space-y-2">
+                      {/* File upload */}
+                      <label
+                        className={`flex items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed border-zinc-300 bg-zinc-50 px-3 py-3 text-sm text-zinc-600 hover:border-[#6B7A2F] hover:text-[#6B7A2F] transition-colors cursor-pointer ${
+                          isPending || isUploadingExtra ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                       >
-                        <Plus size={18} />
-                      </button>
+                        {isUploadingExtra ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            <span>Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={16} />
+                            <span>Upload Image</span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleExtraImageUpload(file);
+                            e.target.value = "";
+                          }}
+                          disabled={isPending || isUploadingExtra}
+                          className="hidden"
+                        />
+                      </label>
+                      {/* URL paste */}
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={newImageUrl}
+                          onChange={(e) => setNewImageUrl(e.target.value)}
+                          disabled={isPending}
+                          className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                          placeholder="Or paste image URL"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddImage();
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddImage}
+                          disabled={isPending || !newImageUrl.trim()}
+                          className="rounded-xl bg-zinc-100 px-3 py-2 text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                        >
+                          <Plus size={18} />
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

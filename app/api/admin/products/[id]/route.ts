@@ -131,6 +131,44 @@ export const PATCH = withApi(
       }
     }
 
+    if (body.images !== undefined) {
+      if (body.images === null) {
+        updateData.images = [];
+      } else if (Array.isArray(body.images)) {
+        if (body.images.length > 4) {
+          throw new ApiError(400, "BAD_REQUEST", "Max 4 additional images allowed");
+        }
+        for (const url of body.images) {
+          if (typeof url !== "string" || !url.startsWith("http")) {
+            throw new ApiError(400, "BAD_REQUEST", "Each image must be a valid URL");
+          }
+        }
+        updateData.images = body.images;
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "images must be an array or null");
+      }
+    }
+
+    if (body.sku !== undefined) {
+      if (body.sku === null || body.sku === "") {
+        updateData.sku = null;
+      } else if (typeof body.sku === "string") {
+        updateData.sku = body.sku.trim();
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "sku must be a string or null");
+      }
+    }
+
+    if (body.shoeType !== undefined) {
+      if (body.shoeType === null || body.shoeType === "") {
+        updateData.shoeType = null;
+      } else if (typeof body.shoeType === "string") {
+        updateData.shoeType = body.shoeType.trim();
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "shoeType must be a string or null");
+      }
+    }
+
     if (body.active !== undefined) {
       if (typeof body.active !== "boolean") {
         throw new ApiError(400, "BAD_REQUEST", "active must be a boolean");

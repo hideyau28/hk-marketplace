@@ -92,12 +92,17 @@ type CreateProductPayload = {
   price: number;
   originalPrice?: number | null;
   imageUrl?: string | null;
+  images?: string[];
   category?: string | null;
   badges?: string[];
   sizeSystem?: string | null;
   sizes?: Record<string, number> | null;
   stock?: number;
   active?: boolean;
+  featured?: boolean;
+  sku?: string | null;
+  shoeType?: string | null;
+  promotionBadges?: string[];
 };
 
 function parseCreatePayload(body: any): CreateProductPayload {
@@ -148,18 +153,58 @@ function parseCreatePayload(body: any): CreateProductPayload {
     assertNonNegativeInt(body.stock, "stock");
   }
 
+  // Parse images array
+  let images: string[] | undefined = undefined;
+  if (body.images !== undefined && body.images !== null) {
+    if (!Array.isArray(body.images)) {
+      throw new ApiError(400, "BAD_REQUEST", "images must be an array");
+    }
+    if (body.images.length > 4) {
+      throw new ApiError(400, "BAD_REQUEST", "Max 4 additional images allowed");
+    }
+    for (const url of body.images) {
+      if (typeof url !== "string" || !url.startsWith("http")) {
+        throw new ApiError(400, "BAD_REQUEST", "Each image must be a valid URL");
+      }
+    }
+    images = body.images;
+  }
+
+  const sku =
+    typeof body.sku === "string" && body.sku.trim().length > 0
+      ? body.sku.trim()
+      : null;
+
+  const shoeType =
+    typeof body.shoeType === "string" && body.shoeType.trim().length > 0
+      ? body.shoeType.trim()
+      : null;
+
+  let promotionBadges: string[] | undefined = undefined;
+  if (body.promotionBadges !== undefined) {
+    if (!Array.isArray(body.promotionBadges)) {
+      throw new ApiError(400, "BAD_REQUEST", "promotionBadges must be an array");
+    }
+    promotionBadges = body.promotionBadges.filter((b: unknown) => typeof b === "string");
+  }
+
   return {
     brand,
     title: body.title.trim(),
     price: body.price,
     originalPrice,
     imageUrl: typeof body.imageUrl === "string" && body.imageUrl.trim().length > 0 ? body.imageUrl.trim() : null,
+    images,
     category,
     badges: badges === undefined ? undefined : badges,
     sizeSystem,
     sizes: sizes ?? undefined,
     stock: body.stock !== undefined ? body.stock : undefined,
     active: typeof body.active === "boolean" ? body.active : true,
+    featured: typeof body.featured === "boolean" ? body.featured : false,
+    sku,
+    shoeType,
+    promotionBadges,
   };
 }
 
@@ -239,12 +284,17 @@ export const POST = withApi(
         price: payload.price,
         originalPrice: payload.originalPrice,
         imageUrl: payload.imageUrl ?? null,
+        images: payload.images ?? [],
         category: payload.category ?? null,
         badges: payload.badges,
         sizeSystem: payload.sizeSystem ?? null,
         sizes: payload.sizes ?? undefined,
         stock: payload.stock ?? 0,
         active: payload.active ?? true,
+        featured: payload.featured ?? false,
+        sku: payload.sku ?? null,
+        shoeType: payload.shoeType ?? null,
+        promotionBadges: payload.promotionBadges ?? [],
       },
     });
 

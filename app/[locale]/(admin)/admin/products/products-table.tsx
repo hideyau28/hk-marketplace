@@ -633,6 +633,11 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       {product.imageUrl ? (
                         <div className="relative h-[36px] w-[36px] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
                           <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="36px" />
+                          {Array.isArray(product.images) && product.images.length > 0 && (
+                            <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#6B7A2F] text-[9px] font-bold text-white ring-1 ring-white">
+                              {1 + product.images.length}
+                            </span>
+                          )}
                         </div>
                       ) : (
                         <div className="h-[36px] w-[36px] rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />

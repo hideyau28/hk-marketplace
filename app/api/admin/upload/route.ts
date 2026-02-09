@@ -36,10 +36,15 @@ export async function POST(req: NextRequest) {
     const base64 = buffer.toString("base64");
     const dataURI = `data:${file.type};base64,${base64}`;
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary with auto-compression
     const result = await cloudinary.uploader.upload(dataURI, {
       folder: "hk-marketplace",
       resource_type: "auto",
+      transformation: [
+        { width: 1200, crop: "limit" },
+        { quality: "auto:good" },
+        { fetch_format: "auto" },
+      ],
     });
 
     return NextResponse.json({
