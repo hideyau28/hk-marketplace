@@ -130,6 +130,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       ? ((product as any).images as string[])
       : []
   );
+  const [videoUrl, setVideoUrl] = useState((product as any)?.videoUrl || "");
   const [newImageUrl, setNewImageUrl] = useState("");
   const [category, setCategory] = useState(product?.category || "");
   const [active, setActive] = useState(product?.active ?? true);
@@ -378,6 +379,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         originalPrice: originalPriceNum,
         imageUrl: imageUrl.trim() || null,
         images: images.length > 0 ? images : undefined,
+        videoUrl: videoUrl.trim() || null,
         category: category || null,
         badges: selectedBadgeIds,
         active,
@@ -554,6 +556,22 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                         <Plus size={18} />
                       </button>
                     </div>
+                  )}
+                </div>
+
+                {/* Video URL */}
+                <div className="rounded-2xl border border-zinc-200 p-4">
+                  <label className="block text-zinc-700 text-sm font-medium mb-3">影片連結（可選）</label>
+                  <input
+                    type="url"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    disabled={isPending}
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                    placeholder="貼 IG Reel 或 YouTube 連結"
+                  />
+                  {videoUrl.trim() && (
+                    <p className="mt-2 text-xs text-zinc-400">支援 YouTube / IG Reel 連結，會喺產品圖片位顯示 embed 影片</p>
                   )}
                 </div>
               </div>

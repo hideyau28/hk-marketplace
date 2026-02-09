@@ -92,6 +92,7 @@ type CreateProductPayload = {
   price: number;
   originalPrice?: number | null;
   imageUrl?: string | null;
+  videoUrl?: string | null;
   category?: string | null;
   badges?: string[];
   sizeSystem?: string | null;
@@ -154,6 +155,7 @@ function parseCreatePayload(body: any): CreateProductPayload {
     price: body.price,
     originalPrice,
     imageUrl: typeof body.imageUrl === "string" && body.imageUrl.trim().length > 0 ? body.imageUrl.trim() : null,
+    videoUrl: typeof body.videoUrl === "string" && body.videoUrl.trim().length > 0 ? body.videoUrl.trim() : null,
     category,
     badges: badges === undefined ? undefined : badges,
     sizeSystem,
@@ -239,6 +241,7 @@ export const POST = withApi(
         price: payload.price,
         originalPrice: payload.originalPrice,
         imageUrl: payload.imageUrl ?? null,
+        videoUrl: payload.videoUrl ?? null,
         category: payload.category ?? null,
         badges: payload.badges,
         sizeSystem: payload.sizeSystem ?? null,

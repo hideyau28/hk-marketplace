@@ -33,6 +33,7 @@ export default function LootCard({ product, index, onAdd }: Props) {
   const dualVariant = getDualVariantData(product);
   const variantLabel = getVariantLabel(product);
   const soldOut = isSoldOut(product);
+  const hasVideo = !!product.videoUrl;
 
   // 雙維 variant — 切換顏色時顯示對應圖片
   const [heroIndex, setHeroIndex] = useState(0);
@@ -103,6 +104,17 @@ export default function LootCard({ product, index, onAdd }: Props) {
                 style={{ backgroundColor: `${config.color}60` }}
               >
                 {config.label}
+              </span>
+            </div>
+          )}
+
+          {/* Video icon — 左下角 */}
+          {hasVideo && (
+            <div className="absolute bottom-2 left-2 z-10">
+              <span className="flex items-center gap-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="inline-block">
+                  <path d="M2 1.5v7l6-3.5-6-3.5z" fill="currentColor" />
+                </svg>
               </span>
             </div>
           )}
