@@ -318,6 +318,9 @@ model Tenant {
   paymeEnabled         Boolean   @default(false)
   paymeLink            String?
   paymeQrCodeUrl       String?
+  // BioLink settings
+  socialLinks          Json?     @default("[]")
+  deliveryOptions      Json?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 

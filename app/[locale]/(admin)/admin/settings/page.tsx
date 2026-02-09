@@ -2,7 +2,7 @@
 
 import { getDict, type Locale } from "@/lib/i18n";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare, Phone, Clock, MapPin, Truck } from "lucide-react";
+import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare, Phone, Clock, MapPin, Truck, CreditCard, Link2, Plus, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -42,6 +42,42 @@ type StoreSettings = {
   homeDeliveryIslandExtra: number | null;
   sfLockerFee: number | null;
   sfLockerFreeAbove: number | null;
+};
+
+type DeliveryOption = {
+  id: string;
+  label: string;
+  price: number;
+  note: string;
+  enabled: boolean;
+};
+
+type TenantSettings = {
+  fpsEnabled: boolean;
+  fpsAccountName: string;
+  fpsAccountId: string;
+  fpsQrCodeUrl: string;
+  paymeEnabled: boolean;
+  paymeLink: string;
+  paymeQrCodeUrl: string;
+  socialLinks: Array<{ url: string }>;
+  deliveryOptions: DeliveryOption[];
+};
+
+const DEFAULT_TENANT_SETTINGS: TenantSettings = {
+  fpsEnabled: false,
+  fpsAccountName: "",
+  fpsAccountId: "",
+  fpsQrCodeUrl: "",
+  paymeEnabled: false,
+  paymeLink: "",
+  paymeQrCodeUrl: "",
+  socialLinks: [],
+  deliveryOptions: [
+    { id: "sf-locker", label: "SF 智能櫃", price: 0, note: "免運費", enabled: true },
+    { id: "sf-cod", label: "順豐到付", price: 0, note: "到付運費", enabled: true },
+    { id: "meetup", label: "面交", price: 0, note: "地點待確認", enabled: true },
+  ],
 };
 
 type SaveState = "idle" | "saving" | "success" | "error";
@@ -162,6 +198,10 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [dataLoaded, setDataLoaded] = useState(false);
+  // Tenant-level settings (payment, delivery, social)
+  const [tenantData, setTenantData] = useState<TenantSettings>(DEFAULT_TENANT_SETTINGS);
+  const [tenantSaveState, setTenantSaveState] = useState<SaveState>("idle");
+  const [tenantError, setTenantError] = useState("");
 
   const t = useMemo(() => getDict(locale), [locale]);
 
@@ -207,6 +247,35 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
     return () => { mounted = false; };
   }, []); // Empty deps - load only once on mount
 
+  // Load tenant settings (payment/delivery/social) on mount
+  useEffect(() => {
+    let mounted = true;
+    async function loadTenantSettings() {
+      try {
+        const res = await fetch("/api/admin/tenant-settings");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (mounted && data.ok && data.data) {
+          setTenantData({
+            fpsEnabled: data.data.fpsEnabled ?? false,
+            fpsAccountName: data.data.fpsAccountName ?? "",
+            fpsAccountId: data.data.fpsAccountId ?? "",
+            fpsQrCodeUrl: data.data.fpsQrCodeUrl ?? "",
+            paymeEnabled: data.data.paymeEnabled ?? false,
+            paymeLink: data.data.paymeLink ?? "",
+            paymeQrCodeUrl: data.data.paymeQrCodeUrl ?? "",
+            socialLinks: data.data.socialLinks ?? [],
+            deliveryOptions: data.data.deliveryOptions ?? DEFAULT_TENANT_SETTINGS.deliveryOptions,
+          });
+        }
+      } catch {
+        // Ignore
+      }
+    }
+    loadTenantSettings();
+    return () => { mounted = false; };
+  }, []);
+
   // Generic handler for text fields
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -223,6 +292,86 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const toggleWelcomePopup = useCallback(() => {
     setFormData((prev) => ({ ...prev, welcomePopupEnabled: !prev.welcomePopupEnabled }));
   }, []);
+
+  // --- Tenant settings handlers ---
+  const handleTenantChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTenantData((prev) => ({ ...prev, [name]: value }));
+  }, []);
+
+  const toggleTenantBool = useCallback((field: keyof TenantSettings) => {
+    setTenantData((prev) => ({ ...prev, [field]: !prev[field] }));
+  }, []);
+
+  // Social link handlers
+  const addSocialLink = useCallback(() => {
+    setTenantData((prev) => ({ ...prev, socialLinks: [...prev.socialLinks, { url: "" }] }));
+  }, []);
+
+  const updateSocialLink = useCallback((index: number, url: string) => {
+    setTenantData((prev) => {
+      const links = [...prev.socialLinks];
+      links[index] = { url };
+      return { ...prev, socialLinks: links };
+    });
+  }, []);
+
+  const removeSocialLink = useCallback((index: number) => {
+    setTenantData((prev) => ({
+      ...prev,
+      socialLinks: prev.socialLinks.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  // Delivery option handlers
+  const addDeliveryOption = useCallback(() => {
+    setTenantData((prev) => ({
+      ...prev,
+      deliveryOptions: [
+        ...prev.deliveryOptions,
+        { id: `custom-${Date.now()}`, label: "", price: 0, note: "", enabled: true },
+      ],
+    }));
+  }, []);
+
+  const updateDeliveryOption = useCallback((index: number, field: string, value: string | number | boolean) => {
+    setTenantData((prev) => {
+      const options = [...prev.deliveryOptions];
+      options[index] = { ...options[index], [field]: value };
+      return { ...prev, deliveryOptions: options };
+    });
+  }, []);
+
+  const removeDeliveryOption = useCallback((index: number) => {
+    setTenantData((prev) => ({
+      ...prev,
+      deliveryOptions: prev.deliveryOptions.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  // Save tenant settings
+  const handleTenantSave = useCallback(async () => {
+    setTenantSaveState("saving");
+    setTenantError("");
+    try {
+      const res = await fetch("/api/admin/tenant-settings", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(tenantData),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setTenantSaveState("success");
+        setTimeout(() => setTenantSaveState("idle"), 3000);
+      } else {
+        setTenantSaveState("error");
+        setTenantError(data.error?.message || "儲存失敗");
+      }
+    } catch (err) {
+      setTenantSaveState("error");
+      setTenantError(err instanceof Error ? err.message : "Network error");
+    }
+  }, [tenantData]);
 
   // Save handler - only this syncs to server
   const handleSave = useCallback(async () => {
@@ -810,6 +959,285 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 />
                 <Description>Orders above this amount get free shipping. Default: $600</Description>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* === Tenant BioLink Settings === */}
+        <div className="mt-12 pt-8 border-t-2 border-zinc-300">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between mb-8">
+            <div className="space-y-1.5">
+              <h2 className="text-2xl font-bold tracking-tight text-zinc-900">BioLink 商店設定</h2>
+              <p className="text-zinc-600 text-sm">付款方式、送貨方式、社交連結</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <AnimatePresence mode="wait">
+                {tenantSaveState === "success" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className="flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-sm font-medium text-emerald-600"
+                  >
+                    <CheckCircle2 className="h-4 w-4" /> 已儲存
+                  </motion.div>
+                )}
+                {tenantSaveState === "error" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className="flex items-center gap-2 rounded-full bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-sm font-medium text-red-600"
+                  >
+                    <AlertCircle className="h-4 w-4" /> {tenantError || "Failed"}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <button
+                onClick={handleTenantSave}
+                disabled={tenantSaveState === "saving"}
+                className={cn(
+                  "inline-flex items-center justify-center gap-2 rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-50",
+                  tenantSaveState === "saving" && "opacity-80"
+                )}
+              >
+                {tenantSaveState === "saving" ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> 儲存中...</>
+                ) : (
+                  <><Save className="h-4 w-4" /> 儲存</>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {/* Payment Methods */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-zinc-600" />
+                  付款方式
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  設定 BioLink 落單嘅付款方式
+                </p>
+              </div>
+
+              {/* FPS */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>FPS 轉數快</Label>
+                    <Description>客人可以用 FPS 轉帳付款</Description>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={tenantData.fpsEnabled}
+                    onClick={() => toggleTenantBool("fpsEnabled")}
+                    className={cn(
+                      "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
+                      tenantData.fpsEnabled ? "bg-emerald-500" : "bg-zinc-300"
+                    )}
+                  >
+                    <span className={cn(
+                      "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
+                      tenantData.fpsEnabled ? "translate-x-5" : "translate-x-0"
+                    )} />
+                  </button>
+                </div>
+                {tenantData.fpsEnabled && (
+                  <div className="grid gap-4 md:grid-cols-3 pl-4 border-l-2 border-emerald-200">
+                    <div className="space-y-2">
+                      <Label>FPS 帳戶名</Label>
+                      <SettingsInput
+                        id="fpsAccountName"
+                        value={tenantData.fpsAccountName}
+                        onChange={handleTenantChange}
+                        placeholder="e.g. Chan Tai Man"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>FPS ID</Label>
+                      <SettingsInput
+                        id="fpsAccountId"
+                        value={tenantData.fpsAccountId}
+                        onChange={handleTenantChange}
+                        placeholder="e.g. 12345678"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>QR Code URL</Label>
+                      <SettingsInput
+                        id="fpsQrCodeUrl"
+                        value={tenantData.fpsQrCodeUrl}
+                        onChange={handleTenantChange}
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* PayMe */}
+              <div className="space-y-4 border-t border-zinc-200 pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>PayMe</Label>
+                    <Description>客人可以用 PayMe 付款</Description>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={tenantData.paymeEnabled}
+                    onClick={() => toggleTenantBool("paymeEnabled")}
+                    className={cn(
+                      "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
+                      tenantData.paymeEnabled ? "bg-emerald-500" : "bg-zinc-300"
+                    )}
+                  >
+                    <span className={cn(
+                      "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform",
+                      tenantData.paymeEnabled ? "translate-x-5" : "translate-x-0"
+                    )} />
+                  </button>
+                </div>
+                {tenantData.paymeEnabled && (
+                  <div className="grid gap-4 md:grid-cols-2 pl-4 border-l-2 border-emerald-200">
+                    <div className="space-y-2">
+                      <Label>PayMe Link</Label>
+                      <SettingsInput
+                        id="paymeLink"
+                        value={tenantData.paymeLink}
+                        onChange={handleTenantChange}
+                        placeholder="https://payme.hsbc.com.hk/..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>QR Code URL</Label>
+                      <SettingsInput
+                        id="paymeQrCodeUrl"
+                        value={tenantData.paymeQrCodeUrl}
+                        onChange={handleTenantChange}
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Delivery Options */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Truck className="h-5 w-5 text-zinc-600" />
+                  送貨方式
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  設定 BioLink 落單嘅送貨選項
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {tenantData.deliveryOptions.map((opt, i) => (
+                  <div key={opt.id} className="flex items-start gap-3 bg-white rounded-lg border border-zinc-200 p-4">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={opt.enabled}
+                      onClick={() => updateDeliveryOption(i, "enabled", !opt.enabled)}
+                      className={cn(
+                        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors mt-1",
+                        opt.enabled ? "bg-emerald-500" : "bg-zinc-300"
+                      )}
+                    >
+                      <span className={cn(
+                        "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transition-transform",
+                        opt.enabled ? "translate-x-4" : "translate-x-0"
+                      )} />
+                    </button>
+                    <div className="flex-1 grid gap-3 md:grid-cols-3">
+                      <div>
+                        <input
+                          value={opt.label}
+                          onChange={(e) => updateDeliveryOption(i, "label", e.target.value)}
+                          placeholder="送貨方式名稱"
+                          className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="number"
+                          value={opt.price}
+                          onChange={(e) => updateDeliveryOption(i, "price", Number(e.target.value) || 0)}
+                          placeholder="運費"
+                          min={0}
+                          className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          value={opt.note}
+                          onChange={(e) => updateDeliveryOption(i, "note", e.target.value)}
+                          placeholder="備註"
+                          className="flex h-9 w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeDeliveryOption(i)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+                      title="移除"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={addDeliveryOption}
+                className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
+              >
+                <Plus className="h-4 w-4" /> 新增送貨方式
+              </button>
+            </div>
+
+            {/* Social Links */}
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Link2 className="h-5 w-5 text-zinc-600" />
+                  社交連結
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  貼上 URL，系統自動識別平台並顯示對應 icon
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {tenantData.socialLinks.map((link, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <input
+                      value={link.url}
+                      onChange={(e) => updateSocialLink(i, e.target.value)}
+                      placeholder="https://instagram.com/yourshop"
+                      className="flex h-10 flex-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                    />
+                    <button
+                      onClick={() => removeSocialLink(i)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+                      title="移除"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={addSocialLink}
+                className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
+              >
+                <Plus className="h-4 w-4" /> 新增連結
+              </button>
             </div>
           </div>
         </div>

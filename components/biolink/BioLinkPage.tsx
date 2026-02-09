@@ -12,6 +12,7 @@ import CartBar from "./CartBar";
 import WhatsAppFAB from "./WhatsAppFAB";
 import CheckoutPanel from "./CheckoutPanel";
 import OrderConfirmation from "./OrderConfirmation";
+import ImageLightbox from "./ImageLightbox";
 
 type CartItem = {
   id: string;
@@ -47,6 +48,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
 
   const { featured, grid } = splitProducts(products);
 
@@ -154,7 +156,11 @@ export default function BioLinkPage({ tenant, products }: Props) {
       />
 
       {/* Light zone — Product grid */}
-      <ProductGrid products={grid} onAdd={addToCart} />
+      <ProductGrid
+        products={grid}
+        onAdd={addToCart}
+        onImageExpand={(images, index) => setLightbox({ images, index })}
+      />
 
       {/* Cart bar or WhatsApp FAB */}
       {cartCount > 0 ? (
@@ -185,6 +191,15 @@ export default function BioLinkPage({ tenant, products }: Props) {
         <OrderConfirmation
           order={orderResult}
           onClose={handleConfirmationClose}
+        />
+      )}
+
+      {/* Image lightbox */}
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          initialIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
         />
       )}
 

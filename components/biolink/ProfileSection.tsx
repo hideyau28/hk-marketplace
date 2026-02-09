@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { getAvatarFallback } from "@/lib/biolink-helpers";
 import type { TenantForBioLink } from "@/lib/biolink-helpers";
+import { detectPlatform } from "@/lib/social-icons";
 
 type Props = {
   tenant: TenantForBioLink;
@@ -11,6 +12,7 @@ type Props = {
 export default function ProfileSection({ tenant }: Props) {
   const fallbackLetter = getAvatarFallback(tenant);
   const color = tenant.brandColor || "#FF9500";
+  const socialLinks: Array<{ url: string }> = Array.isArray(tenant.socialLinks) ? tenant.socialLinks : [];
 
   return (
     <div className="relative -mt-12 px-5 pb-4">
@@ -45,6 +47,29 @@ export default function ProfileSection({ tenant }: Props) {
         <p className="text-zinc-400 text-sm text-center mt-1 line-clamp-2">
           {tenant.description}
         </p>
+      )}
+
+      {/* Social links */}
+      {socialLinks.length > 0 && (
+        <div className="flex gap-3 mt-3 justify-center">
+          {socialLinks.map((link, i) => {
+            const platform = detectPlatform(link.url);
+            const Icon = platform.icon;
+            return (
+              <a
+                key={i}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                style={{ backgroundColor: `${platform.color}20` }}
+                title={platform.name}
+              >
+                <Icon className="w-4 h-4" style={{ color: platform.color }} />
+              </a>
+            );
+          })}
+        </div>
       )}
 
     </div>
