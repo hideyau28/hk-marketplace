@@ -50,11 +50,23 @@ function assertNonNegativeInt(value: unknown, field: string) {
   }
 }
 
-function parseSizes(value: unknown): Record<string, number> | null {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseSizes(value: unknown): any {
   if (value === undefined || value === null) return null;
   if (typeof value === "object" && !Array.isArray(value)) {
+    const obj = value as Record<string, unknown>;
+    // DualVariantData format — pass through
+    if ("dimensions" in obj && "combinations" in obj) return obj;
+    const entries = Object.entries(obj);
+    if (entries.length === 0) return null;
+    // New single variant format: {"S": {"qty": N, "status": "..."}}
+    const firstVal = entries[0][1];
+    if (typeof firstVal === "object" && firstVal !== null && "qty" in (firstVal as Record<string, unknown>)) {
+      return obj;
+    }
+    // Legacy format: {"S": 5}
     const result: Record<string, number> = {};
-    for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+    for (const [key, val] of entries) {
       if (typeof val === "number" && val >= 0) {
         result[key] = val;
       }
@@ -96,7 +108,8 @@ type CreateProductPayload = {
   category?: string | null;
   badges?: string[];
   sizeSystem?: string | null;
-  sizes?: Record<string, number> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sizes?: any;
   stock?: number;
   active?: boolean;
 };
@@ -141,7 +154,9 @@ function parseCreatePayload(body: any): CreateProductPayload {
       ? body.sizeSystem.trim()
       : null;
   const sizes = parseSizes(body.sizes);
-  if ((sizeSystem && !sizes) || (!sizeSystem && sizes)) {
+  // DualVariantData 唔需要 sizeSystem（label 喺 dimensions 入面）
+  const isDualFormat = sizes && typeof sizes === "object" && "dimensions" in sizes;
+  if (!isDualFormat && ((sizeSystem && !sizes) || (!sizeSystem && sizes))) {
     throw new ApiError(400, "BAD_REQUEST", "sizeSystem and sizes must both be provided");
   }
 
