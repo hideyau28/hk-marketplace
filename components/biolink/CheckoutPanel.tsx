@@ -43,13 +43,16 @@ type Props = {
   total: number;
   tenant: TenantForBioLink;
   onOrderComplete: (result: OrderResult) => void;
+  onUpdateQty: (productId: string, variant: string | null, delta: number) => void;
+  onRemoveItem: (productId: string, variant: string | null) => void;
 };
 
-export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOrderComplete }: Props) {
+export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOrderComplete, onUpdateQty, onRemoveItem }: Props) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [delivery, setDelivery] = useState("sf-locker");
   const [payment, setPayment] = useState<"fps" | "payme" | "stripe">("fps");
+  const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -106,6 +109,7 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
           customer: { name: name.trim(), phone: phone.trim() },
           delivery: { method: delivery },
           payment: { method: payment },
+          note: note.trim() || null,
           total,
         }),
       });
@@ -181,10 +185,32 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
                   {item.variant && (
                     <p className="text-white/50 text-xs">{item.variant}</p>
                   )}
+                  {/* Qty controls */}
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <button
+                      onClick={() => onUpdateQty(item.id, item.variant, -1)}
+                      className="w-6 h-6 rounded-full bg-white/10 text-white/70 flex items-center justify-center text-sm font-bold hover:bg-white/20 active:scale-95 transition"
+                    >
+                      −
+                    </button>
+                    <span className="text-white text-sm font-medium tabular-nums w-5 text-center">{item.qty}</span>
+                    <button
+                      onClick={() => onUpdateQty(item.id, item.variant, 1)}
+                      className="w-6 h-6 rounded-full bg-white/10 text-white/70 flex items-center justify-center text-sm font-bold hover:bg-white/20 active:scale-95 transition"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
-                <div className="text-right flex-shrink-0">
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   <p className="text-white text-sm font-bold">{formatHKD(item.price * item.qty)}</p>
-                  <p className="text-white/40 text-xs">x{item.qty}</p>
+                  <button
+                    onClick={() => onRemoveItem(item.id, item.variant)}
+                    className="w-6 h-6 rounded-full bg-white/10 text-white/40 flex items-center justify-center text-xs hover:bg-red-500/20 hover:text-red-400 active:scale-95 transition"
+                    title="移除"
+                  >
+                    ✕
+                  </button>
                 </div>
               </div>
             ))}
@@ -242,6 +268,18 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Order note */}
+          <div className="mt-6">
+            <h3 className="text-white/80 text-xs font-bold uppercase tracking-wider mb-3">備註（可選）</h3>
+            <textarea
+              placeholder="星期六下午方便 / 刻字內容 / 過敏資料..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={2}
+              className="w-full px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/30 text-sm border border-white/10 focus:border-[#FF9500] focus:outline-none transition-colors resize-none"
+            />
           </div>
 
           {/* Payment method */}

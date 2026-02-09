@@ -50,6 +50,10 @@ export default function OrderConfirmation({ order, onClose }: Props) {
 
   const isFps = !!order.fpsInfo;
   const isPayme = !!order.paymeInfo;
+  // FPS/PayMe 有 info object 但冇 QR code 同冇 ID/link → fallback WhatsApp
+  const fpsHasContent = isFps && (order.fpsInfo!.qrCode || order.fpsInfo!.id);
+  const paymeHasContent = isPayme && (order.paymeInfo!.qrCode || order.paymeInfo!.link);
+  const showPaymentFallback = (isFps && !fpsHasContent) || (isPayme && !paymeHasContent);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -167,6 +171,15 @@ export default function OrderConfirmation({ order, onClose }: Props) {
                   打開 PayMe
                 </a>
               )}
+            </div>
+          )}
+
+          {/* Fallback: 冇 QR / ID / link 時顯示 WhatsApp 聯絡 */}
+          {showPaymentFallback && (
+            <div className="bg-white/5 rounded-2xl p-5 border border-white/10 mb-4 text-center">
+              <p className="text-white/70 text-sm">
+                請 WhatsApp 聯絡店主完成付款
+              </p>
             </div>
           )}
 
