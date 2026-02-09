@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getServerTenantId } from "@/lib/tenant";
+import { getAdminTenantId } from "@/lib/tenant";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
@@ -18,7 +18,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
   const { locale, id } = await params;
   const l = locale as Locale;
 
-  const tenantId = await getServerTenantId();
+  const tenantId = await getAdminTenantId();
 
   // Fetch order with payment attempts (scoped to tenant)
   const order = await prisma.order.findFirst({

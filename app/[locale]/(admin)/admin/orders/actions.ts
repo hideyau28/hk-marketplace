@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import type { Order, PaymentAttempt } from "@prisma/client";
 
@@ -79,11 +80,35 @@ function getApiBaseUrl() {
   return "http://localhost:3012";
 }
 
-export async function fetchOrders(status?: string, search?: string): Promise<FetchOrdersResult> {
-  const adminSecret = process.env.ADMIN_SECRET;
+/**
+ * Get auth headers for admin API calls.
+ * JWT token 優先，fallback 到 ADMIN_SECRET（super admin）
+ */
+async function getAdminAuthHeaders(): Promise<Record<string, string>> {
+  // 1. Try JWT cookie (tenant admin)
+  try {
+    const cookieStore = await cookies();
+    const jwt = cookieStore.get("tenant-admin-token");
+    if (jwt?.value) {
+      return { Authorization: `Bearer ${jwt.value}` };
+    }
+  } catch {
+    // cookies() not available, fall through
+  }
 
-  if (!adminSecret) {
-    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  // 2. Fallback to ADMIN_SECRET (super admin)
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (adminSecret) {
+    return { "x-admin-secret": adminSecret };
+  }
+
+  return {};
+}
+
+export async function fetchOrders(status?: string, search?: string): Promise<FetchOrdersResult> {
+  const authHeaders = await getAdminAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
   }
 
   try {
@@ -98,7 +123,7 @@ export async function fetchOrders(status?: string, search?: string): Promise<Fet
     const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
-        "x-admin-secret": adminSecret,
+        ...authHeaders,
         "Content-Type": "application/json",
       },
       cache: "no-store",
@@ -124,10 +149,9 @@ export async function fetchOrders(status?: string, search?: string): Promise<Fet
 }
 
 export async function updateOrderStatus(orderId: string, status: string, locale?: string): Promise<UpdateOrderResult> {
-  const adminSecret = process.env.ADMIN_SECRET;
-
-  if (!adminSecret) {
-    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  const authHeaders = await getAdminAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
   }
 
   // Validate status
@@ -141,7 +165,7 @@ export async function updateOrderStatus(orderId: string, status: string, locale?
     const response = await fetch(url.toString(), {
       method: "PATCH",
       headers: {
-        "x-admin-secret": adminSecret,
+        ...authHeaders,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ status: normalizedStatus }),

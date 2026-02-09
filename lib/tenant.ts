@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { verifyToken, getTokenFromRequest } from "@/lib/auth/jwt";
 
 export type TenantContext = {
   id: string;
@@ -103,11 +104,20 @@ export async function resolveTenant(req?: Request): Promise<TenantContext> {
 }
 
 export async function getTenantId(req?: Request): Promise<string> {
-  // Fast path: if middleware already resolved the tenant ID
   if (req) {
+    // Fast path: if middleware already resolved the tenant ID
     const cachedId = req.headers.get("x-tenant-id");
     if (cachedId) {
       return cachedId;
+    }
+
+    // Check JWT token (admin requests carry tenantId in JWT)
+    const token = getTokenFromRequest(req);
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload?.tenantId) {
+        return payload.tenantId;
+      }
     }
   }
 
@@ -134,4 +144,37 @@ export async function getServerTenantId(): Promise<string> {
   }
 
   return tenant.id;
+}
+
+/**
+ * Get tenantId for Admin Server Components / Server Actions.
+ * Priority:
+ * 1. tenant-admin-token JWT cookie → tenantId from payload
+ * 2. Fallback to slug-based resolution (getServerTenantId)
+ */
+export async function getAdminTenantId(): Promise<string> {
+  // 1. Try JWT cookie
+  try {
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const tokenCookie = cookieStore.get("tenant-admin-token");
+    if (tokenCookie?.value) {
+      const payload = verifyToken(tokenCookie.value);
+      if (payload?.tenantId) {
+        // Verify tenant exists and is active
+        const tenant = await prisma.tenant.findUnique({
+          where: { id: payload.tenantId },
+          select: { id: true, status: true },
+        });
+        if (tenant && tenant.status === "active") {
+          return tenant.id;
+        }
+      }
+    }
+  } catch {
+    // JWT verification failed, fall through
+  }
+
+  // 2. Fallback to slug-based resolution
+  return getServerTenantId();
 }

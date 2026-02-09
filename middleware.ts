@@ -113,13 +113,25 @@ export function middleware(request: NextRequest) {
 
   if (isAdminRoute && !isLoginRoute) {
     const sessionCookie = request.cookies.get("admin_session");
+    const tenantAdminCookie = request.cookies.get("tenant-admin-token");
 
-    if (!sessionCookie?.value) {
+    if (!sessionCookie?.value && !tenantAdminCookie?.value) {
       const localeMatch = pathname.match(/^\/([^/]+)/);
       const locale = localeMatch ? localeMatch[1] : "en";
 
       const loginUrl = new URL(`/${locale}/admin/login`, request.url);
       return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // --- Auto-redirect from login if already authenticated via JWT ---
+  if (isLoginRoute) {
+    const tenantAdminCookie = request.cookies.get("tenant-admin-token");
+    if (tenantAdminCookie?.value) {
+      const localeMatch = pathname.match(/^\/([^/]+)/);
+      const locale = localeMatch ? localeMatch[1] : "en";
+      const dashboardUrl = new URL(`/${locale}/admin`, request.url);
+      return NextResponse.redirect(dashboardUrl);
     }
   }
 

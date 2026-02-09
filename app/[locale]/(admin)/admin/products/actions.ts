@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import type { Product } from "@prisma/client";
 
@@ -54,11 +55,35 @@ function getApiBaseUrl() {
   return "http://localhost:3012";
 }
 
-export async function fetchProducts(active?: boolean): Promise<FetchProductsResult> {
-  const adminSecret = process.env.ADMIN_SECRET;
+/**
+ * Get auth headers for admin API calls.
+ * JWT token 優先，fallback 到 ADMIN_SECRET（super admin）
+ */
+async function getAdminAuthHeaders(): Promise<Record<string, string>> {
+  // 1. Try JWT cookie (tenant admin)
+  try {
+    const cookieStore = await cookies();
+    const jwt = cookieStore.get("tenant-admin-token");
+    if (jwt?.value) {
+      return { Authorization: `Bearer ${jwt.value}` };
+    }
+  } catch {
+    // cookies() not available, fall through
+  }
 
-  if (!adminSecret) {
-    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  // 2. Fallback to ADMIN_SECRET (super admin)
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (adminSecret) {
+    return { "x-admin-secret": adminSecret };
+  }
+
+  return {};
+}
+
+export async function fetchProducts(active?: boolean): Promise<FetchProductsResult> {
+  const authHeaders = await getAdminAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
   }
 
   try {
@@ -70,7 +95,7 @@ export async function fetchProducts(active?: boolean): Promise<FetchProductsResu
     const response = await fetch(url.toString(), {
       method: "GET",
       headers: {
-        "x-admin-secret": adminSecret,
+        ...authHeaders,
         "Content-Type": "application/json",
       },
       cache: "no-store",
@@ -116,10 +141,9 @@ export async function createProduct(
   },
   locale?: string
 ): Promise<CreateProductResult> {
-  const adminSecret = process.env.ADMIN_SECRET;
-
-  if (!adminSecret) {
-    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  const authHeaders = await getAdminAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
   }
 
   try {
@@ -129,7 +153,7 @@ export async function createProduct(
     const response = await fetch(url.toString(), {
       method: "POST",
       headers: {
-        "x-admin-secret": adminSecret,
+        ...authHeaders,
         "x-idempotency-key": idempotencyKey,
         "Content-Type": "application/json",
       },
@@ -178,10 +202,9 @@ export async function updateProduct(
   },
   locale?: string
 ): Promise<UpdateProductResult> {
-  const adminSecret = process.env.ADMIN_SECRET;
-
-  if (!adminSecret) {
-    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  const authHeaders = await getAdminAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
   }
 
   try {
@@ -189,7 +212,7 @@ export async function updateProduct(
     const response = await fetch(url.toString(), {
       method: "PATCH",
       headers: {
-        "x-admin-secret": adminSecret,
+        ...authHeaders,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
@@ -219,10 +242,9 @@ export async function toggleFeatured(
   productId: string,
   featured: boolean
 ): Promise<ToggleFeaturedResult> {
-  const adminSecret = process.env.ADMIN_SECRET;
-
-  if (!adminSecret) {
-    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  const authHeaders = await getAdminAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
   }
 
   try {
@@ -230,7 +252,7 @@ export async function toggleFeatured(
     const response = await fetch(url.toString(), {
       method: "PATCH",
       headers: {
-        "x-admin-secret": adminSecret,
+        ...authHeaders,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ featured }),
@@ -260,11 +282,11 @@ export async function toggleHotSelling(
   currentBadges: string[],
   add: boolean
 ): Promise<ToggleHotSellingResult> {
-  const adminSecret = process.env.ADMIN_SECRET;
+  const authHeaders = await getAdminAuthHeaders();
   const HOT_SELLING_BADGE = "今期熱賣";
 
-  if (!adminSecret) {
-    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  if (Object.keys(authHeaders).length === 0) {
+    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
   }
 
   try {
@@ -282,7 +304,7 @@ export async function toggleHotSelling(
     const response = await fetch(url.toString(), {
       method: "PATCH",
       headers: {
-        "x-admin-secret": adminSecret,
+        ...authHeaders,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ promotionBadges: newBadges }),
@@ -312,10 +334,10 @@ export async function updatePrice(
   price: number,
   originalPrice?: number | null
 ): Promise<UpdatePriceResult> {
-  const adminSecret = process.env.ADMIN_SECRET;
+  const authHeaders = await getAdminAuthHeaders();
 
-  if (!adminSecret) {
-    return { ok: false, code: "CONFIG_ERROR", message: "Admin secret not configured" };
+  if (Object.keys(authHeaders).length === 0) {
+    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
   }
 
   try {
@@ -328,7 +350,7 @@ export async function updatePrice(
     const response = await fetch(url.toString(), {
       method: "PATCH",
       headers: {
-        "x-admin-secret": adminSecret,
+        ...authHeaders,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
