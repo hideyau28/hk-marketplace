@@ -12,6 +12,8 @@ type Product = {
   originalPrice: number | null;
   imageUrl: string | null;
   images: string[];
+  sizes: Record<string, unknown> | null;
+  sizeSystem: string | null;
 };
 
 type Tenant = {

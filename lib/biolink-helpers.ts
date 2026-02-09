@@ -45,6 +45,7 @@ export type ProductForBioLink = {
   images: string[];
   videoUrl?: string | null;
   sizes: Record<string, number> | DualVariantData | null;
+  sizeSystem?: string | null;
   badges: string[] | null;
   featured: boolean;
   createdAt: Date;
@@ -106,10 +107,26 @@ export function getVisibleVariants(
       .filter((v) => v.active && v.stock >= 0)
       .map((v) => ({ name: v.name, stock: v.stock, price: v.price }));
   }
-  // Fallback: legacy sizes JSON
+  // Fallback: sizes JSON (new or legacy format)
   if (product.sizes && typeof product.sizes === "object") {
-    const entries = Object.entries(product.sizes);
+    const raw = product.sizes as Record<string, unknown>;
+    const entries = Object.entries(raw);
     if (entries.length > 0) {
+      // New format: {"S": {"qty": 5, "status": "available"}}
+      const firstVal = entries[0][1];
+      if (typeof firstVal === "object" && firstVal !== null && "qty" in (firstVal as Record<string, unknown>)) {
+        return entries
+          .filter(([, val]) => {
+            const v = val as { qty: number; status?: string };
+            return v.status !== "hidden";
+          })
+          .map(([name, val]) => ({
+            name,
+            stock: (val as { qty: number }).qty,
+            price: null,
+          }));
+      }
+      // Legacy format: {"S": 5}
       return entries.map(([name, qty]) => ({
         name,
         stock: Number(qty),
@@ -133,7 +150,9 @@ export function getVariantLabel(product: ProductForBioLink): string {
   if (isDualVariant(product.sizes)) return product.sizes.dimensions[1] || "款式";
   // If has ProductVariant relation, generic label
   if (product.variants && product.variants.length > 0) return "款式";
-  // If has old sizes, assume shoe sizes
+  // 用 sizeSystem 做 label（商戶自訂選項名稱）
+  if (product.sizeSystem) return product.sizeSystem;
+  // Fallback: if has sizes, use generic label
   if (product.sizes && Object.keys(product.sizes).length > 0) return "尺碼";
   return "款式";
 }
