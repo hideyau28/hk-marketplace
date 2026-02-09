@@ -35,7 +35,7 @@ export default async function CustomerLayout({
 
   // Fetch welcome popup settings (tenant-aware)
   const tenantId = await getServerTenantId();
-  const storeSettings = await prisma.storeSettings.findUnique({
+  const storeSettings = await prisma.storeSettings.findFirst({
     where: { tenantId },
   }).catch(() => null);
 
