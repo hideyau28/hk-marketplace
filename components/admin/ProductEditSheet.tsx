@@ -154,9 +154,14 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
         : `/api/admin/products/${product!.id}`;
       const method = isNew ? "POST" : "PUT";
 
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (isNew) {
+        headers["x-idempotency-key"] = crypto.randomUUID();
+      }
+
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(body),
       });
 
