@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { prisma } from "@/lib/prisma";
+import { getStoreName } from "@/lib/get-store-name";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -16,17 +16,10 @@ const geistMono = localFont({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  let tenantName = "HK•Market";
-  try {
-    const tenant = await prisma.tenant.findUnique({
-      where: { slug: "maysshop" },
-      select: { name: true },
-    });
-    if (tenant?.name) tenantName = tenant.name;
-  } catch {}
+  const storeName = await getStoreName();
 
   return {
-    title: `${tenantName} - Sports Gear for Hong Kong`,
+    title: `${storeName} - Sports Gear for Hong Kong`,
     description: "Shop the latest sports apparel and gear from Nike, Adidas, Puma and more.",
     manifest: "/manifest.json",
   };

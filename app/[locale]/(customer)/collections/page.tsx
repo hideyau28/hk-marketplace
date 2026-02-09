@@ -1,33 +1,21 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
+import { getServerTenantId } from "@/lib/tenant";
+import { getStoreName } from "@/lib/get-store-name";
 import { CollectionsClient } from "./collections-client";
 import { Metadata } from "next";
 
-const DEFAULT_TENANT_SLUG = "maysshop";
-
-async function getTenantName(): Promise<string> {
-  try {
-    const tenant = await prisma.tenant.findUnique({
-      where: { slug: DEFAULT_TENANT_SLUG },
-      select: { name: true },
-    });
-    return tenant?.name || "HK•Market";
-  } catch {
-    return "HK•Market";
-  }
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const tenantName = await getTenantName();
+  const storeName = await getStoreName();
 
   return {
-    title: `My Wishlist - ${tenantName}`,
-    description: `Your saved products and favorites at ${tenantName}.`,
+    title: `My Wishlist - ${storeName}`,
+    description: `Your saved products and favorites at ${storeName}.`,
     openGraph: {
-      title: `My Wishlist - ${tenantName}`,
-      description: `Your saved products and favorites at ${tenantName}.`,
+      title: `My Wishlist - ${storeName}`,
+      description: `Your saved products and favorites at ${storeName}.`,
       type: "website",
       locale: locale === "zh-HK" ? "zh_HK" : "en_US",
     },
@@ -38,9 +26,10 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
   const { locale } = await params;
   const l = locale as Locale;
 
-  // Fetch all active products (client will filter by wishlist IDs)
+  // Fetch active products for this tenant (client will filter by wishlist IDs)
+  const tenantId = await getServerTenantId();
   const products = await prisma.product.findMany({
-    where: { active: true },
+    where: { active: true, tenantId },
     orderBy: { createdAt: "desc" },
   });
 

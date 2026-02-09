@@ -1,6 +1,7 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { getStoreName } from "@/lib/get-store-name";
+import { getServerTenantId } from "@/lib/tenant";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -24,8 +25,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale, id } = await params;
   const storeName = await getStoreName();
 
-  const product = await prisma.product.findUnique({
-    where: { id, active: true },
+  const tenantId = await getServerTenantId();
+
+  const product = await prisma.product.findFirst({
+    where: { id, active: true, tenantId },
   });
 
   if (!product) {
@@ -56,9 +59,10 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   const { locale, id } = await params;
   const t = getDict(locale as Locale);
 
-  // Fetch product from database with variants
-  const product = await prisma.product.findUnique({
-    where: { id, active: true },
+  // Fetch product from database with variants (scoped to current tenant)
+  const tenantId = await getServerTenantId();
+  const product = await prisma.product.findFirst({
+    where: { id, active: true, tenantId },
     include: {
       variants: {
         where: { active: true },
@@ -114,11 +118,12 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     ? categoryTranslations[p.category][locale as "en" | "zh-HK"] || p.category
     : p.category;
 
-  // Fetch related products (same category, max 4)
+  // Fetch related products (same category, same tenant, max 4)
   const relatedProducts = product.category
     ? await prisma.product.findMany({
         where: {
           active: true,
+          tenantId,
           category: product.category,
           id: { not: product.id },
         },
