@@ -140,12 +140,21 @@ export const PUT = withApi(
       sfLockerFreeAbove: body?.sfLockerFreeAbove,
     };
 
-    const updated = await prisma.storeSettings.upsert({
+    const existingSettings = await prisma.storeSettings.findFirst({
       where: { tenantId },
-      update: data,
-      create: { tenantId, ...data },
-      select: SETTINGS_SELECT,
+      select: { id: true },
     });
+
+    const updated = existingSettings
+      ? await prisma.storeSettings.update({
+          where: { id: existingSettings.id },
+          data,
+          select: SETTINGS_SELECT,
+        })
+      : await prisma.storeSettings.create({
+          data: { tenantId, ...data },
+          select: SETTINGS_SELECT,
+        });
 
     // 6) persist idempotency record
     await prisma.idempotencyKey.create({
