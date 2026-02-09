@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 
 type Props = {
@@ -9,6 +9,8 @@ type Props = {
   /** Aspect ratio class, default aspect-square */
   aspectClass?: string;
   priority?: boolean;
+  /** 外部控制顯示邊張圖（用於雙維 variant 切換顏色） */
+  activeIndex?: number;
 };
 
 export default function ImageCarousel({
@@ -16,8 +18,16 @@ export default function ImageCarousel({
   alt,
   aspectClass = "aspect-square",
   priority = false,
+  activeIndex,
 }: Props) {
   const [current, setCurrent] = useState(0);
+
+  // 外部 activeIndex 改變時 scroll 到對應圖片
+  useEffect(() => {
+    if (activeIndex !== undefined && activeIndex >= 0 && activeIndex < images.length) {
+      setCurrent(activeIndex);
+    }
+  }, [activeIndex, images.length]);
   const touchStartX = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 

@@ -124,7 +124,7 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
       const result: OrderResult = {
         ...(json.data as OrderResult),
         items: cart.map((item) => ({
-          name: item.title + (item.variant ? ` · ${item.variant}` : ""),
+          name: item.title + (item.variant ? ` · ${item.variant.replace(/\|/g, " · ")}` : ""),
           qty: item.qty,
           unitPrice: item.price,
         })),
@@ -183,7 +183,7 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
                 <div className="flex-1 min-w-0">
                   <p className="text-white text-sm font-medium truncate">{item.title}</p>
                   {item.variant && (
-                    <p className="text-white/50 text-xs">{item.variant}</p>
+                    <p className="text-white/50 text-xs">{item.variant.replace(/\|/g, " · ")}</p>
                   )}
                   {/* Qty controls */}
                   <div className="flex items-center gap-2 mt-1.5">

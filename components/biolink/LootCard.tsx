@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import {
   type ProductForBioLink,
@@ -9,6 +10,7 @@ import {
   getAllImages,
   getVisibleVariants,
   getVariantLabel,
+  getDualVariantData,
   isSoldOut,
   formatHKD,
 } from "@/lib/biolink-helpers";
@@ -28,8 +30,13 @@ export default function LootCard({ product, index, onAdd }: Props) {
   const images = getAllImages(product);
   const heroImage = images[0] || null;
   const variants = getVisibleVariants(product);
+  const dualVariant = getDualVariantData(product);
   const variantLabel = getVariantLabel(product);
   const soldOut = isSoldOut(product);
+
+  // 雙維 variant — 切換顏色時顯示對應圖片
+  const [heroIndex, setHeroIndex] = useState(0);
+  const displayHero = images[heroIndex] || heroImage;
 
   const isOnSale =
     product.originalPrice != null &&
@@ -57,9 +64,9 @@ export default function LootCard({ product, index, onAdd }: Props) {
 
         {/* Image */}
         <div className="relative aspect-square">
-          {heroImage ? (
+          {displayHero ? (
             <Image
-              src={heroImage}
+              src={displayHero}
               alt={product.title}
               fill
               className="object-cover"
@@ -133,6 +140,8 @@ export default function LootCard({ product, index, onAdd }: Props) {
             productPrice={product.price}
             soldOut={soldOut}
             onAdd={(variant) => onAdd(product, variant)}
+            dualVariant={dualVariant}
+            onImageChange={setHeroIndex}
           />
         </div>
       </div>

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import BioLinkPage from "@/components/biolink/BioLinkPage";
 import type { Metadata } from "next";
-import type { ProductForBioLink } from "@/lib/biolink-helpers";
+import type { ProductForBioLink, DualVariantData } from "@/lib/biolink-helpers";
 
 type PageProps = {
   params: Promise<{ slug: string; locale: string }>;
@@ -76,7 +76,7 @@ export default async function SlugPage({ params }: PageProps) {
     originalPrice: p.originalPrice,
     imageUrl: p.imageUrl,
     images: p.images,
-    sizes: p.sizes as Record<string, number> | null,
+    sizes: p.sizes as Record<string, number> | DualVariantData | null,
     badges: p.badges as string[] | null,
     featured: p.featured,
     createdAt: p.createdAt,
