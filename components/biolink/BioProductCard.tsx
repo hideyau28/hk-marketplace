@@ -8,6 +8,8 @@ import {
   isSoldOut,
   isNew,
   getLowStockCount,
+  isPreorder as checkPreorder,
+  formatArrivalDate,
   formatHKD,
 } from "@/lib/biolink-helpers";
 import ImageCarousel from "./ImageCarousel";
@@ -28,6 +30,7 @@ export default function BioProductCard({ product, onAdd }: Props) {
   const soldOut = isSoldOut(product);
   const isNewProduct = isNew(product);
   const lowStock = variants ? getLowStockCount(variants) : null;
+  const preorder = checkPreorder(product);
 
   const isOnSale =
     product.originalPrice != null && product.originalPrice > product.price;
@@ -45,7 +48,12 @@ export default function BioProductCard({ product, onAdd }: Props) {
         {/* Badges */}
         {!soldOut && (
           <div className="absolute top-2 left-2 z-10 flex gap-1">
-            {isNewProduct && <NewBadge />}
+            {preorder && (
+              <span className="bg-[#FF9500] text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                PRE-ORDER
+              </span>
+            )}
+            {!preorder && isNewProduct && <NewBadge />}
             {lowStock && <LowStockBadge count={lowStock} />}
           </div>
         )}
@@ -57,7 +65,7 @@ export default function BioProductCard({ product, onAdd }: Props) {
           {product.title}
         </h3>
 
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-1">
           {isOnSale ? (
             <>
               <span className="text-zinc-900 font-bold text-base">
@@ -77,6 +85,14 @@ export default function BioProductCard({ product, onAdd }: Props) {
           )}
         </div>
 
+        {preorder && product.preorderDate && (
+          <p className="text-xs text-zinc-400 mb-2">
+            📦 {formatArrivalDate(product.preorderDate)}
+          </p>
+        )}
+
+        {!preorder && <div className="mb-2" />}
+
         <VariantSelector
           variants={variants || []}
           label={variantLabel}
@@ -84,6 +100,7 @@ export default function BioProductCard({ product, onAdd }: Props) {
           soldOut={soldOut}
           onAdd={(variant) => onAdd(product, variant)}
           theme="light"
+          isPreorder={preorder}
         />
       </div>
     </div>

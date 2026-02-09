@@ -12,6 +12,8 @@ type CartItem = {
   variantId?: string;
   qty: number;
   imageUrl: string | null;
+  isPreorder?: boolean;
+  preorderDate?: string | null;
 };
 
 const DELIVERY_OPTIONS: Array<{ id: string; label: string; note: string }> = [
@@ -34,6 +36,8 @@ type OrderResult = {
   customer?: { name: string; phone: string };
   delivery?: { method: string; label: string };
   paymentMethod?: string;
+  hasPreorder?: boolean;
+  latestPreorderDate?: string | null;
 };
 
 type Props = {
@@ -121,6 +125,13 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
       }
 
       const deliveryOpt = DELIVERY_OPTIONS.find((d) => d.id === delivery);
+      const preorderItems = cart.filter((item) => item.isPreorder && item.preorderDate);
+      const latestPreorderDate = preorderItems.length > 0
+        ? preorderItems.reduce((latest, item) => {
+            const d = item.preorderDate!;
+            return !latest || d > latest ? d : latest;
+          }, "" as string)
+        : null;
       const result: OrderResult = {
         ...(json.data as OrderResult),
         items: cart.map((item) => ({
@@ -131,6 +142,8 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
         customer: { name: name.trim(), phone: phone.trim() },
         delivery: { method: delivery, label: deliveryOpt?.label || delivery },
         paymentMethod: payment,
+        hasPreorder: preorderItems.length > 0,
+        latestPreorderDate,
       };
       onOrderComplete(result);
     } catch (err) {
@@ -166,6 +179,15 @@ export default function CheckoutPanel({ open, onClose, cart, total, tenant, onOr
         </div>
 
         <div className="px-5 pb-8">
+          {/* Preorder warning */}
+          {cart.some((item) => item.isPreorder) && (
+            <div className="mt-4 bg-[#FF9500]/10 border border-[#FF9500]/30 rounded-xl p-3">
+              <p className="text-sm text-[#FF9500]">
+                ⚠️ 購物車包含預購商品，預計到貨後才會安排送貨。
+              </p>
+            </div>
+          )}
+
           {/* Cart items */}
           <div className="mt-4 space-y-3">
             {cart.map((item) => (

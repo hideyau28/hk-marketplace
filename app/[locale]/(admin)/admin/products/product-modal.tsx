@@ -157,6 +157,18 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       ? ((product as any).promotionBadges as string[])
       : []
   );
+  // Pre-order fields
+  const [preorderEnabled, setPreorderEnabled] = useState(
+    !!(product as any)?.preorderDate
+  );
+  const [preorderDate, setPreorderDate] = useState(() => {
+    const d = (product as any)?.preorderDate;
+    if (!d) return "";
+    return new Date(d).toISOString().slice(0, 10); // YYYY-MM-DD
+  });
+  const [preorderNote, setPreorderNote] = useState(
+    (product as any)?.preorderNote || ""
+  );
   const [badgeOptions, setBadgeOptions] = useState<BadgeOption[]>([]);
   const [badgeLoading, setBadgeLoading] = useState(false);
   const [badgeError, setBadgeError] = useState<string | null>(null);
@@ -387,6 +399,12 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         sizes: Object.keys(filteredSizeInventory).length > 0 ? filteredSizeInventory : null,
         stock: totalStock,
         promotionBadges: promotionBadges.length > 0 ? promotionBadges : undefined,
+        preorderDate: preorderEnabled && preorderDate
+          ? new Date(preorderDate).toISOString()
+          : null,
+        preorderNote: preorderEnabled && preorderNote.trim()
+          ? preorderNote.trim()
+          : null,
       };
 
       if (product) {
@@ -805,6 +823,49 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     />
                     <label htmlFor="featured" className="text-zinc-700 text-sm">⭐ Featured</label>
                   </div>
+                </div>
+
+                {/* Pre-order settings */}
+                <div className="rounded-xl border border-zinc-200 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="preorder-enabled"
+                      checked={preorderEnabled}
+                      onChange={(e) => setPreorderEnabled(e.target.checked)}
+                      disabled={isPending}
+                      className="h-4 w-4 accent-[#FF9500] disabled:opacity-50"
+                    />
+                    <label htmlFor="preorder-enabled" className="text-zinc-700 text-sm font-medium">
+                      📦 啟用預購模式
+                    </label>
+                  </div>
+
+                  {preorderEnabled && (
+                    <div className="space-y-3 pl-6">
+                      <div>
+                        <label className="block text-zinc-700 text-sm font-medium mb-2">預計到貨日期</label>
+                        <input
+                          type="date"
+                          value={preorderDate}
+                          onChange={(e) => setPreorderDate(e.target.value)}
+                          disabled={isPending}
+                          className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-zinc-700 text-sm font-medium mb-2">預購備註</label>
+                        <input
+                          type="text"
+                          value={preorderNote}
+                          onChange={(e) => setPreorderNote(e.target.value)}
+                          disabled={isPending}
+                          placeholder="韓國直送，約 7-14 工作天"
+                          className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

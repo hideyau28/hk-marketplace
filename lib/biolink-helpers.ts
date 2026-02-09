@@ -29,6 +29,9 @@ export type ProductForBioLink = {
   createdAt: Date;
   // ProductVariant relation (may be included)
   variants?: VariantForBioLink[];
+  // Pre-order fields
+  preorderDate?: string | Date | null;
+  preorderNote?: string | null;
 };
 
 export type TenantForBioLink = {
@@ -169,6 +172,29 @@ export function getBadgeText(product: ProductForBioLink): string | null {
 
 export function getAvatarFallback(tenant: { name: string }): string {
   return tenant.name.charAt(0).toUpperCase();
+}
+
+// ─── Pre-order helpers ───
+
+/** 商品係咪預購中（有 preorderDate 且未到期） */
+export function isPreorder(product: ProductForBioLink): boolean {
+  if (!product.preorderDate) return false;
+  return new Date(product.preorderDate) > new Date();
+}
+
+/** 格式化到貨日期，顯示友好嘅中文描述 */
+export function formatArrivalDate(date: string | Date): string {
+  const d = new Date(date);
+  const now = new Date();
+  const diffDays = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  const month = d.getMonth() + 1;
+
+  if (diffDays <= 0) return "即將到貨";
+  if (diffDays <= 7) return `約 ${diffDays} 日內到貨`;
+  if (diffDays <= 14) return "約 1-2 星期到貨";
+  if (diffDays <= 30) return `預計 ${month} 月底到港`;
+  return `預計 ${month} 月到港`;
 }
 
 // ─── Price formatting ───
