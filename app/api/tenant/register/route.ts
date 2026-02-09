@@ -100,7 +100,6 @@ export const POST = withApi(async (req: Request) => {
     // --- Default store settings with delivery options ---
     await prisma.storeSettings.create({
       data: {
-        id: `default`,
         tenantId: tenant.id,
         storeName: cleanName,
         whatsappNumber: cleanWhatsapp,

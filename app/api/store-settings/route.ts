@@ -65,8 +65,8 @@ function sha256(s: string) {
 // GET /api/store-settings
 export const GET = withApi(async (req) => {
   const tenantId = await getTenantId(req);
-  const row = await prisma.storeSettings.findFirst({
-    where: { id: "default", tenantId },
+  const row = await prisma.storeSettings.findUnique({
+    where: { tenantId },
     select: SETTINGS_SELECT,
   }).catch(() => null);
   return ok(req, row ?? null);
@@ -141,9 +141,9 @@ export const PUT = withApi(
     };
 
     const updated = await prisma.storeSettings.upsert({
-      where: { id: (body?.id ?? "default") as string },
+      where: { tenantId },
       update: data,
-      create: { id: (body?.id ?? "default") as string, tenantId, ...data },
+      create: { tenantId, ...data },
       select: SETTINGS_SELECT,
     });
 

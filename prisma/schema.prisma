@@ -7,7 +7,7 @@ datasource db {
 }
 
 model StoreSettings {
-  id                      String   @id @default("default")
+  id                      String   @id @default(cuid())
   storeName               String?
   storeNameEn             String?  // English store name
   storeLogo               String?  // Logo URL
@@ -42,11 +42,9 @@ model StoreSettings {
   sfLockerFreeAbove       Float?   @default(600)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
-  // Multi-tenant
-  tenantId                String
+  // Multi-tenant — one settings row per tenant
+  tenantId                String   @unique
   tenant                  Tenant   @relation(fields: [tenantId], references: [id])
-
-  @@index([tenantId])
 }
 
 model IdempotencyKey {
