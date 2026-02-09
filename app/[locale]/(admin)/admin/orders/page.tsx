@@ -1,8 +1,19 @@
+import { prisma } from "@/lib/prisma";
+import { getAdminTenantId } from "@/lib/tenant";
 import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
 import { OrdersTable } from "./orders-table";
 import { fetchOrders } from "./actions";
 import SidebarToggle from "@/components/admin/SidebarToggle";
+import BioLinkOrders from "@/components/admin/BioLinkOrders";
+
+async function getTenantMode(tenantId: string) {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { mode: true },
+  });
+  return tenant?.mode || "biolink";
+}
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -15,7 +26,40 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
   const l = locale as Locale;
   const t = getDict(l);
 
-  // Fetch orders via API using server action
+  const tenantId = await getAdminTenantId();
+  const mode = await getTenantMode(tenantId);
+
+  // Bio Link mode: simplified orders view
+  if (mode === "biolink") {
+    const orders = await prisma.order.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        orderNumber: true,
+        customerName: true,
+        phone: true,
+        items: true,
+        amounts: true,
+        status: true,
+        paymentStatus: true,
+        createdAt: true,
+      },
+    });
+
+    return (
+      <BioLinkOrders
+        orders={orders.map((o) => ({
+          ...o,
+          createdAt: o.createdAt.toISOString(),
+        }))}
+        locale={l}
+      />
+    );
+  }
+
+  // Full Store mode: existing orders table
   const result = await fetchOrders(status, q);
 
   return (

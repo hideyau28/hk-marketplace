@@ -1,11 +1,14 @@
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getAdminTenantId } from "@/lib/tenant";
+import { verifyToken } from "@/lib/auth/jwt";
 import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import DashboardCharts from "@/components/admin/DashboardCharts";
 import WelcomeToast from "@/components/admin/WelcomeToast";
+import BioLinkDashboard from "@/components/admin/BioLinkDashboard";
 import { getDict, type Locale } from "@/lib/i18n";
 
 type StatCardProps = {
@@ -28,18 +31,59 @@ function StatCard({ label, value, icon }: StatCardProps) {
   );
 }
 
+async function getTenantMode(tenantId: string) {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { mode: true },
+  });
+  return tenant?.mode || "biolink";
+}
+
 export default async function AdminDashboard({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = getDict(locale as Locale);
+  const tenantId = await getAdminTenantId();
+  const mode = await getTenantMode(tenantId);
+
+  // Bio Link mode: show storefront-style dashboard
+  if (mode === "biolink") {
+    const [tenant, products, pendingOrders] = await Promise.all([
+      prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { name: true, slug: true, coverPhoto: true, logoUrl: true, brandColor: true },
+      }),
+      prisma.product.findMany({
+        where: { tenantId, active: true },
+        orderBy: { sortOrder: "asc" },
+        select: { id: true, title: true, price: true, originalPrice: true, imageUrl: true, images: true },
+      }),
+      prisma.order.count({
+        where: { tenantId, status: "PENDING" },
+      }),
+    ]);
+
+    return (
+      <>
+        <Suspense fallback={null}>
+          <WelcomeToast />
+        </Suspense>
+        <BioLinkDashboard
+          locale={locale}
+          tenant={tenant!}
+          products={products}
+          pendingOrders={pendingOrders}
+        />
+      </>
+    );
+  }
+
+  // Full Store mode: existing dashboard
   const now = new Date();
   const start30 = new Date(now);
   start30.setDate(now.getDate() - 29);
   const start7 = new Date(now);
   start7.setDate(now.getDate() - 6);
 
-  const tenantId = await getAdminTenantId();
-
-  // Fetch dashboard stats and recent orders
   const [totalProducts, activeProducts, totalOrders, ordersWithAmounts, recentOrders, recentOrdersForCharts] = await Promise.all([
     prisma.product.count({ where: { tenantId } }),
     prisma.product.count({ where: { tenantId, active: true } }),
@@ -72,14 +116,12 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
     }),
   ]);
 
-  // Calculate total revenue from paid orders
   const totalRevenue = ordersWithAmounts.reduce((sum, order) => {
     const amounts = order.amounts as any;
     return sum + (amounts?.total || 0);
   }, 0);
 
   const formattedRevenue = `$${totalRevenue.toFixed(0)}`;
-
   const paidStatuses = new Set(["PAID", "FULFILLING", "SHIPPED", "COMPLETED"]);
 
   const ordersLast7Map = new Map<string, number>();
@@ -95,7 +137,6 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       const amounts = order.amounts as any;
       const total = amounts?.total || 0;
       revenueLast30Map.set(dateKey, (revenueLast30Map.get(dateKey) || 0) + total);
-
       const items = Array.isArray(order.items) ? (order.items as any[]) : [];
       for (const item of items) {
         const name = String(item?.name || item?.title || "Item");
@@ -150,40 +191,15 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
-        <StatCard
-          label={t.admin.dashboard.totalProducts}
-          value={totalProducts}
-          icon={<Package size={24} />}
-        />
-        <StatCard
-          label={t.admin.dashboard.activeProducts}
-          value={activeProducts}
-          icon={<CheckCircle size={24} />}
-        />
-        <StatCard
-          label={t.admin.dashboard.totalOrders}
-          value={totalOrders}
-          icon={<ShoppingCart size={24} />}
-        />
-        <StatCard
-          label={t.admin.dashboard.totalRevenue}
-          value={formattedRevenue}
-          icon={<DollarSign size={24} />}
-        />
-        <StatCard
-          label={t.admin.dashboard.averageOrder}
-          value={`$${avgOrderAmount.toFixed(0)}`}
-          icon={<DollarSign size={24} />}
-        />
+        <StatCard label={t.admin.dashboard.totalProducts} value={totalProducts} icon={<Package size={24} />} />
+        <StatCard label={t.admin.dashboard.activeProducts} value={activeProducts} icon={<CheckCircle size={24} />} />
+        <StatCard label={t.admin.dashboard.totalOrders} value={totalOrders} icon={<ShoppingCart size={24} />} />
+        <StatCard label={t.admin.dashboard.totalRevenue} value={formattedRevenue} icon={<DollarSign size={24} />} />
+        <StatCard label={t.admin.dashboard.averageOrder} value={`$${avgOrderAmount.toFixed(0)}`} icon={<DollarSign size={24} />} />
       </div>
 
-      <DashboardCharts
-        ordersLast7={ordersLast7}
-        revenueLast30={revenueLast30}
-        topProducts={topProducts}
-      />
+      <DashboardCharts ordersLast7={ordersLast7} revenueLast30={revenueLast30} topProducts={topProducts} />
 
-      {/* Quick Links */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
         <Link
           href={`/${locale}/admin/products`}
@@ -207,14 +223,10 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         </Link>
       </div>
 
-      {/* Recent Orders */}
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-zinc-900">Recent Orders</h2>
-          <Link
-            href={`/${locale}/admin/orders`}
-            className="text-sm text-olive-600 hover:text-olive-700 font-medium"
-          >
+          <Link href={`/${locale}/admin/orders`} className="text-sm text-olive-600 hover:text-olive-700 font-medium">
             View All
           </Link>
         </div>
@@ -240,9 +252,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                     return (
                       <tr key={order.id} className="border-t border-zinc-200 hover:bg-zinc-50">
                         <td className="px-4 py-3">
-                          <div className="text-zinc-900 font-mono text-xs">
-                            {order.id.slice(0, 12)}...
-                          </div>
+                          <div className="text-zinc-900 font-mono text-xs">{order.id.slice(0, 12)}...</div>
                         </td>
                         <td className="px-4 py-3 text-zinc-700">{order.customerName}</td>
                         <td className="px-4 py-3">
@@ -250,17 +260,10 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                             {order.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right text-zinc-900 font-medium">
-                          ${Math.round(amounts?.total || 0)}
-                        </td>
-                        <td className="px-4 py-3 text-zinc-600 text-xs">
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </td>
+                        <td className="px-4 py-3 text-right text-zinc-900 font-medium">${Math.round(amounts?.total || 0)}</td>
+                        <td className="px-4 py-3 text-zinc-600 text-xs">{new Date(order.createdAt).toLocaleDateString()}</td>
                         <td className="px-4 py-3 text-right">
-                          <Link
-                            href={`/${locale}/admin/orders/${order.id}`}
-                            className="text-olive-600 hover:text-olive-700 text-xs font-medium"
-                          >
+                          <Link href={`/${locale}/admin/orders/${order.id}`} className="text-olive-600 hover:text-olive-700 text-xs font-medium">
                             View
                           </Link>
                         </td>

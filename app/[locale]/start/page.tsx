@@ -2,13 +2,14 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 
 // Bilingual text
 const t = {
   en: {
     heading: "Create your store",
-    subheading: "Set up your online store in seconds",
+    subheading: "Set up your online store in 2 minutes",
     storeName: "Store Name",
     storeNamePlaceholder: "e.g. May's Fashion",
     slug: "Store URL",
@@ -19,6 +20,9 @@ const t = {
     whatsappHint: "8-digit HK number",
     email: "Email",
     emailPlaceholder: "e.g. you@example.com",
+    password: "Password",
+    passwordPlaceholder: "At least 8 characters",
+    passwordMinError: "At least 8 characters",
     submit: "Create Store",
     submitting: "Creating...",
     required: "Required",
@@ -27,10 +31,12 @@ const t = {
     emailFormatError: "Invalid email format",
     nameMinError: "At least 2 characters",
     nameMaxError: "Maximum 50 characters",
+    haveAccount: "Already have an account?",
+    login: "Log in",
   },
   "zh-HK": {
     heading: "開設你嘅網店",
-    subheading: "幾秒鐘就開到自己嘅網店",
+    subheading: "2 分鐘開你嘅網店",
     storeName: "店名",
     storeNamePlaceholder: "例如：May's Fashion",
     slug: "店舖網址",
@@ -41,7 +47,10 @@ const t = {
     whatsappHint: "8 位香港號碼",
     email: "電郵地址",
     emailPlaceholder: "例如 you@example.com",
-    submit: "開店",
+    password: "密碼",
+    passwordPlaceholder: "最少 8 個字",
+    passwordMinError: "最少 8 個字",
+    submit: "建立商店",
     submitting: "建立中...",
     required: "必填",
     slugFormatError: "3-30 個字，只可以用細楷英文、數字同連字號",
@@ -49,6 +58,8 @@ const t = {
     emailFormatError: "電郵格式唔啱",
     nameMinError: "最少 2 個字",
     nameMaxError: "最多 50 個字",
+    haveAccount: "已有帳號？",
+    login: "登入",
   },
 } as const;
 
@@ -80,6 +91,7 @@ export default function StartPage() {
   const [slugReason, setSlugReason] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState("");
@@ -157,6 +169,9 @@ export default function StartPage() {
     if (!email.trim()) newErrors.email = labels.required;
     else if (!EMAIL_REGEX.test(email.trim())) newErrors.email = labels.emailFormatError;
 
+    if (!password) newErrors.password = labels.required;
+    else if (password.length < 8) newErrors.password = labels.passwordMinError;
+
     if (slugStatus === "taken" || slugStatus === "invalid") {
       newErrors.slug = slugReason || labels.slugFormatError;
     }
@@ -183,6 +198,7 @@ export default function StartPage() {
           slug: slug.trim().toLowerCase(),
           whatsapp: whatsapp.trim(),
           email: email.trim().toLowerCase(),
+          password,
         }),
       });
 
@@ -195,6 +211,8 @@ export default function StartPage() {
           setErrors((prev) => ({ ...prev, email: msg }));
         } else if (msg.includes("名") || msg.includes("slug") || msg.includes("Slug")) {
           setErrors((prev) => ({ ...prev, slug: msg }));
+        } else if (msg.includes("密碼") || msg.includes("password") || msg.includes("Password")) {
+          setErrors((prev) => ({ ...prev, password: msg }));
         } else {
           setGlobalError(msg);
         }
@@ -209,6 +227,9 @@ export default function StartPage() {
       setSubmitting(false);
     }
   };
+
+  const inputClass = (field: string) =>
+    `w-full px-3 py-2.5 rounded-xl border ${errors[field] ? "border-red-400" : "border-zinc-200"} focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400`;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center px-4 py-12">
@@ -239,7 +260,7 @@ export default function StartPage() {
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder={labels.storeNamePlaceholder}
               maxLength={50}
-              className={`w-full px-3 py-2.5 rounded-xl border ${errors.name ? "border-red-400" : "border-zinc-200"} focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400`}
+              className={inputClass("name")}
             />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
@@ -298,7 +319,7 @@ export default function StartPage() {
               onChange={(e) => setWhatsapp(e.target.value.replace(/\D/g, "").slice(0, 8))}
               placeholder={labels.whatsappPlaceholder}
               maxLength={8}
-              className={`w-full px-3 py-2.5 rounded-xl border ${errors.whatsapp ? "border-red-400" : "border-zinc-200"} focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400`}
+              className={inputClass("whatsapp")}
             />
             <p className="text-zinc-400 text-xs mt-1">{labels.whatsappHint}</p>
             {errors.whatsapp && <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>}
@@ -312,9 +333,23 @@ export default function StartPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={labels.emailPlaceholder}
-              className={`w-full px-3 py-2.5 rounded-xl border ${errors.email ? "border-red-400" : "border-zinc-200"} focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400`}
+              className={inputClass("email")}
             />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-1.5">{labels.password}</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={labels.passwordPlaceholder}
+              autoComplete="new-password"
+              className={inputClass("password")}
+            />
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
 
           {/* Submit */}
@@ -325,6 +360,14 @@ export default function StartPage() {
           >
             {submitting ? labels.submitting : labels.submit}
           </button>
+
+          {/* Login link */}
+          <p className="text-center text-sm text-zinc-500">
+            {labels.haveAccount}{" "}
+            <Link href={`/${locale}/admin/login`} className="text-[#FF9500] font-medium hover:underline">
+              {labels.login}
+            </Link>
+          </p>
         </form>
 
         {/* Language toggle */}

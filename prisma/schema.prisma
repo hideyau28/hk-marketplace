@@ -191,6 +191,7 @@ model Product {
   // Category relation
   categoryId      String?
   categoryRel     Category?        @relation(fields: [categoryId], references: [id])
+  sortOrder       Int              @default(0)
   // Variants & attributes
   variants        ProductVariant[]
   attributes      Json?
