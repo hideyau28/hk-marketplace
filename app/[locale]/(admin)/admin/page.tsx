@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
-import { getServerTenantId } from "@/lib/tenant";
+import { getAdminTenantId } from "@/lib/tenant";
 import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import SidebarToggle from "@/components/admin/SidebarToggle";
@@ -37,7 +37,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   const start7 = new Date(now);
   start7.setDate(now.getDate() - 6);
 
-  const tenantId = await getServerTenantId();
+  const tenantId = await getAdminTenantId();
 
   // Fetch dashboard stats and recent orders
   const [totalProducts, activeProducts, totalOrders, ordersWithAmounts, recentOrders, recentOrdersForCharts] = await Promise.all([

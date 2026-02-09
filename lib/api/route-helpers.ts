@@ -182,11 +182,21 @@ function assertAdmin(req: Request) {
     return;
   }
 
-  // 2) Bearer token
+  // 2) Bearer token — try ADMIN_SECRET first, then JWT
   if (auth.startsWith("Bearer ")) {
     const token = auth.slice("Bearer ".length);
-    if (token !== secret) throw new ApiError(403, "ADMIN_AUTH_INVALID", "Invalid admin credential");
-    return;
+    if (token === secret) return;
+
+    // Try as JWT token
+    try {
+      const { verifyToken } = require("@/lib/auth/jwt");
+      const payload = verifyToken(token);
+      if (payload?.tenantId) return;
+    } catch {
+      // JWT verification failed
+    }
+
+    throw new ApiError(403, "ADMIN_AUTH_INVALID", "Invalid admin credential");
   }
 
   // 3) Basic Auth
@@ -216,6 +226,21 @@ function assertAdmin(req: Request) {
 
     // Wrong basic auth -> 403
     throw new ApiError(403, "ADMIN_AUTH_INVALID", "Invalid admin credential");
+  }
+
+  // 4) Check tenant-admin-token cookie (browser requests from tenant admin)
+  const cookie = req.headers.get("cookie");
+  if (cookie) {
+    const match = cookie.match(/(?:^|;\s*)tenant-admin-token=([^;]*)/);
+    if (match?.[1]) {
+      try {
+        const { verifyToken } = require("@/lib/auth/jwt");
+        const payload = verifyToken(match[1]);
+        if (payload?.tenantId) return;
+      } catch {
+        // JWT verification failed
+      }
+    }
   }
 
   // Missing credential -> 401

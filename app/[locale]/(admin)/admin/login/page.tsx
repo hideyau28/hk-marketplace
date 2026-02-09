@@ -1,17 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 
 export default function AdminLoginPage() {
   const [secret, setSecret] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const locale = (params.locale as string) || "en";
   const oauthError = searchParams.get("error");
+
+  // Auto-redirect if already authenticated via JWT
+  useEffect(() => {
+    fetch("/api/tenant-admin/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok) {
+          router.replace(`/${locale}/admin`);
+        } else {
+          setCheckingAuth(false);
+        }
+      })
+      .catch(() => {
+        setCheckingAuth(false);
+      });
+  }, [locale, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +56,14 @@ export default function AdminLoginPage() {
       setLoading(false);
     }
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">
+        <div className="text-zinc-400 text-sm">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">

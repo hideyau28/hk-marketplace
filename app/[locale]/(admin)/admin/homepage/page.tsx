@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getServerTenantId } from "@/lib/tenant";
+import { getAdminTenantId } from "@/lib/tenant";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import HomepageCMS from "./homepage-cms";
 import { getDict, type Locale } from "@/lib/i18n";
@@ -12,7 +12,7 @@ export default async function AdminHomepage({
   const { locale } = await params;
   const t = getDict(locale as Locale);
 
-  const tenantId = await getServerTenantId();
+  const tenantId = await getAdminTenantId();
 
   // Fetch sections and banners
   const [sections, banners, products] = await Promise.all([
