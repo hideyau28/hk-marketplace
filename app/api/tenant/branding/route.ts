@@ -17,6 +17,7 @@ export async function GET(req: Request) {
         logoUrl: true,
         currency: true,
         languages: true,
+        mode: true,
       },
     });
 
@@ -31,6 +32,7 @@ export async function GET(req: Request) {
       logoUrl: tenant.logoUrl ?? null,
       currency: tenant.currency,
       languages: tenant.languages,
+      mode: tenant.mode ?? "biolink",
     });
   } catch (e) {
     return fail(req, e);

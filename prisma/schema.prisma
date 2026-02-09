@@ -301,6 +301,7 @@ model Tenant {
   instagram            String?
   brandColor           String?   @default("#FF9500")
   template             String    @default("default")
+  mode                 String    @default("biolink")
   status               String    @default("active")
   stripeCustomerId     String?
   stripeSubscriptionId String?
