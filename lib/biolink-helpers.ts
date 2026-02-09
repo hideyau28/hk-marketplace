@@ -16,6 +16,26 @@ export type VariantForBioLink = {
   imageUrl: string | null;
 };
 
+/** 雙維 variant 格式（顏色 × 尺碼） */
+export type DualVariantData = {
+  dimensions: string[];
+  options: Record<string, string[]>;
+  optionImages?: Record<string, number>;
+  combinations: Record<string, { qty: number; status: string }>;
+};
+
+/** Check if sizes data is dual-variant format */
+export function isDualVariant(
+  sizes: Record<string, number> | DualVariantData | null
+): sizes is DualVariantData {
+  if (!sizes || typeof sizes !== "object") return false;
+  return (
+    "dimensions" in sizes &&
+    Array.isArray((sizes as DualVariantData).dimensions) &&
+    (sizes as DualVariantData).dimensions.length >= 2
+  );
+}
+
 export type ProductForBioLink = {
   id: string;
   title: string;
@@ -23,7 +43,7 @@ export type ProductForBioLink = {
   originalPrice: number | null;
   imageUrl: string | null;
   images: string[];
-  sizes: Record<string, number> | null;
+  sizes: Record<string, number> | DualVariantData | null;
   badges: string[] | null;
   featured: boolean;
   createdAt: Date;
@@ -72,10 +92,13 @@ export function getAllImages(product: ProductForBioLink): string[] {
 /**
  * Get visible variants for a product.
  * Priority: ProductVariant relation → legacy sizes JSON → null
+ * 雙維 variant 唔用呢個 function — 用 getDualVariantData() 代替
  */
 export function getVisibleVariants(
   product: ProductForBioLink
 ): { name: string; stock: number; price: number | null }[] | null {
+  // 雙維 variant — 唔返回 flat list，由 VariantSelector 自己處理
+  if (isDualVariant(product.sizes)) return null;
   // New format: ProductVariant relation
   if (product.variants && product.variants.length > 0) {
     return product.variants
@@ -96,7 +119,17 @@ export function getVisibleVariants(
   return null;
 }
 
+/** Get dual-variant data if product uses dual-variant format */
+export function getDualVariantData(
+  product: ProductForBioLink
+): DualVariantData | null {
+  if (isDualVariant(product.sizes)) return product.sizes;
+  return null;
+}
+
 export function getVariantLabel(product: ProductForBioLink): string {
+  // 雙維 — 用第二維嘅名做 label
+  if (isDualVariant(product.sizes)) return product.sizes.dimensions[1] || "款式";
   // If has ProductVariant relation, generic label
   if (product.variants && product.variants.length > 0) return "款式";
   // If has old sizes, assume shoe sizes
@@ -105,6 +138,12 @@ export function getVariantLabel(product: ProductForBioLink): string {
 }
 
 export function isSoldOut(product: ProductForBioLink): boolean {
+  // 雙維 — check all combinations
+  if (isDualVariant(product.sizes)) {
+    const combos = Object.values(product.sizes.combinations);
+    if (combos.length === 0) return false;
+    return combos.every((c) => c.qty === 0 || c.status === "hidden");
+  }
   const variants = getVisibleVariants(product);
   if (!variants) return false;
   if (variants.length === 0) return false;

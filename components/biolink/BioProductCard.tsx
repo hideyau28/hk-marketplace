@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import {
   type ProductForBioLink,
   getAllImages,
   getVisibleVariants,
   getVariantLabel,
+  getDualVariantData,
   isSoldOut,
   isNew,
   getLowStockCount,
@@ -24,10 +26,16 @@ type Props = {
 export default function BioProductCard({ product, onAdd }: Props) {
   const images = getAllImages(product);
   const variants = getVisibleVariants(product);
+  const dualVariant = getDualVariantData(product);
   const variantLabel = getVariantLabel(product);
   const soldOut = isSoldOut(product);
   const isNewProduct = isNew(product);
   const lowStock = variants ? getLowStockCount(variants) : null;
+
+  // 雙維 variant — 外部控制 ImageCarousel 顯示邊張圖
+  const [activeImageIndex, setActiveImageIndex] = useState<number | undefined>(
+    undefined
+  );
 
   const isOnSale =
     product.originalPrice != null && product.originalPrice > product.price;
@@ -39,7 +47,11 @@ export default function BioProductCard({ product, onAdd }: Props) {
     <div className="rounded-2xl overflow-hidden bg-white shadow-sm border border-black/[0.04]">
       {/* Image */}
       <div className="relative">
-        <ImageCarousel images={images} alt={product.title} />
+        <ImageCarousel
+          images={images}
+          alt={product.title}
+          activeIndex={activeImageIndex}
+        />
         {soldOut && <SoldOutOverlay />}
 
         {/* Badges */}
@@ -84,6 +96,8 @@ export default function BioProductCard({ product, onAdd }: Props) {
           soldOut={soldOut}
           onAdd={(variant) => onAdd(product, variant)}
           theme="light"
+          dualVariant={dualVariant}
+          onImageChange={setActiveImageIndex}
         />
       </div>
     </div>

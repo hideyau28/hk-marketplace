@@ -142,7 +142,7 @@ export const POST = withApi(async (req) => {
   const productIds = Array.from(new Set(payload.items.map((i) => i.productId)));
   const products = await prisma.product.findMany({
     where: { id: { in: productIds }, tenantId: tenant.id, active: true },
-    select: { id: true, title: true, price: true },
+    select: { id: true, title: true, price: true, sizes: true },
   });
   const productMap = new Map(products.map((p) => [p.id, p]));
 
@@ -154,9 +154,11 @@ export const POST = withApi(async (req) => {
     if (!product) throw new ApiError(400, "BAD_REQUEST", `Product not found: ${item.productId}`);
     const lineTotal = product.price * item.qty;
     serverTotal += lineTotal;
+    // 雙維 variant 顯示：「黑色|M」→「黑色 · M」
+    const variantDisplay = item.variant ? item.variant.replace(/\|/g, " · ") : null;
     repricedItems.push({
       productId: item.productId,
-      name: `${product.title}${item.variant ? ` · ${item.variant}` : ""}`,
+      name: `${product.title}${variantDisplay ? ` · ${variantDisplay}` : ""}`,
       unitPrice: product.price,
       quantity: item.qty,
     });
@@ -167,7 +169,7 @@ export const POST = withApi(async (req) => {
     throw new ApiError(400, "BAD_REQUEST", "Total mismatch (server repriced)");
   }
 
-  // Stock deduction for items with variantId
+  // Stock deduction for items with variantId (single-variant)
   for (const item of payload.items) {
     if (!item.variantId) continue;
     const variant = await prisma.productVariant.findUnique({
@@ -185,6 +187,33 @@ export const POST = withApi(async (req) => {
         // 如果扣到 0，自動設為 inactive
         ...(variant.stock - item.qty <= 0 ? { active: false } : {}),
       },
+    });
+  }
+
+  // Stock deduction for dual-variant items (sizes JSONB combinations)
+  for (const item of payload.items) {
+    if (item.variantId) continue; // already handled above
+    if (!item.variant || !item.variant.includes("|")) continue; // not dual-variant
+
+    const product = productMap.get(item.productId);
+    if (!product) continue;
+
+    const sizes = product.sizes as Record<string, unknown> | null;
+    if (!sizes || !("dimensions" in sizes) || !("combinations" in sizes)) continue;
+
+    const combinations = (sizes as { combinations: Record<string, { qty: number; status: string }> }).combinations;
+    const combo = combinations[item.variant];
+    if (!combo || combo.qty < item.qty) {
+      throw new ApiError(400, "BAD_REQUEST", `${item.variant.replace(/\|/g, " · ")} 庫存不足`);
+    }
+
+    // Deduct stock in JSONB
+    combo.qty -= item.qty;
+    if (combo.qty === 0) combo.status = "hidden";
+
+    await prisma.product.update({
+      where: { id: item.productId },
+      data: { sizes: sizes as object },
     });
   }
 
