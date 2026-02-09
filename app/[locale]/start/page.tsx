@@ -202,8 +202,8 @@ export default function StartPage() {
         return;
       }
 
-      // Success — redirect to admin
-      window.location.href = `/${locale}/admin/products`;
+      // Success — redirect to admin dashboard
+      window.location.href = `/${locale}/admin?welcome=1`;
     } catch {
       setGlobalError("Network error, please try again");
       setSubmitting(false);

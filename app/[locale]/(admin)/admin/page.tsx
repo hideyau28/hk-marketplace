@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { getServerTenantId } from "@/lib/tenant";
 import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import DashboardCharts from "@/components/admin/DashboardCharts";
+import WelcomeToast from "@/components/admin/WelcomeToast";
 import { getDict, type Locale } from "@/lib/i18n";
 
 type StatCardProps = {
@@ -135,6 +137,9 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
 
   return (
     <div className="p-4 pb-16 max-w-full overflow-hidden">
+      <Suspense fallback={null}>
+        <WelcomeToast />
+      </Suspense>
       <div className="flex items-center gap-4 mb-6">
         <SidebarToggle />
         <div>
