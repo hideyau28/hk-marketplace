@@ -1,6 +1,7 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { getStoreName } from "@/lib/get-store-name";
+import { getServerTenantId } from "@/lib/tenant";
 import HeroCarouselCMS from "@/components/home/HeroCarouselCMS";
 import RecommendedGrid from "@/components/home/RecommendedGrid";
 import FeaturedSneakers from "@/components/home/FeaturedSneakers";
@@ -106,17 +107,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const l = locale as Locale;
   const t = getDict(l);
 
+  const tenantId = await getServerTenantId();
+
   const [sectionsRaw, bannersRaw, allProductsRaw] = await Promise.all([
     prisma.homepageSection.findMany({
-      where: { active: true },
+      where: { active: true, tenantId },
       orderBy: { sortOrder: "asc" },
     }),
     prisma.homepageBanner.findMany({
-      where: { active: true },
+      where: { active: true, tenantId },
       orderBy: { sortOrder: "asc" },
     }),
     prisma.product.findMany({
-      where: { active: true },
+      where: { active: true, tenantId },
       orderBy: { createdAt: "desc" },
     }),
   ]);
