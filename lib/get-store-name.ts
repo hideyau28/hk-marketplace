@@ -10,7 +10,7 @@ const DEFAULT_STORE_NAME = "May's Shop";
 export async function getStoreName(): Promise<string> {
   try {
     const tenantId = await getServerTenantId();
-    const settings = await prisma.storeSettings.findUnique({
+    const settings = await prisma.storeSettings.findFirst({
       where: { tenantId },
       select: { storeName: true },
     });
@@ -27,7 +27,7 @@ export async function getStoreName(): Promise<string> {
 export async function getStoreSettings() {
   try {
     const tenantId = await getServerTenantId();
-    const settings = await prisma.storeSettings.findUnique({
+    const settings = await prisma.storeSettings.findFirst({
       where: { tenantId },
     });
     return {

@@ -65,7 +65,7 @@ function sha256(s: string) {
 // GET /api/store-settings
 export const GET = withApi(async (req) => {
   const tenantId = await getTenantId(req);
-  const row = await prisma.storeSettings.findUnique({
+  const row = await prisma.storeSettings.findFirst({
     where: { tenantId },
     select: SETTINGS_SELECT,
   }).catch(() => null);
