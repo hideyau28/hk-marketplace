@@ -184,6 +184,7 @@ model Product {
   stock           Int      @default(0)
   originalPrice   Float?
   images          String[]
+  videoUrl        String?
   color           String?
   shoeType        String?
   sku             String?  @unique

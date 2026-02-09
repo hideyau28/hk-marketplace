@@ -31,6 +31,7 @@ export default function BioProductCard({ product, onAdd }: Props) {
   const soldOut = isSoldOut(product);
   const isNewProduct = isNew(product);
   const lowStock = variants ? getLowStockCount(variants) : null;
+  const hasVideo = !!product.videoUrl;
 
   // 雙維 variant — 外部控制 ImageCarousel 顯示邊張圖
   const [activeImageIndex, setActiveImageIndex] = useState<number | undefined>(
@@ -51,6 +52,7 @@ export default function BioProductCard({ product, onAdd }: Props) {
           images={images}
           alt={product.title}
           activeIndex={activeImageIndex}
+          videoUrl={product.videoUrl}
         />
         {soldOut && <SoldOutOverlay />}
 
@@ -59,6 +61,17 @@ export default function BioProductCard({ product, onAdd }: Props) {
           <div className="absolute top-2 left-2 z-10 flex gap-1">
             {isNewProduct && <NewBadge />}
             {lowStock && <LowStockBadge count={lowStock} />}
+          </div>
+        )}
+
+        {/* Video icon — 左下角 */}
+        {hasVideo && (
+          <div className="absolute bottom-2 left-2 z-10">
+            <span className="flex items-center gap-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="inline-block">
+                <path d="M2 1.5v7l6-3.5-6-3.5z" fill="currentColor" />
+              </svg>
+            </span>
           </div>
         )}
       </div>

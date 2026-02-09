@@ -131,6 +131,16 @@ export const PATCH = withApi(
       }
     }
 
+    if (body.videoUrl !== undefined) {
+      if (body.videoUrl === null || body.videoUrl === "") {
+        updateData.videoUrl = null;
+      } else if (typeof body.videoUrl === "string") {
+        updateData.videoUrl = body.videoUrl.trim();
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "videoUrl must be a string or null");
+      }
+    }
+
     if (body.active !== undefined) {
       if (typeof body.active !== "boolean") {
         throw new ApiError(400, "BAD_REQUEST", "active must be a boolean");

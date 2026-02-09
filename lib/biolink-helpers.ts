@@ -43,6 +43,7 @@ export type ProductForBioLink = {
   originalPrice: number | null;
   imageUrl: string | null;
   images: string[];
+  videoUrl?: string | null;
   sizes: Record<string, number> | DualVariantData | null;
   badges: string[] | null;
   featured: boolean;
