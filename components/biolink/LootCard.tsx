@@ -23,7 +23,7 @@ type Props = {
 
 export default function LootCard({ product, index, onAdd }: Props) {
   const rarity = getRarity(product);
-  const config = rarityConfig[rarity];
+  const config = rarity ? rarityConfig[rarity] : rarityConfig.common;
   const badge = getBadgeText(product);
   const images = getAllImages(product);
   const heroImage = images[0] || null;
@@ -88,15 +88,17 @@ export default function LootCard({ product, index, onAdd }: Props) {
             </div>
           )}
 
-          {/* Rarity label */}
-          <div className="absolute bottom-2 right-2 z-10">
-            <span
-              className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.15em] rounded text-white/80"
-              style={{ backgroundColor: `${config.color}60` }}
-            >
-              {config.label}
-            </span>
-          </div>
+          {/* Rarity label — hidden for common/no-badge products */}
+          {rarity && (
+            <div className="absolute bottom-2 right-2 z-10">
+              <span
+                className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.15em] rounded text-white/80"
+                style={{ backgroundColor: `${config.color}60` }}
+              >
+                {config.label}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Info */}

@@ -152,12 +152,12 @@ export const rarityConfig: Record<
   legendary: { glow: "shadow-purple-500/40", color: "#a855f7", label: "LEGENDARY" },
 };
 
-export function getRarity(product: ProductForBioLink): Rarity {
+export function getRarity(product: ProductForBioLink): Rarity | null {
   const badges = Array.isArray(product.badges) ? product.badges : [];
   if (badges.includes("限量")) return "legendary";
   if (badges.includes("熱賣") || badges.includes("快售罄")) return "hot";
   if (badges.includes("減價") || badges.includes("店長推介")) return "rare";
-  return "common";
+  return null;
 }
 
 export function getBadgeText(product: ProductForBioLink): string | null {
