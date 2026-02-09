@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { ProductForBioLink, TenantForBioLink } from "@/lib/biolink-helpers";
 import { splitProducts } from "@/lib/biolink-helpers";
 import StickyHeader from "./StickyHeader";
@@ -87,8 +87,41 @@ export default function BioLinkPage({ tenant, products }: Props) {
     [products]
   );
 
+  const updateCartQty = useCallback(
+    (productId: string, variant: string | null, delta: number) => {
+      setCart((prev) =>
+        prev
+          .map((item) => {
+            if (item.id === productId && item.variant === variant) {
+              const newQty = item.qty + delta;
+              return newQty > 0 ? { ...item, qty: newQty } : null;
+            }
+            return item;
+          })
+          .filter(Boolean) as CartItem[]
+      );
+    },
+    []
+  );
+
+  const removeFromCart = useCallback(
+    (productId: string, variant: string | null) => {
+      setCart((prev) =>
+        prev.filter((i) => !(i.id === productId && i.variant === variant))
+      );
+    },
+    []
+  );
+
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+  // 全部刪除後自動關閉 checkout panel
+  useEffect(() => {
+    if (checkoutOpen && cart.length === 0) {
+      setCheckoutOpen(false);
+    }
+  }, [cart.length, checkoutOpen]);
 
   const handleOrderComplete = (result: OrderResult) => {
     setCheckoutOpen(false);
@@ -143,6 +176,8 @@ export default function BioLinkPage({ tenant, products }: Props) {
         total={cartTotal}
         tenant={tenant}
         onOrderComplete={handleOrderComplete}
+        onUpdateQty={updateCartQty}
+        onRemoveItem={removeFromCart}
       />
 
       {/* Order confirmation (FPS/PayMe payment info) */}

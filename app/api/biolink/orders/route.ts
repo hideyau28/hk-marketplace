@@ -43,6 +43,7 @@ type BioLinkOrderPayload = {
   customer: { name: string; phone: string };
   delivery: { method: string };
   payment: { method: string };
+  note: string | null;
   total: number;
 };
 
@@ -102,6 +103,7 @@ function parsePayload(body: unknown): BioLinkOrderPayload {
     customer: { name: (cust.name as string).trim(), phone: (cust.phone as string).trim() },
     delivery: { method: del.method as string },
     payment: { method: pay.method as string },
+    note: typeof b.note === "string" && b.note.trim() ? b.note.trim() : null,
     total: b.total as number,
   };
 }
@@ -205,7 +207,7 @@ export const POST = withApi(async (req) => {
       status: "PENDING",
       paymentMethod: payload.payment.method,
       paymentStatus: "pending",
-      note: `Bio Link order · ${deliveryOpt.label}`,
+      note: payload.note || null,
     },
   });
 
