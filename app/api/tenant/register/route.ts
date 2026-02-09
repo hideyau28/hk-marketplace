@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/admin/session";
+import { signToken } from "@/lib/auth/jwt";
 import { withApi, ok, ApiError } from "@/lib/api/route-helpers";
 import { cookies } from "next/headers";
 
@@ -85,12 +86,41 @@ export const POST = withApi(async (req: Request) => {
       throw adminErr;
     }
 
-    const result = { tenant, admin };
+    // --- Default payment config: FPS enabled ---
+    await prisma.tenantPaymentConfig.create({
+      data: {
+        tenantId: tenant.id,
+        providerId: "fps",
+        enabled: true,
+        displayName: "FPS 轉數快",
+        sortOrder: 0,
+      },
+    }).catch(() => {}); // 非致命，唔好 block 整個 registration
 
-    // --- Auto-login: set admin_session cookie ---
-    const token = await createSession();
+    // --- Default store settings with delivery options ---
+    await prisma.storeSettings.create({
+      data: {
+        id: `default`,
+        tenantId: tenant.id,
+        storeName: cleanName,
+        whatsappNumber: cleanWhatsapp,
+        // SF智能櫃
+        sfLockerFee: 35,
+        sfLockerFreeAbove: 600,
+        // 順豐到付 / 送貨上門
+        homeDeliveryFee: 40,
+        homeDeliveryFreeAbove: 600,
+        homeDeliveryIslandExtra: 20,
+        // 一般運費
+        shippingFee: 40,
+        freeShippingThreshold: 600,
+      },
+    }).catch(() => {}); // 非致命
+
+    // --- Auto-login: set admin_session cookie (middleware guard) ---
+    const sessionToken = await createSession();
     const cookieStore = await cookies();
-    cookieStore.set("admin_session", token, {
+    cookieStore.set("admin_session", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
@@ -98,7 +128,22 @@ export const POST = withApi(async (req: Request) => {
       path: "/",
     });
 
-    return ok(req, { ok: true, tenantId: result.tenant.id, slug: result.tenant.slug });
+    // --- Set tenant-admin-token cookie (API auth) ---
+    const adminToken = signToken({
+      tenantId: tenant.id,
+      adminId: admin.id,
+      email: admin.email,
+      role: admin.role,
+    });
+    cookieStore.set("tenant-admin-token", adminToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: "/",
+    });
+
+    return ok(req, { ok: true, tenantId: tenant.id, slug: tenant.slug });
   } catch (err: any) {
     // Handle unique constraint violations
     if (err?.code === "P2002" || err?.message?.includes("Unique constraint")) {
