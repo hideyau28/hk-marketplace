@@ -15,6 +15,7 @@ import Analytics from "@/components/Analytics";
 import WelcomePopup from "@/components/WelcomePopup";
 import SocialProofPopup from "@/components/SocialProofPopup";
 import CartFlyAnimation from "@/components/CartFlyAnimation";
+import { getServerTenantId } from "@/lib/tenant";
 
 export default async function CustomerLayout({
   children,
@@ -32,9 +33,10 @@ export default async function CustomerLayout({
   const l = locale as Locale;
   const t = getDict(l);
 
-  // Fetch welcome popup settings
+  // Fetch welcome popup settings (tenant-aware)
+  const tenantId = await getServerTenantId();
   const storeSettings = await prisma.storeSettings.findUnique({
-    where: { id: "default" },
+    where: { tenantId },
   }).catch(() => null);
 
   // Fetch products for social proof popup
