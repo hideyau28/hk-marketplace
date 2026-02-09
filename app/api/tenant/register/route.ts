@@ -87,8 +87,8 @@ export const POST = withApi(async (req: Request) => {
 
     const result = { tenant, admin };
 
-    // --- Auto-login: set admin_session cookie ---
-    const token = await createSession();
+    // --- Auto-login: set admin_session cookie with new tenant's ID ---
+    const token = await createSession(tenant.id);
     const cookieStore = await cookies();
     cookieStore.set("admin_session", token, {
       httpOnly: true,

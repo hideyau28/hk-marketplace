@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionTenantId } from "@/lib/admin/session";
 import { getServerTenantId } from "@/lib/tenant";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,7 +19,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
   const { locale, id } = await params;
   const l = locale as Locale;
 
-  const tenantId = await getServerTenantId();
+  const tenantId = await getSessionTenantId() ?? await getServerTenantId();
 
   // Fetch order with payment attempts (scoped to tenant)
   const order = await prisma.order.findFirst({

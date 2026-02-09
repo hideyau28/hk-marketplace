@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionTenantId } from "@/lib/admin/session";
 import { getServerTenantId } from "@/lib/tenant";
 import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -35,7 +36,8 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   const start7 = new Date(now);
   start7.setDate(now.getDate() - 6);
 
-  const tenantId = await getServerTenantId();
+  // Prefer session-based tenantId; fall back to hostname-based for backward compat
+  const tenantId = await getSessionTenantId() ?? await getServerTenantId();
 
   // Fetch dashboard stats and recent orders
   const [totalProducts, activeProducts, totalOrders, ordersWithAmounts, recentOrders, recentOrdersForCharts] = await Promise.all([

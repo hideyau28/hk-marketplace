@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSession } from "@/lib/admin/session";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
@@ -71,8 +72,18 @@ export async function GET(request: NextRequest) {
     const userInfo = await userInfoRes.json();
     console.log("[Google OAuth] Google user email:", userInfo.email);
 
-    // Create admin session JWT
-    const token = await createSession();
+    // Look up TenantAdmin by email to get tenantId
+    const admin = await prisma.tenantAdmin.findFirst({
+      where: { email: userInfo.email },
+    });
+
+    if (!admin) {
+      console.error("[Google OAuth] Email not in TenantAdmin whitelist:", userInfo.email);
+      return NextResponse.redirect(`${baseUrl}/en/admin/login?error=unauthorized`);
+    }
+
+    // Create admin session JWT with tenantId
+    const token = await createSession(admin.tenantId);
 
     // BUG FIX: Must set cookie directly on the redirect response.
     // Previously used setSessionCookie() which calls cookies() from next/headers,

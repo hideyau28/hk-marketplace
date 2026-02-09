@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/en/admin/login?error=unauthorized`);
     }
 
-    // Create admin session JWT
-    const token = await createSession();
+    // Create admin session JWT with tenantId from TenantAdmin record
+    const token = await createSession(admin.tenantId);
 
     // Set cookie directly on the redirect response (same pattern as Google OAuth)
     const redirectUrl = `${baseUrl}/en/admin/products`;

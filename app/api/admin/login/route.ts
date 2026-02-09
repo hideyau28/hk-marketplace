@@ -3,6 +3,7 @@ import { createSession, setSessionCookie, validateAdminSecret } from "@/lib/admi
 import { withRateLimit } from "@/lib/api/rate-limit-middleware";
 import { RATE_LIMITS } from "@/lib/rate-limit";
 import { logAdminActivity, ADMIN_ACTIONS } from "@/lib/admin/activity-log";
+import { getTenantId } from "@/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -28,7 +29,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "Invalid admin secret" }, { status: 401 });
     }
 
-    const token = await createSession();
+    // Resolve tenant from hostname/headers (ADMIN_SECRET login = super admin, hostname-based)
+    const tenantId = await getTenantId(request);
+    const token = await createSession(tenantId);
     await setSessionCookie(token);
 
     // Log admin login

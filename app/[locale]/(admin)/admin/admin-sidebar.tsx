@@ -15,6 +15,7 @@ export default function AdminSidebar() {
   const locale = (params.locale as string) || "en";
   const t = getDict(locale as Locale);
   const tenantBranding = useTenantBranding();
+  const { tenantName } = useSidebar();
 
   const navItems = [
     { href: "/admin", label: t.admin.sidebar.dashboard, icon: LayoutDashboard },
@@ -51,7 +52,7 @@ export default function AdminSidebar() {
       >
         {/* Logo */}
         <div className="p-4 pt-4 border-b border-zinc-800">
-          <h1 className="text-lg font-bold">{tenantBranding.name}</h1>
+          <h1 className="text-lg font-bold">{tenantName || tenantBranding.name}</h1>
           <p className="text-zinc-400 text-sm mt-1">Admin Panel</p>
         </div>
 

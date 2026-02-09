@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getSessionTenantId } from "@/lib/admin/session";
 import { getServerTenantId } from "@/lib/tenant";
 import type { Locale } from "@/lib/i18n";
 import SidebarToggle from "@/components/admin/SidebarToggle";
@@ -12,7 +13,7 @@ export default async function AdminPaymentsPage({ params }: PageProps) {
   const { locale } = await params;
   const l = locale as Locale;
 
-  const tenantId = await getServerTenantId();
+  const tenantId = await getSessionTenantId() ?? await getServerTenantId();
   const paymentMethods = await prisma.paymentMethod.findMany({
     where: { tenantId },
     orderBy: { sortOrder: "asc" },

@@ -1,5 +1,5 @@
 import { getTokenFromRequest, verifyToken } from "./jwt";
-import { getSessionFromCookie } from "@/lib/admin/session";
+import { getSessionPayloadFromCookie } from "@/lib/admin/session";
 import { getTenantId } from "@/lib/tenant";
 import { ApiError } from "@/lib/api/route-helpers";
 
@@ -42,10 +42,11 @@ export async function authenticateAdmin(req: Request): Promise<AdminContext> {
     throw new ApiError(403, "ADMIN_AUTH_INVALID", "Invalid admin credential");
   }
 
-  // 3) Check existing admin_session cookie
-  const sessionValid = await getSessionFromCookie();
-  if (sessionValid) {
-    const tenantId = await getTenantId(req);
+  // 3) Check existing admin_session cookie — extract tenantId from JWT payload
+  const session = await getSessionPayloadFromCookie();
+  if (session.valid) {
+    // New sessions have tenantId in JWT; old sessions fall back to hostname-based resolution
+    const tenantId = session.tenantId ?? await getTenantId(req);
     return { type: "super", tenantId };
   }
 
