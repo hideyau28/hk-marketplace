@@ -48,6 +48,23 @@ const PROMOTION_BADGES = [
   { value: "人氣之選", label: "人氣之選" },
 ];
 
+// Variant label presets
+const VARIANT_LABEL_PRESETS = ["尺碼", "圈碼", "尺寸", "型號", "顏色"];
+
+type VariantStatus = "available" | "restocking" | "preorder" | "hidden";
+
+type VariantEntry = {
+  qty: number;
+  status: VariantStatus;
+};
+
+const VARIANT_STATUS_OPTIONS: { value: VariantStatus; label: string }[] = [
+  { value: "available", label: "有貨" },
+  { value: "restocking", label: "補貨中" },
+  { value: "preorder", label: "可預訂" },
+  { value: "hidden", label: "隱藏" },
+];
+
 type BadgeOption = {
   id: string;
   nameZh: string;
@@ -104,11 +121,31 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Parse existing sizeInventory
+  // Parse existing sizeInventory (legacy fallback)
   const existingSizeInventory = (() => {
     const sizes = (product as any)?.sizes;
     if (sizes && typeof sizes === "object" && !Array.isArray(sizes)) {
       return sizes as Record<string, number>;
+    }
+    return {};
+  })();
+
+  // Parse existing variants (new format)
+  const existingVariants = (() => {
+    const v = (product as any)?.variants;
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      return v as Record<string, VariantEntry>;
+    }
+    // Convert legacy sizes to variant format
+    if (Object.keys(existingSizeInventory).length > 0) {
+      const converted: Record<string, VariantEntry> = {};
+      for (const [name, qty] of Object.entries(existingSizeInventory)) {
+        converted[name] = {
+          qty,
+          status: qty === 0 ? "hidden" : "available",
+        };
+      }
+      return converted;
     }
     return {};
   })();
@@ -139,8 +176,21 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   // Size system - auto-detect from existing inventory
   const [sizeSystem, setSizeSystem] = useState(detectedSizeSystem);
 
-  // Size inventory: { "US 7": 5, "US 8": 10, ... }
+  // Size inventory: { "US 7": 5, "US 8": 10, ... } (legacy, still used for backward compat)
   const [sizeInventory, setSizeInventory] = useState<Record<string, number>>(existingSizeInventory);
+
+  // Variant system state
+  const [variantLabel, setVariantLabel] = useState<string>(
+    (product as any)?.variantLabel || (Object.keys(existingVariants).length > 0 ? "尺碼" : "")
+  );
+  const [customVariantLabel, setCustomVariantLabel] = useState("");
+  const [variantEntries, setVariantEntries] = useState<Record<string, VariantEntry>>(existingVariants);
+  const [newVariantName, setNewVariantName] = useState("");
+  const [promoEndDate, setPromoEndDate] = useState<string>(
+    (product as any)?.promoEndDate
+      ? new Date((product as any).promoEndDate).toISOString().slice(0, 16)
+      : ""
+  );
 
   // Custom sizes added by user (sizes in inventory that aren't in the current system)
   const [customSizes, setCustomSizes] = useState<string[]>(() => {
@@ -167,8 +217,12 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   // Drag state for image reordering
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  // Calculate total stock from size inventory
-  const totalStock = Object.values(sizeInventory).reduce((sum, qty) => sum + qty, 0);
+  // Calculate total stock from variant entries (新格式優先) or size inventory (legacy fallback)
+  const totalStock = Object.keys(variantEntries).length > 0
+    ? Object.values(variantEntries)
+        .filter(v => v.status !== "hidden")
+        .reduce((sum, v) => sum + v.qty, 0)
+    : Object.values(sizeInventory).reduce((sum, qty) => sum + qty, 0);
 
   // Close on backdrop click
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -320,6 +374,69 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     }
   };
 
+  // Variant editor handlers
+  const handleAddVariant = () => {
+    const name = newVariantName.trim();
+    if (!name || name in variantEntries) return;
+    setVariantEntries(prev => ({
+      ...prev,
+      [name]: { qty: 0, status: "available" },
+    }));
+    setNewVariantName("");
+    // Also sync to legacy sizeInventory
+    setSizeInventory(prev => ({ ...prev, [name]: 0 }));
+  };
+
+  const handleRemoveVariant = (name: string) => {
+    setVariantEntries(prev => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+    setSizeInventory(prev => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+  };
+
+  const handleVariantQtyChange = (name: string, qty: number) => {
+    const safeQty = Math.max(0, qty);
+    setVariantEntries(prev => ({
+      ...prev,
+      [name]: {
+        ...prev[name],
+        qty: safeQty,
+        // 自動提示：qty > 0 時 status 不能為 hidden
+        status: safeQty > 0 && prev[name]?.status === "hidden" ? "available" : prev[name]?.status || "available",
+      },
+    }));
+    setSizeInventory(prev => ({ ...prev, [name]: safeQty }));
+  };
+
+  const handleVariantStatusChange = (name: string, status: VariantStatus) => {
+    setVariantEntries(prev => ({
+      ...prev,
+      [name]: { ...prev[name], status },
+    }));
+  };
+
+  // 從預設尺碼系統批量加入 variants
+  const handleAddSizesFromSystem = () => {
+    if (!sizeSystem) return;
+    const systemSizes = SIZE_SYSTEMS[sizeSystem]?.sizes || [];
+    const newEntries = { ...variantEntries };
+    const newSizes = { ...sizeInventory };
+    for (const size of systemSizes) {
+      if (!(size in newEntries)) {
+        newEntries[size] = { qty: 0, status: "available" };
+        newSizes[size] = 0;
+      }
+    }
+    setVariantEntries(newEntries);
+    setSizeInventory(newSizes);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -360,13 +477,18 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       return;
     }
 
-    // Filter size inventory to only include sizes with stock > 0
+    // Filter size inventory to only include sizes with stock > 0 (legacy backward compat)
     const filteredSizeInventory: Record<string, number> = {};
     Object.entries(sizeInventory).forEach(([size, stock]) => {
       if (stock > 0) {
         filteredSizeInventory[size] = stock;
       }
     });
+
+    // Build variants data for new format
+    const hasVariants = Object.keys(variantEntries).length > 0;
+    const variantsPayload = hasVariants ? variantEntries : null;
+    const variantLabelPayload = hasVariants ? (variantLabel || null) : null;
 
     startTransition(async () => {
       let result;
@@ -387,6 +509,9 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         sizes: Object.keys(filteredSizeInventory).length > 0 ? filteredSizeInventory : null,
         stock: totalStock,
         promotionBadges: promotionBadges.length > 0 ? promotionBadges : undefined,
+        variantLabel: variantLabelPayload,
+        variants: variantsPayload,
+        promoEndDate: promoEndDate || null,
       };
 
       if (product) {
@@ -809,115 +934,187 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               </div>
             </div>
 
-            {/* FULL WIDTH - Size System Table */}
+            {/* FULL WIDTH - Variant Editor */}
             <div className="mt-6 rounded-2xl border border-zinc-200 p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <label className="block text-zinc-700 text-sm font-medium">尺碼系統</label>
-                <div className="flex items-center gap-3">
-                  <select
-                    value={sizeSystem}
-                    onChange={(e) => handleSizeSystemChange(e.target.value)}
-                    disabled={isPending}
-                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                  >
-                    <option value="">No sizes</option>
-                    {Object.entries(SIZE_SYSTEMS).map(([key, val]) => (
-                      <option key={key} value={key}>{val.label}</option>
-                    ))}
-                  </select>
-                  <div className="text-sm text-zinc-600">
-                    總庫存: <span className="font-semibold text-zinc-900">{totalStock}</span>
-                  </div>
+                <label className="block text-zinc-700 text-sm font-medium">款式設定 (Variant)</label>
+                <div className="text-sm text-zinc-600">
+                  總庫存: <span className="font-semibold text-zinc-900">{totalStock}</span>
+                  {Object.keys(variantEntries).length > 0 && (
+                    <span className="ml-1 text-zinc-400">
+                      ({Object.values(variantEntries).filter(v => v.status !== "hidden").length} 款)
+                    </span>
+                  )}
                 </div>
               </div>
 
-              {sizeSystem && (
-                <>
-                  {/* Size inventory table */}
-                  <div className="overflow-x-auto max-h-[250px] overflow-y-auto border border-zinc-100 rounded-xl">
-                    <table className="w-full text-sm">
-                      <thead className="sticky top-0 bg-zinc-50">
-                        <tr className="text-zinc-500 border-b border-zinc-200">
-                          <th className="py-2 px-3 text-center font-medium w-12">✓</th>
-                          <th className="py-2 px-3 text-left font-medium">Size</th>
-                          <th className="py-2 px-3 text-right font-medium w-24">Stock</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {allAvailableSizes.map((size) => {
-                          const isChecked = size in sizeInventory;
-                          const stock = sizeInventory[size] || 0;
-                          const isCustom = customSizes.includes(size);
-                          return (
-                            <tr key={size} className="border-b border-zinc-100 hover:bg-zinc-50">
-                              <td className="py-2 px-3 text-center">
-                                <input
-                                  type="checkbox"
-                                  checked={isChecked}
-                                  onChange={(e) => handleSizeCheck(size, e.target.checked)}
-                                  disabled={isPending}
-                                  className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50"
-                                />
-                              </td>
-                              <td className="py-2 px-3 text-zinc-900">
-                                <div className="flex items-center gap-2">
-                                  {size}
-                                  {isCustom && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleRemoveCustomSize(size)}
-                                      className="text-zinc-400 hover:text-red-500"
-                                    >
-                                      <X size={12} />
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="py-2 px-3 text-right">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={isChecked ? stock : ""}
-                                  onChange={(e) => handleSizeStockChange(size, parseInt(e.target.value) || 0)}
-                                  disabled={isPending || !isChecked}
-                                  className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50 disabled:bg-zinc-50"
-                                  placeholder="0"
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Add custom size */}
-                  <div className="flex gap-2 pt-2">
-                    <input
-                      type="text"
-                      value={newCustomSize}
-                      onChange={(e) => setNewCustomSize(e.target.value)}
+              {/* Variant label selector */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-zinc-600">款式名稱:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {VARIANT_LABEL_PRESETS.map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => { setVariantLabel(preset); setCustomVariantLabel(""); }}
                       disabled={isPending}
-                      className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
-                      placeholder="自訂尺碼 (e.g. US 14)"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddCustomSize();
-                        }
-                      }}
-                    />
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors border disabled:opacity-50 ${
+                        variantLabel === preset && !customVariantLabel
+                          ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
+                          : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100"
+                      }`}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  value={customVariantLabel}
+                  onChange={(e) => {
+                    setCustomVariantLabel(e.target.value);
+                    if (e.target.value.trim()) setVariantLabel(e.target.value.trim());
+                  }}
+                  disabled={isPending}
+                  className="w-24 rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                  placeholder="自定義"
+                />
+              </div>
+
+              {/* Quick add from size system */}
+              <div className="flex items-center gap-2">
+                <select
+                  value={sizeSystem}
+                  onChange={(e) => handleSizeSystemChange(e.target.value)}
+                  disabled={isPending}
+                  className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                >
+                  <option value="">快速加入尺碼...</option>
+                  {Object.entries(SIZE_SYSTEMS).map(([key, val]) => (
+                    <option key={key} value={key}>{val.label}</option>
+                  ))}
+                </select>
+                {sizeSystem && (
+                  <button
+                    type="button"
+                    onClick={handleAddSizesFromSystem}
+                    disabled={isPending}
+                    className="rounded-xl bg-[#6B7A2F] px-3 py-2 text-sm text-white hover:bg-[#5a6827] disabled:opacity-50"
+                  >
+                    加入
+                  </button>
+                )}
+              </div>
+
+              {/* Variant entries table */}
+              {Object.keys(variantEntries).length > 0 && (
+                <div className="overflow-x-auto max-h-[300px] overflow-y-auto border border-zinc-100 rounded-xl">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-zinc-50">
+                      <tr className="text-zinc-500 border-b border-zinc-200">
+                        <th className="py-2 px-3 text-left font-medium">款式名</th>
+                        <th className="py-2 px-3 text-right font-medium w-24">庫存</th>
+                        <th className="py-2 px-3 text-left font-medium w-36">狀態</th>
+                        <th className="py-2 px-3 text-center font-medium w-12"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(variantEntries).map(([name, entry]) => (
+                        <tr key={name} className="border-b border-zinc-100 hover:bg-zinc-50">
+                          <td className="py-2 px-3 text-zinc-900">{name}</td>
+                          <td className="py-2 px-3 text-right">
+                            <input
+                              type="number"
+                              min="0"
+                              value={entry.qty}
+                              onChange={(e) => handleVariantQtyChange(name, parseInt(e.target.value) || 0)}
+                              disabled={isPending}
+                              className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                            />
+                          </td>
+                          <td className="py-2 px-3">
+                            <select
+                              value={entry.status}
+                              onChange={(e) => handleVariantStatusChange(name, e.target.value as VariantStatus)}
+                              disabled={isPending}
+                              className={`w-full rounded-lg border px-2 py-1 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50 ${
+                                entry.status === "available" ? "border-green-200 bg-green-50 text-green-700" :
+                                entry.status === "restocking" ? "border-yellow-200 bg-yellow-50 text-yellow-700" :
+                                entry.status === "preorder" ? "border-blue-200 bg-blue-50 text-blue-700" :
+                                "border-zinc-200 bg-zinc-50 text-zinc-500"
+                              }`}
+                            >
+                              {VARIANT_STATUS_OPTIONS.map((opt) => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="py-2 px-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVariant(name)}
+                              disabled={isPending}
+                              className="text-zinc-400 hover:text-red-500 disabled:opacity-50"
+                            >
+                              <X size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Add new variant */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newVariantName}
+                  onChange={(e) => setNewVariantName(e.target.value)}
+                  disabled={isPending}
+                  className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                  placeholder="新增款式 (e.g. US 9, M, 紅色)"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddVariant();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddVariant}
+                  disabled={isPending || !newVariantName.trim()}
+                  className="rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
+
+              {/* Promo end date */}
+              <div className="pt-2 border-t border-zinc-100">
+                <label className="block text-zinc-700 text-sm font-medium mb-2">限時優惠結束時間 (可選)</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="datetime-local"
+                    value={promoEndDate}
+                    onChange={(e) => setPromoEndDate(e.target.value)}
+                    disabled={isPending}
+                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                  />
+                  {promoEndDate && (
                     <button
                       type="button"
-                      onClick={handleAddCustomSize}
-                      disabled={isPending || !newCustomSize.trim()}
-                      className="rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                      onClick={() => setPromoEndDate("")}
+                      disabled={isPending}
+                      className="text-zinc-400 hover:text-red-500 disabled:opacity-50"
                     >
-                      ＋ 自訂尺碼
+                      <X size={16} />
                     </button>
-                  </div>
-                </>
-              )}
+                  )}
+                </div>
+              </div>
             </div>
           </form>
         </div>

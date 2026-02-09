@@ -86,6 +86,32 @@ function getIdempotencyKey(req: Request) {
   return (req.headers.get("x-idempotency-key") ?? req.headers.get("idempotency-key") ?? "").trim();
 }
 
+const VALID_VARIANT_STATUSES = ["available", "restocking", "preorder", "hidden"] as const;
+
+type VariantEntry = { qty: number; status: string };
+
+function parseVariants(value: unknown): Record<string, VariantEntry> | null {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "object" || Array.isArray(value)) {
+    throw new ApiError(400, "BAD_REQUEST", "variants must be an object");
+  }
+  const result: Record<string, VariantEntry> = {};
+  for (const [name, v] of Object.entries(value as Record<string, unknown>)) {
+    if (!v || typeof v !== "object" || Array.isArray(v)) {
+      throw new ApiError(400, "BAD_REQUEST", `variants["${name}"] must be an object with qty and status`);
+    }
+    const entry = v as Record<string, unknown>;
+    if (typeof entry.qty !== "number" || entry.qty < 0) {
+      throw new ApiError(400, "BAD_REQUEST", `variants["${name}"].qty must be a non-negative number`);
+    }
+    if (typeof entry.status !== "string" || !VALID_VARIANT_STATUSES.includes(entry.status as any)) {
+      throw new ApiError(400, "BAD_REQUEST", `variants["${name}"].status must be one of: ${VALID_VARIANT_STATUSES.join(", ")}`);
+    }
+    result[name] = { qty: entry.qty, status: entry.status };
+  }
+  return Object.keys(result).length > 0 ? result : null;
+}
+
 type CreateProductPayload = {
   brand?: string | null;
   title: string;
@@ -98,6 +124,9 @@ type CreateProductPayload = {
   sizes?: Record<string, number> | null;
   stock?: number;
   active?: boolean;
+  variantLabel?: string | null;
+  variants?: Record<string, VariantEntry> | null;
+  promoEndDate?: string | null;
 };
 
 function parseCreatePayload(body: any): CreateProductPayload {
@@ -148,6 +177,25 @@ function parseCreatePayload(body: any): CreateProductPayload {
     assertNonNegativeInt(body.stock, "stock");
   }
 
+  // Variant system fields
+  const variantLabel =
+    typeof body.variantLabel === "string" && body.variantLabel.trim().length > 0
+      ? body.variantLabel.trim()
+      : null;
+  const variants = parseVariants(body.variants);
+
+  let promoEndDate: string | null = null;
+  if (body.promoEndDate !== undefined && body.promoEndDate !== null) {
+    if (typeof body.promoEndDate !== "string") {
+      throw new ApiError(400, "BAD_REQUEST", "promoEndDate must be an ISO date string");
+    }
+    const d = new Date(body.promoEndDate);
+    if (isNaN(d.getTime())) {
+      throw new ApiError(400, "BAD_REQUEST", "promoEndDate must be a valid date");
+    }
+    promoEndDate = body.promoEndDate;
+  }
+
   return {
     brand,
     title: body.title.trim(),
@@ -160,6 +208,9 @@ function parseCreatePayload(body: any): CreateProductPayload {
     sizes: sizes ?? undefined,
     stock: body.stock !== undefined ? body.stock : undefined,
     active: typeof body.active === "boolean" ? body.active : true,
+    variantLabel,
+    variants: variants ?? undefined,
+    promoEndDate,
   };
 }
 
@@ -245,6 +296,9 @@ export const POST = withApi(
         sizes: payload.sizes ?? undefined,
         stock: payload.stock ?? 0,
         active: payload.active ?? true,
+        variantLabel: payload.variantLabel ?? null,
+        variants: payload.variants ?? undefined,
+        promoEndDate: payload.promoEndDate ? new Date(payload.promoEndDate) : null,
       },
     });
 

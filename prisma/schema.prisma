@@ -192,8 +192,12 @@ model Product {
   // Category relation
   categoryId      String?
   categoryRel     Category?        @relation(fields: [categoryId], references: [id])
+  // Variant system (通用款式選擇器)
+  variantLabel    String?    // 商戶自定義嘅 variant 顯示名，例如 "尺碼"/"圈碼"/"尺寸"/"型號"
+  variants        Json?      // {"US 7": {"qty": 2, "status": "available"}, "US 8": {"qty": 0, "status": "restocking"}}
+  promoEndDate    DateTime?  // 限時優惠結束時間
   // Variants & attributes
-  variants        ProductVariant[]
+  productVariants ProductVariant[]
   attributes      Json?
   // Multi-tenant
   tenantId        String

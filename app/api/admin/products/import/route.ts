@@ -13,6 +13,8 @@ type ImportPayload = {
   imageUrl?: unknown;
   sizeSystem?: unknown;
   sizes?: unknown;
+  variantLabel?: unknown;
+  variants?: unknown;
   active?: unknown;
 };
 
@@ -83,6 +85,19 @@ export const POST = withApi(async (req: Request) => {
       const sizes = parseSizes(entry.sizes);
       const price = parsePrice(entry.price);
       const active = parseActive(entry.active);
+      const variantLabel = toOptionalString(entry.variantLabel);
+
+      // Parse variants JSON (new format)
+      let variants: Record<string, { qty: number; status: string }> | undefined = undefined;
+      if (entry.variants && typeof entry.variants === "object" && !Array.isArray(entry.variants)) {
+        variants = entry.variants as Record<string, { qty: number; status: string }>;
+      } else if (typeof entry.variants === "string" && entry.variants.trim()) {
+        try {
+          variants = JSON.parse(entry.variants);
+        } catch {
+          // Ignore invalid JSON
+        }
+      }
 
       if (!title || !brand || price === null) {
         throw new Error("Missing required fields");
@@ -90,6 +105,18 @@ export const POST = withApi(async (req: Request) => {
 
       if ((sizes && !sizeSystem) || (sizeSystem && !sizes)) {
         throw new Error("sizeSystem and sizes must both be provided");
+      }
+
+      // Auto-convert legacy sizes to variants if variants not provided
+      let finalVariantLabel = variantLabel;
+      let finalVariants = variants;
+      if (!finalVariants && sizes && sizes.length > 0) {
+        finalVariantLabel = finalVariantLabel || "尺碼";
+        const converted: Record<string, { qty: number; status: string }> = {};
+        for (const size of sizes) {
+          converted[size] = { qty: 0, status: "available" };
+        }
+        finalVariants = converted;
       }
 
       await prisma.product.create({
@@ -102,6 +129,8 @@ export const POST = withApi(async (req: Request) => {
           imageUrl,
           sizeSystem,
           sizes: sizes ?? undefined,
+          variantLabel: finalVariantLabel ?? null,
+          variants: finalVariants ?? undefined,
           active: active ?? true,
         },
       });

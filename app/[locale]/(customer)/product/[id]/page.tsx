@@ -60,7 +60,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   const product = await prisma.product.findUnique({
     where: { id, active: true },
     include: {
-      variants: {
+      productVariants: {
         where: { active: true },
         orderBy: { sortOrder: "asc" },
       },
@@ -97,7 +97,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     shoeType: product.shoeType || null,
     isKids,
     promotionBadges: (product as any).promotionBadges || [],
-    variants: product.variants.map((v: any) => ({
+    variants: product.productVariants.map((v: any) => ({
       id: v.id,
       name: v.name,
       price: v.price,

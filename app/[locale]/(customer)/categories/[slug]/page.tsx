@@ -56,7 +56,7 @@ export default async function CategoryPage({ params }: Props) {
     },
     orderBy: { createdAt: "desc" },
     include: {
-      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+      productVariants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
     },
   });
 

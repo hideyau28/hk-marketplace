@@ -5,6 +5,8 @@ import { authenticateAdmin } from "@/lib/auth/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { parseBadges } from "@/lib/parse-badges";
 
+const VALID_VARIANT_STATUSES = ["available", "restocking", "preorder", "hidden"] as const;
+
 function assertNonEmptyString(value: unknown, field: string) {
   if (typeof value !== "string" || value.trim().length === 0) {
     throw new ApiError(400, "BAD_REQUEST", `${field} must be a non-empty string`);
@@ -63,7 +65,7 @@ export const GET = withApi(
     const { id } = await params;
     const product = await prisma.product.findFirst({
       where: { id, tenantId },
-      include: { variants: { orderBy: { sortOrder: "asc" } } },
+      include: { productVariants: { orderBy: { sortOrder: "asc" } } },
     });
     if (!product) {
       throw new ApiError(404, "NOT_FOUND", "Product not found");
@@ -191,6 +193,52 @@ export const PATCH = withApi(
         throw new ApiError(400, "BAD_REQUEST", "promotionBadges must contain only strings");
       }
       updateData.promotionBadges = body.promotionBadges;
+    }
+
+    // Variant system fields
+    if (body.variantLabel !== undefined) {
+      if (body.variantLabel === null || body.variantLabel === "") {
+        updateData.variantLabel = null;
+      } else if (typeof body.variantLabel === "string") {
+        updateData.variantLabel = body.variantLabel.trim();
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "variantLabel must be a string or null");
+      }
+    }
+
+    if (body.variants !== undefined) {
+      if (body.variants === null) {
+        updateData.variants = null;
+      } else if (typeof body.variants === "object" && !Array.isArray(body.variants)) {
+        for (const [name, v] of Object.entries(body.variants as Record<string, any>)) {
+          if (!v || typeof v !== "object") {
+            throw new ApiError(400, "BAD_REQUEST", `variants["${name}"] must be an object with qty and status`);
+          }
+          if (typeof v.qty !== "number" || v.qty < 0) {
+            throw new ApiError(400, "BAD_REQUEST", `variants["${name}"].qty must be a non-negative number`);
+          }
+          if (typeof v.status !== "string" || !VALID_VARIANT_STATUSES.includes(v.status as any)) {
+            throw new ApiError(400, "BAD_REQUEST", `variants["${name}"].status must be one of: ${VALID_VARIANT_STATUSES.join(", ")}`);
+          }
+        }
+        updateData.variants = body.variants;
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "variants must be an object or null");
+      }
+    }
+
+    if (body.promoEndDate !== undefined) {
+      if (body.promoEndDate === null) {
+        updateData.promoEndDate = null;
+      } else if (typeof body.promoEndDate === "string") {
+        const d = new Date(body.promoEndDate);
+        if (isNaN(d.getTime())) {
+          throw new ApiError(400, "BAD_REQUEST", "promoEndDate must be a valid date");
+        }
+        updateData.promoEndDate = d;
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "promoEndDate must be an ISO date string or null");
+      }
     }
 
     if (Object.keys(updateData).length === 0) {

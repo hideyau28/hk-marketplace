@@ -12,6 +12,8 @@ const ALL_COLUMNS = [
   "imageUrl",
   "sizeSystem",
   "sizes",
+  "variantLabel",
+  "variants",
   "active",
 ];
 
@@ -26,6 +28,8 @@ type ParsedRow = {
     imageUrl: string | null;
     sizeSystem: string | null;
     sizes: string[] | null;
+    variantLabel: string | null;
+    variants: Record<string, { qty: number; status: string }> | null;
     active: boolean | null;
   };
   errors: string[];
@@ -163,6 +167,22 @@ function parseRows(text: string) {
       errors.push("sizeSystem and sizes must both be provided");
     }
 
+    // Parse variant fields
+    const variantLabel = raw.variantLabel || null;
+    let variants: Record<string, { qty: number; status: string }> | null = null;
+    if (raw.variants) {
+      try {
+        const parsed2 = JSON.parse(raw.variants);
+        if (typeof parsed2 === "object" && parsed2 !== null && !Array.isArray(parsed2)) {
+          variants = parsed2;
+        } else {
+          errors.push("variants must be a JSON object");
+        }
+      } catch {
+        errors.push("variants must be valid JSON");
+      }
+    }
+
     parsed.push({
       raw,
       normalized: {
@@ -174,6 +194,8 @@ function parseRows(text: string) {
         imageUrl: raw.imageUrl || null,
         sizeSystem,
         sizes,
+        variantLabel,
+        variants,
         active,
       },
       errors,
@@ -233,6 +255,8 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
         imageUrl: row.normalized.imageUrl,
         sizeSystem: row.normalized.sizeSystem,
         sizes: row.normalized.sizes,
+        variantLabel: row.normalized.variantLabel,
+        variants: row.normalized.variants,
         active: row.normalized.active ?? true,
       }));
 

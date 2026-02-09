@@ -112,6 +112,9 @@ export async function createProduct(
     sizes?: Record<string, number> | null;
     stock?: number;
     promotionBadges?: string[];
+    variantLabel?: string | null;
+    variants?: Record<string, { qty: number; status: string }> | null;
+    promoEndDate?: string | null;
   },
   locale?: string
 ): Promise<CreateProductResult> {
@@ -173,6 +176,9 @@ export async function updateProduct(
     sizes?: Record<string, number> | null;
     stock?: number;
     promotionBadges?: string[];
+    variantLabel?: string | null;
+    variants?: Record<string, { qty: number; status: string }> | null;
+    promoEndDate?: string | null;
   },
   locale?: string
 ): Promise<UpdateProductResult> {

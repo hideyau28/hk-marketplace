@@ -63,6 +63,8 @@ function exportProductsToCsv(products: ProductWithBadges[]): void {
     "imageUrl",
     "images",
     "sizeInventory",
+    "variantLabel",
+    "variants",
     "Stock",
     "promotionBadges",
     "featured",
@@ -72,6 +74,8 @@ function exportProductsToCsv(products: ProductWithBadges[]): void {
 
   const rows = products.map((product) => {
     const sizesJson = product.sizes ? JSON.stringify(product.sizes) : "";
+    const variantLabel = (product as any).variantLabel || "";
+    const variantsJson = (product as any).variants ? JSON.stringify((product as any).variants) : "";
     const imagesStr = Array.isArray(product.images)
       ? product.images.join("|")
       : "";
@@ -90,6 +94,8 @@ function exportProductsToCsv(products: ProductWithBadges[]): void {
       product.imageUrl || "",
       imagesStr,
       sizesJson,
+      variantLabel,
+      variantsJson,
       String(product.stock ?? 0),
       promotionBadges,
       String(product.featured ?? false),
@@ -164,12 +170,31 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
 
   const badgeMap = useMemo(() => new Map(badges.map((badge) => [badge.id, badge])), [badges]);
 
-  const hasStock = (product: ProductWithBadges) => {
+  // 計算總庫存（variants 優先，fallback to sizes）
+  const getTotalStock = (product: ProductWithBadges): { total: number; count: number } => {
+    const variants = (product as any)?.variants;
+    if (variants && typeof variants === "object" && !Array.isArray(variants)) {
+      const entries = Object.values(variants) as { qty: number; status: string }[];
+      const visible = entries.filter(v => v.status !== "hidden");
+      return {
+        total: visible.reduce((sum, v) => sum + (v.qty || 0), 0),
+        count: visible.length,
+      };
+    }
     const sizes = (product as { sizes?: Record<string, number> | null }).sizes;
     if (sizes && typeof sizes === "object" && !Array.isArray(sizes)) {
-      return Object.values(sizes).some((value) => typeof value === "number" && value > 0);
+      const entries = Object.entries(sizes);
+      const withStock = entries.filter(([, v]) => typeof v === "number" && v > 0);
+      return {
+        total: entries.reduce((sum, [, v]) => sum + (typeof v === "number" ? v : 0), 0),
+        count: withStock.length,
+      };
     }
-    return (product.stock ?? 0) > 0;
+    return { total: product.stock ?? 0, count: 0 };
+  };
+
+  const hasStock = (product: ProductWithBadges) => {
+    return getTotalStock(product).total > 0;
   };
 
   const getBadgeStyles = (badge: string) => {
@@ -705,7 +730,12 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       {isOnSale ? `-${discountPercent}%` : ""}
                     </td>
                     {/* Stock */}
-                    <td className="px-2 py-1 text-right text-zinc-700 text-sm">{product.stock ?? 0}</td>
+                    <td className="px-2 py-1 text-right text-zinc-700 text-sm">
+                      {(() => {
+                        const { total, count } = getTotalStock(product);
+                        return count > 0 ? `${total} (${count} 款)` : String(total);
+                      })()}
+                    </td>
                     {/* Badges */}
                     <td className="px-2 py-1">
                       {badgeDisplay.length > 0 ? (
