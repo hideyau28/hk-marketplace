@@ -98,6 +98,8 @@ type CreateProductPayload = {
   sizes?: Record<string, number> | null;
   stock?: number;
   active?: boolean;
+  preorderDate?: Date | null;
+  preorderNote?: string | null;
 };
 
 function parseCreatePayload(body: any): CreateProductPayload {
@@ -148,6 +150,23 @@ function parseCreatePayload(body: any): CreateProductPayload {
     assertNonNegativeInt(body.stock, "stock");
   }
 
+  let preorderDate: Date | null = null;
+  if (body.preorderDate !== undefined && body.preorderDate !== null) {
+    if (typeof body.preorderDate !== "string") {
+      throw new ApiError(400, "BAD_REQUEST", "preorderDate must be a date string");
+    }
+    const parsed = new Date(body.preorderDate);
+    if (isNaN(parsed.getTime())) {
+      throw new ApiError(400, "BAD_REQUEST", "preorderDate must be a valid date string");
+    }
+    preorderDate = parsed;
+  }
+
+  const preorderNote =
+    typeof body.preorderNote === "string" && body.preorderNote.trim().length > 0
+      ? body.preorderNote.trim()
+      : null;
+
   return {
     brand,
     title: body.title.trim(),
@@ -160,6 +179,8 @@ function parseCreatePayload(body: any): CreateProductPayload {
     sizes: sizes ?? undefined,
     stock: body.stock !== undefined ? body.stock : undefined,
     active: typeof body.active === "boolean" ? body.active : true,
+    preorderDate,
+    preorderNote,
   };
 }
 
@@ -245,6 +266,8 @@ export const POST = withApi(
         sizes: payload.sizes ?? undefined,
         stock: payload.stock ?? 0,
         active: payload.active ?? true,
+        preorderDate: payload.preorderDate ?? null,
+        preorderNote: payload.preorderNote ?? null,
       },
     });
 

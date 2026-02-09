@@ -1,6 +1,6 @@
 "use client";
 
-import { formatHKD } from "@/lib/biolink-helpers";
+import { formatHKD, formatArrivalDate } from "@/lib/biolink-helpers";
 import { buildMerchantNotifyUrl } from "@/lib/whatsapp-notify";
 
 type OrderItem = {
@@ -23,6 +23,8 @@ type OrderResult = {
   customer?: { name: string; phone: string };
   delivery?: { method: string; label: string };
   paymentMethod?: string;
+  hasPreorder?: boolean;
+  latestPreorderDate?: string | null;
 };
 
 type Props = {
@@ -77,6 +79,19 @@ export default function OrderConfirmation({ order, onClose }: Props) {
             <p className="text-white/50 text-sm mt-1">訂單編號：{order.orderNumber}</p>
             <p className="text-white/40 text-xs mt-0.5">狀態：待確認付款</p>
           </div>
+
+          {/* Preorder notice */}
+          {order.hasPreorder && (
+            <div className="bg-[#FF9500]/10 border border-[#FF9500]/30 rounded-2xl p-4 mb-4">
+              <p className="text-sm text-[#FF9500] font-medium">📦 此訂單包含預購商品</p>
+              {order.latestPreorderDate && (
+                <p className="text-sm text-[#FF9500]/80 mt-1">
+                  預計到貨：{formatArrivalDate(order.latestPreorderDate)}
+                </p>
+              )}
+              <p className="text-xs text-[#FF9500]/60 mt-1">到貨後會 WhatsApp 通知你 📱</p>
+            </div>
+          )}
 
           {/* Order summary */}
           {order.items && order.items.length > 0 && (

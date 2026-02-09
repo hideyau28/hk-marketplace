@@ -10,6 +10,8 @@ import {
   getVisibleVariants,
   getVariantLabel,
   isSoldOut,
+  isPreorder as checkPreorder,
+  formatArrivalDate,
   formatHKD,
 } from "@/lib/biolink-helpers";
 import VariantSelector from "./VariantSelector";
@@ -30,6 +32,7 @@ export default function LootCard({ product, index, onAdd }: Props) {
   const variants = getVisibleVariants(product);
   const variantLabel = getVariantLabel(product);
   const soldOut = isSoldOut(product);
+  const preorder = checkPreorder(product);
 
   const isOnSale =
     product.originalPrice != null &&
@@ -77,13 +80,13 @@ export default function LootCard({ product, index, onAdd }: Props) {
           {soldOut && <SoldOutOverlay />}
 
           {/* Badge */}
-          {badge && !soldOut && (
+          {!soldOut && (preorder || badge) && (
             <div className="absolute top-2 left-2 z-10">
               <span
                 className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded text-white"
-                style={{ backgroundColor: config.color }}
+                style={{ backgroundColor: preorder ? "#FF9500" : config.color }}
               >
-                {badge}
+                {preorder ? "PRE-ORDER" : badge}
               </span>
             </div>
           )}
@@ -107,7 +110,7 @@ export default function LootCard({ product, index, onAdd }: Props) {
             {product.title}
           </h3>
 
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1">
             {isOnSale ? (
               <>
                 <span className="text-white font-bold text-sm">
@@ -127,12 +130,21 @@ export default function LootCard({ product, index, onAdd }: Props) {
             )}
           </div>
 
+          {preorder && product.preorderDate ? (
+            <p className="text-xs text-zinc-400 mb-1">
+              📦 {formatArrivalDate(product.preorderDate)}
+            </p>
+          ) : (
+            <div className="mb-1" />
+          )}
+
           <VariantSelector
             variants={variants || []}
             label={variantLabel}
             productPrice={product.price}
             soldOut={soldOut}
             onAdd={(variant) => onAdd(product, variant)}
+            isPreorder={preorder}
           />
         </div>
       </div>

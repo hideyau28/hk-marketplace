@@ -52,6 +52,8 @@ export default async function SlugPage({ params }: PageProps) {
       badges: true,
       featured: true,
       createdAt: true,
+      preorderDate: true,
+      preorderNote: true,
       variants: {
         where: { active: true },
         orderBy: { sortOrder: "asc" },
@@ -80,6 +82,8 @@ export default async function SlugPage({ params }: PageProps) {
     badges: p.badges as string[] | null,
     featured: p.featured,
     createdAt: p.createdAt,
+    preorderDate: p.preorderDate?.toISOString() ?? null,
+    preorderNote: p.preorderNote ?? null,
     variants: p.variants,
   }));
 

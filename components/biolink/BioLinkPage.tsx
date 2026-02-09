@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import type { ProductForBioLink, TenantForBioLink } from "@/lib/biolink-helpers";
-import { splitProducts } from "@/lib/biolink-helpers";
+import { splitProducts, isPreorder as checkPreorder } from "@/lib/biolink-helpers";
 import StickyHeader from "./StickyHeader";
 import CoverPhoto from "./CoverPhoto";
 import ProfileSection from "./ProfileSection";
@@ -21,6 +21,8 @@ type CartItem = {
   variantId?: string;
   qty: number;
   imageUrl: string | null;
+  isPreorder?: boolean;
+  preorderDate?: string | null;
 };
 
 type OrderResult = {
@@ -36,6 +38,8 @@ type OrderResult = {
   customer?: { name: string; phone: string };
   delivery?: { method: string; label: string };
   paymentMethod?: string;
+  hasPreorder?: boolean;
+  latestPreorderDate?: string | null;
 };
 
 type Props = {
@@ -70,6 +74,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
               : i
           );
         }
+        const productIsPreorder = checkPreorder(product);
         return [
           ...prev,
           {
@@ -80,6 +85,10 @@ export default function BioLinkPage({ tenant, products }: Props) {
             variantId,
             qty: 1,
             imageUrl: product.imageUrl,
+            isPreorder: productIsPreorder,
+            preorderDate: productIsPreorder && product.preorderDate
+              ? String(product.preorderDate)
+              : null,
           },
         ];
       });

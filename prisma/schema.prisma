@@ -192,6 +192,9 @@ model Product {
   // Category relation
   categoryId      String?
   categoryRel     Category?        @relation(fields: [categoryId], references: [id])
+  // Pre-order
+  preorderDate    DateTime?
+  preorderNote    String?
   // Variants & attributes
   variants        ProductVariant[]
   attributes      Json?

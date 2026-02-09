@@ -16,6 +16,7 @@ type Props = {
   soldOut: boolean;
   onAdd: (variant: string | null) => void;
   theme?: "dark" | "light";
+  isPreorder?: boolean;
 };
 
 const styles = {
@@ -46,6 +47,7 @@ export default function VariantSelector({
   soldOut,
   onAdd,
   theme = "dark",
+  isPreorder = false,
 }: Props) {
   const [selected, setSelected] = useState("");
   const [animating, setAnimating] = useState(false);
@@ -77,7 +79,7 @@ export default function VariantSelector({
           animating ? "scale-95" : ""
         }`}
       >
-        加入購物車{theme === "dark" ? ` ${formatHKD(productPrice)}` : ""}
+        {isPreorder ? "預購" : "加入購物車"}{theme === "dark" ? ` ${formatHKD(productPrice)}` : ""}
       </button>
     );
   }
@@ -115,7 +117,7 @@ export default function VariantSelector({
               className={s.option}
             >
               {v.name}
-              {v.stock === 0 ? " (售罄)" : v.stock <= 3 ? ` (剩${v.stock})` : ""}
+              {v.stock === 0 ? " (售罄)" : isPreorder ? "（預購）" : v.stock <= 3 ? ` (剩${v.stock})` : ""}
             </option>
           ))}
         </select>

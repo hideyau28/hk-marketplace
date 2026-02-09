@@ -193,6 +193,30 @@ export const PATCH = withApi(
       updateData.promotionBadges = body.promotionBadges;
     }
 
+    if (body.preorderDate !== undefined) {
+      if (body.preorderDate === null) {
+        updateData.preorderDate = null;
+      } else if (typeof body.preorderDate === "string") {
+        const parsed = new Date(body.preorderDate);
+        if (isNaN(parsed.getTime())) {
+          throw new ApiError(400, "BAD_REQUEST", "preorderDate must be a valid date string");
+        }
+        updateData.preorderDate = parsed;
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "preorderDate must be a date string or null");
+      }
+    }
+
+    if (body.preorderNote !== undefined) {
+      if (body.preorderNote === null || body.preorderNote === "") {
+        updateData.preorderNote = null;
+      } else if (typeof body.preorderNote === "string") {
+        updateData.preorderNote = body.preorderNote.trim();
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "preorderNote must be a string or null");
+      }
+    }
+
     if (Object.keys(updateData).length === 0) {
       throw new ApiError(400, "BAD_REQUEST", "No valid fields to update");
     }
