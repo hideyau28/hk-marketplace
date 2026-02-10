@@ -745,15 +745,15 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
             </div>
           </div>
 
-          {/* Pickup Address */}
+          {/* Legacy Pickup Address (kept for backward compatibility) */}
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
             <div>
               <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-zinc-600" />
-                Pickup Address
+                Pickup Address (Legacy)
               </h3>
               <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Location where customers can collect their orders.
+                Legacy pickup address field. Use the Pickup Address section above for bilingual support.
               </p>
             </div>
 
@@ -770,15 +770,15 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
             </div>
           </div>
 
-          {/* Shipping Settings */}
+          {/* Legacy Shipping Settings (kept for backward compatibility) */}
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
             <div>
               <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
                 <Truck className="h-5 w-5 text-zinc-600" />
-                Shipping Settings
+                Shipping Settings (Legacy)
               </h3>
               <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Configure shipping fees and free shipping threshold.
+                Legacy shipping fields. Use the Shipping Settings section above for detailed delivery options.
               </p>
             </div>
 
