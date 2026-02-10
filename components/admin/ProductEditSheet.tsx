@@ -175,7 +175,16 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
   const [variantMemory, setVariantMemory] = useState<VariantMemory | null>(null);
   const [memoryDismissed, setMemoryDismissed] = useState(false);
 
+  // Variant wizard step: "type" | "hasColor" | "values"
+  const [variantStep, setVariantStep] = useState<"type" | "hasColor" | "values">("type");
+  const [pendingClothingPreset, setPendingClothingPreset] = useState<VariantPreset | null>(null);
+
   const isZh = locale === "zh-HK";
+
+  // Check if preset is a clothing/size preset that should ask about colors
+  const isClothingPreset = (presetId: string): boolean => {
+    return ["shirt-size", "pants-size", "shoe-size-us", "shoe-size-eu", "kids-size"].includes(presetId);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -229,6 +238,8 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       setBulkQty("");
       setCollapsedGroups(new Set());
       setMemoryDismissed(false);
+      setVariantStep("type");
+      setPendingClothingPreset(null);
 
       // Load variant memory for new products
       if (isNew) {
@@ -301,16 +312,25 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       }
       setShowPresetPicker2(false);
     } else {
-      setActivePreset1(preset);
-      setVariantMode("single");
-      setOptionName1(preset.label);
-      // Pre-select all values if preset has values
-      if (preset.values.length > 0) {
-        setValues1(preset.values.map((v) => ({ name: v, qty: 0 })));
+      // Check if this is a clothing preset → ask about colors
+      if (isClothingPreset(preset.id)) {
+        setPendingClothingPreset(preset);
+        setVariantStep("hasColor");
+        setShowPresetPicker(false);
       } else {
-        setValues1([]);
+        // Non-clothing preset: directly set up single variant
+        setActivePreset1(preset);
+        setVariantMode("single");
+        setOptionName1(preset.label);
+        // Pre-select all values if preset has values
+        if (preset.values.length > 0) {
+          setValues1(preset.values.map((v) => ({ name: v, qty: 0 })));
+        } else {
+          setValues1([]);
+        }
+        setShowPresetPicker(false);
+        setVariantStep("values");
       }
-      setShowPresetPicker(false);
     }
     setPresetSearch("");
   };
@@ -327,8 +347,60 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       setOptionName1("");
       setValues1([]);
       setShowPresetPicker(false);
+      setVariantStep("values");
     }
     setPresetSearch("");
+  };
+
+  // Handle "hasColor" step responses
+  const handleHasColorYes = () => {
+    if (!pendingClothingPreset) return;
+
+    // Find color preset
+    const allPresets = [...VARIANT_PRESETS, ...EXTENDED_PRESETS];
+    const colorPreset = allPresets.find((p) => p.id === "color");
+
+    // Set up dual variant: colors first, sizes second
+    setVariantMode("dual");
+
+    // First option: color
+    if (colorPreset) {
+      setActivePreset1(colorPreset);
+      setOptionName1(colorPreset.label);
+      setValues1(colorPreset.values.map((v) => ({ name: v, qty: 0 })));
+    }
+
+    // Second option: clothing size
+    setActivePreset2(pendingClothingPreset);
+    setOptionName2(pendingClothingPreset.label);
+    setValues2(pendingClothingPreset.values);
+
+    // Initialize grid
+    const newGrid: Record<string, number> = {};
+    if (colorPreset) {
+      for (const color of colorPreset.values) {
+        for (const size of pendingClothingPreset.values) {
+          newGrid[`${color}|${size}`] = 0;
+        }
+      }
+    }
+    setGrid(newGrid);
+
+    setPendingClothingPreset(null);
+    setVariantStep("values");
+  };
+
+  const handleHasColorNo = () => {
+    if (!pendingClothingPreset) return;
+
+    // Set up single variant with just sizes
+    setActivePreset1(pendingClothingPreset);
+    setVariantMode("single");
+    setOptionName1(pendingClothingPreset.label);
+    setValues1(pendingClothingPreset.values.map((v) => ({ name: v, qty: 0 })));
+
+    setPendingClothingPreset(null);
+    setVariantStep("values");
   };
 
   // Toggle a value on/off (checkbox chips)
@@ -462,6 +534,8 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     setActivePreset2(null);
     setShowPresetPicker(false);
     setShowPresetPicker2(false);
+    setVariantStep("type");
+    setPendingClothingPreset(null);
   };
 
   // Remove second option
@@ -1032,7 +1106,56 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
 
           {/* --- Variant Options Section --- */}
           <div>
-            {variantMode === "none" && !showPresetPicker ? (
+            {variantStep === "hasColor" ? (
+              /* "有冇唔同顏色？" step */
+              <div className="space-y-4 bg-zinc-50 rounded-xl p-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{pendingClothingPreset?.icon}</span>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-zinc-700">
+                      {pendingClothingPreset?.label}
+                    </div>
+                    <div className="text-xs text-zinc-400">
+                      {pendingClothingPreset?.values.slice(0, 4).join(" / ")}
+                      {(pendingClothingPreset?.values.length || 0) > 4 ? "..." : ""}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-base font-medium text-zinc-900 pt-2">
+                  {isZh ? "有冇唔同顏色？" : "Different colors available?"}
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handleHasColorYes}
+                    className="flex-1 py-3 rounded-xl bg-[#FF9500] text-white font-semibold hover:bg-[#E68600] transition-colors"
+                  >
+                    {isZh ? "有" : "Yes"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleHasColorNo}
+                    className="flex-1 py-3 rounded-xl bg-white border border-zinc-200 text-zinc-700 font-semibold hover:bg-zinc-50 transition-colors"
+                  >
+                    {isZh ? "冇" : "No"}
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingClothingPreset(null);
+                    setVariantStep("type");
+                    setShowPresetPicker(true);
+                  }}
+                  className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 py-1"
+                >
+                  {isZh ? "返回" : "Back"}
+                </button>
+              </div>
+            ) : variantMode === "none" && !showPresetPicker ? (
               <div className="space-y-3">
                 {/* Variant memory suggestion */}
                 {isNew && variantMemory && !memoryDismissed && (
