@@ -12,6 +12,7 @@ type Product = {
   originalPrice: number | null;
   imageUrl: string | null;
   images: string[];
+  videoUrl?: string | null;
   sizes: Record<string, unknown> | null;
   sizeSystem: string | null;
 };

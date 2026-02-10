@@ -55,7 +55,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       prisma.product.findMany({
         where: { tenantId, active: true },
         orderBy: { sortOrder: "asc" },
-        select: { id: true, title: true, price: true, originalPrice: true, imageUrl: true, images: true, sizes: true, sizeSystem: true },
+        select: { id: true, title: true, price: true, originalPrice: true, imageUrl: true, images: true, videoUrl: true, sizes: true, sizeSystem: true },
       }),
       prisma.order.count({
         where: { tenantId, status: "PENDING" },
