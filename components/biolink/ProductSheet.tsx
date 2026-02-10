@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   type ProductForBioLink,
@@ -24,6 +24,7 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
   const dualVariant = getDualVariantData(product);
   const singleVariants = getVisibleVariants(product);
   const variantLabel = getVariantLabel(product);
+  const videoEmbedUrl = product.videoUrl ? getEmbedUrl(product.videoUrl) : null;
 
   const isDual = dualVariant !== null;
 
@@ -31,7 +32,26 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
   const [selectedSize, setSelectedSize] = useState("");
   const [qty, setQty] = useState(1);
   const [showError, setShowError] = useState(false);
-  const [heroIndex, setHeroIndex] = useState(0);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  // 建立 carousel slides：圖片 + video (如果有)
+  const carouselSlides = [...images];
+  if (videoEmbedUrl) {
+    carouselSlides.push("__VIDEO__");
+  }
+  const totalSlides = carouselSlides.length;
+
+  // Body scroll lock
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
 
   // 預設選第一個有貨組合
   useEffect(() => {
@@ -46,7 +66,7 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
             setSelectedColor(c);
             setSelectedSize(s);
             const imgIdx = dualVariant.optionImages?.[c] ?? 0;
-            setHeroIndex(imgIdx);
+            setCarouselIndex(imgIdx);
             return;
           }
         }
@@ -81,7 +101,7 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
     setShowError(false);
     if (dualVariant) {
       const imgIdx = dualVariant.optionImages?.[color] ?? 0;
-      setHeroIndex(imgIdx);
+      setCarouselIndex(imgIdx);
       // 自動選第一個有貨尺碼
       const dim2Options = dualVariant.options[dualVariant.dimensions[1]] || [];
       for (const s of dim2Options) {
@@ -145,7 +165,6 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
   };
 
   const sizes = getSizeOptions();
-  const displayImage = images[heroIndex] || images[0] || null;
   const isOnSale =
     product.originalPrice != null && product.originalPrice > product.price;
   const discountPct = isOnSale
@@ -154,96 +173,140 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
   const canAdd = isDual
     ? !!(selectedColor && selectedSize && selectedStock > 0)
     : !!(selectedSize && selectedStock > 0);
-  const videoEmbedUrl = product.videoUrl ? getEmbedUrl(product.videoUrl) : null;
+
+  // Swipe 手勢
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    const threshold = 50; // 最小滑動距離
+
+    if (Math.abs(diff) < threshold) return;
+
+    if (diff > 0) {
+      // Swipe left - 下一張
+      setCarouselIndex((prev) => Math.min(totalSlides - 1, prev + 1));
+    } else {
+      // Swipe right - 上一張
+      setCarouselIndex((prev) => Math.max(0, prev - 1));
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50" onClick={onClose}>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-50 bg-white">
+      {/* Fullscreen modal */}
+      <div className="h-full flex flex-col max-w-[480px] mx-auto animate-slide-up">
+        {/* Image Carousel Section - 全寬 1:1 */}
+        <div className="relative w-full aspect-square bg-zinc-100">
+          {/* Close button - 右上角 */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center text-zinc-600 hover:text-zinc-900 active:scale-95 transition-all"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
 
-      {/* Sheet */}
-      <div
-        className="absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white rounded-t-3xl max-h-[85vh] flex flex-col animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Drag handle */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full bg-zinc-300" />
-        </div>
+          {/* Carousel slides */}
+          <div
+            className="w-full h-full"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {carouselSlides.map((slide, idx) => (
+              <div
+                key={idx}
+                className={`absolute inset-0 transition-opacity duration-300 ${
+                  idx === carouselIndex ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
+              >
+                {slide === "__VIDEO__" ? (
+                  <iframe
+                    src={videoEmbedUrl!}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <Image
+                    src={slide}
+                    alt={product.title}
+                    fill
+                    className="object-cover"
+                    sizes="480px"
+                    priority={idx === 0}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
 
-        {/* Header: 縮圖 + 商品資訊 + 關閉 */}
-        <div className="flex gap-3 px-4 pb-3 border-b border-zinc-100">
-          {displayImage && (
-            <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-              <Image
-                src={displayImage}
-                alt={product.title}
-                fill
-                className="object-cover"
-                sizes="80px"
-              />
+          {/* Dots indicator */}
+          {totalSlides > 1 && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
+              {carouselSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCarouselIndex(idx)}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${
+                    idx === carouselIndex
+                      ? "bg-white w-4"
+                      : "bg-white/50"
+                  }`}
+                />
+              ))}
             </div>
           )}
-          <div className="flex-1 min-w-0">
-            <h3 className="text-zinc-900 text-sm font-semibold line-clamp-2">
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          {/* 商品名稱 + 價格 */}
+          <div>
+            <h3 className="text-zinc-900 text-xl font-bold mb-2">
               {product.title}
             </h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-zinc-900 font-bold text-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-zinc-900 font-bold text-2xl">
                 {formatHKD(product.price)}
               </span>
               {isOnSale && (
                 <>
-                  <span className="text-zinc-400 text-xs line-through">
+                  <span className="text-zinc-400 text-base line-through">
                     {formatHKD(product.originalPrice!)}
                   </span>
-                  <span className="px-1 py-0.5 text-[9px] font-bold rounded bg-red-500 text-white">
+                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-red-500 text-white">
                     -{discountPct}%
                   </span>
                 </>
               )}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="self-start p-1 text-zinc-400 hover:text-zinc-600"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
-          {/* Video embed */}
-          {videoEmbedUrl && (
-            <div className="w-full aspect-video rounded-lg overflow-hidden bg-zinc-100">
-              <iframe
-                src={videoEmbedUrl}
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          )}
 
           {/* 顏色（雙維 only） */}
           {isDual && dualVariant && (
             <div>
-              <p className="text-xs font-medium text-zinc-500 mb-2">
+              <p className="text-sm font-semibold text-zinc-700 mb-3 border-b border-zinc-100 pb-2">
                 {dualVariant.dimensions[0]}
                 {showError && !selectedColor && (
-                  <span className="text-red-500 ml-1">請選擇</span>
+                  <span className="text-red-500 ml-1 font-normal">請選擇</span>
                 )}
               </p>
-              <div className="flex gap-2.5 flex-wrap">
+              <div className="flex gap-3 flex-wrap">
                 {(dualVariant.options[dualVariant.dimensions[0]] || []).map(
                   (opt) => (
                     <button
                       key={opt}
                       onClick={() => handleColorChange(opt)}
-                      className={`w-8 h-8 rounded-full border-2 transition-all flex-shrink-0 ${
+                      className={`w-10 h-10 rounded-full border-2 transition-all flex-shrink-0 ${
                         selectedColor === opt
                           ? "border-[#FF9500] ring-2 ring-[#FF9500]/30 scale-110"
                           : "border-zinc-200"
@@ -259,10 +322,10 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
 
           {/* 尺碼 chips */}
           <div>
-            <p className="text-xs font-medium text-zinc-500 mb-2">
+            <p className="text-sm font-semibold text-zinc-700 mb-3 border-b border-zinc-100 pb-2">
               {isDual ? dualVariant!.dimensions[1] : variantLabel}
               {showError && !selectedSize && (
-                <span className="text-red-500 ml-1">請選擇</span>
+                <span className="text-red-500 ml-1 font-normal">請選擇</span>
               )}
             </p>
             <div
@@ -277,7 +340,7 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
                   key={s.name}
                   onClick={() => s.available && handleSizeChange(s.name)}
                   disabled={!s.available}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all flex-shrink-0 ${
+                  className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all flex-shrink-0 ${
                     selectedSize === s.name
                       ? "border-[#FF9500] bg-[#FF9500]/10 text-[#FF9500]"
                       : s.available
@@ -298,18 +361,18 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
 
           {/* 數量 stepper */}
           <div>
-            <p className="text-xs font-medium text-zinc-500 mb-2">數量</p>
-            <div className="flex items-center gap-3">
+            <p className="text-sm font-semibold text-zinc-700 mb-3 border-b border-zinc-100 pb-2">數量</p>
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 disabled={qty <= 1}
-                className="w-9 h-9 rounded-lg border border-zinc-200 flex items-center justify-center text-zinc-600 active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-600 active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
                 </svg>
               </button>
-              <span className="text-base font-semibold w-8 text-center">
+              <span className="text-lg font-semibold w-10 text-center">
                 {qty}
               </span>
               <button
@@ -317,21 +380,24 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
                   setQty((q) => Math.min(selectedStock || 99, q + 1))
                 }
                 disabled={qty >= selectedStock}
-                className="w-9 h-9 rounded-lg border border-zinc-200 flex items-center justify-center text-zinc-600 active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-600 active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
               </button>
             </div>
           </div>
+
+          {/* Bottom padding for CTA */}
+          <div className="h-20" />
         </div>
 
         {/* 固定底部 CTA */}
-        <div className="px-4 py-4 border-t border-zinc-100">
+        <div className="absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 py-4 bg-white border-t border-zinc-100">
           <button
             onClick={handleAdd}
-            className={`w-full py-3.5 rounded-xl text-base font-semibold transition-all active:scale-[0.98] ${
+            className={`w-full py-4 rounded-xl text-base font-semibold transition-all active:scale-[0.98] ${
               canAdd
                 ? "bg-[#FF9500] text-white shadow-lg shadow-[#FF9500]/30"
                 : "bg-zinc-200 text-zinc-400"
