@@ -62,6 +62,14 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       }),
     ]);
 
+    if (!tenant) {
+      return (
+        <div className="p-8 text-center">
+          <p className="text-red-600">Tenant not found</p>
+        </div>
+      );
+    }
+
     return (
       <>
         <Suspense fallback={null}>
@@ -69,7 +77,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         </Suspense>
         <BioLinkDashboard
           locale={locale}
-          tenant={tenant!}
+          tenant={tenant}
           products={products.map((p) => ({
             ...p,
             sizes: (p.sizes as Record<string, unknown>) ?? null,
