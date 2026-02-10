@@ -2,13 +2,15 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { getCoverCSS } from "@/lib/cover-templates";
 
 type Props = {
   url: string | null;
   brandColor: string | null;
+  coverTemplate?: string | null;
 };
 
-export default function CoverPhoto({ url, brandColor }: Props) {
+export default function CoverPhoto({ url, brandColor, coverTemplate }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   // Parallax effect on scroll
@@ -23,10 +25,15 @@ export default function CoverPhoto({ url, brandColor }: Props) {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  const fallbackGradient = `linear-gradient(135deg, ${brandColor || "#FF9500"} 0%, #0f0f0f 100%)`;
+  // Use cover template system: coverPhoto > coverTemplate > brandColor fallback
+  const coverCSS = url
+    ? undefined
+    : coverTemplate
+      ? getCoverCSS(coverTemplate, null)
+      : `linear-gradient(135deg, ${brandColor || "#FF9500"} 0%, #0f0f0f 100%)`;
 
   return (
-    <div className="relative h-[200px] overflow-hidden">
+    <div className="relative h-[180px] overflow-hidden">
       <div ref={ref} className="absolute inset-0 will-change-transform">
         {url ? (
           <Image
@@ -37,7 +44,7 @@ export default function CoverPhoto({ url, brandColor }: Props) {
             priority
           />
         ) : (
-          <div className="w-full h-full" style={{ background: fallbackGradient }} />
+          <div className="w-full h-full" style={{ background: coverCSS }} />
         )}
       </div>
       {/* Bottom gradient fade into dark bg */}

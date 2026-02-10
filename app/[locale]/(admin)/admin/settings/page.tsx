@@ -2,7 +2,7 @@
 
 import { getDict, type Locale } from "@/lib/i18n";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare, Phone, Clock, MapPin, Truck } from "lucide-react";
+import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare, Phone, Clock, MapPin, Truck, Palette } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -163,6 +163,12 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
   const [errorMessage, setErrorMessage] = useState("");
   const [dataLoaded, setDataLoaded] = useState(false);
 
+  // Tenant appearance state (stored on Tenant model, separate from StoreSettings)
+  const [tenantTagline, setTenantTagline] = useState("");
+  const [tenantLocation, setTenantLocation] = useState("");
+  const [tenantCoverTemplate, setTenantCoverTemplate] = useState("warm-gradient");
+  const [savingAppearance, setSavingAppearance] = useState(false);
+
   const t = useMemo(() => getDict(locale), [locale]);
 
   // Initialize locale from params - only once
@@ -206,6 +212,46 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
     loadData();
     return () => { mounted = false; };
   }, []); // Empty deps - load only once on mount
+
+  // Load tenant appearance settings
+  useEffect(() => {
+    let mounted = true;
+    async function loadTenantData() {
+      try {
+        const res = await fetch("/api/admin/tenant-settings");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (mounted && data.ok && data.data) {
+          setTenantTagline(data.data.tagline || "");
+          setTenantLocation(data.data.location || "");
+          setTenantCoverTemplate(data.data.coverTemplate || "warm-gradient");
+        }
+      } catch {
+        // Ignore
+      }
+    }
+    loadTenantData();
+    return () => { mounted = false; };
+  }, []);
+
+  const handleSaveAppearance = useCallback(async () => {
+    setSavingAppearance(true);
+    try {
+      await fetch("/api/admin/tenant-settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tagline: tenantTagline.trim() || null,
+          location: tenantLocation.trim() || null,
+          coverTemplate: tenantCoverTemplate || "warm-gradient",
+        }),
+      });
+    } catch {
+      // Ignore
+    } finally {
+      setSavingAppearance(false);
+    }
+  }, [tenantTagline, tenantLocation, tenantCoverTemplate]);
 
   // Generic handler for text fields
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -363,6 +409,85 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
                 <Description>Featured prominently on the homepage hero section.</Description>
               </div>
             </div>
+          </div>
+
+          {/* Store Appearance (Tenant-level fields) */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                <Palette className="h-5 w-5 text-zinc-600" />
+                {locale === "zh-HK" ? "商店外觀" : "Store Appearance"}
+              </h3>
+              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                {locale === "zh-HK" ? "設定封面、簡介、地點等外觀資料。" : "Cover template, tagline, and location settings."}
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <Label>{locale === "zh-HK" ? "簡介" : "Tagline"}</Label>
+                <SettingsInput
+                  id="tenantTagline"
+                  value={tenantTagline}
+                  onChange={(e) => setTenantTagline(e.target.value)}
+                  placeholder={locale === "zh-HK" ? "例如：手工烏龍茶專門店" : "e.g. Handmade oolong tea shop"}
+                />
+                <Description>{locale === "zh-HK" ? "顯示喺商店名下面" : "Shown below your store name."}</Description>
+              </div>
+
+              <div className="space-y-3">
+                <Label>{locale === "zh-HK" ? "地點" : "Location"}</Label>
+                <SettingsInput
+                  id="tenantLocation"
+                  value={tenantLocation}
+                  onChange={(e) => setTenantLocation(e.target.value)}
+                  placeholder={locale === "zh-HK" ? "例如：觀塘" : "e.g. Kwun Tong"}
+                />
+                <Description>{locale === "zh-HK" ? "可選，會加 📍 顯示" : "Optional, shown with a 📍 icon."}</Description>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label>{locale === "zh-HK" ? "封面模板" : "Cover Template"}</Label>
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                {[
+                  { id: "warm-gradient", label: "暖色漸層", css: "linear-gradient(135deg, #FF9500 0%, #FF5E3A 100%)" },
+                  { id: "ocean", label: "清新藍白", css: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" },
+                  { id: "blossom", label: "花卉粉彩", css: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+                  { id: "minimal-dark", label: "極簡黑白", css: "linear-gradient(135deg, #1a1a1a 0%, #434343 100%)" },
+                  { id: "nature", label: "自然綠", css: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" },
+                  { id: "sunset", label: "日落橙", css: "linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%)" },
+                ].map((tmpl) => (
+                  <button
+                    key={tmpl.id}
+                    type="button"
+                    onClick={() => setTenantCoverTemplate(tmpl.id)}
+                    className={cn(
+                      "aspect-[16/9] rounded-lg overflow-hidden border-2 transition-colors",
+                      tenantCoverTemplate === tmpl.id ? "border-zinc-900 ring-1 ring-zinc-900" : "border-zinc-200 hover:border-zinc-400"
+                    )}
+                  >
+                    <div className="w-full h-full" style={{ background: tmpl.css }} />
+                  </button>
+                ))}
+              </div>
+              <Description>{locale === "zh-HK" ? "冇上傳封面圖時會用呢個漸層背景" : "Used as cover when no photo is uploaded."}</Description>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSaveAppearance}
+              disabled={savingAppearance}
+              className={cn(
+                "inline-flex items-center justify-center gap-2 rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-50"
+              )}
+            >
+              {savingAppearance ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> {locale === "zh-HK" ? "儲存中..." : "Saving..."}</>
+              ) : (
+                <><Save className="h-4 w-4" /> {locale === "zh-HK" ? "儲存外觀設定" : "Save Appearance"}</>
+              )}
+            </button>
           </div>
 
           {/* Policies */}

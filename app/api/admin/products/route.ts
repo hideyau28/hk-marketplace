@@ -112,6 +112,7 @@ type CreateProductPayload = {
   sizes?: any;
   stock?: number;
   active?: boolean;
+  featured?: boolean;
 };
 
 function parseCreatePayload(body: any): CreateProductPayload {
@@ -177,6 +178,7 @@ function parseCreatePayload(body: any): CreateProductPayload {
     sizes: sizes ?? undefined,
     stock: body.stock !== undefined ? body.stock : undefined,
     active: typeof body.active === "boolean" ? body.active : true,
+    featured: typeof body.featured === "boolean" ? body.featured : false,
   };
 }
 
@@ -263,6 +265,7 @@ export const POST = withApi(
         sizes: payload.sizes ?? undefined,
         stock: payload.stock ?? 0,
         active: payload.active ?? true,
+        featured: payload.featured ?? false,
       },
     });
 
