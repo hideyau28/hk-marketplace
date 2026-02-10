@@ -55,6 +55,8 @@ type CreateProductPayload = {
   category?: string | null;
   badges?: string[];
   active?: boolean;
+  sizes?: any;
+  stock?: number;
 };
 
 function parseCreatePayload(body: any): CreateProductPayload {
@@ -87,6 +89,18 @@ function parseCreatePayload(body: any): CreateProductPayload {
     }
   }
 
+  // Sizes: accept any JSON value (validated by client)
+  const sizes = body.sizes !== undefined && body.sizes !== null ? body.sizes : undefined;
+
+  // Stock: optional non-negative integer
+  let stock: number | undefined = undefined;
+  if (body.stock !== undefined && body.stock !== null) {
+    if (typeof body.stock !== "number" || body.stock < 0) {
+      throw new ApiError(400, "BAD_REQUEST", "stock must be a non-negative number");
+    }
+    stock = Math.floor(body.stock);
+  }
+
   return {
     brand,
     title: body.title.trim(),
@@ -95,6 +109,8 @@ function parseCreatePayload(body: any): CreateProductPayload {
     category,
     badges: badges.length > 0 ? badges : undefined,
     active: typeof body.active === "boolean" ? body.active : true,
+    sizes,
+    stock,
   };
 }
 
@@ -174,6 +190,8 @@ export const POST = withApi(
         category: payload.category ?? null,
         badges: payload.badges,
         active: payload.active ?? true,
+        ...(payload.sizes !== undefined ? { sizes: payload.sizes } : {}),
+        ...(payload.stock !== undefined ? { stock: payload.stock } : {}),
       },
     });
 

@@ -104,6 +104,19 @@ export const PATCH = withApi(
       updateData.badges = badges.length > 0 ? badges : undefined;
     }
 
+    // Sizes: accept any JSON value (null clears)
+    if (body.sizes !== undefined) {
+      updateData.sizes = body.sizes;
+    }
+
+    // Stock: optional non-negative integer
+    if (body.stock !== undefined) {
+      if (body.stock !== null && (typeof body.stock !== "number" || body.stock < 0)) {
+        throw new ApiError(400, "BAD_REQUEST", "stock must be a non-negative number or null");
+      }
+      updateData.stock = body.stock === null ? 0 : Math.floor(body.stock);
+    }
+
     if (Object.keys(updateData).length === 0) {
       throw new ApiError(400, "BAD_REQUEST", "No valid fields to update");
     }

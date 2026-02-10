@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import type { Product } from "@prisma/client";
 import type { Locale } from "@/lib/i18n";
 import { createProduct, updateProduct } from "./actions";
+import { VariantFlow } from "./variant-flow";
 
 type ProductModalProps = {
   product: Product | null;
@@ -24,6 +25,15 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   );
   const [category, setCategory] = useState(product?.category || "");
   const [active, setActive] = useState(product?.active ?? true);
+
+  // Variant state
+  const sizesRef = useRef<unknown>(product?.sizes ?? null);
+  const stockRef = useRef<number>(product?.stock ?? 0);
+
+  const handleVariantChange = (sizes: unknown, totalStock: number) => {
+    sizesRef.current = sizes;
+    stockRef.current = totalStock;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +69,8 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             badges: badges.trim() || undefined,
             category: category.trim() || null,
             active,
+            sizes: sizesRef.current,
+            stock: stockRef.current,
           },
           locale
         );
@@ -73,6 +85,8 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             badges: badges.trim() || undefined,
             category: category.trim() || null,
             active,
+            sizes: sizesRef.current,
+            stock: stockRef.current,
           },
           locale
         );
@@ -89,7 +103,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#0a0a0a] p-6">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-[#0a0a0a] p-6">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-xl font-semibold text-white">{product ? "Edit Product" : "Create Product"}</h2>
@@ -195,6 +209,16 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               placeholder="sports / accessories / office"
             />
             <p className="mt-1 text-white/40 text-xs">Used for filtering and home rails later.</p>
+          </div>
+
+          {/* ─── Variant flow ─────────────────────────────── */}
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-2">選項 / 庫存</label>
+            <VariantFlow
+              initialSizes={product?.sizes}
+              disabled={isPending}
+              onChange={handleVariantChange}
+            />
           </div>
 
           <div className="flex items-center gap-3">
