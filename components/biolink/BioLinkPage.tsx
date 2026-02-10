@@ -55,7 +55,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
   const [sheetProduct, setSheetProduct] = useState<ProductForBioLink | null>(null);
-  const [lightbox, setLightbox] = useState<{ images: string[]; startIndex: number } | null>(null);
+  const [lightbox, setLightbox] = useState<{ images: string[]; startIndex: number; videoUrl?: string | null } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const { featured, grid } = splitProducts(products);
@@ -181,8 +181,8 @@ export default function BioLinkPage({ tenant, products }: Props) {
 
   // Tap 圖片 → 開 lightbox
   const handleImageTap = useCallback(
-    (images: string[], startIndex: number) => {
-      setLightbox({ images, startIndex });
+    (images: string[], startIndex: number, videoUrl?: string | null) => {
+      setLightbox({ images, startIndex, videoUrl });
     },
     []
   );
@@ -256,6 +256,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
         <ImageLightbox
           images={lightbox.images}
           startIndex={lightbox.startIndex}
+          videoUrl={lightbox.videoUrl}
           onClose={() => setLightbox(null)}
         />
       )}

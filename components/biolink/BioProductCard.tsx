@@ -18,7 +18,7 @@ import LowStockBadge from "./LowStockBadge";
 type Props = {
   product: ProductForBioLink;
   onAdd: (product: ProductForBioLink) => void;
-  onImageTap?: (images: string[], startIndex: number) => void;
+  onImageTap?: (images: string[], startIndex: number, videoUrl?: string | null) => void;
 };
 
 export default function BioProductCard({ product, onAdd, onImageTap }: Props) {
@@ -29,6 +29,7 @@ export default function BioProductCard({ product, onAdd, onImageTap }: Props) {
   const isNewProduct = isNew(product);
   const lowStock = variants ? getLowStockCount(variants) : null;
   const hasMultipleImages = images.length > 1;
+  const hasVideo = !!product.videoUrl;
 
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -46,9 +47,9 @@ export default function BioProductCard({ product, onAdd, onImageTap }: Props) {
 
   const handleImageTap = useCallback(() => {
     if (images.length > 0 && onImageTap) {
-      onImageTap(images, current);
+      onImageTap(images, current, product.videoUrl);
     }
-  }, [images, current, onImageTap]);
+  }, [images, current, onImageTap, product.videoUrl]);
 
   const isOnSale =
     product.originalPrice != null && product.originalPrice > product.price;
@@ -98,6 +99,17 @@ export default function BioProductCard({ product, onAdd, onImageTap }: Props) {
           </div>
         )}
 
+        {/* Video icon */}
+        {hasVideo && (
+          <div className="absolute bottom-2 right-2 z-10">
+            <span className="flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-white">
+              <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="inline-block">
+                <path d="M2 1.5v7l6-3.5-6-3.5z" fill="currentColor" />
+              </svg>
+            </span>
+          </div>
+        )}
+
         {/* Dots 指示器 — 只有多張圖先顯示 */}
         {hasMultipleImages && (
           <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
@@ -117,7 +129,12 @@ export default function BioProductCard({ product, onAdd, onImageTap }: Props) {
 
       {/* Content */}
       <div className="p-3 relative">
-        <h3 className="text-zinc-900 text-sm font-semibold truncate mb-1 pr-10">
+        <h3 className="text-zinc-900 text-sm font-semibold mb-1 pr-10" style={{
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden'
+        }}>
           {product.title}
         </h3>
 

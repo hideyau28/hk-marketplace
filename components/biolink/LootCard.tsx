@@ -17,7 +17,7 @@ type Props = {
   product: ProductForBioLink;
   index: number;
   onAdd: (product: ProductForBioLink) => void;
-  onImageTap?: (images: string[], startIndex: number) => void;
+  onImageTap?: (images: string[], startIndex: number, videoUrl?: string | null) => void;
 };
 
 export default function LootCard({ product, index, onAdd, onImageTap }: Props) {
@@ -46,9 +46,9 @@ export default function LootCard({ product, index, onAdd, onImageTap }: Props) {
 
   const handleImageTap = useCallback(() => {
     if (images.length > 0 && onImageTap) {
-      onImageTap(images, current);
+      onImageTap(images, current, product.videoUrl);
     }
-  }, [images, current, onImageTap]);
+  }, [images, current, onImageTap, product.videoUrl]);
 
   const isOnSale =
     product.originalPrice != null &&
@@ -157,7 +157,12 @@ export default function LootCard({ product, index, onAdd, onImageTap }: Props) {
 
         {/* Info */}
         <div className="p-3 relative">
-          <h3 className="text-white text-sm font-semibold truncate mb-1 pr-10">
+          <h3 className="text-white text-sm font-semibold mb-1 pr-10" style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}>
             {product.title}
           </h3>
 

@@ -2,17 +2,23 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
+import { getEmbedUrl } from "@/lib/video-embed";
 
 type Props = {
   images: string[];
   startIndex?: number;
   onClose: () => void;
+  videoUrl?: string | null;
 };
 
-export default function ImageLightbox({ images, startIndex = 0, onClose }: Props) {
+export default function ImageLightbox({ images, startIndex = 0, onClose, videoUrl }: Props) {
   const [current, setCurrent] = useState(startIndex);
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
+
+  const videoEmbedUrl = videoUrl ? getEmbedUrl(videoUrl) : null;
+  const totalSlides = images.length + (videoEmbedUrl ? 1 : 0);
+  const isVideoSlide = videoEmbedUrl && current === images.length;
 
   // Touch tracking refs
   const touchStartX = useRef(0);
@@ -41,9 +47,9 @@ export default function ImageLightbox({ images, startIndex = 0, onClose }: Props
 
   const goTo = useCallback(
     (idx: number) => {
-      if (idx >= 0 && idx < images.length) setCurrent(idx);
+      if (idx >= 0 && idx < totalSlides) setCurrent(idx);
     },
-    [images.length]
+    [totalSlides]
   );
 
   const goPrev = useCallback(() => goTo(current - 1), [current, goTo]);
@@ -58,6 +64,13 @@ export default function ImageLightbox({ images, startIndex = 0, onClose }: Props
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
+      // Disable zoom/pan on video slide
+      if (isVideoSlide) {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+        return;
+      }
+
       if (e.touches.length === 2) {
         // Pinch start
         isPinching.current = true;
@@ -71,11 +84,14 @@ export default function ImageLightbox({ images, startIndex = 0, onClose }: Props
         }
       }
     },
-    [scale]
+    [scale, isVideoSlide]
   );
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
+      // Video slide: no zoom/pan
+      if (isVideoSlide) return;
+
       if (isPinching.current && e.touches.length === 2) {
         // Pinch zoom
         const dist = getPinchDist(e.touches);
@@ -98,7 +114,7 @@ export default function ImageLightbox({ images, startIndex = 0, onClose }: Props
         });
       }
     },
-    [scale]
+    [scale, isVideoSlide]
   );
 
   const handleTouchEnd = useCallback(
@@ -159,7 +175,7 @@ export default function ImageLightbox({ images, startIndex = 0, onClose }: Props
       {/* Header: close + counter */}
       <div className="flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-2 z-10">
         <span className="text-white/70 text-sm font-medium">
-          {current + 1} / {images.length}
+          {current + 1} / {totalSlides}
         </span>
         <button
           onClick={onClose}
@@ -172,36 +188,49 @@ export default function ImageLightbox({ images, startIndex = 0, onClose }: Props
         </button>
       </div>
 
-      {/* Image area */}
+      {/* Image/Video area */}
       <div
         className="flex-1 flex items-center justify-center overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={handleTap}
+        onClick={!isVideoSlide ? handleTap : undefined}
       >
-        <div
-          className="relative w-full h-full transition-transform duration-200"
-          style={{
-            transform: `scale(${scale}) translate(${translate.x / scale}px, ${translate.y / scale}px)`,
-          }}
-        >
-          <Image
-            key={images[current]}
-            src={images[current]}
-            alt={`Image ${current + 1}`}
-            fill
-            className="object-contain"
-            sizes="100vw"
-            priority
-          />
-        </div>
+        {isVideoSlide && videoEmbedUrl ? (
+          <div className="w-full h-full max-w-3xl max-h-[80vh] mx-auto flex items-center justify-center px-4">
+            <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
+              <iframe
+                src={videoEmbedUrl}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        ) : (
+          <div
+            className="relative w-full h-full transition-transform duration-200"
+            style={{
+              transform: `scale(${scale}) translate(${translate.x / scale}px, ${translate.y / scale}px)`,
+            }}
+          >
+            <Image
+              key={images[current]}
+              src={images[current]}
+              alt={`Image ${current + 1}`}
+              fill
+              className="object-contain"
+              sizes="100vw"
+              priority
+            />
+          </div>
+        )}
       </div>
 
       {/* Bottom dots */}
-      {images.length > 1 && (
+      {totalSlides > 1 && (
         <div className="flex justify-center gap-1.5 pb-[env(safe-area-inset-bottom,16px)] pt-3">
-          {images.map((_, i) => (
+          {Array.from({ length: totalSlides }).map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
@@ -210,7 +239,7 @@ export default function ImageLightbox({ images, startIndex = 0, onClose }: Props
                   ? "w-4 h-2 bg-white"
                   : "w-2 h-2 bg-white/30"
               }`}
-              aria-label={`Image ${i + 1}`}
+              aria-label={i === images.length && videoEmbedUrl ? "Video" : `Image ${i + 1}`}
             />
           ))}
         </div>

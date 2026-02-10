@@ -11,6 +11,7 @@ import {
   formatHKD,
 } from "@/lib/biolink-helpers";
 import { getColorHex } from "@/lib/color-map";
+import { getEmbedUrl } from "@/lib/video-embed";
 
 type Props = {
   product: ProductForBioLink;
@@ -153,6 +154,7 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
   const canAdd = isDual
     ? !!(selectedColor && selectedSize && selectedStock > 0)
     : !!(selectedSize && selectedStock > 0);
+  const videoEmbedUrl = product.videoUrl ? getEmbedUrl(product.videoUrl) : null;
 
   return (
     <div className="fixed inset-0 z-50" onClick={onClose}>
@@ -214,6 +216,18 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+          {/* Video embed */}
+          {videoEmbedUrl && (
+            <div className="w-full aspect-video rounded-lg overflow-hidden bg-zinc-100">
+              <iframe
+                src={videoEmbedUrl}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          )}
+
           {/* 顏色（雙維 only） */}
           {isDual && dualVariant && (
             <div>
