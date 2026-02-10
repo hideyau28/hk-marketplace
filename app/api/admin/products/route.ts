@@ -104,6 +104,7 @@ type CreateProductPayload = {
   price: number;
   originalPrice?: number | null;
   imageUrl?: string | null;
+  images?: string[];
   videoUrl?: string | null;
   category?: string | null;
   badges?: string[];
@@ -164,12 +165,26 @@ function parseCreatePayload(body: any): CreateProductPayload {
     assertNonNegativeInt(body.stock, "stock");
   }
 
+  let images: string[] | undefined = undefined;
+  if (body.images !== undefined) {
+    if (Array.isArray(body.images)) {
+      const validImages = body.images.every((img: unknown) => typeof img === "string");
+      if (!validImages) {
+        throw new ApiError(400, "BAD_REQUEST", "images must be an array of strings");
+      }
+      images = body.images.map((img: string) => img.trim()).filter((img: string) => img.length > 0);
+    } else if (body.images !== null) {
+      throw new ApiError(400, "BAD_REQUEST", "images must be an array of strings");
+    }
+  }
+
   return {
     brand,
     title: body.title.trim(),
     price: body.price,
     originalPrice,
     imageUrl: typeof body.imageUrl === "string" && body.imageUrl.trim().length > 0 ? body.imageUrl.trim() : null,
+    images,
     videoUrl: typeof body.videoUrl === "string" && body.videoUrl.trim().length > 0 ? body.videoUrl.trim() : null,
     category,
     badges: badges === undefined ? undefined : badges,
@@ -256,6 +271,7 @@ export const POST = withApi(
         price: payload.price,
         originalPrice: payload.originalPrice,
         imageUrl: payload.imageUrl ?? null,
+        images: payload.images ?? [],
         videoUrl: payload.videoUrl ?? null,
         category: payload.category ?? null,
         badges: payload.badges,

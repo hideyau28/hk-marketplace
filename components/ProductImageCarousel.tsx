@@ -3,15 +3,17 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import WishlistHeart from "@/components/WishlistHeart";
+import VideoEmbed from "@/components/biolink/VideoEmbed";
 
 type ProductImageCarouselProps = {
   images: string[];
   alt: string;
   stock?: number;
   productId?: string;
+  videoUrl?: string | null;
 };
 
-export default function ProductImageCarousel({ images, alt, stock, productId }: ProductImageCarouselProps) {
+export default function ProductImageCarousel({ images, alt, stock, productId, videoUrl }: ProductImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -36,6 +38,9 @@ export default function ProductImageCarousel({ images, alt, stock, productId }: 
     ? [variantImage, ...baseImages.filter((img) => img !== variantImage)]
     : baseImages;
 
+  const totalSlides = imageList.length + (videoUrl ? 1 : 0);
+  const videoSlideIndex = videoUrl ? totalSlides - 1 : -1;
+
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
     setStartX(e.touches[0].clientX);
@@ -55,7 +60,7 @@ export default function ProductImageCarousel({ images, alt, stock, productId }: 
     const threshold = 50;
     if (translateX > threshold && currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
-    } else if (translateX < -threshold && currentIndex < imageList.length - 1) {
+    } else if (translateX < -threshold && currentIndex < totalSlides - 1) {
       setCurrentIndex(currentIndex + 1);
     }
     setTranslateX(0);
@@ -79,7 +84,7 @@ export default function ProductImageCarousel({ images, alt, stock, productId }: 
     const threshold = 50;
     if (translateX > threshold && currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
-    } else if (translateX < -threshold && currentIndex < imageList.length - 1) {
+    } else if (translateX < -threshold && currentIndex < totalSlides - 1) {
       setCurrentIndex(currentIndex + 1);
     }
     setTranslateX(0);
@@ -140,13 +145,27 @@ export default function ProductImageCarousel({ images, alt, stock, productId }: 
                 />
               </div>
             ))}
+            {/* Video slide at end */}
+            {videoUrl && (
+              <div className="relative w-full h-full flex-shrink-0">
+                {currentIndex === videoSlideIndex ? (
+                  <VideoEmbed videoUrl={videoUrl} />
+                ) : (
+                  <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+                      <div className="w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-l-[16px] border-l-white ml-1" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Dot Indicators */}
-        {imageList.length > 1 && (
+        {totalSlides > 1 && (
           <div className="flex justify-center gap-2 py-3">
-            {imageList.map((_, index) => (
+            {Array.from({ length: totalSlides }).map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
@@ -154,8 +173,8 @@ export default function ProductImageCarousel({ images, alt, stock, productId }: 
                   index === currentIndex
                     ? "bg-olive-600"
                     : "bg-zinc-300 dark:bg-zinc-600"
-                }`}
-                aria-label={`Go to image ${index + 1}`}
+                } ${index === videoSlideIndex ? "ring-1 ring-olive-400" : ""}`}
+                aria-label={index === videoSlideIndex ? "Video" : `Go to image ${index + 1}`}
               />
             ))}
           </div>
