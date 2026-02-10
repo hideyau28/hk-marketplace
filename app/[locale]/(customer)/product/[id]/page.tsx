@@ -94,6 +94,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     originalPrice: product.originalPrice,
     image: product.imageUrl || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=60",
     images: productImages,
+    videoUrl: product.videoUrl || null,
     category: product.category,
     sizeSystem: (product as any).sizeSystem || null,
     sizes: (product as any).sizes || null,
@@ -163,7 +164,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Image Carousel with floating effect */}
-        <ProductImageCarousel images={p.images} alt={p.title} stock={p.stock} productId={p.id} />
+        <ProductImageCarousel images={p.images} alt={p.title} stock={p.stock} productId={p.id} videoUrl={p.videoUrl} />
         <div className="px-4 md:px-0">
           <ProductDetailClient
             product={p}

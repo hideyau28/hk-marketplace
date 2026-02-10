@@ -143,6 +143,20 @@ export const PATCH = withApi(
       }
     }
 
+    if (body.images !== undefined) {
+      if (body.images === null || (Array.isArray(body.images) && body.images.length === 0)) {
+        updateData.images = [];
+      } else if (Array.isArray(body.images)) {
+        const validImages = body.images.every((img: unknown) => typeof img === "string");
+        if (!validImages) {
+          throw new ApiError(400, "BAD_REQUEST", "images must be an array of strings");
+        }
+        updateData.images = body.images.map((img: string) => img.trim()).filter((img: string) => img.length > 0);
+      } else {
+        throw new ApiError(400, "BAD_REQUEST", "images must be an array of strings or null");
+      }
+    }
+
     if (body.videoUrl !== undefined) {
       if (body.videoUrl === null || body.videoUrl === "") {
         updateData.videoUrl = null;
@@ -232,5 +246,23 @@ export const PATCH = withApi(
     });
 
     return ok(req, product);
+  }
+);
+
+// DELETE /api/admin/products/:id (admin delete)
+export const DELETE = withApi(
+  async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
+    const { tenantId } = await authenticateAdmin(req);
+
+    const { id } = await params;
+
+    const existing = await prisma.product.findFirst({ where: { id, tenantId } });
+    if (!existing) {
+      throw new ApiError(404, "NOT_FOUND", "Product not found");
+    }
+
+    await prisma.product.delete({ where: { id } });
+
+    return ok(req, { deleted: true });
   }
 );
