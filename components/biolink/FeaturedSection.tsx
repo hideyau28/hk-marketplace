@@ -6,9 +6,10 @@ import LootCard from "./LootCard";
 type Props = {
   products: ProductForBioLink[];
   onAdd: (product: ProductForBioLink) => void;
+  onImageTap?: (images: string[], startIndex: number) => void;
 };
 
-export default function FeaturedSection({ products, onAdd }: Props) {
+export default function FeaturedSection({ products, onAdd, onImageTap }: Props) {
   if (products.length === 0) return null;
 
   return (
@@ -23,7 +24,7 @@ export default function FeaturedSection({ products, onAdd }: Props) {
       <div className="flex gap-4 overflow-x-auto px-5 pb-4 scrollbar-hide snap-x snap-mandatory">
         {products.map((p, i) => (
           <div key={p.id} className="snap-start">
-            <LootCard product={p} index={i} onAdd={onAdd} />
+            <LootCard product={p} index={i} onAdd={onAdd} onImageTap={onImageTap} />
           </div>
         ))}
         {/* Right padding spacer */}
