@@ -73,6 +73,11 @@ function parseExistingSizes(sizes: Record<string, unknown> | null, sizeSystem: s
     const dim2 = dual.dimensions[1] || "";
     const opts1 = dual.options[dim1] || [];
     const opts2 = dual.options[dim2] || [];
+
+    // 去重：避免從數據庫讀取到重複值
+    const uniqueOpts1 = Array.from(new Set(opts1));
+    const uniqueOpts2 = Array.from(new Set(opts2));
+
     const grid: Record<string, number> = {};
     for (const [key, combo] of Object.entries(dual.combinations)) {
       grid[key] = combo.qty;
@@ -80,9 +85,9 @@ function parseExistingSizes(sizes: Record<string, unknown> | null, sizeSystem: s
     return {
       mode: "dual" as const,
       optionName1: dim1,
-      values1: opts1.map((n) => ({ name: n, qty: 0 })),
+      values1: uniqueOpts1.map((n) => ({ name: n, qty: 0 })),
       optionName2: dim2,
-      values2: opts2,
+      values2: uniqueOpts2,
       grid,
     };
   }
@@ -509,6 +514,10 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     }
 
     // Dual variant format
+    // 去重：確保 options 數組冇重複值，避免前台顯示重複 chips
+    const uniqueValues1 = Array.from(new Set(values1.map((v) => v.name)));
+    const uniqueValues2 = Array.from(new Set(values2));
+
     const combinations: Record<string, { qty: number; status: string }> = {};
     for (const v1 of values1) {
       for (const v2 of values2) {
@@ -518,11 +527,14 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       }
     }
 
+    const dim1Name = optionName1.trim() || (isZh ? "選項1" : "Option 1");
+    const dim2Name = optionName2.trim() || (isZh ? "選項2" : "Option 2");
+
     const dualData: DualVariantData = {
-      dimensions: [optionName1.trim() || (isZh ? "選項1" : "Option 1"), optionName2.trim() || (isZh ? "選項2" : "Option 2")],
+      dimensions: [dim1Name, dim2Name],
       options: {
-        [optionName1.trim() || (isZh ? "選項1" : "Option 1")]: values1.map((v) => v.name),
-        [optionName2.trim() || (isZh ? "選項2" : "Option 2")]: values2,
+        [dim1Name]: uniqueValues1,
+        [dim2Name]: uniqueValues2,
       },
       combinations,
     };
