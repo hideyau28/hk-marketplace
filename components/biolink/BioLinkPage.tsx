@@ -136,7 +136,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
   return (
     <div className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden bg-[#0f0f0f]">
       <StickyHeader tenant={tenant} cartCount={cartCount} />
-      <CoverPhoto url={tenant.coverPhoto} brandColor={tenant.brandColor} />
+      <CoverPhoto url={tenant.coverPhoto} brandColor={tenant.brandColor} coverTemplate={tenant.coverTemplate} />
       <ProfileSection tenant={tenant} />
 
       {/* Dark zone — Featured loot cards */}

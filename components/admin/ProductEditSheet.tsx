@@ -12,6 +12,7 @@ type Product = {
   images: string[];
   sizes: Record<string, unknown> | null;
   sizeSystem: string | null;
+  featured?: boolean;
 };
 
 type Props = {
@@ -105,6 +106,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
   const [deleting, setDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [featured, setFeatured] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -130,6 +132,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
         setOriginalPrice(product.originalPrice ? String(product.originalPrice) : "");
         setImages(product.images?.length ? product.images : product.imageUrl ? [product.imageUrl] : []);
         setVideoUrl("");
+        setFeatured(product.featured || false);
 
         // Load existing variant data
         const parsed = parseExistingSizes(product.sizes, product.sizeSystem);
@@ -145,6 +148,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
         setOriginalPrice("");
         setImages([]);
         setVideoUrl("");
+        setFeatured(false);
         setVariantMode("none");
         setOptionName1("");
         setValues1([]);
@@ -356,6 +360,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
         images,
         videoUrl: videoUrl || null,
         active: true,
+        featured,
       };
 
       if (isNew) {
@@ -801,6 +806,38 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                 )}
               </div>
             )}
+          </div>
+
+          {/* Featured toggle */}
+          <div className="border-t border-zinc-100 pt-4">
+            <p className="text-sm font-medium text-zinc-700 mb-3">
+              {isZh ? "其他設定" : "Other Settings"}
+            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-sm text-zinc-900 font-medium">
+                  {isZh ? "⭐ 精選推介" : "⭐ Featured"}
+                </span>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  {isZh ? "開啟後商品會出現喺商店頂部精選區" : "Product will appear in the featured section at the top of your store"}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={featured}
+                onClick={() => setFeatured((prev) => !prev)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                  featured ? "bg-[#FF9500]" : "bg-zinc-300"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform ${
+                    featured ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
           </div>
 
           {/* Video URL */}

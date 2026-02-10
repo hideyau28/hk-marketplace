@@ -58,6 +58,9 @@ export type TenantForBioLink = {
   name: string;
   slug: string;
   description: string | null;
+  tagline: string | null;
+  location: string | null;
+  coverTemplate: string | null;
   whatsapp: string | null;
   instagram: string | null;
   brandColor: string | null;

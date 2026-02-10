@@ -298,6 +298,9 @@ model Tenant {
   themeColor           String    @default("#6B7B3A")
   logoUrl              String?
   coverPhoto           String?
+  tagline              String?
+  location             String?
+  coverTemplate        String?   @default("warm-gradient")
   whatsapp             String?
   instagram            String?
   brandColor           String?   @default("#FF9500")
