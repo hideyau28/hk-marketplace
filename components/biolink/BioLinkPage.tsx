@@ -2,7 +2,12 @@
 
 import { useState, useCallback, useEffect } from "react";
 import type { ProductForBioLink, TenantForBioLink } from "@/lib/biolink-helpers";
-import { splitProducts } from "@/lib/biolink-helpers";
+import {
+  splitProducts,
+  getVisibleVariants,
+  getDualVariantData,
+  isDualVariant,
+} from "@/lib/biolink-helpers";
 import StickyHeader from "./StickyHeader";
 import CoverPhoto from "./CoverPhoto";
 import ProfileSection from "./ProfileSection";
@@ -12,6 +17,7 @@ import CartBar from "./CartBar";
 import WhatsAppFAB from "./WhatsAppFAB";
 import CheckoutPanel from "./CheckoutPanel";
 import OrderConfirmation from "./OrderConfirmation";
+import ProductSheet from "./ProductSheet";
 
 type CartItem = {
   id: string;
@@ -47,11 +53,20 @@ export default function BioLinkPage({ tenant, products }: Props) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
+  const [sheetProduct, setSheetProduct] = useState<ProductForBioLink | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   const { featured, grid } = splitProducts(products);
 
+  // Toast 自動消失
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 2000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   const addToCart = useCallback(
-    (product: ProductForBioLink, variant: string | null) => {
+    (product: ProductForBioLink, variant: string | null, qty: number = 1) => {
       // Look up variantId from product's variants by name
       let variantId: string | undefined;
       if (variant && product.variants) {
@@ -66,7 +81,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
         if (exists) {
           return prev.map((i) =>
             i.id === product.id && i.variant === variant
-              ? { ...i, qty: i.qty + 1 }
+              ? { ...i, qty: i.qty + qty }
               : i
           );
         }
@@ -78,7 +93,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
             price: product.price,
             variant,
             variantId,
-            qty: 1,
+            qty,
             imageUrl: product.imageUrl,
           },
         ];
@@ -133,6 +148,35 @@ export default function BioLinkPage({ tenant, products }: Props) {
     setOrderResult(null);
   };
 
+  // Card「+」按鈕 — 冇 variant 直接加入，有 variant 開 sheet
+  const handleCardAdd = useCallback(
+    (product: ProductForBioLink) => {
+      const hasVariants = (() => {
+        if (isDualVariant(product.sizes)) return true;
+        const variants = getVisibleVariants(product);
+        return variants !== null && variants.length > 0;
+      })();
+
+      if (!hasVariants) {
+        addToCart(product, null);
+        setToast("已加入購物車");
+      } else {
+        setSheetProduct(product);
+      }
+    },
+    [addToCart]
+  );
+
+  // ProductSheet 加入購物車
+  const handleSheetAdd = useCallback(
+    (product: ProductForBioLink, variant: string | null, qty: number) => {
+      addToCart(product, variant, qty);
+      setSheetProduct(null);
+      setToast("已加入購物車");
+    },
+    [addToCart]
+  );
+
   return (
     <div className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden bg-[#0f0f0f]">
       <StickyHeader tenant={tenant} cartCount={cartCount} />
@@ -141,7 +185,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
 
       {/* Dark zone — Featured loot cards */}
       {featured.length > 0 && (
-        <FeaturedSection products={featured} onAdd={addToCart} />
+        <FeaturedSection products={featured} onAdd={handleCardAdd} />
       )}
 
       {/* Transition gradient: dark → light */}
@@ -154,7 +198,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
       />
 
       {/* Light zone — Product grid */}
-      <ProductGrid products={grid} onAdd={addToCart} />
+      <ProductGrid products={grid} onAdd={handleCardAdd} />
 
       {/* Cart bar or WhatsApp FAB */}
       {cartCount > 0 ? (
@@ -186,6 +230,22 @@ export default function BioLinkPage({ tenant, products }: Props) {
           order={orderResult}
           onClose={handleConfirmationClose}
         />
+      )}
+
+      {/* Product bottom sheet (variant selection) */}
+      {sheetProduct && (
+        <ProductSheet
+          product={sheetProduct}
+          onClose={() => setSheetProduct(null)}
+          onAddToCart={handleSheetAdd}
+        />
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-full bg-zinc-900/90 text-white text-sm font-medium shadow-lg animate-slide-up">
+          {toast}
+        </div>
       )}
 
       {/* Footer */}
