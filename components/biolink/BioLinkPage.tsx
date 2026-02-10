@@ -18,6 +18,7 @@ import WhatsAppFAB from "./WhatsAppFAB";
 import CheckoutPanel from "./CheckoutPanel";
 import OrderConfirmation from "./OrderConfirmation";
 import ProductSheet from "./ProductSheet";
+import ImageLightbox from "./ImageLightbox";
 
 type CartItem = {
   id: string;
@@ -54,6 +55,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
   const [sheetProduct, setSheetProduct] = useState<ProductForBioLink | null>(null);
+  const [lightbox, setLightbox] = useState<{ images: string[]; startIndex: number } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const { featured, grid } = splitProducts(products);
@@ -177,6 +179,14 @@ export default function BioLinkPage({ tenant, products }: Props) {
     [addToCart]
   );
 
+  // Tap 圖片 → 開 lightbox
+  const handleImageTap = useCallback(
+    (images: string[], startIndex: number) => {
+      setLightbox({ images, startIndex });
+    },
+    []
+  );
+
   return (
     <div className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden bg-[#0f0f0f]">
       <StickyHeader tenant={tenant} cartCount={cartCount} />
@@ -185,7 +195,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
 
       {/* Dark zone — Featured loot cards */}
       {featured.length > 0 && (
-        <FeaturedSection products={featured} onAdd={handleCardAdd} />
+        <FeaturedSection products={featured} onAdd={handleCardAdd} onImageTap={handleImageTap} />
       )}
 
       {/* Transition gradient: dark → light */}
@@ -198,7 +208,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
       />
 
       {/* Light zone — Product grid */}
-      <ProductGrid products={grid} onAdd={handleCardAdd} />
+      <ProductGrid products={grid} onAdd={handleCardAdd} onImageTap={handleImageTap} />
 
       {/* Cart bar or WhatsApp FAB */}
       {cartCount > 0 ? (
@@ -238,6 +248,15 @@ export default function BioLinkPage({ tenant, products }: Props) {
           product={sheetProduct}
           onClose={() => setSheetProduct(null)}
           onAddToCart={handleSheetAdd}
+        />
+      )}
+
+      {/* Image lightbox */}
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          startIndex={lightbox.startIndex}
+          onClose={() => setLightbox(null)}
         />
       )}
 
