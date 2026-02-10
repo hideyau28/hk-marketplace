@@ -5,7 +5,7 @@ import BioProductCard from "./BioProductCard";
 
 type Props = {
   products: ProductForBioLink[];
-  onAdd: (product: ProductForBioLink, variant: string | null) => void;
+  onAdd: (product: ProductForBioLink) => void;
 };
 
 export default function ProductGrid({ products, onAdd }: Props) {

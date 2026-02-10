@@ -1,42 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
 import {
   type ProductForBioLink,
   getAllImages,
   getVisibleVariants,
-  getVariantLabel,
-  getDualVariantData,
   isSoldOut,
   isNew,
   getLowStockCount,
   formatHKD,
 } from "@/lib/biolink-helpers";
-import ImageCarousel from "./ImageCarousel";
-import VariantSelector from "./VariantSelector";
 import SoldOutOverlay from "./SoldOutOverlay";
 import NewBadge from "./NewBadge";
 import LowStockBadge from "./LowStockBadge";
 
 type Props = {
   product: ProductForBioLink;
-  onAdd: (product: ProductForBioLink, variant: string | null) => void;
+  onAdd: (product: ProductForBioLink) => void;
 };
 
 export default function BioProductCard({ product, onAdd }: Props) {
   const images = getAllImages(product);
+  const heroImage = images[0] || null;
   const variants = getVisibleVariants(product);
-  const dualVariant = getDualVariantData(product);
-  const variantLabel = getVariantLabel(product);
   const soldOut = isSoldOut(product);
   const isNewProduct = isNew(product);
   const lowStock = variants ? getLowStockCount(variants) : null;
-  const hasVideo = !!product.videoUrl;
-
-  // 雙維 variant — 外部控制 ImageCarousel 顯示邊張圖
-  const [activeImageIndex, setActiveImageIndex] = useState<number | undefined>(
-    undefined
-  );
 
   const isOnSale =
     product.originalPrice != null && product.originalPrice > product.price;
@@ -46,43 +35,42 @@ export default function BioProductCard({ product, onAdd }: Props) {
 
   return (
     <div className="rounded-2xl overflow-hidden bg-white shadow-sm border border-black/[0.04]">
-      {/* Image */}
-      <div className="relative">
-        <ImageCarousel
-          images={images}
-          alt={product.title}
-          activeIndex={activeImageIndex}
-          videoUrl={product.videoUrl}
-        />
+      {/* Image 1:1 */}
+      <div className="relative aspect-square">
+        {heroImage ? (
+          <Image
+            src={heroImage}
+            alt={product.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 480px) 50vw, 240px"
+          />
+        ) : (
+          <div className="w-full h-full bg-zinc-100 flex items-center justify-center">
+            <span className="text-zinc-400 text-3xl font-bold">
+              {product.title.charAt(0)}
+            </span>
+          </div>
+        )}
+
         {soldOut && <SoldOutOverlay />}
 
-        {/* Badges */}
+        {/* Badges — 左上角 */}
         {!soldOut && (
           <div className="absolute top-2 left-2 z-10 flex gap-1">
             {isNewProduct && <NewBadge />}
             {lowStock && <LowStockBadge count={lowStock} />}
           </div>
         )}
-
-        {/* Video icon — 左下角 */}
-        {hasVideo && (
-          <div className="absolute bottom-2 left-2 z-10">
-            <span className="flex items-center gap-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="inline-block">
-                <path d="M2 1.5v7l6-3.5-6-3.5z" fill="currentColor" />
-              </svg>
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Content */}
-      <div className="p-3">
-        <h3 className="text-zinc-900 text-sm font-semibold line-clamp-2 min-h-[2.5rem] mb-1">
+      <div className="p-3 relative">
+        <h3 className="text-zinc-900 text-sm font-semibold truncate mb-1 pr-10">
           {product.title}
         </h3>
 
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2">
           {isOnSale ? (
             <>
               <span className="text-zinc-900 font-bold text-base">
@@ -102,16 +90,17 @@ export default function BioProductCard({ product, onAdd }: Props) {
           )}
         </div>
 
-        <VariantSelector
-          variants={variants || []}
-          label={variantLabel}
-          productPrice={product.price}
-          soldOut={soldOut}
-          onAdd={(variant) => onAdd(product, variant)}
-          theme="light"
-          dualVariant={dualVariant}
-          onImageChange={setActiveImageIndex}
-        />
+        {/* + 圓形按鈕 — 右下角 */}
+        {!soldOut && (
+          <button
+            onClick={() => onAdd(product)}
+            className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-[#FF9500] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );

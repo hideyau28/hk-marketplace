@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import {
   type ProductForBioLink,
@@ -8,19 +7,15 @@ import {
   rarityConfig,
   getBadgeText,
   getAllImages,
-  getVisibleVariants,
-  getVariantLabel,
-  getDualVariantData,
   isSoldOut,
   formatHKD,
 } from "@/lib/biolink-helpers";
-import VariantSelector from "./VariantSelector";
 import SoldOutOverlay from "./SoldOutOverlay";
 
 type Props = {
   product: ProductForBioLink;
   index: number;
-  onAdd: (product: ProductForBioLink, variant: string | null) => void;
+  onAdd: (product: ProductForBioLink) => void;
 };
 
 export default function LootCard({ product, index, onAdd }: Props) {
@@ -29,15 +24,8 @@ export default function LootCard({ product, index, onAdd }: Props) {
   const badge = getBadgeText(product);
   const images = getAllImages(product);
   const heroImage = images[0] || null;
-  const variants = getVisibleVariants(product);
-  const dualVariant = getDualVariantData(product);
-  const variantLabel = getVariantLabel(product);
   const soldOut = isSoldOut(product);
   const hasVideo = !!product.videoUrl;
-
-  // 雙維 variant — 切換顏色時顯示對應圖片
-  const [heroIndex, setHeroIndex] = useState(0);
-  const displayHero = images[heroIndex] || heroImage;
 
   const isOnSale =
     product.originalPrice != null &&
@@ -63,11 +51,11 @@ export default function LootCard({ product, index, onAdd }: Props) {
           style={{ backgroundColor: config.color }}
         />
 
-        {/* Image */}
+        {/* Image 1:1 */}
         <div className="relative aspect-square">
-          {displayHero ? (
+          {heroImage ? (
             <Image
-              src={displayHero}
+              src={heroImage}
               alt={product.title}
               fill
               className="object-cover"
@@ -96,7 +84,7 @@ export default function LootCard({ product, index, onAdd }: Props) {
             </div>
           )}
 
-          {/* Rarity label — hidden for common/no-badge products */}
+          {/* Rarity label */}
           {rarity && (
             <div className="absolute bottom-2 right-2 z-10">
               <span
@@ -108,7 +96,7 @@ export default function LootCard({ product, index, onAdd }: Props) {
             </div>
           )}
 
-          {/* Video icon — 左下角 */}
+          {/* Video icon */}
           {hasVideo && (
             <div className="absolute bottom-2 left-2 z-10">
               <span className="flex items-center gap-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
@@ -121,12 +109,12 @@ export default function LootCard({ product, index, onAdd }: Props) {
         </div>
 
         {/* Info */}
-        <div className="p-3">
-          <h3 className="text-white text-sm font-semibold line-clamp-1 mb-1">
+        <div className="p-3 relative">
+          <h3 className="text-white text-sm font-semibold truncate mb-1 pr-10">
             {product.title}
           </h3>
 
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2">
             {isOnSale ? (
               <>
                 <span className="text-white font-bold text-sm">
@@ -146,15 +134,17 @@ export default function LootCard({ product, index, onAdd }: Props) {
             )}
           </div>
 
-          <VariantSelector
-            variants={variants || []}
-            label={variantLabel}
-            productPrice={product.price}
-            soldOut={soldOut}
-            onAdd={(variant) => onAdd(product, variant)}
-            dualVariant={dualVariant}
-            onImageChange={setHeroIndex}
-          />
+          {/* + 圓形按鈕 — 右下角 */}
+          {!soldOut && (
+            <button
+              onClick={() => onAdd(product)}
+              className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-[#FF9500] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
     </div>
