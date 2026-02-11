@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatHKD } from "@/lib/biolink-helpers";
+import { formatPrice } from "@/lib/biolink-helpers";
 import type { DualVariantData } from "@/lib/biolink-helpers";
 import { getColorHex } from "@/lib/color-map";
 
@@ -193,7 +193,7 @@ export default function VariantSelector({
           animating ? "scale-95" : ""
         }`}
       >
-        加入購物車{theme === "dark" ? ` ${formatHKD(productPrice)}` : ""}
+        加入購物車{theme === "dark" ? ` ${formatPrice(productPrice)}` : ""}
       </button>
     );
   }

@@ -3,11 +3,24 @@ export const runtime = "nodejs";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
 
-const DELIVERY_OPTIONS: Record<string, { label: string; fulfillmentType: "PICKUP" | "DELIVERY" }> = {
-  "sf-locker": { label: "SF 智能櫃", fulfillmentType: "PICKUP" },
-  "sf-cod": { label: "順豐到付", fulfillmentType: "DELIVERY" },
-  meetup: { label: "面交", fulfillmentType: "PICKUP" },
+type DeliveryOption = {
+  id: string;
+  label: string;
+  price: number;
+  enabled: boolean;
 };
+
+const DEFAULT_DELIVERY_OPTIONS: DeliveryOption[] = [
+  { id: "meetup", label: "面交", price: 0, enabled: true },
+  { id: "sf-collect", label: "順豐到付", price: 0, enabled: true },
+  { id: "sf-prepaid", label: "順豐寄付", price: 30, enabled: true },
+];
+
+// Legacy mapping for fulfillment type
+function getFulfillmentType(methodId: string): "PICKUP" | "DELIVERY" {
+  if (methodId === "meetup") return "PICKUP";
+  return "DELIVERY";
+}
 
 async function generateBioOrderNumber(tenantId: string): Promise<string> {
   const now = new Date();
@@ -40,7 +53,7 @@ type BioLinkOrderPayload = {
     price: number;
     image: string | null;
   }>;
-  customer: { name: string; phone: string };
+  customer: { name: string; phone: string; email?: string | null };
   delivery: { method: string };
   payment: { method: string };
   note: string | null;
@@ -53,12 +66,10 @@ function parsePayload(body: unknown): BioLinkOrderPayload {
   }
   const b = body as Record<string, unknown>;
 
-  // tenantId
   if (typeof b.tenantId !== "string" || !b.tenantId) {
     throw new ApiError(400, "BAD_REQUEST", "Missing tenantId");
   }
 
-  // items
   if (!Array.isArray(b.items) || b.items.length === 0) {
     throw new ApiError(400, "BAD_REQUEST", "Missing items");
   }
@@ -71,7 +82,6 @@ function parsePayload(body: unknown): BioLinkOrderPayload {
     if (typeof i.price !== "number" || i.price <= 0) throw new ApiError(400, "BAD_REQUEST", "Invalid item.price");
   }
 
-  // customer
   const cust = b.customer as Record<string, unknown> | undefined;
   if (!cust || typeof cust.name !== "string" || cust.name.trim().length < 2) {
     throw new ApiError(400, "BAD_REQUEST", "Missing or invalid customer.name (min 2 chars)");
@@ -80,19 +90,16 @@ function parsePayload(body: unknown): BioLinkOrderPayload {
     throw new ApiError(400, "BAD_REQUEST", "Missing or invalid customer.phone (8 digits)");
   }
 
-  // delivery
   const del = b.delivery as Record<string, unknown> | undefined;
-  if (!del || typeof del.method !== "string" || !DELIVERY_OPTIONS[del.method]) {
+  if (!del || typeof del.method !== "string") {
     throw new ApiError(400, "BAD_REQUEST", "Invalid delivery.method");
   }
 
-  // payment
   const pay = b.payment as Record<string, unknown> | undefined;
   if (!pay || typeof pay.method !== "string" || !["fps", "payme", "stripe"].includes(pay.method)) {
     throw new ApiError(400, "BAD_REQUEST", "Invalid payment.method");
   }
 
-  // total
   if (typeof b.total !== "number" || b.total <= 0) {
     throw new ApiError(400, "BAD_REQUEST", "Invalid total");
   }
@@ -100,7 +107,11 @@ function parsePayload(body: unknown): BioLinkOrderPayload {
   return {
     tenantId: b.tenantId as string,
     items: b.items as BioLinkOrderPayload["items"],
-    customer: { name: (cust.name as string).trim(), phone: (cust.phone as string).trim() },
+    customer: {
+      name: (cust.name as string).trim(),
+      phone: (cust.phone as string).trim(),
+      email: typeof cust.email === "string" && cust.email.trim() ? cust.email.trim() : null,
+    },
     delivery: { method: del.method as string },
     payment: { method: pay.method as string },
     note: typeof b.note === "string" && b.note.trim() ? b.note.trim() : null,
@@ -119,12 +130,15 @@ export const POST = withApi(async (req) => {
 
   const payload = parsePayload(body);
 
-  // Validate tenant exists
+  // Validate tenant exists + load checkout settings
   const tenant = await prisma.tenant.findUnique({
     where: { id: payload.tenantId },
     select: {
       id: true,
       name: true,
+      currency: true,
+      deliveryOptions: true,
+      freeShippingThreshold: true,
       fpsEnabled: true,
       fpsAccountName: true,
       fpsAccountId: true,
@@ -137,6 +151,15 @@ export const POST = withApi(async (req) => {
   });
 
   if (!tenant) throw new ApiError(404, "NOT_FOUND", "Tenant not found");
+
+  // Get delivery options from tenant settings
+  const deliveryOptions = (tenant.deliveryOptions as DeliveryOption[] | null) || DEFAULT_DELIVERY_OPTIONS;
+  const enabledOptions = deliveryOptions.filter((o) => o.enabled);
+  const selectedDelivery = enabledOptions.find((o) => o.id === payload.delivery.method);
+
+  if (!selectedDelivery) {
+    throw new ApiError(400, "BAD_REQUEST", "Invalid delivery method");
+  }
 
   // Server-side repricing: verify prices match DB
   const productIds = Array.from(new Set(payload.items.map((i) => i.productId)));
@@ -154,7 +177,6 @@ export const POST = withApi(async (req) => {
     if (!product) throw new ApiError(400, "BAD_REQUEST", `Product not found: ${item.productId}`);
     const lineTotal = product.price * item.qty;
     serverTotal += lineTotal;
-    // 雙維 variant 顯示：「黑色|M」→「黑色 · M」
     const variantDisplay = item.variant ? item.variant.replace(/\|/g, " · ") : null;
     repricedItems.push({
       productId: item.productId,
@@ -167,6 +189,12 @@ export const POST = withApi(async (req) => {
   // Allow small rounding difference
   if (Math.abs(serverTotal - payload.total) > 1) {
     throw new ApiError(400, "BAD_REQUEST", "Total mismatch (server repriced)");
+  }
+
+  // Calculate delivery fee
+  let deliveryFee = selectedDelivery.price || 0;
+  if (tenant.freeShippingThreshold && serverTotal >= tenant.freeShippingThreshold) {
+    deliveryFee = 0;
   }
 
   // Stock deduction for items with variantId (single-variant)
@@ -184,7 +212,6 @@ export const POST = withApi(async (req) => {
       where: { id: item.variantId },
       data: {
         stock: { decrement: item.qty },
-        // 如果扣到 0，自動設為 inactive
         ...(variant.stock - item.qty <= 0 ? { active: false } : {}),
       },
     });
@@ -192,8 +219,8 @@ export const POST = withApi(async (req) => {
 
   // Stock deduction for dual-variant items (sizes JSONB combinations)
   for (const item of payload.items) {
-    if (item.variantId) continue; // already handled above
-    if (!item.variant || !item.variant.includes("|")) continue; // not dual-variant
+    if (item.variantId) continue;
+    if (!item.variant || !item.variant.includes("|")) continue;
 
     const product = productMap.get(item.productId);
     if (!product) continue;
@@ -207,7 +234,6 @@ export const POST = withApi(async (req) => {
       throw new ApiError(400, "BAD_REQUEST", `${item.variant.replace(/\|/g, " · ")} 庫存不足`);
     }
 
-    // Deduct stock in JSONB
     combo.qty -= item.qty;
     if (combo.qty === 0) combo.status = "hidden";
 
@@ -217,8 +243,8 @@ export const POST = withApi(async (req) => {
     });
   }
 
-  const deliveryOpt = DELIVERY_OPTIONS[payload.delivery.method];
   const orderNumber = await generateBioOrderNumber(tenant.id);
+  const totalWithDelivery = serverTotal + deliveryFee;
 
   const order = await prisma.order.create({
     data: {
@@ -226,12 +252,18 @@ export const POST = withApi(async (req) => {
       orderNumber,
       customerName: payload.customer.name,
       phone: payload.customer.phone,
+      email: payload.customer.email || null,
       items: repricedItems,
-      amounts: { subtotal: serverTotal, total: serverTotal, currency: "HKD" },
-      fulfillmentType: deliveryOpt.fulfillmentType,
+      amounts: {
+        subtotal: serverTotal,
+        deliveryFee,
+        total: totalWithDelivery,
+        currency: tenant.currency || "HKD",
+      },
+      fulfillmentType: getFulfillmentType(payload.delivery.method),
       fulfillmentAddress:
-        deliveryOpt.fulfillmentType === "DELIVERY"
-          ? { line1: deliveryOpt.label, notes: payload.delivery.method }
+        getFulfillmentType(payload.delivery.method) === "DELIVERY"
+          ? { line1: selectedDelivery.label, notes: payload.delivery.method }
           : undefined,
       status: "PENDING",
       paymentMethod: payload.payment.method,
@@ -264,7 +296,7 @@ export const POST = withApi(async (req) => {
 
   response.whatsapp = tenant.whatsapp;
   response.storeName = tenant.name;
-  response.total = serverTotal;
+  response.total = totalWithDelivery;
 
   return ok(req, response);
 });

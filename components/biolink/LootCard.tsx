@@ -9,18 +9,19 @@ import {
   getBadgeText,
   getAllImages,
   isSoldOut,
-  formatHKD,
+  formatPrice,
 } from "@/lib/biolink-helpers";
 import SoldOutOverlay from "./SoldOutOverlay";
 
 type Props = {
   product: ProductForBioLink;
   index: number;
+  currency?: string;
   onAdd: (product: ProductForBioLink) => void;
   onImageTap?: (images: string[], startIndex: number, videoUrl?: string | null) => void;
 };
 
-export default function LootCard({ product, index, onAdd, onImageTap }: Props) {
+export default function LootCard({ product, index, currency = "HKD", onAdd, onImageTap }: Props) {
   const rarity = getRarity(product);
   const config = rarity ? rarityConfig[rarity] : rarityConfig.common;
   const badge = getBadgeText(product);
@@ -170,10 +171,10 @@ export default function LootCard({ product, index, onAdd, onImageTap }: Props) {
             {isOnSale ? (
               <>
                 <span className="text-white font-bold text-sm">
-                  {formatHKD(product.price)}
+                  {formatPrice(product.price, currency)}
                 </span>
                 <span className="text-zinc-500 text-xs line-through">
-                  {formatHKD(product.originalPrice!)}
+                  {formatPrice(product.originalPrice!, currency)}
                 </span>
                 <span className="px-1 py-0.5 text-[9px] font-bold rounded bg-red-500 text-white">
                   -{discountPct}%
@@ -181,7 +182,7 @@ export default function LootCard({ product, index, onAdd, onImageTap }: Props) {
               </>
             ) : (
               <span className="text-white font-bold text-sm">
-                {formatHKD(product.price)}
+                {formatPrice(product.price, currency)}
               </span>
             )}
           </div>

@@ -24,6 +24,11 @@ export const GET = withApi(
         coverTemplate: true,
         coverPhoto: true,
         logoUrl: true,
+        // Checkout settings
+        currency: true,
+        deliveryOptions: true,
+        freeShippingThreshold: true,
+        orderConfirmMessage: true,
       },
     });
 
@@ -93,6 +98,13 @@ export const PUT = withApi(
     if (body.coverTemplate !== undefined) updateData.coverTemplate = body.coverTemplate;
     if (body.coverPhoto !== undefined) updateData.coverPhoto = body.coverPhoto;
     if (body.logo !== undefined) updateData.logoUrl = body.logo;
+    // Checkout settings
+    if (body.currency !== undefined) updateData.currency = body.currency;
+    if (body.deliveryOptions !== undefined) updateData.deliveryOptions = body.deliveryOptions;
+    if (body.freeShippingThreshold !== undefined) updateData.freeShippingThreshold = body.freeShippingThreshold;
+    // Allow explicitly setting to null
+    if (body.freeShippingThreshold === null) updateData.freeShippingThreshold = null;
+    if (body.orderConfirmMessage !== undefined) updateData.orderConfirmMessage = body.orderConfirmMessage;
 
     const updated = await prisma.tenant.update({
       where: { id: tenantId },
@@ -108,6 +120,10 @@ export const PUT = withApi(
         coverTemplate: true,
         coverPhoto: true,
         logoUrl: true,
+        currency: true,
+        deliveryOptions: true,
+        freeShippingThreshold: true,
+        orderConfirmMessage: true,
       },
     });
 

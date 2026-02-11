@@ -9,7 +9,7 @@ import {
   isSoldOut,
   isNew,
   getLowStockCount,
-  formatHKD,
+  formatPrice,
 } from "@/lib/biolink-helpers";
 import SoldOutOverlay from "./SoldOutOverlay";
 import NewBadge from "./NewBadge";
@@ -17,11 +17,12 @@ import LowStockBadge from "./LowStockBadge";
 
 type Props = {
   product: ProductForBioLink;
+  currency?: string;
   onAdd: (product: ProductForBioLink) => void;
   onImageTap?: (images: string[], startIndex: number, videoUrl?: string | null) => void;
 };
 
-export default function BioProductCard({ product, onAdd, onImageTap }: Props) {
+export default function BioProductCard({ product, currency = "HKD", onAdd, onImageTap }: Props) {
   const images = getAllImages(product);
   const heroImage = images[0] || null;
   const variants = getVisibleVariants(product);
@@ -142,10 +143,10 @@ export default function BioProductCard({ product, onAdd, onImageTap }: Props) {
           {isOnSale ? (
             <>
               <span className="text-zinc-900 font-bold text-base">
-                {formatHKD(product.price)}
+                {formatPrice(product.price, currency)}
               </span>
               <span className="text-zinc-400 text-xs line-through">
-                {formatHKD(product.originalPrice!)}
+                {formatPrice(product.originalPrice!, currency)}
               </span>
               <span className="px-1 py-0.5 text-[9px] font-bold rounded bg-red-500 text-white">
                 -{discountPct}%
@@ -153,7 +154,7 @@ export default function BioProductCard({ product, onAdd, onImageTap }: Props) {
             </>
           ) : (
             <span className="text-zinc-900 font-bold text-base">
-              {formatHKD(product.price)}
+              {formatPrice(product.price, currency)}
             </span>
           )}
         </div>

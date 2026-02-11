@@ -2,7 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import BioLinkPage from "@/components/biolink/BioLinkPage";
 import type { Metadata } from "next";
-import type { ProductForBioLink, DualVariantData } from "@/lib/biolink-helpers";
+import type { ProductForBioLink, DualVariantData, DeliveryOption, OrderConfirmConfig } from "@/lib/biolink-helpers";
+import { DEFAULT_DELIVERY_OPTIONS, DEFAULT_ORDER_CONFIRM } from "@/lib/biolink-helpers";
 
 type PageProps = {
   params: Promise<{ slug: string; locale: string }>;
@@ -33,6 +34,11 @@ export default async function SlugPage({ params }: PageProps) {
       paymeQrCodeUrl: true,
       stripeAccountId: true,
       stripeOnboarded: true,
+      // Checkout settings
+      currency: true,
+      deliveryOptions: true,
+      freeShippingThreshold: true,
+      orderConfirmMessage: true,
     },
   });
 
@@ -85,7 +91,16 @@ export default async function SlugPage({ params }: PageProps) {
     variants: p.variants,
   }));
 
-  return <BioLinkPage tenant={tenant} products={serialized} />;
+  // Parse JSON checkout settings with defaults
+  const tenantForBioLink = {
+    ...tenant,
+    currency: tenant.currency || "HKD",
+    deliveryOptions: (tenant.deliveryOptions as DeliveryOption[] | null) || DEFAULT_DELIVERY_OPTIONS,
+    freeShippingThreshold: tenant.freeShippingThreshold,
+    orderConfirmMessage: (tenant.orderConfirmMessage as OrderConfirmConfig | null) || DEFAULT_ORDER_CONFIRM,
+  };
+
+  return <BioLinkPage tenant={tenantForBioLink} products={serialized} />;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

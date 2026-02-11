@@ -1,25 +1,24 @@
 "use client";
 
-import { formatHKD } from "@/lib/biolink-helpers";
+import { formatPrice } from "@/lib/biolink-helpers";
 
 type Props = {
   count: number;
   total: number;
+  currency?: string;
   whatsapp: string | null;
   onCheckout?: () => void;
 };
 
-export default function CartBar({ count, total, whatsapp, onCheckout }: Props) {
+export default function CartBar({ count, total, currency = "HKD", whatsapp, onCheckout }: Props) {
   const handleCheckout = () => {
-    // If onCheckout callback provided, use it (checkout panel flow)
     if (onCheckout) {
       onCheckout();
       return;
     }
-    // Fallback: WhatsApp checkout
     if (!whatsapp) return;
     const phone = whatsapp.replace(/[^0-9]/g, "");
-    const msg = encodeURIComponent(`Hi! 我想落單，購物車有 ${count} 件商品，總計 ${formatHKD(total)}`);
+    const msg = encodeURIComponent(`Hi! 我想落單，購物車有 ${count} 件商品，總計 ${formatPrice(total, currency)}`);
     window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
   };
 
@@ -36,7 +35,7 @@ export default function CartBar({ count, total, whatsapp, onCheckout }: Props) {
                 {count > 9 ? "9+" : count}
               </span>
             </div>
-            <span className="text-white font-bold text-sm">{formatHKD(total)}</span>
+            <span className="text-white font-bold text-sm">{formatPrice(total, currency)}</span>
           </div>
           <button
             onClick={handleCheckout}
