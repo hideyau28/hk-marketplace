@@ -301,7 +301,6 @@ model Tenant {
   coverPhoto           String?
   whatsapp             String?
   instagram            String?
-  facebook             String?
   location             String?
   tagline              String?
   coverTemplate        String?   @default("default")

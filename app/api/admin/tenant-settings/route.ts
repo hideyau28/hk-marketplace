@@ -20,7 +20,6 @@ export const GET = withApi(
         location: true,
         whatsapp: true,
         instagram: true,
-        facebook: true,
         coverTemplate: true,
         coverPhoto: true,
         logoUrl: true,
@@ -94,7 +93,6 @@ export const PUT = withApi(
     if (body.location !== undefined) updateData.location = body.location;
     if (body.whatsapp !== undefined) updateData.whatsapp = body.whatsapp;
     if (body.instagram !== undefined) updateData.instagram = body.instagram;
-    if (body.facebook !== undefined) updateData.facebook = body.facebook;
     if (body.coverTemplate !== undefined) updateData.coverTemplate = body.coverTemplate;
     if (body.coverPhoto !== undefined) updateData.coverPhoto = body.coverPhoto;
     if (body.logo !== undefined) updateData.logoUrl = body.logo;
@@ -116,7 +114,6 @@ export const PUT = withApi(
         location: true,
         whatsapp: true,
         instagram: true,
-        facebook: true,
         coverTemplate: true,
         coverPhoto: true,
         logoUrl: true,
