@@ -13,7 +13,7 @@ export type TenantContext = {
   status: string;
 };
 
-const DEFAULT_SLUG = "wowlix";
+const DEFAULT_SLUG = "maysshop";
 
 /**
  * Known hostnames that should resolve to the default tenant
