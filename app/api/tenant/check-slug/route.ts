@@ -30,7 +30,10 @@ export const GET = withApi(async (req: Request) => {
     return ok(req, { available: false, reason: "呢個名係保留字，唔可以用" });
   }
 
-  const existing = await prisma.tenant.findUnique({ where: { slug } });
+  // Query database for existing tenant with this slug
+  const existing = await prisma.tenant.findUnique({
+    where: { slug: slug },
+  });
 
   if (existing) {
     return ok(req, { available: false, reason: "呢個名已經有人用咗" });

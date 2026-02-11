@@ -200,6 +200,14 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
             `/api/tenant/check-slug?slug=${encodeURIComponent(value)}`
           );
           const json = await res.json();
+
+          // Handle API errors - if response is not ok or json.ok is false, don't treat as "taken"
+          if (!res.ok || !json.ok) {
+            setSlugStatus("idle");
+            setSlugReason("");
+            return;
+          }
+
           if (json.data?.available) {
             setSlugStatus("available");
             setSlugReason("");
