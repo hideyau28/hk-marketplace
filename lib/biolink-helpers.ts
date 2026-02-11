@@ -44,6 +44,7 @@ export type ProductForBioLink = {
   imageUrl: string | null;
   images: string[];
   videoUrl?: string | null;
+  description?: string | null;
   sizes: Record<string, number> | DualVariantData | null;
   sizeSystem?: string | null;
   badges: string[] | null;
@@ -72,6 +73,7 @@ export type TenantForBioLink = {
   description: string | null;
   whatsapp: string | null;
   instagram: string | null;
+  facebook: string | null;
   brandColor: string | null;
   logoUrl: string | null;
   coverPhoto: string | null;

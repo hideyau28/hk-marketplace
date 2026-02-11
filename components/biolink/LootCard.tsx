@@ -158,7 +158,7 @@ export default function LootCard({ product, index, currency = "HKD", onAdd, onIm
 
         {/* Info */}
         <div className="p-3 relative">
-          <h3 className="text-white text-sm font-semibold mb-1 pr-10" style={{
+          <h3 className="text-white text-sm font-semibold leading-snug mb-1 pr-10" style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
