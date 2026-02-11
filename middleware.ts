@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const DEFAULT_SLUG = "wowlix";
+const DEFAULT_SLUG = "maysshop";
 const DEFAULT_HOSTS = new Set(["hk-marketplace", "www", "localhost", "127.0.0.1"]);
 
 /**
