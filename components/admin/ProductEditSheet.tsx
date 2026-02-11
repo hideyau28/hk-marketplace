@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { X, Camera, Loader2, Trash2, Plus, Search, ChevronDown, ChevronRight } from "lucide-react";
-import { VARIANT_PRESETS, EXTENDED_PRESETS, type VariantPreset } from "@/lib/variant-presets";
+import { VARIANT_PRESETS, EXTENDED_PRESETS, COLOR_PRESET_ID, type VariantPreset } from "@/lib/variant-presets";
 
 type Product = {
   id: string;
@@ -33,6 +33,18 @@ type DualVariantData = {
   combinations: Record<string, { qty: number; status: string }>;
 };
 
+// Wizard step state machine
+type WizardStep =
+  | "none"      // 初始，顯示 [+ 加選項]
+  | "type"      // 揀 preset
+  | "hasColor"  // 有冇顏色？
+  | "colors"    // 揀顏色
+  | "hasSize"   // (反轉) 有冇尺碼？
+  | "sizeType"  // (反轉) 揀 size preset
+  | "sizes"     // 揀 size
+  | "stock"     // 填庫存
+  | "done";     // summary
+
 // localStorage key for variant memory
 const VARIANT_MEMORY_KEY = "wowlix-variant-last";
 
@@ -40,6 +52,11 @@ type VariantMemory = {
   presetId: string;
   selectedValues: string[];
   label: string;
+  hasColor?: boolean;
+  selectedColors?: string[];
+  colorHexOverrides?: Record<string, string>;
+  secondPresetId?: string;
+  secondSelectedValues?: string[];
 };
 
 function getVariantMemory(): VariantMemory | null {
@@ -52,9 +69,9 @@ function getVariantMemory(): VariantMemory | null {
   }
 }
 
-function saveVariantMemory(presetId: string, selectedValues: string[], label: string) {
+function saveVariantMemory(memory: VariantMemory) {
   try {
-    localStorage.setItem(VARIANT_MEMORY_KEY, JSON.stringify({ presetId, selectedValues, label }));
+    localStorage.setItem(VARIANT_MEMORY_KEY, JSON.stringify(memory));
   } catch {
     // ignore
   }
@@ -154,7 +171,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // --- Variant state ---
+  // --- Variant data state ---
   const [variantMode, setVariantMode] = useState<"none" | "single" | "dual">("none");
   const [optionName1, setOptionName1] = useState("");
   const [values1, setValues1] = useState<SingleVariantValue[]>([]);
@@ -162,12 +179,20 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
   const [values2, setValues2] = useState<string[]>([]);
   const [grid, setGrid] = useState<Record<string, number>>({});
 
-  // Preset picker state
-  const [showPresetPicker, setShowPresetPicker] = useState(false);
-  const [showPresetPicker2, setShowPresetPicker2] = useState(false);
+  // --- Wizard state ---
+  const [wizardStep, setWizardStep] = useState<WizardStep>("none");
+  const [primaryPreset, setPrimaryPreset] = useState<VariantPreset | null>(null);
+  const [sizePreset, setSizePreset] = useState<VariantPreset | null>(null);
+  const [hasColor, setHasColor] = useState(false);
+  const [hasSize, setHasSize] = useState(false);
+  const [colorIsFirstDimension, setColorIsFirstDimension] = useState(false);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [customColorName, setCustomColorName] = useState("");
+  const [customColorHex, setCustomColorHex] = useState("#888888");
+  const [customColorOverrides, setCustomColorOverrides] = useState<Record<string, string>>({});
+
+  // Shared UI state
   const [presetSearch, setPresetSearch] = useState("");
-  const [activePreset1, setActivePreset1] = useState<VariantPreset | null>(null);
-  const [activePreset2, setActivePreset2] = useState<VariantPreset | null>(null);
   const [newCustomValue, setNewCustomValue] = useState("");
   const [newCustomValue2, setNewCustomValue2] = useState("");
   const [bulkQty, setBulkQty] = useState("");
@@ -195,14 +220,44 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
         setValues2(parsed.values2);
         setGrid(parsed.grid);
 
-        // Try to find matching preset for existing values
-        if (parsed.mode !== "none" && parsed.values1.length > 0) {
-          const matched = findPresetForValues(parsed.values1.map((v) => v.name));
-          setActivePreset1(matched);
-        }
-        if (parsed.mode === "dual" && parsed.values2.length > 0) {
-          const matched = findPresetForValues(parsed.values2);
-          setActivePreset2(matched);
+        // Set wizard state for edit mode
+        if (parsed.mode === "none") {
+          setWizardStep("none");
+          setPrimaryPreset(null);
+          setSizePreset(null);
+          setHasColor(false);
+          setHasSize(false);
+          setColorIsFirstDimension(false);
+          setSelectedColors([]);
+        } else {
+          setWizardStep("done");
+          const matched1 = findPresetForValues(parsed.values1.map((v) => v.name));
+          setPrimaryPreset(matched1);
+
+          // Detect color dimension
+          const colorKeywords = ["顏色", "Color", "color"];
+          const dim1IsColor = colorKeywords.some((k) => parsed.optionName1.includes(k));
+
+          if (dim1IsColor) {
+            setColorIsFirstDimension(true);
+            setHasColor(true);
+            setSelectedColors(parsed.values1.map((v) => v.name));
+            const colorPresetDef = VARIANT_PRESETS.find((p) => p.id === COLOR_PRESET_ID);
+            setPrimaryPreset(colorPresetDef || null);
+            if (parsed.mode === "dual") {
+              setHasSize(true);
+              setSizePreset(findPresetForValues(parsed.values2));
+            }
+          } else {
+            setColorIsFirstDimension(false);
+            if (parsed.mode === "dual") {
+              const dim2IsColor = colorKeywords.some((k) => parsed.optionName2.includes(k));
+              if (dim2IsColor) {
+                setHasColor(true);
+                setSelectedColors(parsed.values2);
+              }
+            }
+          }
         }
       } else {
         setTitle("");
@@ -216,19 +271,25 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
         setOptionName2("");
         setValues2([]);
         setGrid({});
-        setActivePreset1(null);
-        setActivePreset2(null);
+        setWizardStep("none");
+        setPrimaryPreset(null);
+        setSizePreset(null);
+        setHasColor(false);
+        setHasSize(false);
+        setColorIsFirstDimension(false);
+        setSelectedColors([]);
+        setCustomColorOverrides({});
       }
       setError("");
       setConfirmDelete(false);
-      setShowPresetPicker(false);
-      setShowPresetPicker2(false);
       setPresetSearch("");
       setNewCustomValue("");
       setNewCustomValue2("");
       setBulkQty("");
       setCollapsedGroups(new Set());
       setMemoryDismissed(false);
+      setCustomColorName("");
+      setCustomColorHex("#888888");
 
       // Load variant memory for new products
       if (isNew) {
@@ -279,65 +340,170 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     setImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // --- Preset selection ---
-  const handleSelectPreset = (preset: VariantPreset, isSecond: boolean) => {
-    if (isSecond) {
-      setActivePreset2(preset);
-      setOptionName2(preset.label);
-      // Pre-select all values if preset has values
-      if (preset.values.length > 0) {
-        const newVals = preset.values;
-        setValues2(newVals);
-        // Initialize grid
-        const newGrid: Record<string, number> = {};
-        for (const v1 of values1) {
-          for (const v2 of newVals) {
-            newGrid[`${v1.name}|${v2}`] = 0;
+  // --- Wizard navigation ---
+  const finalizeVariantData = () => {
+    if (colorIsFirstDimension) {
+      const newValues1 = selectedColors.map((c) => {
+        const existing = values1.find((v) => v.name === c);
+        return { name: c, qty: existing?.qty || 0 };
+      });
+      setOptionName1(isZh ? "顏色" : "Color");
+      setValues1(newValues1);
+      if (hasSize && values2.length > 0) {
+        setVariantMode("dual");
+        const newGrid = { ...grid };
+        for (const color of selectedColors) {
+          for (const size of values2) {
+            const key = `${color}|${size}`;
+            if (!(key in newGrid)) newGrid[key] = 0;
           }
         }
         setGrid(newGrid);
       } else {
-        setValues2([]);
+        setVariantMode("single");
       }
-      setShowPresetPicker2(false);
     } else {
-      setActivePreset1(preset);
-      setVariantMode("single");
+      if (hasColor && selectedColors.length > 0) {
+        setVariantMode("dual");
+        setOptionName2(isZh ? "顏色" : "Color");
+        setValues2(selectedColors);
+        const newGrid = { ...grid };
+        for (const v1 of values1) {
+          for (const color of selectedColors) {
+            const key = `${v1.name}|${color}`;
+            if (!(key in newGrid)) newGrid[key] = 0;
+          }
+        }
+        setGrid(newGrid);
+      } else {
+        setVariantMode("single");
+      }
+    }
+  };
+
+  const goToStep = (step: WizardStep) => {
+    if (step === "stock") finalizeVariantData();
+    setWizardStep(step);
+  };
+
+  const getBackStep = (): WizardStep | null => {
+    if (colorIsFirstDimension) {
+      switch (wizardStep) {
+        case "type": return "none";
+        case "colors": return "type";
+        case "hasSize": return "colors";
+        case "sizeType": return "hasSize";
+        case "sizes": return "sizeType";
+        case "stock": return hasSize ? "sizes" : "hasSize";
+        default: return null;
+      }
+    } else {
+      switch (wizardStep) {
+        case "type": return "none";
+        case "hasColor": return "type";
+        case "colors": return "hasColor";
+        case "sizes": return hasColor ? "colors" : "hasColor";
+        case "stock": return "sizes";
+        default: return null;
+      }
+    }
+  };
+
+  const handleWizardBack = () => {
+    const prev = getBackStep();
+    if (prev === "none") {
+      handleResetVariants();
+    } else if (prev) {
+      setWizardStep(prev);
+    }
+  };
+
+  const handleResetVariants = () => {
+    setVariantMode("none");
+    setOptionName1("");
+    setValues1([]);
+    setOptionName2("");
+    setValues2([]);
+    setGrid({});
+    setPrimaryPreset(null);
+    setSizePreset(null);
+    setHasColor(false);
+    setHasSize(false);
+    setColorIsFirstDimension(false);
+    setSelectedColors([]);
+    setCustomColorOverrides({});
+    setWizardStep("none");
+  };
+
+  // --- Wizard type handlers ---
+  const handlePresetTypeSelect = (preset: VariantPreset) => {
+    if (preset.id === COLOR_PRESET_ID) {
+      setColorIsFirstDimension(true);
+      setHasColor(true);
+      setPrimaryPreset(preset);
+      setWizardStep("colors");
+    } else {
+      setColorIsFirstDimension(false);
+      setPrimaryPreset(preset);
       setOptionName1(preset.label);
-      // Pre-select all values if preset has values
       if (preset.values.length > 0) {
         setValues1(preset.values.map((v) => ({ name: v, qty: 0 })));
-      } else {
-        setValues1([]);
       }
-      setShowPresetPicker(false);
+      setWizardStep("hasColor");
     }
     setPresetSearch("");
   };
 
-  const handleSelectCustom = (isSecond: boolean) => {
-    if (isSecond) {
-      setActivePreset2(null);
-      setOptionName2("");
-      setValues2([]);
-      setShowPresetPicker2(false);
-    } else {
-      setActivePreset1(null);
-      setVariantMode("single");
-      setOptionName1("");
-      setValues1([]);
-      setShowPresetPicker(false);
-    }
+  const handleCustomTypeSelect = () => {
+    setColorIsFirstDimension(false);
+    setPrimaryPreset(null);
+    setOptionName1("");
+    setValues1([]);
+    setWizardStep("hasColor");
     setPresetSearch("");
   };
 
-  // Toggle a value on/off (checkbox chips)
+  // --- Color handlers ---
+  const toggleColor = (colorName: string) => {
+    setSelectedColors((prev) =>
+      prev.includes(colorName) ? prev.filter((c) => c !== colorName) : [...prev, colorName]
+    );
+  };
+
+  const handleAddCustomColor = () => {
+    const name = customColorName.trim();
+    if (!name || selectedColors.includes(name)) return;
+    setSelectedColors((prev) => [...prev, name]);
+    setCustomColorOverrides((prev) => ({ ...prev, [name]: customColorHex }));
+    setCustomColorName("");
+    setCustomColorHex("#888888");
+  };
+
+  // --- Size type handler (color-first flow) ---
+  const handleSizeTypeSelect = (preset: VariantPreset) => {
+    setSizePreset(preset);
+    setOptionName2(preset.label);
+    if (preset.values.length > 0) {
+      setValues2(preset.values);
+    }
+    setWizardStep("sizes");
+    setPresetSearch("");
+  };
+
+  const handleCustomSizeTypeSelect = () => {
+    setSizePreset(null);
+    setOptionName2("");
+    setValues2([]);
+    setWizardStep("sizes");
+    setPresetSearch("");
+  };
+
+  // --- Value toggles (kept) ---
   const handleToggleValue1 = (valueName: string) => {
     const exists = values1.some((v) => v.name === valueName);
     if (exists) {
       const removed = values1.find((v) => v.name === valueName);
       setValues1((prev) => prev.filter((v) => v.name !== valueName));
-      // Clean up grid if dual mode
       if (variantMode === "dual" && removed) {
         setGrid((prev) => {
           const next = { ...prev };
@@ -349,7 +515,6 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       }
     } else {
       setValues1((prev) => [...prev, { name: valueName, qty: 0 }]);
-      // If dual mode, initialize grid entries
       if (variantMode === "dual") {
         setGrid((prev) => {
           const next = { ...prev };
@@ -366,7 +531,6 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     const exists = values2.includes(valueName);
     if (exists) {
       setValues2((prev) => prev.filter((v) => v !== valueName));
-      // Clean up grid
       setGrid((prev) => {
         const next = { ...prev };
         for (const key of Object.keys(next)) {
@@ -376,7 +540,6 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       });
     } else {
       setValues2((prev) => [...prev, valueName]);
-      // Initialize grid entries
       setGrid((prev) => {
         const next = { ...prev };
         for (const v1 of values1) {
@@ -387,7 +550,6 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     }
   };
 
-  // Add custom value
   const handleAddCustomValue1 = () => {
     const name = newCustomValue.trim();
     if (!name || values1.some((v) => v.name === name)) return;
@@ -418,7 +580,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     });
   };
 
-  // Stock changes for single variant
+  // --- Stock handlers (kept) ---
   const handleStockChange = (valueName: string, qty: string) => {
     setValues1((prev) => prev.map((v) => v.name === valueName ? { ...v, qty: parseInt(qty) || 0 } : v));
   };
@@ -427,7 +589,6 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     setGrid((prev) => ({ ...prev, [key]: parseInt(value) || 0 }));
   };
 
-  // Bulk set all stock
   const handleBulkSetAll = () => {
     const qty = parseInt(bulkQty) || 0;
     if (variantMode === "single") {
@@ -444,37 +605,6 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     setBulkQty("");
   };
 
-  // Enable dual mode
-  const handleEnableDualOption = () => {
-    setVariantMode("dual");
-    setShowPresetPicker2(true);
-  };
-
-  // Remove all options
-  const handleRemoveOptions = () => {
-    setVariantMode("none");
-    setOptionName1("");
-    setValues1([]);
-    setOptionName2("");
-    setValues2([]);
-    setGrid({});
-    setActivePreset1(null);
-    setActivePreset2(null);
-    setShowPresetPicker(false);
-    setShowPresetPicker2(false);
-  };
-
-  // Remove second option
-  const handleRemoveOption2 = () => {
-    setVariantMode("single");
-    setOptionName2("");
-    setValues2([]);
-    setGrid({});
-    setActivePreset2(null);
-    setShowPresetPicker2(false);
-  };
-
-  // Collapsible groups toggle
   const toggleGroupCollapse = (groupName: string) => {
     setCollapsedGroups((prev) => {
       const next = new Set(prev);
@@ -487,15 +617,54 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     });
   };
 
-  // Apply variant memory
+  // --- Apply variant memory (enhanced) ---
   const handleApplyMemory = () => {
     if (!variantMemory) return;
     const allPresets = [...VARIANT_PRESETS, ...EXTENDED_PRESETS];
     const preset = allPresets.find((p) => p.id === variantMemory.presetId);
-    setVariantMode("single");
+
+    setPrimaryPreset(preset || null);
     setOptionName1(variantMemory.label);
-    setActivePreset1(preset || null);
     setValues1(variantMemory.selectedValues.map((v) => ({ name: v, qty: 0 })));
+
+    if (variantMemory.hasColor && variantMemory.selectedColors?.length) {
+      setHasColor(true);
+      setSelectedColors(variantMemory.selectedColors);
+      if (variantMemory.colorHexOverrides) {
+        setCustomColorOverrides(variantMemory.colorHexOverrides);
+      }
+      // Set up dual mode directly
+      setVariantMode("dual");
+      setOptionName2(isZh ? "顏色" : "Color");
+      setValues2(variantMemory.selectedColors);
+      const newGrid: Record<string, number> = {};
+      for (const v of variantMemory.selectedValues) {
+        for (const c of variantMemory.selectedColors) {
+          newGrid[`${v}|${c}`] = 0;
+        }
+      }
+      setGrid(newGrid);
+    } else {
+      setVariantMode("single");
+    }
+
+    if (variantMemory.secondPresetId && variantMemory.secondSelectedValues?.length) {
+      const secondPreset = allPresets.find((p) => p.id === variantMemory.secondPresetId);
+      setSizePreset(secondPreset || null);
+      setOptionName2(secondPreset?.label || "");
+      setValues2(variantMemory.secondSelectedValues);
+      setHasSize(true);
+      setVariantMode("dual");
+      const newGrid: Record<string, number> = {};
+      for (const v of variantMemory.selectedValues) {
+        for (const s of variantMemory.secondSelectedValues) {
+          newGrid[`${v}|${s}`] = 0;
+        }
+      }
+      setGrid(newGrid);
+    }
+
+    setWizardStep("stock");
     setMemoryDismissed(true);
   };
 
@@ -559,13 +728,18 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     try {
       const { sizes, sizeSystem } = buildSizesPayload();
 
-      // Save variant memory
+      // Save variant memory (enhanced)
       if (variantMode !== "none" && values1.length > 0) {
-        saveVariantMemory(
-          activePreset1?.id || "custom",
-          values1.map((v) => v.name),
-          optionName1.trim() || "custom"
-        );
+        saveVariantMemory({
+          presetId: primaryPreset?.id || "custom",
+          selectedValues: values1.map((v) => v.name),
+          label: optionName1.trim() || "custom",
+          hasColor,
+          selectedColors: hasColor ? selectedColors : undefined,
+          colorHexOverrides: Object.keys(customColorOverrides).length > 0 ? customColorOverrides : undefined,
+          secondPresetId: sizePreset?.id,
+          secondSelectedValues: values2.length > 0 ? values2 : undefined,
+        });
       }
 
       const body: Record<string, unknown> = {
@@ -648,93 +822,16 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     }
   };
 
-  // --- Preset picker rendering ---
+  // --- Rendering helpers ---
   const allPresets = [...VARIANT_PRESETS, ...EXTENDED_PRESETS];
   const filteredPresets = presetSearch
     ? allPresets.filter((p) => p.label.includes(presetSearch) || p.id.includes(presetSearch.toLowerCase()))
     : VARIANT_PRESETS;
 
   const getColorHex = (valueName: string): string | undefined => {
-    const preset = activePreset1?.colorHex?.[valueName] || activePreset2?.colorHex?.[valueName];
-    if (preset) return preset;
-    // Check all color presets
-    const colorPreset = [...VARIANT_PRESETS, ...EXTENDED_PRESETS].find((p) => p.colorHex?.[valueName]);
+    if (customColorOverrides[valueName]) return customColorOverrides[valueName];
+    const colorPreset = allPresets.find((p) => p.colorHex?.[valueName]);
     return colorPreset?.colorHex?.[valueName];
-  };
-
-  const renderPresetPicker = (isSecond: boolean) => {
-    const showSearch = presetSearch.length > 0;
-    const presets = showSearch ? filteredPresets : VARIANT_PRESETS;
-
-    return (
-      <div className="space-y-3 bg-zinc-50 rounded-xl p-4">
-        <div className="text-sm font-medium text-zinc-700">
-          {isZh ? "選擇選項類型" : "Select option type"}
-        </div>
-
-        {/* Preset list */}
-        <div className="space-y-1">
-          {(showSearch ? presets : VARIANT_PRESETS).map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              onClick={() => handleSelectPreset(preset, isSecond)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white transition-colors text-left"
-            >
-              <span className="text-lg">{preset.icon}</span>
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium text-zinc-800">{preset.label}</span>
-                {preset.values.length > 0 && (
-                  <span className="text-xs text-zinc-400 ml-2">
-                    ({preset.values.slice(0, 4).join("/")}{preset.values.length > 4 ? "..." : ""})
-                  </span>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Search more */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-            <input
-              type="text"
-              value={presetSearch}
-              onChange={(e) => setPresetSearch(e.target.value)}
-              placeholder={isZh ? "搜尋更多..." : "Search more..."}
-              className="w-full pl-8 pr-3 py-2 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400"
-            />
-          </div>
-        </div>
-
-        {/* Custom option */}
-        <button
-          type="button"
-          onClick={() => handleSelectCustom(isSecond)}
-          className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-zinc-300 hover:border-[#FF9500] hover:bg-white transition-colors text-sm text-zinc-600"
-        >
-          <span>✏️</span>
-          <span>{isZh ? "自訂" : "Custom"}</span>
-        </button>
-
-        {/* Cancel */}
-        <button
-          type="button"
-          onClick={() => {
-            if (isSecond) {
-              setShowPresetPicker2(false);
-            } else {
-              setShowPresetPicker(false);
-            }
-            setPresetSearch("");
-          }}
-          className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 py-1"
-        >
-          {isZh ? "取消" : "Cancel"}
-        </button>
-      </div>
-    );
   };
 
   // Render checkbox chips for option values
@@ -887,6 +984,533 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     );
   };
 
+  // --- Wizard step renders ---
+  const getStepList = (): WizardStep[] => {
+    if (colorIsFirstDimension) {
+      const steps: WizardStep[] = ["type", "colors", "hasSize"];
+      if (hasSize) { steps.push("sizeType", "sizes"); }
+      steps.push("stock");
+      return steps;
+    }
+    const steps: WizardStep[] = ["type", "hasColor"];
+    if (hasColor) steps.push("colors");
+    steps.push("sizes", "stock");
+    return steps;
+  };
+
+  const renderStepIndicator = () => {
+    const steps = getStepList();
+    const currentIdx = steps.findIndex((s) => s === wizardStep);
+    return (
+      <div className="flex items-center gap-1.5 mb-3">
+        {steps.map((step, idx) => (
+          <div key={step} className="flex items-center gap-1.5">
+            {idx > 0 && <div className="w-3 h-px bg-zinc-300" />}
+            <div className={`w-2 h-2 rounded-full transition-colors ${
+              idx < currentIdx ? "bg-[#FF9500]"
+              : idx === currentIdx ? "bg-[#FF9500] ring-2 ring-[#FF9500]/20"
+              : "bg-zinc-300"
+            }`} />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderStepNone = () => (
+    <div className="space-y-3">
+      {/* Variant memory suggestion */}
+      {isNew && variantMemory && !memoryDismissed && (
+        <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          <div className="flex-1 min-w-0">
+            <span className="text-sm text-amber-800">
+              {isZh ? "上次設定：" : "Last config: "}
+              {variantMemory.label} ({variantMemory.selectedValues.slice(0, 3).join("/")}{variantMemory.selectedValues.length > 3 ? "..." : ""})
+              {variantMemory.hasColor && variantMemory.selectedColors?.length
+                ? ` × ${isZh ? "顏色" : "Color"}(${variantMemory.selectedColors.slice(0, 2).join("/")}${variantMemory.selectedColors.length > 2 ? "..." : ""})`
+                : ""}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleApplyMemory}
+            className="px-3 py-1 rounded-lg bg-[#FF9500] text-white text-xs font-medium hover:bg-[#E68600] transition-colors flex-shrink-0"
+          >
+            {isZh ? "套用" : "Apply"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMemoryDismissed(true)}
+            className="text-amber-400 hover:text-amber-600 flex-shrink-0"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={() => setWizardStep("type")}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-zinc-300 text-zinc-600 hover:border-[#FF9500] hover:text-[#FF9500] transition-colors text-sm font-medium w-full justify-center"
+      >
+        <Plus size={16} />
+        {isZh ? "加選項" : "Add options"}
+      </button>
+    </div>
+  );
+
+  const renderPresetGrid = (
+    presets: VariantPreset[],
+    onSelect: (preset: VariantPreset) => void,
+    onCustom: () => void,
+  ) => (
+    <div className="space-y-3 bg-zinc-50 rounded-xl p-4">
+      <div className="text-sm font-medium text-zinc-700">
+        {isZh ? "選擇選項類型" : "Select option type"}
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {presets.map((preset) => (
+          <button
+            key={preset.id}
+            type="button"
+            onClick={() => onSelect(preset)}
+            className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-white border border-zinc-200 hover:border-[#FF9500] hover:bg-[#FF9500]/5 transition-colors text-left"
+          >
+            <span className="text-xl">{preset.icon}</span>
+            <span className="text-sm font-medium text-zinc-800 truncate">{preset.label}</span>
+          </button>
+        ))}
+      </div>
+      {/* Search */}
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+        <input
+          type="text"
+          value={presetSearch}
+          onChange={(e) => setPresetSearch(e.target.value)}
+          placeholder={isZh ? "搜尋更多..." : "Search more..."}
+          className="w-full pl-8 pr-3 py-2 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400"
+        />
+      </div>
+      {/* Custom */}
+      <button
+        type="button"
+        onClick={onCustom}
+        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-zinc-300 hover:border-[#FF9500] hover:bg-white transition-colors text-sm text-zinc-600"
+      >
+        <span>✏️</span>
+        <span>{isZh ? "自訂" : "Custom"}</span>
+      </button>
+      {/* Back */}
+      <button
+        type="button"
+        onClick={handleWizardBack}
+        className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 py-1"
+      >
+        {isZh ? "← 返回" : "← Back"}
+      </button>
+    </div>
+  );
+
+  const renderStepType = () => {
+    const presets = presetSearch ? filteredPresets : VARIANT_PRESETS;
+    return renderPresetGrid(presets, handlePresetTypeSelect, handleCustomTypeSelect);
+  };
+
+  const renderStepHasColor = () => (
+    <div className="space-y-4 bg-zinc-50 rounded-xl p-4">
+      <div className="text-sm font-medium text-zinc-700 text-center">
+        {isZh ? "呢件商品有冇唔同顏色？" : "Does this product have different colors?"}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => { setHasColor(true); setWizardStep("colors"); }}
+          className="py-4 rounded-xl border border-zinc-200 bg-white hover:border-[#FF9500] hover:bg-[#FF9500]/5 transition-colors text-sm font-medium text-zinc-800"
+        >
+          {isZh ? "✅ 有" : "Yes"}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setHasColor(false); setWizardStep("sizes"); }}
+          className="py-4 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 transition-colors text-sm font-medium text-zinc-800"
+        >
+          {isZh ? "冇（跳過）" : "No (skip)"}
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={handleWizardBack}
+        className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 py-1"
+      >
+        {isZh ? "← 返回" : "← Back"}
+      </button>
+    </div>
+  );
+
+  const renderStepColors = () => {
+    const colorPresetDef = VARIANT_PRESETS.find((p) => p.id === COLOR_PRESET_ID);
+    const colorValues = colorPresetDef?.values || [];
+    const colorHexMap = colorPresetDef?.colorHex || {};
+
+    return (
+      <div className="space-y-4 bg-zinc-50 rounded-xl p-4">
+        <div className="text-sm font-medium text-zinc-700">
+          {isZh ? "選擇顏色" : "Select colors"}
+        </div>
+        {/* 4-col color swatch grid */}
+        <div className="grid grid-cols-4 gap-2.5">
+          {colorValues.map((colorName) => {
+            const hex = colorHexMap[colorName];
+            const isSelected = selectedColors.includes(colorName);
+            return (
+              <button
+                key={colorName}
+                type="button"
+                onClick={() => toggleColor(colorName)}
+                className={`flex flex-col items-center gap-1.5 py-2.5 rounded-xl transition-colors border ${
+                  isSelected
+                    ? "bg-[#FF9500]/10 border-[#FF9500]"
+                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                }`}
+              >
+                <span
+                  className={`w-7 h-7 rounded-full flex-shrink-0 ${
+                    isSelected ? "ring-2 ring-[#FF9500] ring-offset-1" : "border-2 border-zinc-200"
+                  }`}
+                  style={{ backgroundColor: hex }}
+                />
+                <span className={`text-xs ${isSelected ? "text-[#FF9500] font-medium" : "text-zinc-600"}`}>
+                  {colorName}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {/* Custom color */}
+        <div className="flex items-center gap-2 pt-2 border-t border-zinc-200">
+          <input
+            type="color"
+            value={customColorHex}
+            onChange={(e) => setCustomColorHex(e.target.value)}
+            className="w-7 h-7 rounded-full border border-zinc-200 cursor-pointer p-0 overflow-hidden flex-shrink-0"
+          />
+          <input
+            type="text"
+            value={customColorName}
+            onChange={(e) => setCustomColorName(e.target.value)}
+            placeholder={isZh ? "自訂顏色名" : "Custom color name"}
+            className="flex-1 px-3 py-2 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400"
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCustomColor())}
+          />
+          <button
+            type="button"
+            onClick={handleAddCustomColor}
+            className="px-3 py-2 rounded-xl bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors text-sm font-medium flex-shrink-0"
+          >
+            <Plus size={14} />
+          </button>
+        </div>
+        {/* Custom color tags */}
+        {selectedColors.filter((c) => !colorValues.includes(c)).length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {selectedColors.filter((c) => !colorValues.includes(c)).map((c) => (
+              <span
+                key={c}
+                className="inline-flex items-center gap-1 bg-[#FF9500]/10 border border-[#FF9500] text-[#FF9500] text-sm px-3 py-1.5 rounded-full font-medium"
+              >
+                <span
+                  className="w-3.5 h-3.5 rounded-full border border-[#FF9500]/30 flex-shrink-0"
+                  style={{ backgroundColor: customColorOverrides[c] || "#888" }}
+                />
+                {c}
+                <button type="button" onClick={() => toggleColor(c)} className="text-[#FF9500]/60 hover:text-[#FF9500]">
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        {/* Selected count */}
+        {selectedColors.length > 0 && (
+          <div className="text-xs text-zinc-500">
+            {isZh ? `已選：${selectedColors.join("、")}` : `Selected: ${selectedColors.join(", ")}`}
+          </div>
+        )}
+        {/* Navigation */}
+        <div className="flex gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleWizardBack}
+            className="px-4 py-2.5 rounded-xl border border-zinc-200 text-sm text-zinc-600 hover:bg-zinc-100 transition-colors"
+          >
+            {isZh ? "← 返回" : "← Back"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setWizardStep(colorIsFirstDimension ? "hasSize" : "sizes")}
+            disabled={selectedColors.length === 0}
+            className="flex-1 py-2.5 rounded-xl bg-[#FF9500] text-white text-sm font-medium hover:bg-[#E68600] disabled:opacity-40 transition-colors"
+          >
+            {isZh ? "下一步 →" : "Next →"}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderStepHasSize = () => (
+    <div className="space-y-4 bg-zinc-50 rounded-xl p-4">
+      <div className="text-sm font-medium text-zinc-700 text-center">
+        {isZh ? "有冇唔同尺碼/規格？" : "Does it have different sizes/specs?"}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => { setHasSize(true); setWizardStep("sizeType"); }}
+          className="py-4 rounded-xl border border-zinc-200 bg-white hover:border-[#FF9500] hover:bg-[#FF9500]/5 transition-colors text-sm font-medium text-zinc-800"
+        >
+          {isZh ? "✅ 有" : "Yes"}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setHasSize(false); goToStep("stock"); }}
+          className="py-4 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 transition-colors text-sm font-medium text-zinc-800"
+        >
+          {isZh ? "冇（跳過）" : "No (skip)"}
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={handleWizardBack}
+        className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 py-1"
+      >
+        {isZh ? "← 返回" : "← Back"}
+      </button>
+    </div>
+  );
+
+  const renderStepSizeType = () => {
+    const sizePresets = presetSearch
+      ? filteredPresets.filter((p) => p.id !== COLOR_PRESET_ID)
+      : VARIANT_PRESETS.filter((p) => p.id !== COLOR_PRESET_ID);
+    return renderPresetGrid(sizePresets, handleSizeTypeSelect, handleCustomSizeTypeSelect);
+  };
+
+  const renderStepSizes = () => {
+    const isSecondDim = colorIsFirstDimension;
+    const preset = isSecondDim ? sizePreset : primaryPreset;
+    const presetValues = preset?.values || [];
+    const currentSelected = isSecondDim ? values2 : values1.map((v) => v.name);
+    const onToggle = isSecondDim ? handleToggleValue2 : handleToggleValue1;
+    const customVal = isSecondDim ? newCustomValue2 : newCustomValue;
+    const setCustomVal = isSecondDim ? setNewCustomValue2 : setNewCustomValue;
+    const addCustom = isSecondDim ? handleAddCustomValue2 : handleAddCustomValue1;
+    const optName = isSecondDim ? optionName2 : optionName1;
+    const setOptName = isSecondDim ? setOptionName2 : setOptionName1;
+
+    return (
+      <div className="space-y-4 bg-zinc-50 rounded-xl p-4">
+        <div className="text-sm font-medium text-zinc-700">
+          {preset?.icon && <span className="mr-1">{preset.icon}</span>}
+          {isZh ? `揀${preset?.label || "選項"}` : `Select ${preset?.label || "options"}`}
+        </div>
+        {/* Option name input */}
+        <input
+          type="text"
+          value={optName}
+          onChange={(e) => setOptName(e.target.value)}
+          placeholder={isZh ? "選項名稱" : "Option name"}
+          className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400 text-sm"
+        />
+        {/* Preset chips */}
+        {presetValues.length > 0 && renderValueChips(presetValues, currentSelected, onToggle, preset?.colorHex)}
+        {/* Custom value input */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={customVal}
+            onChange={(e) => setCustomVal(e.target.value)}
+            placeholder={isZh ? "自訂值" : "Custom value"}
+            className="flex-1 px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400 text-sm"
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustom())}
+          />
+          <button
+            type="button"
+            onClick={addCustom}
+            className="px-3 py-2 rounded-xl bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors text-sm font-medium flex-shrink-0"
+          >
+            <Plus size={14} />
+          </button>
+        </div>
+        {/* Non-preset selected values as removable tags */}
+        {currentSelected.filter((v) => !presetValues.includes(v)).length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {currentSelected.filter((v) => !presetValues.includes(v)).map((v) => (
+              <span
+                key={v}
+                className="inline-flex items-center gap-1 bg-[#FF9500]/10 border border-[#FF9500] text-[#FF9500] text-sm px-3 py-1.5 rounded-full font-medium"
+              >
+                {v}
+                <button type="button" onClick={() => onToggle(v)} className="text-[#FF9500]/60 hover:text-[#FF9500]">
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        {/* Navigation */}
+        <div className="flex gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleWizardBack}
+            className="px-4 py-2.5 rounded-xl border border-zinc-200 text-sm text-zinc-600 hover:bg-zinc-100 transition-colors"
+          >
+            {isZh ? "← 返回" : "← Back"}
+          </button>
+          <button
+            type="button"
+            onClick={() => goToStep("stock")}
+            disabled={currentSelected.length === 0}
+            className="flex-1 py-2.5 rounded-xl bg-[#FF9500] text-white text-sm font-medium hover:bg-[#E68600] disabled:opacity-40 transition-colors"
+          >
+            {isZh ? "下一步 →" : "Next →"}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderStepStock = () => {
+    const isDual = variantMode === "dual";
+    return (
+      <div className="space-y-4">
+        <div className="text-sm font-medium text-zinc-700">
+          {isZh ? "設定庫存" : "Set stock"}
+        </div>
+        {/* Bulk set all */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-zinc-500">{isZh ? "全部設為" : "Set all to"}</span>
+          <input
+            type="number"
+            min="0"
+            value={bulkQty}
+            onChange={(e) => setBulkQty(e.target.value)}
+            placeholder="0"
+            className="w-20 px-2 py-1.5 rounded-lg border border-zinc-200 text-center text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#FF9500]/30 focus:border-[#FF9500]"
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleBulkSetAll())}
+          />
+          <button
+            type="button"
+            onClick={handleBulkSetAll}
+            className="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors text-xs font-medium"
+          >
+            {isZh ? "套用" : "Apply"}
+          </button>
+        </div>
+        {/* Stock list or groups */}
+        {isDual ? renderDualStockGroups() : renderSingleStockList()}
+        {/* Navigation */}
+        <div className="flex gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleWizardBack}
+            className="px-4 py-2.5 rounded-xl border border-zinc-200 text-sm text-zinc-600 hover:bg-zinc-100 transition-colors"
+          >
+            {isZh ? "← 返回" : "← Back"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setWizardStep("done")}
+            className="flex-1 py-2.5 rounded-xl bg-[#FF9500] text-white text-sm font-medium hover:bg-[#E68600] transition-colors"
+          >
+            {isZh ? "完成 ✓" : "Done ✓"}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderStepDone = () => {
+    const isDual = variantMode === "dual";
+    const totalQty = isDual
+      ? Object.values(grid).reduce((sum, q) => sum + q, 0)
+      : values1.reduce((sum, v) => sum + v.qty, 0);
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="text-green-500">✅</span>
+          <span className="text-sm font-medium text-zinc-700">
+            {isZh ? "選項設定" : "Variant settings"}
+          </span>
+        </div>
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-3">
+          <div className="text-sm font-medium text-zinc-700">
+            {isDual ? `${optionName1} × ${optionName2}` : optionName1}
+          </div>
+          {isDual ? (
+            <div className="space-y-2">
+              {values1.map((v1) => {
+                const hex = getColorHex(v1.name);
+                const items = values2.map((v2) => ({
+                  name: v2,
+                  qty: grid[`${v1.name}|${v2}`] || 0,
+                }));
+                return (
+                  <div key={v1.name} className="text-xs text-zinc-600">
+                    <span className="inline-flex items-center gap-1">
+                      {hex && <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: hex }} />}
+                      <span className="font-medium">{v1.name}：</span>
+                    </span>
+                    {items.map((i) => `${i.name}(${i.qty})`).join(" ")}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-xs text-zinc-600">
+              {values1.map((v) => `${v.name}(${v.qty})`).join("  ")}
+            </div>
+          )}
+          <div className="text-xs text-zinc-400 pt-1 border-t border-zinc-200">
+            {isZh ? `總庫存 ${totalQty} 件` : `Total stock: ${totalQty}`}
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleResetVariants}
+            className="flex-1 py-2.5 rounded-xl border border-zinc-200 text-sm text-zinc-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+          >
+            {isZh ? "重新設定" : "Reset"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setWizardStep("stock")}
+            className="flex-1 py-2.5 rounded-xl border border-[#FF9500] text-sm text-[#FF9500] hover:bg-[#FF9500]/10 transition-colors font-medium"
+          >
+            {isZh ? "改庫存" : "Edit stock"}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const renderWizardSection = () => (
+    <div>
+      {wizardStep !== "none" && wizardStep !== "done" && renderStepIndicator()}
+      {wizardStep === "none" && renderStepNone()}
+      {wizardStep === "type" && renderStepType()}
+      {wizardStep === "hasColor" && renderStepHasColor()}
+      {wizardStep === "colors" && renderStepColors()}
+      {wizardStep === "hasSize" && renderStepHasSize()}
+      {wizardStep === "sizeType" && renderStepSizeType()}
+      {wizardStep === "sizes" && renderStepSizes()}
+      {wizardStep === "stock" && renderStepStock()}
+      {wizardStep === "done" && renderStepDone()}
+    </div>
+  );
+
   if (!isOpen) return null;
 
   return (
@@ -1030,258 +1654,8 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             />
           </div>
 
-          {/* --- Variant Options Section --- */}
-          <div>
-            {variantMode === "none" && !showPresetPicker ? (
-              <div className="space-y-3">
-                {/* Variant memory suggestion */}
-                {isNew && variantMemory && !memoryDismissed && (
-                  <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm text-amber-800">
-                        {isZh ? "上次設定：" : "Last config: "}
-                        {variantMemory.label} ({variantMemory.selectedValues.slice(0, 3).join("/")}{variantMemory.selectedValues.length > 3 ? "..." : ""})
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleApplyMemory}
-                      className="px-3 py-1 rounded-lg bg-[#FF9500] text-white text-xs font-medium hover:bg-[#E68600] transition-colors flex-shrink-0"
-                    >
-                      {isZh ? "套用" : "Apply"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setMemoryDismissed(true)}
-                      className="text-amber-400 hover:text-amber-600 flex-shrink-0"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                )}
-
-                {/* Add option button */}
-                <button
-                  type="button"
-                  onClick={() => setShowPresetPicker(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-zinc-300 text-zinc-600 hover:border-[#FF9500] hover:text-[#FF9500] transition-colors text-sm font-medium w-full justify-center"
-                >
-                  <Plus size={16} />
-                  {isZh ? "加選項" : "Add options"}
-                </button>
-              </div>
-            ) : variantMode === "none" && showPresetPicker ? (
-              /* Preset picker for first option */
-              renderPresetPicker(false)
-            ) : (
-              /* Active variant editing */
-              <div className="space-y-4">
-                {/* Option 1 header */}
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-zinc-700">
-                    {activePreset1 && <span className="mr-1">{activePreset1.icon}</span>}
-                    {isZh ? "選項名稱" : "Option name"}
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleRemoveOptions}
-                    className="text-xs text-zinc-400 hover:text-red-500 transition-colors"
-                  >
-                    {isZh ? "移除選項" : "Remove options"}
-                  </button>
-                </div>
-
-                {/* Option 1 name input */}
-                <input
-                  type="text"
-                  value={optionName1}
-                  onChange={(e) => setOptionName1(e.target.value)}
-                  placeholder={isZh ? "尺碼 / 口味 / 容量" : "Size / Flavor / Volume"}
-                  className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400 text-sm"
-                />
-
-                {/* Checkbox chips for preset values */}
-                {activePreset1 && activePreset1.values.length > 0 && (
-                  renderValueChips(
-                    activePreset1.values,
-                    values1.map((v) => v.name),
-                    handleToggleValue1,
-                    activePreset1.colorHex
-                  )
-                )}
-
-                {/* Custom value input */}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newCustomValue}
-                    onChange={(e) => setNewCustomValue(e.target.value)}
-                    placeholder={isZh ? "自訂值" : "Custom value"}
-                    className="flex-1 px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400 text-sm"
-                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCustomValue1())}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCustomValue1}
-                    className="px-3 py-2 rounded-xl bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors text-sm font-medium flex-shrink-0"
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
-
-                {/* Show non-preset selected values as removable tags */}
-                {values1.filter((v) => !activePreset1?.values.includes(v.name)).length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {values1
-                      .filter((v) => !activePreset1?.values.includes(v.name))
-                      .map((v) => (
-                        <span
-                          key={v.name}
-                          className="inline-flex items-center gap-1 bg-[#FF9500]/10 border border-[#FF9500] text-[#FF9500] text-sm px-3 py-1.5 rounded-full font-medium"
-                        >
-                          {v.name}
-                          <button
-                            type="button"
-                            onClick={() => handleToggleValue1(v.name)}
-                            className="text-[#FF9500]/60 hover:text-[#FF9500]"
-                          >
-                            <X size={12} />
-                          </button>
-                        </span>
-                      ))}
-                  </div>
-                )}
-
-                {/* Stock section (single mode) */}
-                {variantMode === "single" && renderSingleStockList()}
-
-                {/* Bulk set all */}
-                {values1.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-zinc-500">{isZh ? "全部設為" : "Set all to"}</span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={bulkQty}
-                      onChange={(e) => setBulkQty(e.target.value)}
-                      placeholder="0"
-                      className="w-20 px-2 py-1.5 rounded-lg border border-zinc-200 text-center text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#FF9500]/30 focus:border-[#FF9500]"
-                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleBulkSetAll())}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleBulkSetAll}
-                      className="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors text-xs font-medium"
-                    >
-                      {isZh ? "套用" : "Apply"}
-                    </button>
-                  </div>
-                )}
-
-                {/* Second option section */}
-                {variantMode === "single" && values1.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleEnableDualOption}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-zinc-300 text-zinc-600 hover:border-[#FF9500] hover:text-[#FF9500] transition-colors text-sm font-medium w-full justify-center"
-                  >
-                    <Plus size={16} />
-                    {isZh ? "加第二個選項" : "Add second option"}
-                  </button>
-                )}
-
-                {/* Dual mode - second option */}
-                {variantMode === "dual" && (
-                  <div className="space-y-4 pt-2 border-t border-zinc-200">
-                    {showPresetPicker2 ? (
-                      renderPresetPicker(true)
-                    ) : (
-                      <>
-                        {/* Option 2 header */}
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium text-zinc-700">
-                            {activePreset2 && <span className="mr-1">{activePreset2.icon}</span>}
-                            {isZh ? "第二個選項名稱" : "Second option name"}
-                          </label>
-                          <button
-                            type="button"
-                            onClick={handleRemoveOption2}
-                            className="text-xs text-zinc-400 hover:text-red-500 transition-colors"
-                          >
-                            {isZh ? "移除" : "Remove"}
-                          </button>
-                        </div>
-
-                        {/* Option 2 name input */}
-                        <input
-                          type="text"
-                          value={optionName2}
-                          onChange={(e) => setOptionName2(e.target.value)}
-                          placeholder={isZh ? "例如：顏色" : "e.g. Color"}
-                          className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400 text-sm"
-                        />
-
-                        {/* Checkbox chips for preset 2 values */}
-                        {activePreset2 && activePreset2.values.length > 0 && (
-                          renderValueChips(
-                            activePreset2.values,
-                            values2,
-                            handleToggleValue2,
-                            activePreset2.colorHex
-                          )
-                        )}
-
-                        {/* Custom value input for option 2 */}
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={newCustomValue2}
-                            onChange={(e) => setNewCustomValue2(e.target.value)}
-                            placeholder={isZh ? "自訂值" : "Custom value"}
-                            className="flex-1 px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400 text-sm"
-                            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCustomValue2())}
-                          />
-                          <button
-                            type="button"
-                            onClick={handleAddCustomValue2}
-                            className="px-3 py-2 rounded-xl bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors text-sm font-medium flex-shrink-0"
-                          >
-                            <Plus size={14} />
-                          </button>
-                        </div>
-
-                        {/* Show non-preset selected values2 as removable tags */}
-                        {values2.filter((v) => !activePreset2?.values.includes(v)).length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {values2
-                              .filter((v) => !activePreset2?.values.includes(v))
-                              .map((v) => (
-                                <span
-                                  key={v}
-                                  className="inline-flex items-center gap-1 bg-[#FF9500]/10 border border-[#FF9500] text-[#FF9500] text-sm px-3 py-1.5 rounded-full font-medium"
-                                >
-                                  {v}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleToggleValue2(v)}
-                                    className="text-[#FF9500]/60 hover:text-[#FF9500]"
-                                  >
-                                    <X size={12} />
-                                  </button>
-                                </span>
-                              ))}
-                          </div>
-                        )}
-
-                        {/* Dual variant stock groups */}
-                        {renderDualStockGroups()}
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          {/* --- Variant Options Section (Wizard) --- */}
+          {renderWizardSection()}
 
           {/* Video URL */}
           <div>
