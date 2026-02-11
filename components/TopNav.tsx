@@ -20,7 +20,7 @@ function swapLocale(pathname: string, nextLocale: Locale) {
   return "/" + parts.join("/");
 }
 
-export default function TopNav({ locale, t, storeName: initialStoreName = "HK•Market" }: { locale: Locale; t: Translations; storeName?: string }) {
+export default function TopNav({ locale, t, storeName: initialStoreName = "May's Shop" }: { locale: Locale; t: Translations; storeName?: string }) {
   const pathname = usePathname() || `/${locale}`;
   const router = useRouter();
   const [cartCount, setCartCount] = useState(0);

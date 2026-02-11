@@ -13,7 +13,7 @@ export type TenantBranding = {
 };
 
 const DEFAULT_BRANDING: TenantBranding = {
-  name: "HK•Market",
+  name: "May's Shop",
   slug: "maysshop",
   themeColor: "#FF9500",
   logoUrl: null,
