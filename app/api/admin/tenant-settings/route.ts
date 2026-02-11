@@ -42,10 +42,25 @@ export const GET = withApi(
       select: { email: true },
     });
 
+    // Add fallback defaults for new checkout fields (for existing tenants with null values)
+    const DEFAULT_DELIVERY_OPTIONS = [
+      { id: "meetup", label: "面交", price: 0, enabled: true },
+      { id: "sf-collect", label: "順豐到付", price: 0, enabled: true },
+      { id: "sf-prepaid", label: "順豐寄付", price: 30, enabled: true },
+    ];
+
+    const DEFAULT_ORDER_CONFIRM_MESSAGE = {
+      thanks: "多謝你嘅訂單！",
+      whatsappTemplate: "你好！我落咗單 #{orderNumber}",
+    };
+
     return ok(req, {
       ...tenant,
       email: admin?.email || null,
       logo: tenant.logoUrl,
+      currency: tenant.currency || "HKD",
+      deliveryOptions: tenant.deliveryOptions || DEFAULT_DELIVERY_OPTIONS,
+      orderConfirmMessage: tenant.orderConfirmMessage || DEFAULT_ORDER_CONFIRM_MESSAGE,
     });
   }
 );
