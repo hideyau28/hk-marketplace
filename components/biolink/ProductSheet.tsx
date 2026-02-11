@@ -34,6 +34,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
   const [qty, setQty] = useState(1);
   const [showError, setShowError] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [showDescription, setShowDescription] = useState(false);
 
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -359,6 +360,32 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
               ))}
             </div>
           </div>
+
+          {/* 商品描述（可摺疊） */}
+          {product.description && (
+            <div>
+              <button
+                onClick={() => setShowDescription(!showDescription)}
+                className="w-full flex items-center justify-between text-sm font-semibold text-zinc-700 border-b border-zinc-100 pb-2"
+              >
+                <span>商品描述</span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${showDescription ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {showDescription && (
+                <div className="mt-3 text-sm text-zinc-600 whitespace-pre-wrap">
+                  {product.description}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 數量 stepper */}
           <div>
