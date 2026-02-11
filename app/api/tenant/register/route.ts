@@ -3,6 +3,7 @@ import { createSession } from "@/lib/admin/session";
 import { signToken } from "@/lib/auth/jwt";
 import { withApi, ok, ApiError } from "@/lib/api/route-helpers";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
 export const runtime = "nodejs";
@@ -19,6 +20,7 @@ const WHATSAPP_REGEX = /^[0-9]{8}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST = withApi(async (req: Request) => {
+  try {
   let body: { name?: string; slug?: string; whatsapp?: string; email?: string; password?: string; coverTemplate?: string; tagline?: string };
   try {
     body = await req.json();
@@ -176,5 +178,9 @@ export const POST = withApi(async (req: Request) => {
       throw new ApiError(409, "CONFLICT", "資料重複，請檢查 slug 或 email");
     }
     throw err;
+  }
+  } catch (error: any) {
+    console.error(error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 });
