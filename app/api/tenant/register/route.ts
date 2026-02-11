@@ -19,14 +19,14 @@ const WHATSAPP_REGEX = /^[0-9]{8}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST = withApi(async (req: Request) => {
-  let body: { name?: string; slug?: string; whatsapp?: string; email?: string; password?: string };
+  let body: { name?: string; slug?: string; whatsapp?: string; email?: string; password?: string; coverTemplate?: string; tagline?: string };
   try {
     body = await req.json();
   } catch {
     throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
   }
 
-  const { name, slug, whatsapp, email, password } = body;
+  const { name, slug, whatsapp, email, password, coverTemplate, tagline } = body;
 
   // --- Validation ---
   if (!name || typeof name !== "string" || name.trim().length < 2 || name.trim().length > 50) {
@@ -46,7 +46,7 @@ export const POST = withApi(async (req: Request) => {
     throw new ApiError(400, "BAD_REQUEST", "呢個名係保留字，唔可以用");
   }
 
-  if (!whatsapp || typeof whatsapp !== "string" || !WHATSAPP_REGEX.test(whatsapp.trim())) {
+  if (whatsapp && typeof whatsapp === "string" && whatsapp.trim() && !WHATSAPP_REGEX.test(whatsapp.trim())) {
     throw new ApiError(400, "BAD_REQUEST", "WhatsApp 號碼需要 8 位數字");
   }
 
@@ -59,8 +59,10 @@ export const POST = withApi(async (req: Request) => {
   }
 
   const cleanName = name.trim();
-  const cleanWhatsapp = whatsapp.trim();
+  const cleanWhatsapp = whatsapp?.trim() || "";
   const cleanEmail = email.trim().toLowerCase();
+  const cleanTagline = tagline?.trim() || "";
+  const cleanTemplate = coverTemplate?.trim() || "default";
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // --- Create Tenant + TenantAdmin atomically ---
@@ -70,7 +72,9 @@ export const POST = withApi(async (req: Request) => {
       data: {
         name: cleanName,
         slug: cleanSlug,
-        whatsapp: cleanWhatsapp,
+        whatsapp: cleanWhatsapp || undefined,
+        description: cleanTagline || undefined,
+        template: cleanTemplate,
         brandColor: "#FF9500",
         status: "active",
       },
@@ -108,7 +112,8 @@ export const POST = withApi(async (req: Request) => {
       data: {
         tenantId: tenant.id,
         storeName: cleanName,
-        whatsappNumber: cleanWhatsapp,
+        whatsappNumber: cleanWhatsapp || undefined,
+        tagline: cleanTagline || undefined,
         // SF智能櫃
         sfLockerFee: 35,
         sfLockerFreeAbove: 600,
