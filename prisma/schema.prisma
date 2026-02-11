@@ -344,6 +344,7 @@ model Tenant {
   productVariants      ProductVariant[]
   attributeDefinitions AttributeDefinition[]
   paymentConfigs       TenantPaymentConfig[]
+  pageViews            PageView[]
 }
 
 model TenantAdmin {
@@ -535,4 +536,16 @@ model TenantPaymentConfig {
 
   @@unique([tenantId, providerId])
   @@index([tenantId])
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  path      String   // "/en/oolong" or "product/xxx"
+  userAgent String?
+  referer   String?
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
 }
