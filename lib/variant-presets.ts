@@ -1,3 +1,5 @@
+export const COLOR_PRESET_ID = "color";
+
 export interface VariantPreset {
   id: string;
   icon: string;
