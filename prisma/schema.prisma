@@ -192,6 +192,7 @@ model Product {
   categoryId      String?
   categoryRel     Category?        @relation(fields: [categoryId], references: [id])
   sortOrder       Int              @default(0)
+  hidden          Boolean          @default(false)
   // Variants & attributes
   variants        ProductVariant[]
   attributes      Json?
@@ -300,6 +301,10 @@ model Tenant {
   coverPhoto           String?
   whatsapp             String?
   instagram            String?
+  facebook             String?
+  location             String?
+  tagline              String?
+  coverTemplate        String?   @default("default")
   brandColor           String?   @default("#FF9500")
   template             String    @default("default")
   mode                 String    @default("biolink")

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Pencil, Plus, Eye, Copy, Check } from "lucide-react";
+import { Camera, Pencil, Plus, Eye, Copy, Check, ChevronUp, ChevronDown, Trash2, EyeOff, Star, Edit } from "lucide-react";
 import ProductEditSheet from "./ProductEditSheet";
 
 type Product = {
@@ -15,6 +15,9 @@ type Product = {
   videoUrl?: string | null;
   sizes: Record<string, unknown> | null;
   sizeSystem: string | null;
+  hidden?: boolean;
+  featured?: boolean;
+  sortOrder?: number;
 };
 
 type Tenant = {
@@ -38,6 +41,8 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isNewProduct, setIsNewProduct] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
 
   const storeUrl = `wowlix.com/${tenant.slug}`;
   const brandColor = tenant.brandColor || "#FF9500";
@@ -79,7 +84,76 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
     router.refresh();
   };
 
-  const isEmpty = initialProducts.length === 0;
+  const handleMoveUp = async (index: number) => {
+    if (index === 0) return;
+
+    const newProducts = [...products];
+    [newProducts[index - 1], newProducts[index]] = [newProducts[index], newProducts[index - 1]];
+    setProducts(newProducts);
+
+    // Update sortOrder on server
+    await fetch("/api/admin/products/reorder", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ productIds: newProducts.map(p => p.id) }),
+    });
+  };
+
+  const handleMoveDown = async (index: number) => {
+    if (index === products.length - 1) return;
+
+    const newProducts = [...products];
+    [newProducts[index], newProducts[index + 1]] = [newProducts[index + 1], newProducts[index]];
+    setProducts(newProducts);
+
+    // Update sortOrder on server
+    await fetch("/api/admin/products/reorder", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ productIds: newProducts.map(p => p.id) }),
+    });
+  };
+
+  const handleToggleHidden = async (product: Product) => {
+    const newHidden = !product.hidden;
+
+    // Optimistic update
+    setProducts(products.map(p => p.id === product.id ? { ...p, hidden: newHidden } : p));
+
+    await fetch(`/api/admin/products/${product.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ hidden: newHidden }),
+    });
+  };
+
+  const handleToggleFeatured = async (product: Product) => {
+    const newFeatured = !product.featured;
+
+    // Optimistic update
+    setProducts(products.map(p => p.id === product.id ? { ...p, featured: newFeatured } : p));
+
+    await fetch(`/api/admin/products/${product.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ featured: newFeatured }),
+    });
+  };
+
+  const handleDelete = async (product: Product) => {
+    if (!confirm(`確定要刪除「${product.title}」？\n此操作無法復原。`)) {
+      return;
+    }
+
+    // Optimistic update
+    setProducts(products.filter(p => p.id !== product.id));
+
+    await fetch(`/api/admin/products/${product.id}`, {
+      method: "DELETE",
+    });
+  };
+
+  const isEmpty = products.length === 0;
 
   return (
     <div className="px-4 pb-4">
@@ -109,13 +183,34 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
           </button>
 
           {!isEmpty && (
-            <div className="mt-3">
+            <div className="mt-4 flex items-center justify-center gap-3">
               <button
                 onClick={handlePreview}
                 className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
               >
                 <Eye size={14} />
                 {locale === "zh-HK" ? "預覽" : "Preview"}
+              </button>
+
+              <button
+                onClick={() => setIsEditMode(!isEditMode)}
+                className={`inline-flex items-center gap-1.5 ${
+                  isEditMode
+                    ? "bg-white text-zinc-900 hover:bg-white/90"
+                    : "bg-white/20 hover:bg-white/30 text-white"
+                } text-sm font-medium px-4 py-2 rounded-full transition-colors`}
+              >
+                {isEditMode ? (
+                  <>
+                    <Check size={14} />
+                    {locale === "zh-HK" ? "完成" : "Done"}
+                  </>
+                ) : (
+                  <>
+                    <Edit size={14} />
+                    {locale === "zh-HK" ? "編輯" : "Edit"}
+                  </>
+                )}
               </button>
             </div>
           )}
@@ -143,9 +238,13 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
       {/* Product grid */}
       {!isEmpty && (
         <div className="grid grid-cols-3 gap-3">
-          {initialProducts.map((product) => (
+          {products.map((product, index) => (
             <div key={product.id} className="relative group">
-              <div className="aspect-square rounded-xl overflow-hidden bg-zinc-100 border border-zinc-200">
+              <div
+                className={`aspect-square rounded-xl overflow-hidden bg-zinc-100 border border-zinc-200 ${
+                  product.hidden ? "opacity-50" : ""
+                }`}
+              >
                 {product.imageUrl || product.images?.[0] ? (
                   <img
                     src={product.imageUrl || product.images[0]}
@@ -157,7 +256,23 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
                     <Camera size={24} />
                   </div>
                 )}
+
+                {/* Hidden badge */}
+                {product.hidden && !isEditMode && (
+                  <div className="absolute top-1.5 left-1.5 bg-zinc-900/80 text-white text-xs px-2 py-0.5 rounded-full">
+                    已隱藏
+                  </div>
+                )}
+
+                {/* Featured badge */}
+                {product.featured && !isEditMode && (
+                  <div className="absolute top-1.5 right-1.5 bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <Star size={10} fill="white" />
+                    精選
+                  </div>
+                )}
               </div>
+
               <div className="mt-1.5">
                 <p className="text-xs text-zinc-600 truncate">{product.title}</p>
                 <div className="flex items-center gap-1">
@@ -167,26 +282,102 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
                   )}
                 </div>
               </div>
-              {/* Edit button */}
-              <button
-                onClick={() => handleEditProduct(product)}
-                className="absolute top-1.5 right-1.5 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
-              >
-                <Pencil size={13} className="text-zinc-600" />
-              </button>
+
+              {/* Edit mode actions */}
+              {isEditMode && (
+                <div className="absolute inset-0 bg-white/95 rounded-xl flex flex-col items-center justify-center gap-2 p-2">
+                  {/* Reorder buttons */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleMoveUp(index)}
+                      disabled={index === 0}
+                      className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center hover:bg-zinc-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <ChevronUp size={16} className="text-zinc-700" />
+                    </button>
+                    <button
+                      onClick={() => handleMoveDown(index)}
+                      disabled={index === products.length - 1}
+                      className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center hover:bg-zinc-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      <ChevronDown size={16} className="text-zinc-700" />
+                    </button>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditProduct(product)}
+                      className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
+                      title="編輯"
+                    >
+                      <Pencil size={14} className="text-blue-700" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(product)}
+                      className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors"
+                      title="刪除"
+                    >
+                      <Trash2 size={14} className="text-red-700" />
+                    </button>
+                  </div>
+
+                  {/* Toggle buttons */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleToggleHidden(product)}
+                      className={`w-8 h-8 ${
+                        product.hidden ? "bg-zinc-200" : "bg-zinc-100"
+                      } rounded-full flex items-center justify-center hover:bg-zinc-200 transition-colors`}
+                      title={product.hidden ? "顯示" : "隱藏"}
+                    >
+                      {product.hidden ? (
+                        <Eye size={14} className="text-zinc-700" />
+                      ) : (
+                        <EyeOff size={14} className="text-zinc-700" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleToggleFeatured(product)}
+                      className={`w-8 h-8 ${
+                        product.featured ? "bg-amber-200" : "bg-zinc-100"
+                      } rounded-full flex items-center justify-center hover:bg-amber-200 transition-colors`}
+                      title={product.featured ? "取消精選" : "精選"}
+                    >
+                      <Star
+                        size={14}
+                        className={product.featured ? "text-amber-700" : "text-zinc-700"}
+                        fill={product.featured ? "currentColor" : "none"}
+                      />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Normal mode edit button (hover only) */}
+              {!isEditMode && (
+                <button
+                  onClick={() => handleEditProduct(product)}
+                  className="absolute top-1.5 right-1.5 w-7 h-7 bg-white/90 rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                >
+                  <Pencil size={13} className="text-zinc-600" />
+                </button>
+              )}
             </div>
           ))}
 
           {/* Add new product card */}
-          <button
-            onClick={handleNewProduct}
-            className="aspect-square rounded-xl border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] hover:bg-orange-50/50 transition-colors group"
-          >
-            <Plus size={24} className="text-zinc-400 group-hover:text-[#FF9500] transition-colors" />
-            <span className="text-xs text-zinc-400 group-hover:text-[#FF9500] mt-1 transition-colors">
-              {locale === "zh-HK" ? "新增" : "Add"}
-            </span>
-          </button>
+          {!isEditMode && (
+            <button
+              onClick={handleNewProduct}
+              className="aspect-square rounded-xl border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] hover:bg-orange-50/50 transition-colors group"
+            >
+              <Plus size={24} className="text-zinc-400 group-hover:text-[#FF9500] transition-colors" />
+              <span className="text-xs text-zinc-400 group-hover:text-[#FF9500] mt-1 transition-colors">
+                {locale === "zh-HK" ? "新增" : "Add"}
+              </span>
+            </button>
+          )}
         </div>
       )}
 

@@ -1,82 +1,32 @@
 "use client";
 
-import { getDict, type Locale } from "@/lib/i18n";
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Save, Loader2, CheckCircle2, AlertCircle, Store, Undo2, MessageSquare, Phone, Clock, MapPin, Truck } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Save, Loader2, CheckCircle2, AlertCircle, Store, Phone, Palette, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 
-// --- Utility for Tailwind merging ---
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// --- Types ---
-type StoreSettings = {
-  id: string;
-  storeName: string | null;
-  storeNameEn: string | null;
-  storeLogo: string | null;
+type TenantSettings = {
+  name: string;
+  slug: string;
   tagline: string | null;
-  returnsPolicy: string | null;
-  shippingPolicy: string | null;
-  welcomePopupEnabled: boolean;
-  welcomePopupTitle: string | null;
-  welcomePopupSubtitle: string | null;
-  welcomePopupPromoText: string | null;
-  welcomePopupButtonText: string | null;
-  whatsappNumber: string | null;
-  instagramUrl: string | null;
-  facebookUrl: string | null;
-  openingHours: string | null;
-  pickupHours: string | null;
-  pickupAddress: string | null;
-  pickupAddressZh: string | null;
-  pickupAddressEn: string | null;
-  shippingFee: number;
-  freeShippingThreshold: number;
-  homeDeliveryFee: number | null;
-  homeDeliveryFreeAbove: number | null;
-  homeDeliveryIslandExtra: number | null;
-  sfLockerFee: number | null;
-  sfLockerFreeAbove: number | null;
+  location: string | null;
+  whatsapp: string | null;
+  instagram: string | null;
+  facebook: string | null;
+  coverTemplate: string | null;
+  coverPhoto: string | null;
+  logo: string | null;
+  email: string | null;
 };
 
 type SaveState = "idle" | "saving" | "success" | "error";
 
-const DEFAULT_SETTINGS: StoreSettings = {
-  id: "default",
-  storeName: "",
-  storeNameEn: "",
-  storeLogo: "",
-  tagline: "",
-  returnsPolicy: "",
-  shippingPolicy: "",
-  welcomePopupEnabled: true,
-  welcomePopupTitle: "",
-  welcomePopupSubtitle: "",
-  welcomePopupPromoText: "",
-  welcomePopupButtonText: "",
-  whatsappNumber: "",
-  instagramUrl: "",
-  facebookUrl: "",
-  openingHours: "",
-  pickupHours: "",
-  pickupAddress: "",
-  pickupAddressZh: "",
-  pickupAddressEn: "",
-  shippingFee: 40,
-  freeShippingThreshold: 600,
-  homeDeliveryFee: 40,
-  homeDeliveryFreeAbove: 600,
-  homeDeliveryIslandExtra: 20,
-  sfLockerFee: 35,
-  sfLockerFreeAbove: 600,
-};
-
-// --- UI Components (outside main component) ---
 function Label({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <label className={cn("text-sm font-medium leading-none text-zinc-900", className)}>
@@ -89,31 +39,24 @@ function Description({ children }: { children: React.ReactNode }) {
   return <p className="text-[0.8rem] text-zinc-600 mt-1.5">{children}</p>;
 }
 
-// Simple controlled input - no memo needed, just stable DOM
 function SettingsInput({
   id,
   value,
   onChange,
   placeholder,
   type = "text",
-  min,
-  step,
 }: {
   id: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   type?: string;
-  min?: number;
-  step?: number;
 }) {
   return (
     <input
       id={id}
       name={id}
       type={type}
-      min={min}
-      step={step}
       value={value}
       onChange={onChange}
       placeholder={placeholder}
@@ -129,14 +72,12 @@ function SettingsTextarea({
   onChange,
   placeholder,
   rows = 3,
-  className,
 }: {
   id: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   placeholder?: string;
   rows?: number;
-  className?: string;
 }) {
   return (
     <textarea
@@ -147,36 +88,47 @@ function SettingsTextarea({
       placeholder={placeholder}
       rows={rows}
       autoComplete="off"
-      className={cn(
-        "flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
-        className
-      )}
+      className="flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
     />
   );
 }
 
-export default function AdminSettings({ params }: { params: { locale: string } }) {
-  // Separate state: loaded data vs form data
-  const [locale, setLocale] = useState<Locale>("zh-HK");
-  const [formData, setFormData] = useState<StoreSettings>(DEFAULT_SETTINGS);
+const COVER_TEMPLATES = [
+  { id: "warm", name: "暖橙", color: "#FF9500" },
+  { id: "blue", name: "藍白", color: "#0A84FF" },
+  { id: "pink", name: "粉彩", color: "#FF2D55" },
+  { id: "green", name: "清新", color: "#34C759" },
+  { id: "purple", name: "紫羅蘭", color: "#AF52DE" },
+];
+
+export default function TenantSettings({ params }: { params: { locale: string } }) {
+  const [formData, setFormData] = useState<TenantSettings>({
+    name: "",
+    slug: "",
+    tagline: null,
+    location: null,
+    whatsapp: null,
+    instagram: null,
+    facebook: null,
+    coverTemplate: "default",
+    coverPhoto: null,
+    logo: null,
+    email: null,
+  });
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [slugWarning, setSlugWarning] = useState(false);
+  const [originalSlug, setOriginalSlug] = useState("");
 
-  const t = useMemo(() => getDict(locale), [locale]);
+  const locale = params.locale;
 
-  // Initialize locale from params
-  useEffect(() => {
-    setLocale(params.locale as Locale);
-  }, [params.locale]);
-
-  // Load settings ONCE on mount - separate from form state updates
   useEffect(() => {
     let mounted = true;
 
     async function loadData() {
       try {
-        const res = await fetch("/api/store-settings");
+        const res = await fetch("/api/admin/tenant-settings");
         if (!res.ok) {
           if (res.status === 401) {
             setErrorMessage("Please log in to view settings");
@@ -187,6 +139,7 @@ export default function AdminSettings({ params }: { params: { locale: string } }
         const data = await res.json();
         if (mounted && data.ok && data.data) {
           setFormData(data.data);
+          setOriginalSlug(data.data.slug);
         }
       } catch {
         // Ignore errors
@@ -199,36 +152,30 @@ export default function AdminSettings({ params }: { params: { locale: string } }
 
     loadData();
     return () => { mounted = false; };
-  }, []); // Empty deps - load only once on mount
+  }, []);
 
-  // Generic handler for text fields
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "slug") {
+      setSlugWarning(value !== originalSlug && originalSlug !== "");
+    }
+  }, [originalSlug]);
+
+  const handleCoverTemplateChange = useCallback((templateId: string) => {
+    setFormData((prev) => ({ ...prev, coverTemplate: templateId }));
   }, []);
 
-  // Handler for numeric fields
-  const handleNumericChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: Number(value) || 0 }));
-  }, []);
-
-  // Handler for boolean toggle
-  const toggleWelcomePopup = useCallback(() => {
-    setFormData((prev) => ({ ...prev, welcomePopupEnabled: !prev.welcomePopupEnabled }));
-  }, []);
-
-  // Save handler - only this syncs to server
   const handleSave = useCallback(async () => {
     setSaveState("saving");
     setErrorMessage("");
 
     try {
-      const res = await fetch("/api/store-settings", {
+      const res = await fetch("/api/admin/tenant-settings", {
         method: "PUT",
         headers: {
           "content-type": "application/json",
-          "x-idempotency-key": crypto.randomUUID(),
         },
         body: JSON.stringify(formData),
       });
@@ -239,27 +186,24 @@ export default function AdminSettings({ params }: { params: { locale: string } }
         setSaveState("success");
         if (data.data) {
           setFormData(data.data);
+          setOriginalSlug(data.data.slug);
+          setSlugWarning(false);
         }
         setTimeout(() => setSaveState("idle"), 3000);
       } else {
         setSaveState("error");
-        const errorCode = data.error?.code || "UNKNOWN";
-        const errorMsg = data.error?.message || "Unknown error";
-        if (res.status === 401) {
-          setErrorMessage("Unauthorized: Please log in");
-        } else if (res.status === 403) {
-          setErrorMessage("Forbidden: Invalid credentials");
+        if (res.status === 409) {
+          setErrorMessage("網址已被使用，請選擇其他網址");
         } else {
-          setErrorMessage(`${errorCode}: ${errorMsg}`);
+          setErrorMessage(data.error?.message || "儲存失敗");
         }
       }
     } catch (err) {
       setSaveState("error");
-      setErrorMessage(`Network error: ${err instanceof Error ? err.message : String(err)}`);
+      setErrorMessage(`網絡錯誤: ${err instanceof Error ? err.message : String(err)}`);
     }
   }, [formData]);
 
-  // Show loading state
   if (!dataLoaded) {
     return (
       <div className="bg-zinc-50 min-h-screen flex items-center justify-center">
@@ -278,9 +222,9 @@ export default function AdminSettings({ params }: { params: { locale: string } }
         {/* Header */}
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-1.5">
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">{t.admin.settings.storeSettings}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">⚙️ 商店設定</h1>
             <p className="text-zinc-600 text-base max-w-lg">
-              {locale === "zh-HK" ? "管理商店設定" : "Manage store settings"}
+              管理你嘅商店基本資料、聯絡方式同外觀設定
             </p>
           </div>
 
@@ -291,7 +235,7 @@ export default function AdminSettings({ params }: { params: { locale: string } }
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-sm font-medium text-emerald-600"
                 >
-                  <CheckCircle2 className="h-4 w-4" /> Saved
+                  <CheckCircle2 className="h-4 w-4" /> 已儲存
                 </motion.div>
               )}
               {saveState === "error" && (
@@ -299,7 +243,7 @@ export default function AdminSettings({ params }: { params: { locale: string } }
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="flex items-center gap-2 rounded-full bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-sm font-medium text-red-600"
                 >
-                  <AlertCircle className="h-4 w-4" /> {errorMessage || "Failed"}
+                  <AlertCircle className="h-4 w-4" /> {errorMessage || "失敗"}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -313,496 +257,234 @@ export default function AdminSettings({ params }: { params: { locale: string } }
               )}
             >
               {saveState === "saving" ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> {t.admin.common.loading}</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> 儲存中</>
               ) : (
-                <><Save className="h-4 w-4" /> {t.admin.common.save}</>
+                <><Save className="h-4 w-4" /> 儲存</>
               )}
             </button>
           </div>
         </div>
 
         <div className="mt-8 space-y-6">
-          {/* General Info */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+          {/* Basic Info */}
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
                 <Store className="h-5 w-5 text-zinc-600" />
-                General Information
+                基本資料
               </h3>
               <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Basic details about your storefront branding.
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <Label>{t.admin.settings.storeName}</Label>
-                <SettingsInput
-                  id="storeName"
-                  value={formData.storeName || ""}
-                  onChange={handleChange}
-                  placeholder="e.g. Yau Store"
-                />
-                <Description>Visible in the navigation bar and browser title.</Description>
-              </div>
-
-              <div className="space-y-3">
-                <Label>{t.admin.settings.tagline}</Label>
-                <SettingsInput
-                  id="tagline"
-                  value={formData.tagline || ""}
-                  onChange={handleChange}
-                  placeholder="e.g. Premium Tech & Lifestyle"
-                />
-                <Description>Featured prominently on the homepage hero section.</Description>
-              </div>
-            </div>
-          </div>
-
-          {/* Policies */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-            <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Undo2 className="h-5 w-5 text-zinc-600" />
-                Store Policies
-              </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Define how you handle shipping and returns.
-              </p>
-            </div>
-
-            <div className="grid gap-8">
-              <div className="space-y-3">
-                <Label>{t.admin.settings.returnsPolicy}</Label>
-                <SettingsTextarea
-                  id="returnsPolicy"
-                  value={formData.returnsPolicy || ""}
-                  onChange={handleChange}
-                  rows={4}
-                  placeholder="e.g. Items can be returned within 30 days..."
-                  className="font-mono text-sm resize-y min-h-[120px]"
-                />
-                <Description>Displayed on product detail pages and during checkout.</Description>
-              </div>
-
-              <div className="space-y-3">
-                <Label>{t.admin.settings.shippingPolicy}</Label>
-                <SettingsTextarea
-                  id="shippingPolicy"
-                  value={formData.shippingPolicy || ""}
-                  onChange={handleChange}
-                  rows={4}
-                  placeholder="e.g. Standard shipping takes 3-5 business days..."
-                  className="font-mono text-sm resize-y min-h-[120px]"
-                />
-                <Description>Inform customers about delivery times and costs.</Description>
-              </div>
-            </div>
-          </div>
-
-          {/* Store Identity */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-            <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Store className="h-5 w-5 text-zinc-600" />
-                Store Identity
-              </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Branding details for English-facing store identity.
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <Label>Store Name (English)</Label>
-                <SettingsInput
-                  id="storeNameEn"
-                  value={formData.storeNameEn || ""}
-                  onChange={handleChange}
-                  placeholder="e.g. Yau Store"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label>Store Logo</Label>
-                <SettingsInput
-                  id="storeLogo"
-                  value={formData.storeLogo || ""}
-                  onChange={handleChange}
-                  placeholder="https://example.com/logo.png"
-                />
-                {formData.storeLogo ? (
-                  <img src={formData.storeLogo} alt="Store logo preview" className="h-16 mt-2 rounded" />
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          {/* Pickup Address */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-            <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-zinc-600" />
-                Pickup Address
-              </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Pickup address details in both Chinese and English.
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <Label>Pickup Address (Chinese)</Label>
-                <SettingsTextarea
-                  id="pickupAddressZh"
-                  value={formData.pickupAddressZh || ""}
-                  onChange={handleChange}
-                  rows={4}
-                  placeholder="例：九龍旺角彌敦道XXX號 XX大廈XX樓XX室"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label>Pickup Address (English)</Label>
-                <SettingsTextarea
-                  id="pickupAddressEn"
-                  value={formData.pickupAddressEn || ""}
-                  onChange={handleChange}
-                  rows={4}
-                  placeholder="e.g. Unit XX, XX/F, XX Building, XXX Nathan Road, Mong Kok, Kowloon"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Shipping Settings */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-            <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Truck className="h-5 w-5 text-zinc-600" />
-                Shipping Settings
-              </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Configure delivery fees and free shipping thresholds.
+                商店嘅基本資訊
               </p>
             </div>
 
             <div className="space-y-6">
-              <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-zinc-800">Home Delivery (送貨上門)</h4>
-                <div className="grid gap-6 md:grid-cols-3">
-                  <div className="space-y-3">
-                    <Label>Shipping Fee ($)</Label>
-                    <SettingsInput
-                      id="homeDeliveryFee"
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={String(formData.homeDeliveryFee ?? "")}
-                      onChange={handleNumericChange}
-                      placeholder="40"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>Free Shipping Above ($)</Label>
-                    <SettingsInput
-                      id="homeDeliveryFreeAbove"
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={String(formData.homeDeliveryFreeAbove ?? "")}
-                      onChange={handleNumericChange}
-                      placeholder="600"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>Outlying Islands Surcharge ($)</Label>
-                    <SettingsInput
-                      id="homeDeliveryIslandExtra"
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={String(formData.homeDeliveryIslandExtra ?? "")}
-                      onChange={handleNumericChange}
-                      placeholder="20"
-                    />
-                  </div>
-                </div>
+              <div className="space-y-3">
+                <Label>店舖名稱</Label>
+                <SettingsInput
+                  id="name"
+                  value={formData.name || ""}
+                  onChange={handleChange}
+                  placeholder="我嘅小店"
+                />
+                <Description>顯示喺商店頂部同瀏覽器標題</Description>
               </div>
 
-              <div className="border-t border-zinc-200 pt-6 space-y-4">
-                <h4 className="text-sm font-semibold text-zinc-800">SF Locker / Station (順豐智能櫃/站)</h4>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-3">
-                    <Label>Shipping Fee ($)</Label>
-                    <SettingsInput
-                      id="sfLockerFee"
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={String(formData.sfLockerFee ?? "")}
-                      onChange={handleNumericChange}
-                      placeholder="35"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>Free Above ($)</Label>
-                    <SettingsInput
-                      id="sfLockerFreeAbove"
-                      type="number"
-                      min={0}
-                      step={0.01}
-                      value={String(formData.sfLockerFreeAbove ?? "")}
-                      onChange={handleNumericChange}
-                      placeholder="600"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-sm text-zinc-600">
-                Self-pickup is always free — no settings needed.
-              </p>
-            </div>
-          </div>
-
-          {/* Welcome Popup */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-            <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-zinc-600" />
-                Welcome Popup
-              </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Configure the welcome popup for first-time visitors.
-              </p>
-            </div>
-
-            <div className="grid gap-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Welcome Popup Enabled</Label>
-                  <Description>Show welcome popup to first-time visitors.</Description>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={formData.welcomePopupEnabled}
-                  onClick={toggleWelcomePopup}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
-                    formData.welcomePopupEnabled ? "bg-olive-600" : "bg-zinc-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform",
-                      formData.welcomePopupEnabled ? "translate-x-5" : "translate-x-0"
-                    )}
+              <div className="space-y-3">
+                <Label>店舖網址</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-zinc-600">wowlix.com/</span>
+                  <SettingsInput
+                    id="slug"
+                    value={formData.slug || ""}
+                    onChange={handleChange}
+                    placeholder="myshopp"
                   />
-                </button>
+                </div>
+                {slugWarning && (
+                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" />
+                    <p className="text-sm text-amber-800">⚠️ 改網址會影響現有連結</p>
+                  </div>
+                )}
+                <Description>商店嘅唯一網址識別碼</Description>
               </div>
 
               <div className="space-y-3">
-                <Label>Welcome Popup Title</Label>
-                <SettingsInput
-                  id="welcomePopupTitle"
-                  value={formData.welcomePopupTitle || ""}
+                <Label>簡介</Label>
+                <SettingsTextarea
+                  id="tagline"
+                  value={formData.tagline || ""}
                   onChange={handleChange}
-                  placeholder="歡迎來到 HK•Market"
+                  placeholder="手工烏龍茶專門店"
+                  rows={2}
                 />
-                <Description>Main heading of the welcome popup.</Description>
+                <Description>簡單介紹你嘅商店</Description>
               </div>
 
               <div className="space-y-3">
-                <Label>Welcome Popup Subtitle</Label>
+                <Label>地點</Label>
                 <SettingsInput
-                  id="welcomePopupSubtitle"
-                  value={formData.welcomePopupSubtitle || ""}
+                  id="location"
+                  value={formData.location || ""}
                   onChange={handleChange}
-                  placeholder="探索最新波鞋及運動裝備，正品保證！"
+                  placeholder="觀塘"
                 />
-                <Description>Subheading displayed below the title.</Description>
-              </div>
-
-              <div className="space-y-3">
-                <Label>Welcome Popup Promo Text</Label>
-                <SettingsInput
-                  id="welcomePopupPromoText"
-                  value={formData.welcomePopupPromoText || ""}
-                  onChange={handleChange}
-                  placeholder="🎉 訂單滿 $600 免運費！"
-                />
-                <Description>Promotional text shown in the highlighted box.</Description>
-              </div>
-
-              <div className="space-y-3">
-                <Label>Welcome Popup Button Text</Label>
-                <SettingsInput
-                  id="welcomePopupButtonText"
-                  value={formData.welcomePopupButtonText || ""}
-                  onChange={handleChange}
-                  placeholder="開始購物"
-                />
-                <Description>Text on the call-to-action button.</Description>
+                <Description>商店所在地區</Description>
               </div>
             </div>
           </div>
 
           {/* Contact Info */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
                 <Phone className="h-5 w-5 text-zinc-600" />
-                Contact Information
+                聯絡方式
               </h3>
               <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Social media and contact details for customers.
+                客人聯絡你嘅方式
               </p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="space-y-6">
               <div className="space-y-3">
-                <Label>WhatsApp Number</Label>
+                <Label>WhatsApp</Label>
                 <SettingsInput
-                  id="whatsappNumber"
-                  value={formData.whatsappNumber || ""}
+                  id="whatsapp"
+                  value={formData.whatsapp || ""}
                   onChange={handleChange}
-                  placeholder="+852 1234 5678"
+                  placeholder="+852 9XXX XXXX"
                 />
-                <Description>Include country code (+852).</Description>
               </div>
 
               <div className="space-y-3">
-                <Label>Instagram URL</Label>
+                <Label>Instagram</Label>
                 <SettingsInput
-                  id="instagramUrl"
-                  value={formData.instagramUrl || ""}
+                  id="instagram"
+                  value={formData.instagram || ""}
                   onChange={handleChange}
-                  placeholder="https://instagram.com/yourstore"
+                  placeholder="@myshopp"
                 />
-                <Description>Full Instagram profile URL.</Description>
               </div>
 
               <div className="space-y-3">
-                <Label>Facebook URL</Label>
+                <Label>Facebook</Label>
                 <SettingsInput
-                  id="facebookUrl"
-                  value={formData.facebookUrl || ""}
+                  id="facebook"
+                  value={formData.facebook || ""}
                   onChange={handleChange}
-                  placeholder="https://facebook.com/yourstore"
+                  placeholder="fb.com/myshopp"
                 />
-                <Description>Full Facebook page URL.</Description>
               </div>
             </div>
           </div>
 
-          {/* Business Hours */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+          {/* Appearance */}
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-zinc-600" />
-                Business Hours
+                <Palette className="h-5 w-5 text-zinc-600" />
+                外觀
               </h3>
               <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Store opening hours and pickup availability.
+                商店嘅視覺設定
               </p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-6">
               <div className="space-y-3">
-                <Label>Opening Hours</Label>
-                <SettingsTextarea
-                  id="openingHours"
-                  value={formData.openingHours || ""}
-                  onChange={handleChange}
-                  placeholder="星期一至五: 10:00 - 20:00&#10;星期六日: 12:00 - 18:00"
-                  rows={3}
-                />
-                <Description>General store operating hours.</Description>
+                <Label>封面色調</Label>
+                <div className="flex gap-3">
+                  {COVER_TEMPLATES.map((template) => (
+                    <button
+                      key={template.id}
+                      onClick={() => handleCoverTemplateChange(template.id)}
+                      className={cn(
+                        "w-16 h-16 rounded-lg border-2 transition-all flex flex-col items-center justify-center",
+                        formData.coverTemplate === template.id
+                          ? "border-zinc-900 ring-2 ring-zinc-900 ring-offset-2"
+                          : "border-zinc-300 hover:border-zinc-400"
+                      )}
+                      style={{ backgroundColor: template.color }}
+                    >
+                      <span className="text-xs text-white font-medium mt-auto mb-1">{template.name}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-3">
-                <Label>Pickup Hours</Label>
-                <SettingsTextarea
-                  id="pickupHours"
-                  value={formData.pickupHours || ""}
+                <Label>封面圖</Label>
+                <SettingsInput
+                  id="coverPhoto"
+                  value={formData.coverPhoto || ""}
                   onChange={handleChange}
-                  placeholder="星期一至五: 14:00 - 19:00&#10;星期六: 14:00 - 17:00"
-                  rows={3}
+                  placeholder="https://example.com/cover.jpg"
                 />
-                <Description>Hours when customers can pick up orders.</Description>
+                {formData.coverPhoto && (
+                  <img src={formData.coverPhoto} alt="Cover preview" className="h-32 w-full object-cover rounded-md mt-2" />
+                )}
+                <Description>商店頂部嘅封面相片</Description>
+              </div>
+
+              <div className="space-y-3">
+                <Label>頭像</Label>
+                <div className="flex items-center gap-4">
+                  {formData.logo && (
+                    <img src={formData.logo} alt="Logo" className="h-16 w-16 rounded-full object-cover border-2 border-zinc-200" />
+                  )}
+                  <div className="flex-1">
+                    <SettingsInput
+                      id="logo"
+                      value={formData.logo || ""}
+                      onChange={handleChange}
+                      placeholder="https://example.com/logo.jpg"
+                    />
+                  </div>
+                </div>
+                <Description>商店嘅 logo 或頭像</Description>
               </div>
             </div>
           </div>
 
-          {/* Legacy Pickup Address (kept for backward compatibility) */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
+          {/* Account */}
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-zinc-600" />
-                Pickup Address (Legacy)
+                <User className="h-5 w-5 text-zinc-600" />
+                帳戶
               </h3>
               <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Legacy pickup address field. Use the Pickup Address section above for bilingual support.
+                帳戶相關設定
               </p>
             </div>
 
-            <div className="space-y-3">
-              <Label>Pickup Address</Label>
-              <SettingsTextarea
-                id="pickupAddress"
-                value={formData.pickupAddress || ""}
-                onChange={handleChange}
-                placeholder="九龍旺角彌敦道XXX號&#10;XX大廈XX樓XX室"
-                rows={3}
-              />
-              <Description>Full address for order pickup location.</Description>
-            </div>
-          </div>
-
-          {/* Legacy Shipping Settings (kept for backward compatibility) */}
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 md:p-8 space-y-8">
-            <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Truck className="h-5 w-5 text-zinc-600" />
-                Shipping Settings (Legacy)
-              </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                Legacy shipping fields. Use the Shipping Settings section above for detailed delivery options.
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <Label>Shipping Fee ($)</Label>
-                <SettingsInput
-                  id="shippingFee"
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={String(formData.shippingFee)}
-                  onChange={handleNumericChange}
-                  placeholder="40"
-                />
-                <Description>Standard shipping fee in HKD. Default: $40</Description>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <Label>Email</Label>
+                  <p className="text-sm text-zinc-600 mt-1">{formData.email || "未設定"}</p>
+                </div>
               </div>
 
-              <div className="space-y-3">
-                <Label>Free Shipping Threshold ($)</Label>
-                <SettingsInput
-                  id="freeShippingThreshold"
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={String(formData.freeShippingThreshold)}
-                  onChange={handleNumericChange}
-                  placeholder="600"
-                />
-                <Description>Orders above this amount get free shipping. Default: $600</Description>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => alert("改密碼功能開發中")}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 bg-zinc-100 rounded-md hover:bg-zinc-200 transition-colors"
+                >
+                  🔑 改密碼
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm("確定要登出？")) {
+                      window.location.href = `/${locale}/admin/logout`;
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-md hover:bg-red-100 transition-colors"
+                >
+                  🚪 登出
+                </button>
               </div>
             </div>
           </div>
