@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useParams, useRouter } from "next/navigation";
-import { Home, ShoppingCart, Settings, LogOut } from "lucide-react";
+import { Home, ShoppingCart, Settings, LogOut, BarChart3 } from "lucide-react";
 import { useTenantBranding } from "@/lib/tenant-branding";
 import OrdersBadge from "@/components/admin/OrdersBadge";
 
@@ -17,6 +17,7 @@ export default function BioLinkAdminShell({ children }: { children: ReactNode })
   const tabs = [
     { href: `/${locale}/admin`, label: locale === "zh-HK" ? "鋪面" : "Store", icon: Home, exact: true },
     { href: `/${locale}/admin/orders`, label: locale === "zh-HK" ? "訂單" : "Orders", icon: ShoppingCart, exact: false, badge: true },
+    { href: `/${locale}/admin/analytics`, label: locale === "zh-HK" ? "數據" : "Analytics", icon: BarChart3, exact: false },
     { href: `/${locale}/admin/settings`, label: locale === "zh-HK" ? "設定" : "Settings", icon: Settings, exact: false },
   ];
 

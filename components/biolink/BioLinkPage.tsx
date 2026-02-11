@@ -60,6 +60,18 @@ export default function BioLinkPage({ tenant, products }: Props) {
 
   const { featured, grid } = splitProducts(products);
 
+  // Track page view
+  useEffect(() => {
+    fetch('/api/biolink/pageview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenantId: tenant.id,
+        path: window.location.pathname,
+      }),
+    }).catch(() => {}); // fire and forget
+  }, [tenant.id]);
+
   // Toast 自動消失
   useEffect(() => {
     if (!toast) return;
