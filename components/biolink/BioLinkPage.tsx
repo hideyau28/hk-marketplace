@@ -1,13 +1,31 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import type { ProductForBioLink, TenantForBioLink } from "@/lib/biolink-helpers";
+import type {
+  ProductForBioLink,
+  TenantForBioLink,
+  DeliveryOption,
+  OrderConfirmConfig,
+} from "@/lib/biolink-helpers";
 import {
   splitProducts,
   getVisibleVariants,
-  getDualVariantData,
   isDualVariant,
+  formatPrice,
+  DEFAULT_DELIVERY_OPTIONS,
+  DEFAULT_ORDER_CONFIRM,
 } from "@/lib/biolink-helpers";
+import {
+  loadCart,
+  addToCart as bioAddToCart,
+  updateQty as bioUpdateQty,
+  removeFromCart as bioRemoveFromCart,
+  clearCart as bioClearCart,
+  getCartCount,
+  getCartTotal,
+  type BioCart,
+  type BioCartItem,
+} from "@/lib/biolink-cart";
 import StickyHeader from "./StickyHeader";
 import CoverPhoto from "./CoverPhoto";
 import ProfileSection from "./ProfileSection";
@@ -15,35 +33,12 @@ import FeaturedSection from "./FeaturedSection";
 import ProductGrid from "./ProductGrid";
 import CartBar from "./CartBar";
 import WhatsAppFAB from "./WhatsAppFAB";
-import CheckoutPanel from "./CheckoutPanel";
+import CartSheet from "./CartSheet";
+import CheckoutPage from "./CheckoutPage";
+import type { OrderResult } from "./CheckoutPage";
 import OrderConfirmation from "./OrderConfirmation";
 import ProductSheet from "./ProductSheet";
 import ImageLightbox from "./ImageLightbox";
-
-type CartItem = {
-  id: string;
-  title: string;
-  price: number;
-  variant: string | null;
-  variantId?: string;
-  qty: number;
-  imageUrl: string | null;
-};
-
-type OrderResult = {
-  orderId: string;
-  orderNumber: string;
-  status: string;
-  total: number;
-  storeName: string;
-  whatsapp: string | null;
-  fpsInfo?: { accountName: string | null; id: string | null; qrCode: string | null };
-  paymeInfo?: { link: string | null; qrCode: string | null };
-  items?: Array<{ name: string; qty: number; unitPrice: number }>;
-  customer?: { name: string; phone: string };
-  delivery?: { method: string; label: string };
-  paymentMethod?: string;
-};
 
 type Props = {
   tenant: TenantForBioLink;
@@ -51,14 +46,24 @@ type Props = {
 };
 
 export default function BioLinkPage({ tenant, products }: Props) {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [cart, setCart] = useState<BioCart>({ tenantId: tenant.id, items: [] });
+  const [showCart, setShowCart] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
   const [sheetProduct, setSheetProduct] = useState<ProductForBioLink | null>(null);
   const [lightbox, setLightbox] = useState<{ images: string[]; startIndex: number; videoUrl?: string | null } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
+  const currency = tenant.currency || "HKD";
+  const deliveryOptions: DeliveryOption[] = tenant.deliveryOptions || DEFAULT_DELIVERY_OPTIONS;
+  const orderConfirmMessage: OrderConfirmConfig = tenant.orderConfirmMessage || DEFAULT_ORDER_CONFIRM;
+
   const { featured, grid } = splitProducts(products);
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    setCart(loadCart(tenant.id));
+  }, [tenant.id]);
 
   // Toast 自動消失
   useEffect(() => {
@@ -67,83 +72,63 @@ export default function BioLinkPage({ tenant, products }: Props) {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  const addToCart = useCallback(
+  const cartCount = getCartCount(cart);
+  const cartTotal = getCartTotal(cart);
+
+  // Auto-close cart sheet when empty
+  useEffect(() => {
+    if (showCart && cart.items.length === 0) {
+      setShowCart(false);
+    }
+  }, [cart.items.length, showCart]);
+
+  const handleAddToCart = useCallback(
     (product: ProductForBioLink, variant: string | null, qty: number = 1) => {
-      // Look up variantId from product's variants by name
       let variantId: string | undefined;
       if (variant && product.variants) {
         const match = product.variants.find((v) => v.name === variant);
         if (match) variantId = match.id;
       }
 
-      setCart((prev) => {
-        const exists = prev.find(
-          (i) => i.id === product.id && i.variant === variant
-        );
-        if (exists) {
-          return prev.map((i) =>
-            i.id === product.id && i.variant === variant
-              ? { ...i, qty: i.qty + qty }
-              : i
-          );
-        }
-        return [
-          ...prev,
-          {
-            id: product.id,
-            title: product.title,
-            price: product.price,
-            variant,
-            variantId,
-            qty,
-            imageUrl: product.imageUrl,
-          },
-        ];
-      });
-    },
-    [products]
-  );
+      const item: BioCartItem = {
+        productId: product.id,
+        name: product.title,
+        price: product.price,
+        image: product.imageUrl,
+        variant: variant || undefined,
+        variantLabel: variant ? variant.replace(/\|/g, " · ") : undefined,
+        variantId,
+        qty,
+      };
 
-  const updateCartQty = useCallback(
-    (productId: string, variant: string | null, delta: number) => {
-      setCart((prev) =>
-        prev
-          .map((item) => {
-            if (item.id === productId && item.variant === variant) {
-              const newQty = item.qty + delta;
-              return newQty > 0 ? { ...item, qty: newQty } : null;
-            }
-            return item;
-          })
-          .filter(Boolean) as CartItem[]
-      );
+      setCart((prev) => bioAddToCart(prev, item));
     },
     []
   );
 
-  const removeFromCart = useCallback(
-    (productId: string, variant: string | null) => {
-      setCart((prev) =>
-        prev.filter((i) => !(i.id === productId && i.variant === variant))
-      );
+  const handleUpdateQty = useCallback(
+    (productId: string, variant: string | undefined, delta: number) => {
+      setCart((prev) => bioUpdateQty(prev, productId, variant, delta));
     },
     []
   );
 
-  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const handleRemoveItem = useCallback(
+    (productId: string, variant: string | undefined) => {
+      setCart((prev) => bioRemoveFromCart(prev, productId, variant));
+    },
+    []
+  );
 
-  // 全部刪除後自動關閉 checkout panel
-  useEffect(() => {
-    if (checkoutOpen && cart.length === 0) {
-      setCheckoutOpen(false);
-    }
-  }, [cart.length, checkoutOpen]);
+  const handleClearCart = useCallback(() => {
+    setCart(bioClearCart(tenant.id));
+  }, [tenant.id]);
 
   const handleOrderComplete = (result: OrderResult) => {
-    setCheckoutOpen(false);
+    setShowCheckout(false);
+    setShowCart(false);
     setOrderResult(result);
-    setCart([]); // Clear cart after successful order
+    setCart(bioClearCart(tenant.id));
   };
 
   const handleConfirmationClose = () => {
@@ -160,23 +145,23 @@ export default function BioLinkPage({ tenant, products }: Props) {
       })();
 
       if (!hasVariants) {
-        addToCart(product, null);
+        handleAddToCart(product, null);
         setToast("已加入購物車");
       } else {
         setSheetProduct(product);
       }
     },
-    [addToCart]
+    [handleAddToCart]
   );
 
   // ProductSheet 加入購物車
   const handleSheetAdd = useCallback(
     (product: ProductForBioLink, variant: string | null, qty: number) => {
-      addToCart(product, variant, qty);
+      handleAddToCart(product, variant, qty);
       setSheetProduct(null);
       setToast("已加入購物車");
     },
-    [addToCart]
+    [handleAddToCart]
   );
 
   // Tap 圖片 → 開 lightbox
@@ -189,13 +174,13 @@ export default function BioLinkPage({ tenant, products }: Props) {
 
   return (
     <div className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden bg-[#0f0f0f]">
-      <StickyHeader tenant={tenant} cartCount={cartCount} />
+      <StickyHeader tenant={tenant} cartCount={cartCount} onCartClick={() => cartCount > 0 && setShowCart(true)} />
       <CoverPhoto url={tenant.coverPhoto} brandColor={tenant.brandColor} />
       <ProfileSection tenant={tenant} />
 
       {/* Dark zone — Featured loot cards */}
       {featured.length > 0 && (
-        <FeaturedSection products={featured} onAdd={handleCardAdd} onImageTap={handleImageTap} />
+        <FeaturedSection products={featured} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} />
       )}
 
       {/* Transition gradient: dark → light */}
@@ -208,37 +193,52 @@ export default function BioLinkPage({ tenant, products }: Props) {
       />
 
       {/* Light zone — Product grid */}
-      <ProductGrid products={grid} onAdd={handleCardAdd} onImageTap={handleImageTap} />
+      <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} />
 
       {/* Cart bar or WhatsApp FAB */}
       {cartCount > 0 ? (
         <CartBar
           count={cartCount}
           total={cartTotal}
+          currency={currency}
           whatsapp={tenant.whatsapp}
-          onCheckout={() => setCheckoutOpen(true)}
+          onCheckout={() => setShowCart(true)}
         />
       ) : (
         <WhatsAppFAB whatsapp={tenant.whatsapp} />
       )}
 
-      {/* Checkout panel (bottom sheet) */}
-      <CheckoutPanel
-        open={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
-        cart={cart}
-        total={cartTotal}
-        tenant={tenant}
-        onOrderComplete={handleOrderComplete}
-        onUpdateQty={updateCartQty}
-        onRemoveItem={removeFromCart}
+      {/* Cart sheet (bottom sheet) */}
+      <CartSheet
+        open={showCart}
+        onClose={() => setShowCart(false)}
+        items={cart.items}
+        currency={currency}
+        freeShippingThreshold={tenant.freeShippingThreshold}
+        onUpdateQty={handleUpdateQty}
+        onRemoveItem={handleRemoveItem}
+        onClearCart={handleClearCart}
+        onCheckout={() => {
+          setShowCart(false);
+          setShowCheckout(true);
+        }}
       />
 
-      {/* Order confirmation (FPS/PayMe payment info) */}
+      {/* Checkout page (full screen) */}
+      <CheckoutPage
+        open={showCheckout}
+        onClose={() => setShowCheckout(false)}
+        cart={cart.items}
+        tenant={tenant}
+        onOrderComplete={handleOrderComplete}
+      />
+
+      {/* Order confirmation */}
       {orderResult && (
         <OrderConfirmation
           order={orderResult}
           onClose={handleConfirmationClose}
+          orderConfirmMessage={orderConfirmMessage}
         />
       )}
 
@@ -246,6 +246,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
       {sheetProduct && (
         <ProductSheet
           product={sheetProduct}
+          currency={currency}
           onClose={() => setSheetProduct(null)}
           onAddToCart={handleSheetAdd}
         />

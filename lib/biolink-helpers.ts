@@ -53,6 +53,18 @@ export type ProductForBioLink = {
   variants?: VariantForBioLink[];
 };
 
+export type DeliveryOption = {
+  id: string;
+  label: string;
+  price: number;
+  enabled: boolean;
+};
+
+export type OrderConfirmConfig = {
+  thanks: string;
+  whatsappTemplate: string;
+};
+
 export type TenantForBioLink = {
   id: string;
   name: string;
@@ -74,6 +86,11 @@ export type TenantForBioLink = {
   paymeQrCodeUrl: string | null;
   stripeAccountId: string | null;
   stripeOnboarded: boolean;
+  // Checkout settings
+  currency: string;
+  deliveryOptions: DeliveryOption[];
+  freeShippingThreshold: number | null;
+  orderConfirmMessage: OrderConfirmConfig;
 };
 
 // ─── Image helpers ───
@@ -232,6 +249,30 @@ export function getAvatarFallback(tenant: { name: string }): string {
 
 // ─── Price formatting ───
 
+const CURRENCIES: Record<string, { symbol: string; code: string }> = {
+  HKD: { symbol: "HK$", code: "HKD" },
+  TWD: { symbol: "NT$", code: "TWD" },
+  SGD: { symbol: "S$", code: "SGD" },
+  MYR: { symbol: "RM", code: "MYR" },
+};
+
+export function formatPrice(amount: number, currency: string = "HKD"): string {
+  const c = CURRENCIES[currency] || CURRENCIES.HKD;
+  return `${c.symbol}${amount.toLocaleString()}`;
+}
+
+/** @deprecated Use formatPrice() instead */
 export function formatHKD(price: number): string {
   return `$${price.toLocaleString("en-HK")}`;
 }
+
+export const DEFAULT_DELIVERY_OPTIONS: DeliveryOption[] = [
+  { id: "meetup", label: "面交", price: 0, enabled: true },
+  { id: "sf-collect", label: "順豐到付", price: 0, enabled: true },
+  { id: "sf-prepaid", label: "順豐寄付", price: 30, enabled: true },
+];
+
+export const DEFAULT_ORDER_CONFIRM: OrderConfirmConfig = {
+  thanks: "多謝你嘅訂單！",
+  whatsappTemplate: "你好！我落咗單 #{orderNumber}",
+};

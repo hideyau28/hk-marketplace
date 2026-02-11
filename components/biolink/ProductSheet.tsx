@@ -8,18 +8,19 @@ import {
   getVisibleVariants,
   getDualVariantData,
   getVariantLabel,
-  formatHKD,
+  formatPrice,
 } from "@/lib/biolink-helpers";
 import { getColorHex } from "@/lib/color-map";
 import { getEmbedUrl } from "@/lib/video-embed";
 
 type Props = {
   product: ProductForBioLink;
+  currency?: string;
   onClose: () => void;
   onAddToCart: (product: ProductForBioLink, variant: string | null, qty: number) => void;
 };
 
-export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
+export default function ProductSheet({ product, currency = "HKD", onClose, onAddToCart }: Props) {
   const images = getAllImages(product);
   const dualVariant = getDualVariantData(product);
   const singleVariants = getVisibleVariants(product);
@@ -276,12 +277,12 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
             </h3>
             <div className="flex items-center gap-2">
               <span className="text-zinc-900 font-bold text-2xl">
-                {formatHKD(product.price)}
+                {formatPrice(product.price, currency)}
               </span>
               {isOnSale && (
                 <>
                   <span className="text-zinc-400 text-base line-through">
-                    {formatHKD(product.originalPrice!)}
+                    {formatPrice(product.originalPrice!, currency)}
                   </span>
                   <span className="px-2 py-0.5 text-xs font-bold rounded bg-red-500 text-white">
                     -{discountPct}%
@@ -403,7 +404,7 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
                 : "bg-zinc-200 text-zinc-400"
             }`}
           >
-            加入購物車{canAdd ? ` ${formatHKD(product.price * qty)}` : ""}
+            加入購物車{canAdd ? ` ${formatPrice(product.price * qty, currency)}` : ""}
           </button>
         </div>
       </div>

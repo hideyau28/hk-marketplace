@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { formatHKD } from "@/lib/biolink-helpers";
+import { formatPrice as formatHKD } from "@/lib/biolink-helpers";
 import type { TenantForBioLink } from "@/lib/biolink-helpers";
 
 type CartItem = {
