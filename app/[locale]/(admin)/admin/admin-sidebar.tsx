@@ -9,13 +9,20 @@ import { useTenantBranding } from "@/lib/tenant-branding";
 import OrdersBadge from "@/components/admin/OrdersBadge";
 
 export default function AdminSidebar() {
-  const { isOpen, setIsOpen } = useSidebar();
+  const sidebar = useSidebar();
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
   const locale = (params.locale as string) || "en";
   const t = getDict(locale as Locale);
   const tenantBranding = useTenantBranding();
+
+  // Guard: don't render if not in SidebarProvider context
+  if (!sidebar) {
+    return null;
+  }
+
+  const { isOpen, setIsOpen } = sidebar;
 
   // biolink 模式只顯示基本功能，fullstore 顯示全部
   const allNavItems = [
