@@ -155,7 +155,7 @@ function SettingsTextarea({
   );
 }
 
-export default function AdminSettings({ params }: { params: Promise<{ locale: string }> }) {
+export default function AdminSettings({ params }: { params: { locale: string } }) {
   // Separate state: loaded data vs form data
   const [locale, setLocale] = useState<Locale>("zh-HK");
   const [formData, setFormData] = useState<StoreSettings>(DEFAULT_SETTINGS);
@@ -165,16 +165,10 @@ export default function AdminSettings({ params }: { params: Promise<{ locale: st
 
   const t = useMemo(() => getDict(locale), [locale]);
 
-  // Initialize locale from params - only once
+  // Initialize locale from params
   useEffect(() => {
-    let mounted = true;
-    params.then((p) => {
-      if (mounted) {
-        setLocale(p.locale as Locale);
-      }
-    });
-    return () => { mounted = false; };
-  }, []); // Empty deps - run only once on mount
+    setLocale(params.locale as Locale);
+  }, [params.locale]);
 
   // Load settings ONCE on mount - separate from form state updates
   useEffect(() => {
