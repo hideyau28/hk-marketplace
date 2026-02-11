@@ -76,6 +76,7 @@ export type TenantForBioLink = {
   brandColor: string | null;
   logoUrl: string | null;
   coverPhoto: string | null;
+  coverTemplate: string | null;
   template: string;
   // Payment fields
   fpsEnabled: boolean;
