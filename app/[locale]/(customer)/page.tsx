@@ -10,9 +10,30 @@ import RecentlyViewed from "@/components/home/RecentlyViewed";
 import SaleZone from "@/components/home/SaleZone";
 import KidsSection from "@/components/home/KidsSection";
 import { Metadata } from "next";
+import LandingPage from "@/components/marketing/LandingPage";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
+
+  // Check if this is the landing page (no tenant)
+  try {
+    await getServerTenantId();
+  } catch (error) {
+    // Landing page metadata
+    return {
+      title: "WoWlix — Turn Followers into Customers",
+      description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
+      openGraph: {
+        title: "WoWlix — Turn Followers into Customers",
+        description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
+        url: "https://wowlix.com",
+        siteName: "WoWlix",
+        locale: "zh_HK",
+        type: "website",
+      },
+    };
+  }
+
   const storeName = await getStoreName();
 
   const title = `${storeName} - 香港波鞋專門店`;
@@ -107,7 +128,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const l = locale as Locale;
   const t = getDict(l);
 
-  const tenantId = await getServerTenantId();
+  // Check if tenant exists; if not, show landing page
+  let tenantId: string;
+  try {
+    tenantId = await getServerTenantId();
+  } catch (error) {
+    // Tenant not found (likely "wowlix" default slug with no tenant in DB)
+    // Show landing page
+    return <LandingPage />;
+  }
 
   const [sectionsRaw, bannersRaw, allProductsRaw] = await Promise.all([
     prisma.homepageSection.findMany({
