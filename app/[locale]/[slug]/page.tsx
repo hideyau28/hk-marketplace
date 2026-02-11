@@ -21,7 +21,6 @@ export default async function SlugPage({ params }: PageProps) {
       description: true,
       whatsapp: true,
       instagram: true,
-      facebook: true,
       brandColor: true,
       logoUrl: true,
       coverPhoto: true,

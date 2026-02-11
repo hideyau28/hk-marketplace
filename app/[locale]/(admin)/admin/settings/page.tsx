@@ -30,7 +30,6 @@ type TenantSettings = {
   location: string | null;
   whatsapp: string | null;
   instagram: string | null;
-  facebook: string | null;
   coverTemplate: string | null;
   coverPhoto: string | null;
   logo: string | null;
@@ -140,7 +139,6 @@ export default function TenantSettings({ params }: { params: { locale: string } 
     location: null,
     whatsapp: null,
     instagram: null,
-    facebook: null,
     coverTemplate: "default",
     coverPhoto: null,
     logo: null,
@@ -480,15 +478,6 @@ export default function TenantSettings({ params }: { params: { locale: string } 
                 />
               </div>
 
-              <div className="space-y-3">
-                <Label>Facebook</Label>
-                <SettingsInput
-                  id="facebook"
-                  value={formData.facebook || ""}
-                  onChange={handleChange}
-                  placeholder="fb.com/myshopp"
-                />
-              </div>
             </div>
           </div>
 
