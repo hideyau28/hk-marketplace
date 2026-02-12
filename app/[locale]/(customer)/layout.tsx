@@ -32,15 +32,6 @@ export default async function CustomerLayout({
   }
 
   const l = locale as Locale;
-
-  // Landing page: skip customer chrome (no header, no bottom nav, no preview banner)
-  // x-landing-page is set by middleware for locale root paths on the default tenant
-  const { headers } = await import("next/headers");
-  const headersList = await headers();
-  if (headersList.get("x-landing-page") === "1") {
-    return <>{children}</>;
-  }
-
   const t = getDict(l);
 
   // Fetch welcome popup settings (tenant-aware)
