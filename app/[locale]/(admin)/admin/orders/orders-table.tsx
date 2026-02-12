@@ -39,23 +39,6 @@ const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
   PAID: { en: "Paid", zh: "已付款" },
   FULFILLING: { en: "Fulfilling", zh: "配送中" },
   DISPUTED: { en: "Disputed", zh: "爭議中" },
-  // Payment statuses
-  pending: { en: "Pending", zh: "待上傳" },
-  uploaded: { en: "Uploaded", zh: "待確認" },
-  confirmed: { en: "Confirmed", zh: "已確認" },
-  rejected: { en: "Rejected", zh: "已拒絕" },
-};
-
-const PAYMENT_METHOD_ICONS: Record<string, string> = {
-  fps: "💸",
-  payme: "💳",
-  alipay: "🔷",
-};
-
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  fps: "FPS",
-  payme: "PayMe",
-  alipay: "Alipay",
 };
 
 const FULFILLMENT_DISPLAY: Record<string, { en: string; zh: string }> = {
@@ -75,68 +58,54 @@ function translateFulfillment(type: string, locale: Locale): string {
   return t ? (locale === "zh-HK" ? t.zh : t.en) : type;
 }
 
+// 按規格：PENDING=黃, PAID=綠, SHIPPED=藍, COMPLETED=灰, CANCELLED=紅
 function orderStatusBadgeClass(status: string) {
   const s = status.toUpperCase();
-  // Green for completed states
-  if (s === "COMPLETED" || s === "DELIVERED") {
-    return "bg-olive-100 text-olive-700 border border-olive-200";
-  }
-  // Yellow for pending/awaiting
   if (s === "PENDING") {
     return "bg-yellow-100 text-yellow-700 border border-yellow-200";
   }
-  // Blue for in-progress states
-  if (s === "CONFIRMED" || s === "PROCESSING" || s === "SHIPPED" || s === "FULFILLING" || s === "PAID") {
+  if (s === "PAID" || s === "CONFIRMED") {
+    return "bg-green-100 text-green-700 border border-green-200";
+  }
+  if (s === "SHIPPED" || s === "PROCESSING" || s === "FULFILLING") {
     return "bg-blue-100 text-blue-700 border border-blue-200";
   }
-  // Red for cancelled/disputed
-  if (s === "CANCELLED" || s === "DISPUTED") {
+  if (s === "COMPLETED" || s === "DELIVERED") {
+    return "bg-zinc-100 text-zinc-600 border border-zinc-200";
+  }
+  if (s === "CANCELLED") {
     return "bg-red-100 text-red-700 border border-red-200";
   }
-  // Amber for refunded
   if (s === "REFUNDED") {
     return "bg-amber-100 text-amber-700 border border-amber-200";
+  }
+  if (s === "DISPUTED") {
+    return "bg-rose-100 text-rose-700 border border-rose-200";
   }
   return "bg-zinc-100 text-zinc-600 border border-zinc-200";
 }
 
-function paymentStatusBadgeClass(status: string) {
-  const s = status.toLowerCase();
-  if (s === "confirmed") {
-    return "bg-olive-100 text-olive-700 border border-olive-200";
-  }
-  if (s === "uploaded") {
-    return "bg-yellow-100 text-yellow-700 border border-yellow-200";
-  }
-  if (s === "rejected") {
-    return "bg-red-100 text-red-700 border border-red-200";
-  }
-  // pending
-  return "bg-zinc-100 text-zinc-500 border border-zinc-200";
-}
-
-function formatShortDate(date: Date | string | null | undefined): string {
-  if (!date) return "";
+function formatDate(date: Date | string): string {
   const d = new Date(date);
-  return d.toLocaleDateString("en-HK", { month: "short", day: "numeric" });
+  return d.toLocaleDateString("en-HK", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 }
 
-function getKeyTimestamp(order: OrderWithPayments): { label: string; date: string } | null {
-  // Show the most relevant timestamp based on order progress
-  if ((order as any).deliveredAt) return { label: "Delivered", date: formatShortDate((order as any).deliveredAt) };
-  if (order.shippedAt) return { label: "Shipped", date: formatShortDate(order.shippedAt) };
-  if ((order as any).processingAt) return { label: "Processing", date: formatShortDate((order as any).processingAt) };
-  if ((order as any).confirmedAt) return { label: "Confirmed", date: formatShortDate((order as any).confirmedAt) };
-  if (order.paidAt) return { label: "Paid", date: formatShortDate(order.paidAt) };
-  if (order.cancelledAt) return { label: "Cancelled", date: formatShortDate(order.cancelledAt) };
-  if (order.refundedAt) return { label: "Refunded", date: formatShortDate(order.refundedAt) };
-  return null;
+function getProductCount(items: any): number {
+  if (!Array.isArray(items)) return 0;
+  return items.reduce((sum, item) => sum + (item.quantity || 1), 0);
 }
 
 export function OrdersTable({ orders, locale, currentStatus, searchQuery }: OrdersTableProps) {
   const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus || "");
   const [search, setSearch] = useState(searchQuery || "");
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
@@ -158,6 +127,10 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery }: Orde
       ? `/${locale}/admin/orders?${params.toString()}`
       : `/${locale}/admin/orders`;
     router.push(url);
+  };
+
+  const toggleExpand = (orderId: string) => {
+    setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
   };
 
   return (
@@ -215,135 +188,197 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery }: Orde
         </div>
       </div>
 
-      {/* Orders table */}
-      <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
-        <div className="overflow-x-auto">
-          <table className="min-w-[1080px] w-full text-sm">
-            <thead>
-              <tr className="text-zinc-600 border-b border-zinc-200 bg-zinc-50">
-                <th className="px-4 py-3 text-left font-medium">
-                  {locale === "zh-HK" ? "訂單編號" : "Order ID"}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {locale === "zh-HK" ? "客戶" : "Customer"}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {locale === "zh-HK" ? "電話" : "Phone"}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {locale === "zh-HK" ? "配送" : "Fulfillment"}
-                </th>
-                <th className="px-4 py-3 text-right font-medium">
-                  {locale === "zh-HK" ? "總額" : "Total"}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {locale === "zh-HK" ? "訂單狀態" : "Status"}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {locale === "zh-HK" ? "付款" : "Payment"}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {locale === "zh-HK" ? "關鍵日期" : "Key Date"}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {locale === "zh-HK" ? "建立日期" : "Created"}
-                </th>
-                <th className="px-4 py-3 text-right font-medium">
-                  {locale === "zh-HK" ? "操作" : "Actions"}
-                </th>
-              </tr>
-            </thead>
+      {/* Orders cards */}
+      {orders.length === 0 ? (
+        <div className="mt-6 rounded-3xl border border-zinc-200 bg-white px-4 py-12 text-center text-zinc-500">
+          {locale === "zh-HK" ? "沒有訂單" : "No orders found"}
+        </div>
+      ) : (
+        <div className="mt-6 space-y-3">
+          {orders.map((order) => {
+            const amounts = order.amounts as any;
+            const items = order.items as any[];
+            const fulfillmentAddress = order.fulfillmentAddress as any;
+            const isExpanded = expandedOrderId === order.id;
+            const productCount = getProductCount(items);
 
-            <tbody>
-              {orders.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-zinc-500">
-                    {locale === "zh-HK" ? "沒有訂單" : "No orders found"}
-                  </td>
-                </tr>
-              ) : (
-                orders.map((order) => {
-                  const amounts = order.amounts as any;
-                  const keyTimestamp = getKeyTimestamp(order);
-                  const paymentMethod = (order as any).paymentMethod;
-                  const paymentStatus = (order as any).paymentStatus || "pending";
-                  return (
-                    <tr key={order.id} className="border-t border-zinc-200 hover:bg-zinc-50">
-                      <td className="px-4 py-3">
-                        <div className="text-zinc-900 font-medium font-mono text-xs">
-                          {order.orderNumber || order.id.slice(0, 12) + "..."}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-zinc-700">{order.customerName}</td>
-                      <td className="px-4 py-3 text-zinc-700 font-mono text-xs">{order.phone}</td>
-                      <td className="px-4 py-3 text-zinc-700">
-                        {translateFulfillment(order.fulfillmentType, locale)}
-                      </td>
-                      <td className="px-4 py-3 text-right text-zinc-900 font-medium">
-                        ${amounts?.total || 0}
-                      </td>
-                      <td className="px-4 py-3">
+            return (
+              <div
+                key={order.id}
+                className="rounded-2xl border border-zinc-200 bg-white overflow-hidden transition-shadow hover:shadow-md"
+              >
+                {/* Card header - clickable */}
+                <div
+                  onClick={() => toggleExpand(order.id)}
+                  className="p-4 cursor-pointer hover:bg-zinc-50 transition-colors"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    {/* Left side: Order info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-mono text-zinc-500">
+                          {order.orderNumber || `#${order.id.slice(0, 8)}`}
+                        </span>
                         <span
-                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${orderStatusBadgeClass(
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${orderStatusBadgeClass(
                             order.status
                           )}`}
                         >
                           {translateStatus(order.status, locale)}
                         </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          {paymentMethod && (
-                            <span className="text-sm" title={PAYMENT_METHOD_LABELS[paymentMethod] || paymentMethod}>
-                              {PAYMENT_METHOD_ICONS[paymentMethod] || "💰"}
-                            </span>
-                          )}
-                          <span
-                            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${paymentStatusBadgeClass(
-                              paymentStatus
-                            )}`}
-                          >
-                            {translateStatus(paymentStatus, locale)}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        {keyTimestamp ? (
-                          <div className="text-xs">
-                            <span className="text-zinc-500">{keyTimestamp.label}</span>
-                            <span className="text-zinc-700 ml-1">{keyTimestamp.date}</span>
-                          </div>
-                        ) : (
-                          <span className="text-zinc-400 text-xs">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-zinc-600 text-xs">
-                        {new Date(order.createdAt).toISOString().slice(0, 10)}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link
-                          href={`/${locale}/admin/orders/${order.id}`}
-                          className="inline-block rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-50"
-                        >
-                          {locale === "zh-HK" ? "查看" : "View"}
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                      </div>
+                      <div className="text-sm text-zinc-900 font-medium">
+                        {order.customerName}
+                      </div>
+                      <div className="text-xs text-zinc-500 mt-1">
+                        {formatDate(order.createdAt)} · {productCount} {locale === "zh-HK" ? "件商品" : "items"}
+                      </div>
+                    </div>
 
-        <div className="flex items-center justify-between border-t border-zinc-200 px-4 py-3 text-zinc-600 text-sm">
-          <div>
-            {locale === "zh-HK"
-              ? `顯示 ${orders.length} 個訂單`
-              : `Showing ${orders.length} orders`}
+                    {/* Right side: Total */}
+                    <div className="flex items-center justify-between sm:justify-end gap-3">
+                      <div className="text-right">
+                        <div className="text-lg font-semibold text-zinc-900">
+                          ${amounts?.total || 0}
+                        </div>
+                      </div>
+                      <svg
+                        className={`h-5 w-5 text-zinc-400 transition-transform ${
+                          isExpanded ? "rotate-180" : ""
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded details */}
+                {isExpanded && (
+                  <div className="border-t border-zinc-200 bg-zinc-50 p-4 space-y-4">
+                    {/* Product list */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-zinc-900 mb-2">
+                        {locale === "zh-HK" ? "商品列表" : "Products"}
+                      </h4>
+                      <div className="space-y-2">
+                        {items && items.length > 0 ? (
+                          items.map((item: any, idx: number) => (
+                            <div
+                              key={idx}
+                              className="flex justify-between text-sm bg-white rounded-lg p-2"
+                            >
+                              <div>
+                                <div className="text-zinc-900">{item.name}</div>
+                                {item.variant && (
+                                  <div className="text-zinc-500 text-xs">{item.variant}</div>
+                                )}
+                              </div>
+                              <div className="text-zinc-600">
+                                x{item.quantity} · ${item.unitPrice}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-zinc-500 text-sm">
+                            {locale === "zh-HK" ? "無商品資料" : "No items"}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Customer info */}
+                    <div>
+                      <h4 className="text-sm font-semibold text-zinc-900 mb-2">
+                        {locale === "zh-HK" ? "客人資料" : "Customer Info"}
+                      </h4>
+                      <div className="bg-white rounded-lg p-3 space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-zinc-600">
+                            {locale === "zh-HK" ? "姓名" : "Name"}:
+                          </span>
+                          <span className="text-zinc-900">{order.customerName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-600">
+                            {locale === "zh-HK" ? "電話" : "Phone"}:
+                          </span>
+                          <span className="text-zinc-900 font-mono">{order.phone}</span>
+                        </div>
+                        {order.email && (
+                          <div className="flex justify-between">
+                            <span className="text-zinc-600">Email:</span>
+                            <span className="text-zinc-900">{order.email}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Delivery address */}
+                    {order.fulfillmentType === "DELIVERY" && fulfillmentAddress && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-zinc-900 mb-2">
+                          {locale === "zh-HK" ? "送貨地址" : "Delivery Address"}
+                        </h4>
+                        <div className="bg-white rounded-lg p-3 text-sm text-zinc-900">
+                          <div>{fulfillmentAddress.line1}</div>
+                          {fulfillmentAddress.district && (
+                            <div className="text-zinc-600">{fulfillmentAddress.district}</div>
+                          )}
+                          {fulfillmentAddress.notes && (
+                            <div className="text-zinc-500 text-xs mt-2">
+                              {locale === "zh-HK" ? "備註" : "Note"}: {fulfillmentAddress.notes}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Pickup info */}
+                    {order.fulfillmentType === "PICKUP" && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-zinc-900 mb-2">
+                          {locale === "zh-HK" ? "自取" : "Pickup"}
+                        </h4>
+                        <div className="bg-white rounded-lg p-3 text-sm text-zinc-600">
+                          {translateFulfillment(order.fulfillmentType, locale)}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* View full details button */}
+                    <div className="pt-2">
+                      <Link
+                        href={`/${locale}/admin/orders/${order.id}`}
+                        className="inline-flex w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 transition-colors"
+                      >
+                        {locale === "zh-HK" ? "查看完整訂單詳情" : "View Full Order Details"}
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Summary */}
+          <div className="flex items-center justify-between px-4 py-3 text-zinc-600 text-sm">
+            <div>
+              {locale === "zh-HK"
+                ? `顯示 ${orders.length} 個訂單`
+                : `Showing ${orders.length} orders`}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
