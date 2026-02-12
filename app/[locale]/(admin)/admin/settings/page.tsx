@@ -157,6 +157,17 @@ export default function TenantSettings({ params }: { params: { locale: string } 
   const [dataLoaded, setDataLoaded] = useState(false);
   const [slugWarning, setSlugWarning] = useState(false);
   const [originalSlug, setOriginalSlug] = useState("");
+  // Account editing
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [editingPassword, setEditingPassword] = useState(false);
+  const [accountEmail, setAccountEmail] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmNewPw, setConfirmNewPw] = useState("");
+  const [accountSaving, setAccountSaving] = useState(false);
+  const [accountError, setAccountError] = useState("");
+  const [accountSuccess, setAccountSuccess] = useState("");
   // Delivery modal
   const [editingDelivery, setEditingDelivery] = useState<{ index: number; label: string; price: string } | null>(null);
   const [addingDelivery, setAddingDelivery] = useState(false);
@@ -193,6 +204,7 @@ export default function TenantSettings({ params }: { params: { locale: string } 
             currency: d.currency || "HKD",
           });
           setOriginalSlug(d.slug);
+          if (d.email) setAccountEmail(d.email);
         }
       } catch {
         // Ignore errors
@@ -268,6 +280,70 @@ export default function TenantSettings({ params }: { params: { locale: string } 
       setErrorMessage(`網絡錯誤: ${err instanceof Error ? err.message : String(err)}`);
     }
   }, [formData]);
+
+  // Account handlers
+  const handleSaveEmail = async () => {
+    setAccountSaving(true);
+    setAccountError("");
+    setAccountSuccess("");
+    try {
+      const res = await fetch("/api/tenant-admin/account", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ type: "email", newEmail }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setAccountEmail(data.email);
+        setFormData((prev) => ({ ...prev, email: data.email }));
+        setEditingEmail(false);
+        setAccountSuccess("Email 已更新");
+        setTimeout(() => setAccountSuccess(""), 3000);
+      } else {
+        setAccountError(data.error || "更新失敗");
+      }
+    } catch {
+      setAccountError("網絡錯誤");
+    } finally {
+      setAccountSaving(false);
+    }
+  };
+
+  const handleSavePassword = async () => {
+    if (newPw !== confirmNewPw) {
+      setAccountError("新密碼不一致");
+      return;
+    }
+    if (newPw.length < 8) {
+      setAccountError("新密碼最少 8 個字");
+      return;
+    }
+    setAccountSaving(true);
+    setAccountError("");
+    setAccountSuccess("");
+    try {
+      const res = await fetch("/api/tenant-admin/account", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ type: "password", currentPassword: currentPw, newPassword: newPw }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setEditingPassword(false);
+        setCurrentPw("");
+        setNewPw("");
+        setConfirmNewPw("");
+        setAccountSuccess("密碼已更新");
+        setTimeout(() => setAccountSuccess(""), 3000);
+      } else {
+        setAccountError(data.error || "更新失敗");
+      }
+    } catch {
+      setAccountError("網絡錯誤");
+    } finally {
+      setAccountSaving(false);
+    }
+  };
 
   // Delivery option handlers
   const toggleDeliveryOption = (index: number) => {
@@ -842,21 +918,120 @@ export default function TenantSettings({ params }: { params: { locale: string } 
               </p>
             </div>
 
+            {/* Feedback */}
+            {accountSuccess && (
+              <div className="flex items-center gap-2 rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
+                <CheckCircle2 className="h-4 w-4" /> {accountSuccess}
+              </div>
+            )}
+            {accountError && (
+              <div className="flex items-center gap-2 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+                <AlertCircle className="h-4 w-4" /> {accountError}
+              </div>
+            )}
+
             <div className="space-y-4">
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <Label>Email</Label>
-                  <p className="text-sm text-zinc-600 mt-1">{formData.email || "未設定"}</p>
-                </div>
+              {/* Email row */}
+              <div className="py-2">
+                <Label>Email</Label>
+                {!editingEmail ? (
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="text-sm text-zinc-600">{accountEmail || formData.email || "未設定"}</p>
+                    <button
+                      onClick={() => { setNewEmail(accountEmail || formData.email || ""); setEditingEmail(true); setAccountError(""); }}
+                      className="text-xs px-2 py-1 rounded bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
+                    >
+                      更改
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-2 space-y-2">
+                    <input
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      placeholder="新 Email"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setEditingEmail(false); setAccountError(""); }}
+                        className="px-3 py-1.5 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-md hover:bg-zinc-200 transition-colors"
+                      >
+                        取消
+                      </button>
+                      <button
+                        onClick={handleSaveEmail}
+                        disabled={accountSaving}
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                      >
+                        {accountSaving ? "儲存中..." : "儲存"}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => alert("改密碼功能開發中")}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 bg-zinc-100 rounded-md hover:bg-zinc-200 transition-colors"
-                >
-                  🔑 改密碼
-                </button>
+              {/* Password row */}
+              <div className="py-2 border-t border-zinc-100">
+                <Label>密碼</Label>
+                {!editingPassword ? (
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="text-sm text-zinc-400 tracking-widest">••••••••</p>
+                    <button
+                      onClick={() => { setEditingPassword(true); setAccountError(""); }}
+                      className="text-xs px-2 py-1 rounded bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
+                    >
+                      更改
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-2 space-y-2">
+                    <input
+                      type="password"
+                      value={currentPw}
+                      onChange={(e) => setCurrentPw(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      placeholder="舊密碼"
+                      autoComplete="current-password"
+                    />
+                    <input
+                      type="password"
+                      value={newPw}
+                      onChange={(e) => setNewPw(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      placeholder="新密碼（最少 8 個字）"
+                      autoComplete="new-password"
+                    />
+                    <input
+                      type="password"
+                      value={confirmNewPw}
+                      onChange={(e) => setConfirmNewPw(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      placeholder="確認新密碼"
+                      autoComplete="new-password"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setEditingPassword(false); setCurrentPw(""); setNewPw(""); setConfirmNewPw(""); setAccountError(""); }}
+                        className="px-3 py-1.5 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-md hover:bg-zinc-200 transition-colors"
+                      >
+                        取消
+                      </button>
+                      <button
+                        onClick={handleSavePassword}
+                        disabled={accountSaving}
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                      >
+                        {accountSaving ? "儲存中..." : "儲存"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Logout */}
+              <div className="pt-2 border-t border-zinc-100">
                 <button
                   onClick={() => {
                     if (confirm("確定要登出？")) {
@@ -865,7 +1040,7 @@ export default function TenantSettings({ params }: { params: { locale: string } 
                   }}
                   className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-md hover:bg-red-100 transition-colors"
                 >
-                  🚪 登出
+                  登出
                 </button>
               </div>
             </div>

@@ -15,6 +15,7 @@ import Analytics from "@/components/Analytics";
 import WelcomePopup from "@/components/WelcomePopup";
 import SocialProofPopup from "@/components/SocialProofPopup";
 import CartFlyAnimation from "@/components/CartFlyAnimation";
+import AdminPreviewBanner from "@/components/AdminPreviewBanner";
 import { getServerTenantId } from "@/lib/tenant";
 
 export default async function CustomerLayout({
@@ -64,6 +65,7 @@ export default async function CustomerLayout({
           <AuthProvider>
             <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
               <Analytics />
+              <AdminPreviewBanner locale={l} />
               <TopNav locale={l} t={t} storeName={storeName} />
               <CategoryNavWrapper locale={l} />
               <main>{children}</main>

@@ -35,6 +35,9 @@ const t = {
     whatsappPlaceholder: "e.g. 91234567",
     whatsappHint: "8-digit HK number",
     whatsappFormatError: "Must be 8 digits",
+    confirmPassword: "Confirm Password *",
+    confirmPasswordPlaceholder: "Re-enter your password",
+    passwordMismatch: "Passwords do not match",
     back: "Back",
     // Step 3
     pickStyle: "Pick a style",
@@ -48,6 +51,7 @@ const t = {
     storeLink: "Your store link:",
     copied: "Copied!",
     copyLink: "Copy",
+    loginEmail: "Login Email",
     addFirstProduct: "Add your first product",
     shareToIG: "Share to Instagram",
     creating: "Creating your store...",
@@ -83,6 +87,9 @@ const t = {
     whatsappPlaceholder: "例如 91234567",
     whatsappHint: "8 位香港號碼",
     whatsappFormatError: "需要 8 位數字",
+    confirmPassword: "確認密碼 *",
+    confirmPasswordPlaceholder: "再輸入一次密碼",
+    passwordMismatch: "密碼不一致",
     back: "返回",
     // Step 3
     pickStyle: "揀個風格",
@@ -96,6 +103,7 @@ const t = {
     storeLink: "你嘅店舖連結：",
     copied: "已複製！",
     copyLink: "複製",
+    loginEmail: "登入 Email",
     addFirstProduct: "加第一件商品",
     shareToIG: "分享到 Instagram",
     creating: "建立緊你嘅小店...",
@@ -131,6 +139,7 @@ interface OnboardingData {
   slugManuallyEdited: boolean;
   email: string;
   password: string;
+  confirmPassword: string;
   whatsapp: string;
   coverTemplate: string;
   tagline: string;
@@ -163,6 +172,7 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
     slugManuallyEdited: false,
     email: "",
     password: "",
+    confirmPassword: "",
     whatsapp: "",
     coverTemplate: "warm-gradient",
     tagline: "",
@@ -301,6 +311,10 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
     if (!data.password) newErrors.password = labels.required;
     else if (data.password.length < 8)
       newErrors.password = labels.passwordMinError;
+
+    if (!data.confirmPassword) newErrors.confirmPassword = labels.required;
+    else if (data.password !== data.confirmPassword)
+      newErrors.confirmPassword = labels.passwordMismatch;
 
     if (data.whatsapp && !WHATSAPP_REGEX.test(data.whatsapp.trim()))
       newErrors.whatsapp = labels.whatsappFormatError;
@@ -583,6 +597,26 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                   )}
                 </div>
 
+                {/* Confirm Password */}
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                    {labels.confirmPassword}
+                  </label>
+                  <input
+                    type="password"
+                    value={data.confirmPassword}
+                    onChange={(e) => update("confirmPassword", e.target.value)}
+                    placeholder={labels.confirmPasswordPlaceholder}
+                    autoComplete="new-password"
+                    className={inputClass("confirmPassword")}
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+
                 {/* WhatsApp (optional) */}
                 <div>
                   <label className="block text-sm font-medium text-zinc-700 mb-1.5">
@@ -710,6 +744,12 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                 <h2 className="text-xl font-bold text-zinc-900">
                   {labels.congrats}
                 </h2>
+
+                {/* Login email */}
+                <div>
+                  <p className="text-lg font-semibold text-zinc-900">{data.email}</p>
+                  <p className="text-sm text-zinc-500">{labels.loginEmail}</p>
+                </div>
 
                 {/* Store preview card */}
                 <div className="rounded-xl overflow-hidden border border-zinc-200">
