@@ -29,6 +29,7 @@ import {
 import StickyHeader from "./StickyHeader";
 import CoverPhoto from "./CoverPhoto";
 import ProfileSection from "./ProfileSection";
+import SearchBar from "./SearchBar";
 import FeaturedSection from "./FeaturedSection";
 import ProductGrid from "./ProductGrid";
 import CartBar from "./CartBar";
@@ -53,12 +54,20 @@ export default function BioLinkPage({ tenant, products }: Props) {
   const [sheetProduct, setSheetProduct] = useState<ProductForBioLink | null>(null);
   const [lightbox, setLightbox] = useState<{ images: string[]; startIndex: number; videoUrl?: string | null } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const currency = tenant.currency || "HKD";
   const deliveryOptions: DeliveryOption[] = tenant.deliveryOptions || DEFAULT_DELIVERY_OPTIONS;
   const orderConfirmMessage: OrderConfirmConfig = tenant.orderConfirmMessage || DEFAULT_ORDER_CONFIRM;
 
-  const { featured, grid } = splitProducts(products);
+  // Filter products by search query
+  const filteredProducts = searchQuery
+    ? products.filter((p) =>
+        p.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : products;
+
+  const { featured, grid } = splitProducts(filteredProducts);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -178,6 +187,9 @@ export default function BioLinkPage({ tenant, products }: Props) {
       <CoverPhoto url={tenant.coverPhoto} brandColor={tenant.brandColor} coverTemplate={tenant.coverTemplate} />
       <ProfileSection tenant={tenant} />
 
+      {/* Search bar */}
+      <SearchBar value={searchQuery} onChange={setSearchQuery} />
+
       {/* Dark zone — Featured loot cards */}
       {featured.length > 0 && (
         <FeaturedSection products={featured} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} />
@@ -193,7 +205,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
       />
 
       {/* Light zone — Product grid */}
-      <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} />
+      <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} searchQuery={searchQuery} />
 
       {/* Cart bar or WhatsApp FAB */}
       {cartCount > 0 ? (
