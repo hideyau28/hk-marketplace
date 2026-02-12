@@ -34,9 +34,9 @@ const t = {
     googleLogin: "Google 登入",
     noAccount: "未有帳號？",
     createStore: "免費開店",
-    adminSecret: "Admin Secret",
-    adminSecretPlaceholder: "Enter admin secret",
-    adminLogin: "Admin Login",
+    adminSecret: "管理員密碼",
+    adminSecretPlaceholder: "請輸入管理員密碼",
+    adminLogin: "管理員登入",
     oauthError: "登入失敗，請再試。",
   },
 } as const;
@@ -140,8 +140,11 @@ export default function AdminLoginPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 p-8">
           {/* Branding */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#FF9500] text-white text-xl font-bold mb-3">
-              W
+            <div className="inline-flex items-center gap-2 mb-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#FF9500] text-white text-2xl">
+                ✦
+              </div>
+              <span className="text-2xl font-bold text-[#FF9500]">WoWlix</span>
             </div>
             <h1 className="text-2xl font-semibold text-zinc-900">{labels.heading}</h1>
           </div>
