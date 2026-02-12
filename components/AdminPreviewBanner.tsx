@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import type { Locale } from "@/lib/i18n";
 
-export default function AdminPreviewBanner({ locale }: { locale: Locale }) {
+export default function AdminPreviewBanner({ locale, hasTenant }: { locale: Locale; hasTenant: boolean }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -14,7 +14,8 @@ export default function AdminPreviewBanner({ locale }: { locale: Locale }) {
       .catch(() => {});
   }, []);
 
-  if (!isAdmin) return null;
+  // Don't show banner on landing page (no tenant) or if not admin
+  if (!hasTenant || !isAdmin) return null;
 
   return (
     <>
