@@ -20,7 +20,33 @@ export async function GET(req: Request) {
       );
     }
 
-    // Find admin with tenant info
+    // Super admin 用 select-tenant 設嘅 JWT（adminId = "super-admin"）
+    if (payload.adminId === "super-admin" && payload.role === "super") {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: payload.tenantId },
+        select: { id: true, name: true, slug: true, status: true },
+      });
+
+      if (!tenant) {
+        return NextResponse.json(
+          { ok: false, error: "Tenant not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        ok: true,
+        admin: {
+          id: "super-admin",
+          email: payload.email,
+          role: "super",
+          createdAt: null,
+        },
+        tenant,
+      });
+    }
+
+    // Find tenant admin with tenant info
     const admin = await prisma.tenantAdmin.findUnique({
       where: { id: payload.adminId },
       include: {

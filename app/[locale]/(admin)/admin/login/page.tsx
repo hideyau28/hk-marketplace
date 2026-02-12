@@ -4,6 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+type TenantOption = {
+  id: string;
+  name: string;
+  slug: string;
+  mode: string;
+};
+
 const t = {
   en: {
     heading: "Log in to your store",
@@ -21,6 +28,8 @@ const t = {
     adminSecretPlaceholder: "Enter admin secret",
     adminLogin: "Admin Login",
     oauthError: "Sign-in failed. Please try again.",
+    selectTenant: "Select a store to manage",
+    selectTenantBack: "Back to login",
   },
   "zh-HK": {
     heading: "登入你嘅商店",
@@ -38,6 +47,8 @@ const t = {
     adminSecretPlaceholder: "請輸入管理員密碼",
     adminLogin: "管理員登入",
     oauthError: "登入失敗，請再試。",
+    selectTenant: "選擇要管理嘅商店",
+    selectTenantBack: "返回登入",
   },
 } as const;
 
@@ -49,6 +60,9 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [showSecretLogin, setShowSecretLogin] = useState(false);
+  // Tenant selection state for super admin
+  const [tenants, setTenants] = useState<TenantOption[]>([]);
+  const [showTenantPicker, setShowTenantPicker] = useState(false);
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
@@ -114,10 +128,44 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (data.ok) {
-        router.push(`/${locale}/admin/products`);
-        router.refresh();
+        // 登入成功後，取得 tenant 列表讓 super admin 揀
+        const tenantsRes = await fetch("/api/admin/tenants");
+        const tenantsData = await tenantsRes.json();
+
+        if (tenantsData.ok && tenantsData.tenants?.length > 0) {
+          setTenants(tenantsData.tenants);
+          setShowTenantPicker(true);
+        } else {
+          setError("No active tenants found");
+        }
       } else {
         setError(data.error || "Login failed");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectTenant = async (tenantId: string) => {
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/admin/select-tenant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenantId }),
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        router.push(`/${locale}/admin`);
+        router.refresh();
+      } else {
+        setError(data.error || "Failed to select tenant");
       }
     } catch {
       setError("Network error. Please try again.");
@@ -130,6 +178,64 @@ export default function AdminLoginPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">
         <div className="text-zinc-400 text-sm">Loading...</div>
+      </div>
+    );
+  }
+
+  // Tenant picker UI (shown after ADMIN_SECRET login)
+  if (showTenantPicker) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 p-8">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-2 mb-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-zinc-800 text-white text-2xl">
+                  ✦
+                </div>
+                <span className="text-2xl font-bold text-zinc-800">Admin</span>
+              </div>
+              <h1 className="text-xl font-semibold text-zinc-900">{labels.selectTenant}</h1>
+            </div>
+
+            {error && (
+              <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3">
+                <p className="text-red-600 text-sm text-center">{error}</p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {tenants.map((tenant) => (
+                <button
+                  key={tenant.id}
+                  onClick={() => handleSelectTenant(tenant.id)}
+                  disabled={loading}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 transition-colors text-left disabled:opacity-50"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-[#FF9500] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+                    {tenant.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-medium text-zinc-900 truncate">{tenant.name}</div>
+                    <div className="text-xs text-zinc-400">{tenant.slug}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowTenantPicker(false);
+                setTenants([]);
+                setSecret("");
+              }}
+              className="mt-4 text-xs text-zinc-400 hover:text-zinc-600 transition-colors w-full text-center"
+            >
+              {labels.selectTenantBack}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
