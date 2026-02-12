@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Pencil, Plus, Eye, Copy, Check, ChevronUp, ChevronDown, Trash2, EyeOff, Star, Edit } from "lucide-react";
+import { Camera, Pencil, Plus, Eye, Copy, Check, ChevronUp, ChevronDown, Trash2, EyeOff, Star, Edit, Loader2 } from "lucide-react";
 import ProductEditSheet from "./ProductEditSheet";
+import Image from "next/image";
 
 type Product = {
   id: string;
@@ -43,6 +44,9 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
   const [isNewProduct, setIsNewProduct] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [coverPhoto, setCoverPhoto] = useState<string | null>(tenant.coverPhoto);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const storeUrl = `wowlix.com/${tenant.slug}`;
   const brandColor = tenant.brandColor || "#FF9500";
@@ -153,6 +157,66 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
     });
   };
 
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      alert("請選擇圖片檔案");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("圖片大小不能超過 5MB");
+      return;
+    }
+
+    setIsUploadingCover(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/admin/upload", {
+        method: "POST",
+        headers: {
+          "x-admin-secret": process.env.NEXT_PUBLIC_ADMIN_SECRET || "",
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error?.message || "上傳失敗");
+      }
+
+      const url = data.data.url;
+      setCoverPhoto(url);
+
+      // Update tenant settings
+      await fetch("/api/admin/tenant-settings", {
+        method: "PUT",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ coverPhoto: url }),
+      });
+
+      router.refresh();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "上傳失敗");
+    } finally {
+      setIsUploadingCover(false);
+      // Reset file input
+      if (coverInputRef.current) {
+        coverInputRef.current.value = "";
+      }
+    }
+  };
+
   const isEmpty = products.length === 0;
 
   return (
@@ -160,11 +224,59 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
       {/* Cover / Header */}
       <div
         className="relative rounded-2xl overflow-hidden mb-6 -mx-4 -mt-0"
-        style={{
-          background: `linear-gradient(135deg, ${brandColor}, ${brandColor}cc)`,
-        }}
       >
-        <div className="px-6 py-8 text-center text-white">
+        {/* Background Image or Gradient */}
+        {coverPhoto ? (
+          <div className="absolute inset-0">
+            <Image
+              src={coverPhoto}
+              alt="Cover"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/30" />
+          </div>
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(135deg, ${brandColor}, ${brandColor}cc)`,
+            }}
+          />
+        )}
+
+        {/* Edit Cover Button */}
+        {isEditMode && (
+          <div className="absolute top-3 right-3 z-10">
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleCoverUpload}
+              className="hidden"
+            />
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              disabled={isUploadingCover}
+              className="inline-flex items-center gap-1.5 bg-white/90 hover:bg-white text-zinc-900 text-xs font-medium px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
+            >
+              {isUploadingCover ? (
+                <>
+                  <Loader2 size={12} className="animate-spin" />
+                  {locale === "zh-HK" ? "上傳中..." : "Uploading..."}
+                </>
+              ) : (
+                <>
+                  <Camera size={12} />
+                  {locale === "zh-HK" ? "更換封面" : "Change Cover"}
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        <div className="relative px-6 py-8 text-center text-white">
           {/* Avatar */}
           <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
             {tenant.logoUrl ? (

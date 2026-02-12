@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import SidebarToggle from "@/components/admin/SidebarToggle";
+import ImageUpload from "@/components/admin/ImageUpload";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -874,16 +875,12 @@ export default function TenantSettings({ params }: { params: { locale: string } 
 
               <div className="space-y-3">
                 <Label>封面圖</Label>
-                <SettingsInput
-                  id="coverPhoto"
-                  value={formData.coverPhoto || ""}
-                  onChange={handleChange}
-                  placeholder="https://example.com/cover.jpg"
+                <ImageUpload
+                  currentUrl={formData.coverPhoto || undefined}
+                  onUpload={(url) => setFormData((prev) => ({ ...prev, coverPhoto: url || null }))}
+                  disabled={saveState === "saving"}
                 />
-                {formData.coverPhoto && (
-                  <img src={formData.coverPhoto} alt="Cover preview" className="h-32 w-full object-cover rounded-md mt-2" />
-                )}
-                <Description>商店頂部嘅封面相片</Description>
+                <Description>商店頂部嘅封面相片（點擊上傳或拖放圖片）</Description>
               </div>
 
               <div className="space-y-3">
