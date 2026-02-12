@@ -24,6 +24,7 @@ export default async function SlugPage({ params }: PageProps) {
       brandColor: true,
       logoUrl: true,
       coverPhoto: true,
+      coverTemplate: true,
       template: true,
       fpsEnabled: true,
       fpsAccountName: true,
