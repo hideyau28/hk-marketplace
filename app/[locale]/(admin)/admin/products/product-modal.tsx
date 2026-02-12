@@ -96,10 +96,11 @@ function detectSizeSystem(sizeInventory: Record<string, number>): string {
 type ProductModalProps = {
   product: Product | null;
   onClose: () => void;
+  onSaved?: () => void;
   locale: Locale;
 };
 
-export function ProductModal({ product, onClose, locale }: ProductModalProps) {
+export function ProductModal({ product, onClose, onSaved, locale }: ProductModalProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -399,7 +400,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
       if (result.ok) {
         onClose();
-        window.location.reload();
+        onSaved?.();
       } else {
         setError({ code: result.code, message: result.message });
       }

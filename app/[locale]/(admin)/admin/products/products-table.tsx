@@ -7,8 +7,9 @@ import { type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
-import { Star, Flame, Search, Check, X, Pencil } from "lucide-react";
-import { toggleFeatured, toggleHotSelling, updatePrice } from "./actions";
+import { Star, Flame, Search, Check, X, Pencil, Instagram, Eye, EyeOff } from "lucide-react";
+import { toggleFeatured, toggleHotSelling, updatePrice, toggleHidden } from "./actions";
+import { useToast } from "@/components/Toast";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -117,6 +118,7 @@ function exportProductsToCsv(products: ProductWithBadges[]): void {
 
 export function ProductsTable({ products, locale, showAddButton }: ProductsTableProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isCsvOpen, setIsCsvOpen] = useState(false);
@@ -140,6 +142,8 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const [openFilter, setOpenFilter] = useState<"category" | "status" | "stock" | null>(null);
   const [sortKey, setSortKey] = useState<"originalPrice" | "price" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
+  const [showHidden, setShowHidden] = useState(false);
+  const [togglingHidden, setTogglingHidden] = useState<string | null>(null);
   // Inline price editing
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState("");
@@ -192,6 +196,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     let result = products.filter((p) => {
+      // 隱藏商品 filter：預設唔顯示，除非 toggle 開咗
+      if ((p as any).hidden && !showHidden) return false;
+
       const matchesSearch = !query
         || p.title.toLowerCase().includes(query)
         || (p.sku && p.sku.toLowerCase().includes(query))
@@ -219,7 +226,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     }
 
     return result;
-  }, [products, searchQuery, categoryFilter, statusFilter, stockFilter, sortKey, sortDirection]);
+  }, [products, searchQuery, categoryFilter, statusFilter, stockFilter, sortKey, sortDirection, showHidden]);
 
   // Paginate filtered products
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -286,6 +293,32 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
       console.error("Failed to update price:", error);
     } finally {
       setSavingPrice(false);
+    }
+  };
+
+  const handleShareIG = async () => {
+    const storeUrl = window.location.origin;
+    try {
+      await navigator.clipboard.writeText(storeUrl);
+      showToast("連結已複製！");
+    } catch {
+      showToast("無法複製連結");
+    }
+    // 嘗試開 IG app
+    setTimeout(() => {
+      window.open("https://www.instagram.com/", "_blank");
+    }, 300);
+  };
+
+  const handleToggleHidden = async (productId: string, currentHidden: boolean) => {
+    setTogglingHidden(productId);
+    try {
+      await toggleHidden(productId, !currentHidden);
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to toggle hidden:", error);
+    } finally {
+      setTogglingHidden(null);
     }
   };
 
@@ -447,6 +480,23 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           />
         </div>
         <div className="flex flex-wrap items-center gap-2 justify-end">
+          <button
+            onClick={handleShareIG}
+            className="rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-3 text-sm text-white font-semibold hover:from-purple-600 hover:to-pink-600 transition-colors inline-flex items-center gap-1.5"
+          >
+            <Instagram size={16} />
+            分享到 Instagram
+          </button>
+          <label className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 cursor-pointer hover:bg-zinc-50">
+            <input
+              type="checkbox"
+              checked={showHidden}
+              onChange={(e) => setShowHidden(e.target.checked)}
+              className="h-4 w-4 accent-[#6B7A2F]"
+            />
+            <EyeOff size={14} className="text-zinc-400" />
+            顯示隱藏商品
+          </label>
           <button
             onClick={() => setIsBadgeModalOpen(true)}
             className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
@@ -626,8 +676,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     }
                     return { key: badge, label: badge, color: null };
                   });
+                  const isHidden = !!(product as any).hidden;
                   return (
-                  <tr key={product.id} className="border-t border-zinc-200 hover:bg-zinc-50">
+                  <tr key={product.id} className={`border-t border-zinc-200 hover:bg-zinc-50 ${isHidden ? "opacity-50" : ""}`}>
                     {/* Photo */}
                     <td className="px-2 py-1">
                       {product.imageUrl ? (
@@ -728,15 +779,22 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     </td>
                     {/* Status */}
                     <td className="px-2 py-1">
-                      <span
-                        className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${
-                          product.active
-                            ? "bg-olive-100 text-olive-700 border-olive-200"
-                            : "bg-zinc-100 text-zinc-600 border-zinc-200"
-                        }`}
-                      >
-                        {product.active ? "Active" : "Inactive"}
-                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${
+                            product.active
+                              ? "bg-olive-100 text-olive-700 border-olive-200"
+                              : "bg-zinc-100 text-zinc-600 border-zinc-200"
+                          }`}
+                        >
+                          {product.active ? "Active" : "Inactive"}
+                        </span>
+                        {isHidden && (
+                          <span className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-2 py-1 text-xs text-orange-600">
+                            已隱藏
+                          </span>
+                        )}
+                      </div>
                     </td>
                     {/* Updated */}
                     <td className="px-2 py-1 text-zinc-500 text-xs">
@@ -749,8 +807,18 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                         >
                           Edit
                         </button>
-
-
+                        <button
+                          onClick={() => handleToggleHidden(product.id, isHidden)}
+                          disabled={togglingHidden === product.id}
+                          className={`rounded-lg border px-2.5 py-1.5 text-xs disabled:opacity-50 inline-flex items-center gap-1 ${
+                            isHidden
+                              ? "border-olive-200 bg-olive-50 text-olive-700 hover:bg-olive-100"
+                              : "border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50"
+                          }`}
+                        >
+                          {isHidden ? <Eye size={12} /> : <EyeOff size={12} />}
+                          {isHidden ? "顯示" : "隱藏"}
+                        </button>
                         </div>
                       </div>
                     </td>
@@ -1006,7 +1074,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
       )}
 
       {(selectedProduct || isCreating) && (
-        <ProductModal product={selectedProduct} onClose={handleCloseModal} locale={locale} />
+        <ProductModal product={selectedProduct} onClose={handleCloseModal} onSaved={() => router.refresh()} locale={locale} />
       )}
 
       {isCsvOpen && (
