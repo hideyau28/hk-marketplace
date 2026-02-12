@@ -49,7 +49,7 @@ export default function LoginPage() {
 
   const handleSendOtp = async () => {
     if (!validatePhone(phone)) {
-      setError("請輸入有效嘅8位香港電話號碼");
+      setError(t.enterValidPhone);
       return;
     }
 
@@ -74,10 +74,10 @@ export default function LoginPage() {
         // Focus first OTP input
         setTimeout(() => otpRefs.current[0]?.focus(), 100);
       } else {
-        setError(data.error?.message || "發送失敗，請重試");
+        setError(data.error?.message || t.sendFailed);
       }
     } catch {
-      setError("網絡錯誤，請重試");
+      setError(t.networkError);
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ export default function LoginPage() {
     if (result.success) {
       router.push(redirectTo);
     } else {
-      setError(result.error || "驗證失敗，請重試");
+      setError(result.error || t.verifyFailed);
       setOtp(["", "", "", "", "", ""]);
       otpRefs.current[0]?.focus();
     }
@@ -155,6 +155,10 @@ export default function LoginPage() {
     demoHint: locale === "zh-HK" ? "測試用驗證碼: 123456" : "Test OTP: 123456",
     back: locale === "zh-HK" ? "返回" : "Back",
     changePhone: locale === "zh-HK" ? "更改號碼" : "Change number",
+    enterValidPhone: locale === "zh-HK" ? "請輸入有效嘅8位香港電話號碼" : "Please enter a valid 8-digit Hong Kong phone number",
+    sendFailed: locale === "zh-HK" ? "發送失敗，請重試" : "Failed to send, please try again",
+    networkError: locale === "zh-HK" ? "網絡錯誤，請重試" : "Network error. Please try again.",
+    verifyFailed: locale === "zh-HK" ? "驗證失敗，請重試" : "Verification failed, please try again",
   };
 
   return (
