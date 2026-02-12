@@ -130,7 +130,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
 
   const validateName = (value: string): string | null => {
     if (value.trim().length < 2) {
-      return locale === "zh-HK" ? "請輸入姓名（至少2個字）" : "Please enter a name (min 2 chars)";
+      return t.checkout.enterNameMinChars;
     }
     return null;
   };
@@ -138,7 +138,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const validatePhone = (value: string): string | null => {
     const digitsOnly = value.replace(/\D/g, "");
     if (digitsOnly.length !== 8) {
-      return locale === "zh-HK" ? "請輸入有效嘅8位電話號碼" : "Please enter a valid 8-digit phone number";
+      return t.checkout.enterValidPhone;
     }
     return null;
   };
@@ -147,7 +147,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     if (!value.trim()) return null;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value.trim())) {
-      return locale === "zh-HK" ? "請輸入有效嘅電郵地址" : "Please enter a valid email";
+      return t.checkout.enterValidEmail;
     }
     return null;
   };
@@ -155,12 +155,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const validateAddress = (): string | null => {
     if (fulfillmentType === "delivery") {
       if (!district || !addressLine.trim()) {
-        return locale === "zh-HK" ? "請輸入送貨地址" : "Please enter the delivery address";
+        return t.checkout.enterDeliveryAddress;
       }
     }
     if (fulfillmentType === "sf-locker") {
       if (!sfLockerCode.trim()) {
-        return locale === "zh-HK" ? "請輸入順豐智能櫃/站編號" : "Please enter the SF Locker/Station code";
+        return t.checkout.enterSfLockerCode;
       }
     }
     return null;
@@ -194,13 +194,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const total = Math.max(0, subtotal + calculatedShipping - discount);
 
   const deliveryMethodLabel = () => {
-    if (fulfillmentType === "pickup") return locale === "zh-HK" ? "自取" : "Pickup";
-    if (fulfillmentType === "sf-locker") return locale === "zh-HK" ? "順豐智能櫃" : "SF Locker";
-    return locale === "zh-HK" ? "送貨上門" : "Home Delivery";
+    if (fulfillmentType === "pickup") return t.checkout.pickup;
+    if (fulfillmentType === "sf-locker") return t.checkout.sfLocker;
+    return t.checkout.homeDelivery;
   };
 
   const formatFeeLabel = (fee: number) => {
-    if (fee === 0) return locale === "zh-HK" ? "免費" : "Free";
+    if (fee === 0) return t.checkout.free;
     return format(fee);
   };
 
@@ -269,7 +269,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
           type: "delivery",
           address: {
             line1: `SF Locker: ${sfLockerCode}`,
-            district: locale === "zh-HK" ? "順豐智能櫃" : "SF Locker",
+            district: t.checkout.sfLocker,
           },
         };
       }
@@ -335,12 +335,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     setAddressError(validateAddress());
 
     if (!selectedProvider) {
-      showToast(locale === "zh-HK" ? "請選擇付款方式" : "Please select a payment method");
+      showToast(t.checkout.pleaseSelectPaymentMethod);
       return;
     }
 
     if (selectedProvider.type === "manual" && !paymentProofFile) {
-      showToast(locale === "zh-HK" ? "請上傳付款證明" : "Please upload payment proof");
+      showToast(t.checkout.pleaseUploadPaymentProof);
       return;
     }
 
@@ -433,7 +433,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     return (
       <div className="px-4 py-6">
         <div className="mx-auto max-w-5xl">
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Loading...</h1>
+          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{t.common.loading}</h1>
         </div>
       </div>
     );
@@ -545,16 +545,10 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
         className="mt-6 w-full rounded-xl bg-olive-600 py-3.5 text-center font-semibold text-white hover:bg-olive-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {uploadingProof
-          ? locale === "zh-HK"
-            ? "上傳中..."
-            : "Uploading..."
+          ? t.checkout.uploading
           : processing
-            ? locale === "zh-HK"
-              ? "處理中..."
-              : "Processing..."
-            : locale === "zh-HK"
-              ? "提交訂單"
-              : "Place Order"}
+            ? t.checkout.processing
+            : t.checkout.placeOrder}
       </button>
     </div>
   );

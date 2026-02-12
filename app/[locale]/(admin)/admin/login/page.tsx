@@ -21,6 +21,9 @@ const t = {
     adminSecretPlaceholder: "Enter admin secret",
     adminLogin: "Admin Login",
     oauthError: "Sign-in failed. Please try again.",
+    loginFailed: "Login failed",
+    networkError: "Network error. Please try again.",
+    loading: "Loading...",
   },
   "zh-HK": {
     heading: "登入你嘅商店",
@@ -38,6 +41,9 @@ const t = {
     adminSecretPlaceholder: "Enter admin secret",
     adminLogin: "Admin Login",
     oauthError: "登入失敗，請再試。",
+    loginFailed: "登入失敗",
+    networkError: "網絡錯誤，請重試。",
+    loading: "載入中...",
   },
 } as const;
 
@@ -90,10 +96,10 @@ export default function AdminLoginPage() {
         router.push(`/${locale}/admin`);
         router.refresh();
       } else {
-        setError(data.error?.message || data.error || "Login failed");
+        setError(data.error?.message || data.error || labels.loginFailed);
       }
     } catch {
-      setError("Network error. Please try again.");
+      setError(labels.networkError);
     } finally {
       setLoading(false);
     }
@@ -117,10 +123,10 @@ export default function AdminLoginPage() {
         router.push(`/${locale}/admin/products`);
         router.refresh();
       } else {
-        setError(data.error || "Login failed");
+        setError(data.error || labels.loginFailed);
       }
     } catch {
-      setError("Network error. Please try again.");
+      setError(labels.networkError);
     } finally {
       setLoading(false);
     }
@@ -129,7 +135,7 @@ export default function AdminLoginPage() {
   if (checkingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">
-        <div className="text-zinc-400 text-sm">Loading...</div>
+        <div className="text-zinc-400 text-sm">{labels.loading}</div>
       </div>
     );
   }
