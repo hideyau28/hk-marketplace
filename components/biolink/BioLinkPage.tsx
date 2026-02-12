@@ -205,7 +205,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
           onCheckout={() => setShowCart(true)}
         />
       ) : (
-        <WhatsAppFAB whatsapp={tenant.whatsapp} />
+        <WhatsAppFAB whatsapp={tenant.whatsapp} cart={cart.items} />
       )}
 
       {/* Cart sheet (bottom sheet) */}
