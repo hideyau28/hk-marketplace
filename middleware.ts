@@ -83,13 +83,16 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // --- Path-based slug routing (future: /{slug} → tenant storefront) ---
-  // For now, just detect and set header. P4-F will add actual rendering.
+  // --- Path-based slug routing: /{slug} → tenant storefront ---
   const pathSlug = resolveSlugFromPath(pathname);
-  let tenantPathSlug: string | null = null;
   if (pathSlug && tenantSlug === DEFAULT_SLUG) {
-    // Path slug only takes effect when no subdomain tenant is set
-    tenantPathSlug = pathSlug;
+    // Path slug takes effect when no subdomain tenant is set
+    // Override tenantSlug with path slug
+    tenantSlug = pathSlug;
+  } else if (!pathSlug && tenantSlug === DEFAULT_SLUG) {
+    // No path slug and hostname resolved to DEFAULT_SLUG
+    // Don't set tenant slug - this will trigger landing page
+    tenantSlug = "";
   }
 
   // --- Skip admin guards for API routes (they handle auth themselves) ---
@@ -137,9 +140,8 @@ export function middleware(request: NextRequest) {
 
   // --- Forward tenant slug via request header ---
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-tenant-slug", tenantSlug);
-  if (tenantPathSlug) {
-    requestHeaders.set("x-tenant-path-slug", tenantPathSlug);
+  if (tenantSlug) {
+    requestHeaders.set("x-tenant-slug", tenantSlug);
   }
 
   return NextResponse.next({

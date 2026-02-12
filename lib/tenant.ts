@@ -132,7 +132,12 @@ export async function getTenantId(req?: Request): Promise<string> {
 export async function getServerTenantId(): Promise<string> {
   const { headers } = await import("next/headers");
   const headersList = await headers();
-  const slug = headersList.get("x-tenant-slug") || DEFAULT_SLUG;
+  const slug = headersList.get("x-tenant-slug");
+
+  // If no slug is provided (landing page case), throw error
+  if (!slug) {
+    throw new Error("Tenant not found or inactive");
+  }
 
   const tenant = await prisma.tenant.findUnique({
     where: { slug },

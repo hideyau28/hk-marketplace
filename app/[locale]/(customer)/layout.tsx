@@ -35,20 +35,30 @@ export default async function CustomerLayout({
   const t = getDict(l);
 
   // Fetch welcome popup settings (tenant-aware)
-  const tenantId = await getServerTenantId();
-  const storeSettings = await prisma.storeSettings.findFirst({
-    where: { tenantId },
-  }).catch(() => null);
+  // If no tenant exists (landing page), these will be null
+  let tenantId: string | null = null;
+  let storeSettings = null;
+  let socialProofProducts: any[] = [];
+  let storeName = "WoWlix";
 
-  // Fetch products for social proof popup
-  const socialProofProducts = await prisma.product.findMany({
-    where: { active: true, stock: { gt: 0 } },
-    select: { id: true, title: true },
-    take: 50,
-  }).catch(() => []);
+  try {
+    tenantId = await getServerTenantId();
+    storeSettings = await prisma.storeSettings.findFirst({
+      where: { tenantId },
+    }).catch(() => null);
 
-  // Get store name with fallback
-  const storeName = storeSettings?.storeName || "May's Shop";
+    // Fetch products for social proof popup
+    socialProofProducts = await prisma.product.findMany({
+      where: { active: true, stock: { gt: 0 }, tenantId },
+      select: { id: true, title: true },
+      take: 50,
+    }).catch(() => []);
+
+    // Get store name with fallback
+    storeName = storeSettings?.storeName || "May's Shop";
+  } catch (error) {
+    // No tenant (landing page case) - use defaults
+  }
 
   const welcomePopupConfig = {
     enabled: storeSettings?.welcomePopupEnabled ?? true,
@@ -65,7 +75,7 @@ export default async function CustomerLayout({
           <AuthProvider>
             <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
               <Analytics />
-              <AdminPreviewBanner locale={l} />
+              <AdminPreviewBanner locale={l} hasTenant={!!tenantId} />
               <TopNav locale={l} t={t} storeName={storeName} />
               <CategoryNavWrapper locale={l} />
               <main>{children}</main>
