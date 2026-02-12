@@ -160,16 +160,19 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onIma
         </div>
 
         {/* + 圓形按鈕 — 右下角 */}
-        {!soldOut && (
-          <button
-            onClick={() => onAdd(product)}
-            className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-[#FF9500] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-          </button>
-        )}
+        <button
+          onClick={() => !soldOut && onAdd(product)}
+          disabled={soldOut}
+          className={`absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-transform ${
+            soldOut
+              ? "bg-zinc-300 text-zinc-400 cursor-not-allowed"
+              : "bg-[#FF9500] text-white active:scale-95"
+          }`}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </button>
       </div>
     </div>
   );
