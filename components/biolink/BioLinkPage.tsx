@@ -274,7 +274,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
         <span className="text-[11px] text-zinc-400 font-medium">
           Powered by{" "}
         </span>
-        <span className="text-[11px] text-[#FF9500] font-bold">Wowlix</span>
+        <a href="/" className="text-[11px] text-[#FF9500] font-bold hover:underline">Wowlix</a>
       </footer>
     </div>
   );
