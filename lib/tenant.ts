@@ -148,12 +148,10 @@ export async function getServerTenantId(): Promise<string> {
 
 /**
  * Get tenantId for Admin Server Components / Server Actions.
- * Priority:
- * 1. tenant-admin-token JWT cookie → tenantId from payload
- * 2. Fallback to slug-based resolution (getServerTenantId)
+ * 只從 JWT cookie 讀 tenantId，唔再 fallback 去 DEFAULT_SLUG。
+ * 如果冇有效 JWT → throw error。
  */
 export async function getAdminTenantId(): Promise<string> {
-  // 1. Try JWT cookie
   try {
     const { cookies } = await import("next/headers");
     const cookieStore = await cookies();
@@ -172,9 +170,8 @@ export async function getAdminTenantId(): Promise<string> {
       }
     }
   } catch {
-    // JWT verification failed, fall through
+    // JWT verification failed
   }
 
-  // 2. Fallback to slug-based resolution
-  return getServerTenantId();
+  throw new Error("Admin tenant context required: no valid tenant-admin-token JWT found");
 }
