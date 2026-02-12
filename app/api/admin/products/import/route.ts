@@ -56,6 +56,11 @@ function parseSizes(value: unknown) {
   return null;
 }
 
+type FailedRow = {
+  rowNumber: number;
+  reason: string;
+};
+
 export const POST = withApi(async (req: Request) => {
   const { tenantId } = await authenticateAdmin(req);
 
@@ -71,9 +76,12 @@ export const POST = withApi(async (req: Request) => {
   }
 
   let successCount = 0;
-  let failureCount = 0;
+  const failures: FailedRow[] = [];
 
-  for (const entry of body as ImportPayload[]) {
+  for (let i = 0; i < body.length; i += 1) {
+    const entry = body[i] as ImportPayload;
+    const rowNumber = i + 2; // +2 because: +1 for 0-index, +1 for header row
+
     try {
       const title = toOptionalString(entry.title);
       const brand = toOptionalString(entry.brand);
@@ -108,10 +116,11 @@ export const POST = withApi(async (req: Request) => {
 
       successCount += 1;
     } catch (error) {
-      console.error("CSV import error:", error);
-      failureCount += 1;
+      const reason = error instanceof Error ? error.message : "Unknown error";
+      console.error(`CSV import error at row ${rowNumber}:`, reason);
+      failures.push({ rowNumber, reason });
     }
   }
 
-  return ok(req, { successCount, failureCount });
+  return ok(req, { successCount, failureCount: failures.length, failures });
 });
