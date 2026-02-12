@@ -18,6 +18,9 @@ import CartFlyAnimation from "@/components/CartFlyAnimation";
 import AdminPreviewBanner from "@/components/AdminPreviewBanner";
 import { getServerTenantId } from "@/lib/tenant";
 
+// Force dynamic rendering because we need headers() for tenant resolution
+export const dynamic = 'force-dynamic';
+
 export default async function CustomerLayout({
   children,
   params,

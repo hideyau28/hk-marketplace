@@ -6,6 +6,9 @@ import { getStoreName } from "@/lib/get-store-name";
 import { CollectionsClient } from "./collections-client";
 import { Metadata } from "next";
 
+// Force dynamic rendering because we need headers() for tenant resolution
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const storeName = await getStoreName();
