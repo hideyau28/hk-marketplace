@@ -55,7 +55,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       prisma.product.findMany({
         where: { tenantId, active: true },
         orderBy: { sortOrder: "asc" },
-        select: { id: true, title: true, price: true, originalPrice: true, imageUrl: true, images: true, videoUrl: true, sizes: true, sizeSystem: true },
+        select: { id: true, title: true, price: true, originalPrice: true, imageUrl: true, images: true, videoUrl: true, sizes: true, sizeSystem: true, hidden: true, featured: true, sortOrder: true, createdAt: true },
       }),
       prisma.order.count({
         where: { tenantId, status: "PENDING" },
@@ -73,6 +73,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           products={products.map((p) => ({
             ...p,
             sizes: (p.sizes as Record<string, unknown>) ?? null,
+            createdAt: p.createdAt.toISOString(),
           }))}
           pendingOrders={pendingOrders}
         />
