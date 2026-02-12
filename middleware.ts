@@ -83,13 +83,21 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // --- Path-based slug routing (future: /{slug} → tenant storefront) ---
-  // For now, just detect and set header. P4-F will add actual rendering.
+  // --- Path-based slug routing: /{slug} → /en/{slug} rewrite ---
+  // When the first segment is a tenant slug (not a locale or reserved word),
+  // rewrite to add /en prefix so Next.js matches app/[locale]/[slug]/page.tsx
   const pathSlug = resolveSlugFromPath(pathname);
-  let tenantPathSlug: string | null = null;
   if (pathSlug && tenantSlug === DEFAULT_SLUG) {
     // Path slug only takes effect when no subdomain tenant is set
-    tenantPathSlug = pathSlug;
+    // Rewrite /{slug}/... → /en/{slug}/...
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = `/en${pathname}`;
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-tenant-slug", tenantSlug);
+    requestHeaders.set("x-tenant-path-slug", pathSlug);
+    return NextResponse.rewrite(rewriteUrl, {
+      request: { headers: requestHeaders },
+    });
   }
 
   // --- Skip admin guards for API routes (they handle auth themselves) ---
@@ -138,9 +146,6 @@ export function middleware(request: NextRequest) {
   // --- Forward tenant slug via request header ---
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-tenant-slug", tenantSlug);
-  if (tenantPathSlug) {
-    requestHeaders.set("x-tenant-path-slug", tenantPathSlug);
-  }
 
   return NextResponse.next({
     request: {
