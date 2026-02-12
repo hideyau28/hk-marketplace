@@ -133,15 +133,15 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   const formattedRevenue = `$${totalRevenue.toFixed(0)}`;
   const paidStatuses = new Set(["PAID", "FULFILLING", "SHIPPED", "COMPLETED"]);
 
-  const ordersLast7Map = new Map<string, number>();
+  const ordersLast30Map = new Map<string, number>();
   const revenueLast30Map = new Map<string, number>();
   const productCounts = new Map<string, number>();
 
   for (const order of recentOrdersForCharts) {
     const dateKey = order.createdAt.toISOString().slice(0, 10);
-    if (order.createdAt >= start7) {
-      ordersLast7Map.set(dateKey, (ordersLast7Map.get(dateKey) || 0) + 1);
-    }
+    // Count all orders in last 30 days
+    ordersLast30Map.set(dateKey, (ordersLast30Map.get(dateKey) || 0) + 1);
+
     if (paidStatuses.has(order.status)) {
       const amounts = order.amounts as any;
       const total = amounts?.total || 0;
@@ -156,13 +156,23 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
     }
   }
 
-  const ordersLast7 = Array.from({ length: 7 }).map((_, idx) => {
-    const d = new Date(start7);
-    d.setDate(start7.getDate() + idx);
+  const ordersLast30 = Array.from({ length: 30 }).map((_, idx) => {
+    const d = new Date(start30);
+    d.setDate(start30.getDate() + idx);
     const key = d.toISOString().slice(0, 10);
     return {
       date: d.toLocaleDateString("en-HK", { month: "short", day: "numeric" }),
-      orders: ordersLast7Map.get(key) || 0,
+      orders: ordersLast30Map.get(key) || 0,
+    };
+  });
+
+  // Mock data for page views (API 未有，用 mock data)
+  const pageViewsLast7 = Array.from({ length: 7 }).map((_, idx) => {
+    const d = new Date(start7);
+    d.setDate(start7.getDate() + idx);
+    return {
+      date: d.toLocaleDateString("en-HK", { month: "short", day: "numeric" }),
+      views: Math.floor(Math.random() * 200) + 50, // Mock: 50-250 views per day
     };
   });
 
@@ -224,7 +234,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         <StatCard label={t.admin.dashboard.averageOrder} value={`$${avgOrderAmount.toFixed(0)}`} icon={<DollarSign size={24} />} />
       </div>
 
-      <DashboardCharts ordersLast7={ordersLast7} revenueLast30={revenueLast30} topProducts={topProducts} />
+      <DashboardCharts ordersLast30={ordersLast30} revenueLast30={revenueLast30} topProducts={topProducts} pageViewsLast7={pageViewsLast7} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
         <Link
