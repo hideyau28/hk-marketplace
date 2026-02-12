@@ -49,6 +49,7 @@ export type ProductForBioLink = {
   badges: string[] | null;
   featured: boolean;
   createdAt: Date;
+  description?: string | null;
   // ProductVariant relation (may be included)
   variants?: VariantForBioLink[];
 };
@@ -60,6 +61,7 @@ export type TenantForBioLink = {
   description: string | null;
   whatsapp: string | null;
   instagram: string | null;
+  facebook: string | null;
   brandColor: string | null;
   logoUrl: string | null;
   coverPhoto: string | null;

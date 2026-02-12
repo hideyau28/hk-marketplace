@@ -129,7 +129,7 @@ export default function BioProductCard({ product, onAdd, onImageTap }: Props) {
 
       {/* Content */}
       <div className="p-3 relative">
-        <h3 className="text-zinc-900 text-sm font-semibold mb-1 pr-10" style={{
+        <h3 className="text-zinc-900 text-sm font-semibold leading-snug mb-1 pr-10" style={{
           display: '-webkit-box',
           WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical',

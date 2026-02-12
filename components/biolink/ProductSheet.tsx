@@ -359,6 +359,18 @@ export default function ProductSheet({ product, onClose, onAddToCart }: Props) {
             </div>
           </div>
 
+          {/* 商品描述（可摺疊） */}
+          {product.description && product.description.trim().length > 0 && (
+            <details className="rounded-xl border border-zinc-200 bg-white px-4 py-3">
+              <summary className="cursor-pointer select-none text-sm font-semibold text-zinc-800">
+                商品描述
+              </summary>
+              <div className="mt-2 text-sm text-zinc-700 whitespace-pre-wrap leading-relaxed">
+                {product.description}
+              </div>
+            </details>
+          )}
+
           {/* 數量 stepper */}
           <div>
             <p className="text-sm font-semibold text-zinc-700 mb-3 border-b border-zinc-100 pb-2">數量</p>

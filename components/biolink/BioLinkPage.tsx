@@ -207,8 +207,15 @@ export default function BioLinkPage({ tenant, products }: Props) {
         }}
       />
 
-      {/* Light zone — Product grid */}
-      <ProductGrid products={grid} onAdd={handleCardAdd} onImageTap={handleImageTap} />
+      {/* Light zone — Product grid / empty state */}
+      {featured.length === 0 && grid.length === 0 ? (
+        <div className="bg-[#f5f5f0] px-6 py-16 text-center">
+          <p className="text-zinc-800 font-semibold text-base">仲未有商品，快啲加第一件啦！</p>
+          <p className="text-zinc-500 text-sm mt-2">去 Admin 後台新增商品，呢度就會即刻顯示。</p>
+        </div>
+      ) : (
+        <ProductGrid products={grid} onAdd={handleCardAdd} onImageTap={handleImageTap} />
+      )}
 
       {/* Cart bar or WhatsApp FAB */}
       {cartCount > 0 ? (

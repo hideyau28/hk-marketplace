@@ -20,6 +20,7 @@ export default async function SlugPage({ params }: PageProps) {
       description: true,
       whatsapp: true,
       instagram: true,
+      facebook: true,
       brandColor: true,
       logoUrl: true,
       coverPhoto: true,
@@ -53,6 +54,7 @@ export default async function SlugPage({ params }: PageProps) {
       badges: true,
       featured: true,
       createdAt: true,
+      attributes: true,
       variants: {
         where: { active: true },
         orderBy: { sortOrder: "asc" },
@@ -83,6 +85,12 @@ export default async function SlugPage({ params }: PageProps) {
     featured: p.featured,
     createdAt: p.createdAt,
     variants: p.variants,
+    description:
+      typeof (p.attributes as any)?.description === "string"
+        ? ((p.attributes as any).description as string)
+        : typeof (p.attributes as any)?.desc === "string"
+          ? ((p.attributes as any).desc as string)
+          : null,
   }));
 
   return <BioLinkPage tenant={tenant} products={serialized} />;
