@@ -19,7 +19,7 @@ const DEFAULT_SLUG = "maysshop";
  * Known hostnames that should resolve to the default tenant
  * rather than being treated as a subdomain slug.
  */
-const DEFAULT_HOSTS = new Set(["hk-marketplace", "www", "localhost", "127.0.0.1"]);
+const DEFAULT_HOSTS = new Set(["hk-marketplace", "wowlix", "www", "localhost", "127.0.0.1"]);
 
 /**
  * Extract tenant slug from a hostname string.
