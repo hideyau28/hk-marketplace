@@ -86,7 +86,7 @@ function SortableProductCard({
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} className="relative">
+    <div ref={setNodeRef} style={style} {...attributes} className="relative overflow-hidden">
       <div
         onClick={() => {
           if (isEditMode) return;
