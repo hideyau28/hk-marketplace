@@ -38,8 +38,8 @@ export default function BioLinkAdminShell({ children }: { children: ReactNode })
         </div>
         <button
           onClick={handleLogout}
+          aria-label="登出"
           className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
-          title="Logout"
         >
           <LogOut size={18} />
         </button>

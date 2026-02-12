@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Camera, Plus, Eye, Copy, Check, Star, Edit, GripVertical } from "lucide-react";
 import {
   DndContext,
@@ -100,10 +101,12 @@ function SortableProductCard({
           } ${product.hidden ? "opacity-50" : ""}`}
         >
           {product.imageUrl || product.images?.[0] ? (
-            <img
+            <Image
               src={product.imageUrl || product.images[0]}
               alt={product.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 33vw, 150px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-zinc-300">
@@ -116,6 +119,7 @@ function SortableProductCard({
             <button
               ref={setActivatorNodeRef}
               {...listeners}
+              aria-label={`拖動 ${product.title}`}
               className="absolute top-1.5 left-1.5 w-7 h-7 bg-white/90 rounded-lg flex items-center justify-center shadow-sm touch-none cursor-grab active:cursor-grabbing"
               onClick={(e) => e.stopPropagation()}
             >
@@ -156,6 +160,7 @@ function SortableProductCard({
         <div className="flex justify-center mt-1.5">
           <button
             onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
+            aria-label={isSelected ? `取消選擇 ${product.title}` : `選擇 ${product.title}`}
             className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
               isSelected
                 ? "bg-[#FF9500] border-[#FF9500] text-white"
@@ -373,9 +378,9 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
       >
         <div className="px-6 py-8 text-center text-white">
           {/* Avatar */}
-          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
+          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 text-2xl font-bold overflow-hidden relative">
             {tenant.logoUrl ? (
-              <img src={tenant.logoUrl} alt="" className="w-full h-full rounded-full object-cover" />
+              <Image src={tenant.logoUrl} alt={tenant.name} fill className="object-cover" sizes="64px" />
             ) : (
               tenant.name.charAt(0).toUpperCase()
             )}

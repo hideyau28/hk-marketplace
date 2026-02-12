@@ -163,6 +163,7 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onIma
         <button
           onClick={() => !soldOut && onAdd(product)}
           disabled={soldOut}
+          aria-label={`加入購物車 ${product.title}`}
           className={`absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-transform ${
             soldOut
               ? "bg-zinc-300 text-zinc-400 cursor-not-allowed"

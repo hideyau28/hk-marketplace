@@ -231,6 +231,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
           {/* Close button - 右上角 */}
           <button
             onClick={onClose}
+            aria-label="關閉"
             className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center text-zinc-600 hover:text-zinc-900 active:scale-95 transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -280,6 +281,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                 <button
                   key={idx}
                   onClick={() => setCarouselIndex(idx)}
+                  aria-label={`查看圖片 ${idx + 1}`}
                   className={`w-1.5 h-1.5 rounded-full transition-all ${
                     idx === carouselIndex
                       ? "bg-white w-4"
@@ -333,6 +335,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                       <button
                         key={opt}
                         onClick={() => handleColorChange(opt)}
+                        aria-label={`選擇顏色 ${opt}`}
                         className={`w-10 h-10 rounded-full transition-all flex-shrink-0 ${
                           selectedColor === opt
                             ? "border-[#FF9500] ring-2 ring-[#FF9500]/30 scale-110 border-2"
@@ -341,7 +344,6 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                               : "border-zinc-200 border-2"
                         }`}
                         style={{ backgroundColor: colorHex }}
-                        title={opt}
                       />
                     );
                   }
@@ -394,6 +396,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
             <div>
               <button
                 onClick={() => setShowDescription(!showDescription)}
+                aria-label={showDescription ? "隱藏商品描述" : "展開商品描述"}
                 className="w-full flex items-center justify-between text-sm font-semibold text-zinc-700 border-b border-zinc-100 pb-2"
               >
                 <span>商品描述</span>
@@ -422,6 +425,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 disabled={qty <= 1}
+                aria-label="減少數量"
                 className="w-10 h-10 rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-600 active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -436,6 +440,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                   setQty((q) => Math.min(selectedStock || 99, q + 1))
                 }
                 disabled={qty >= selectedStock}
+                aria-label="增加數量"
                 className="w-10 h-10 rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-600 active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
