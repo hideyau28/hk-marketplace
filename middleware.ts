@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const DEFAULT_SLUG = "maysshop";
-const DEFAULT_HOSTS = new Set(["hk-marketplace", "wowlix", "www", "localhost", "127.0.0.1"]);
+const DEFAULT_HOSTS = new Set(["hk-marketplace", "www", "localhost", "127.0.0.1"]);
 
 /**
  * 保留字清單 — 呢啲 path segment 唔會被當成 tenant slug。
@@ -146,13 +146,6 @@ export function middleware(request: NextRequest) {
   // --- Forward tenant slug via request header ---
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-tenant-slug", tenantSlug);
-
-  // Mark locale root paths (e.g. /en, /zh-HK) on default tenant as landing page
-  // so the customer layout can skip storefront chrome
-  const isLocaleRoot = /^\/[a-z]{2}(-[A-Za-z]{2,4})?$/.test(pathname);
-  if (isLocaleRoot && tenantSlug === DEFAULT_SLUG) {
-    requestHeaders.set("x-landing-page", "1");
-  }
 
   return NextResponse.next({
     request: {
