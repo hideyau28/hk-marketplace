@@ -22,6 +22,9 @@ export async function generateMetadata(): Promise<Metadata> {
     title: `${storeName} - Sports Gear for Hong Kong`,
     description: "Shop the latest sports apparel and gear from Nike, Adidas, Puma and more.",
     manifest: "/manifest.json",
+    icons: {
+      icon: "/favicon.svg",
+    },
   };
 }
 
