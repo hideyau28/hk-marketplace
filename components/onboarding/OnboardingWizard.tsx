@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import StepIndicator from "./StepIndicator";
 import { COVER_TEMPLATES } from "@/lib/cover-templates";
+import { useToast } from "@/components/Toast";
 import type { Locale } from "@/lib/i18n";
 
 // --- Bilingual labels ---
@@ -163,6 +164,7 @@ interface OnboardingWizardProps {
 
 export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
   const labels = locale === "zh-HK" ? t["zh-HK"] : t.en;
+  const { showToast } = useToast();
 
   const [step, setStep] = useState<OnboardingStep>(1);
   const [direction, setDirection] = useState(1);
@@ -409,6 +411,29 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     }
+  };
+
+  const handleShareToIG = async () => {
+    const link = `https://wowlix.com/${createdSlug}`;
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = link;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+    showToast(
+      locale === "zh-HK"
+        ? "連結已複製！貼到 Instagram bio 或 story"
+        : "Link copied! Paste it in your Instagram bio or story"
+    );
+    // 嘗試開啟 IG app
+    setTimeout(() => {
+      window.location.href = "instagram://";
+    }, 300);
   };
 
   const inputClass = (field: string) =>
@@ -795,7 +820,7 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                     {labels.addFirstProduct} &rarr;
                   </a>
                   <button
-                    onClick={handleCopyLink}
+                    onClick={handleShareToIG}
                     className="w-full py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px]"
                   >
                     {labels.shareToIG}

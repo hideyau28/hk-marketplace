@@ -7,8 +7,8 @@ import { type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
-import { Star, Flame, Search, Check, X, Pencil } from "lucide-react";
-import { toggleFeatured, toggleHotSelling, updatePrice } from "./actions";
+import { Star, Flame, Search, Check, X, Pencil, Eye, EyeOff } from "lucide-react";
+import { toggleFeatured, toggleHotSelling, updatePrice, toggleHidden } from "./actions";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -16,6 +16,7 @@ const ITEMS_PER_PAGE = 50;
 type ProductWithBadges = Product & {
   promotionBadges?: string[];
   featured?: boolean;
+  hidden?: boolean;
   images?: string[];
 };
 
@@ -140,6 +141,10 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const [openFilter, setOpenFilter] = useState<"category" | "status" | "stock" | null>(null);
   const [sortKey, setSortKey] = useState<"originalPrice" | "price" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
+  // Show hidden toggle & multi-select
+  const [showHidden, setShowHidden] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [togglingHidden, setTogglingHidden] = useState<string | null>(null);
   // Inline price editing
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState("");
@@ -192,6 +197,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     let result = products.filter((p) => {
+      // 隱藏商品：showHidden off 就唔顯示
+      if (p.hidden && !showHidden) return false;
+
       const matchesSearch = !query
         || p.title.toLowerCase().includes(query)
         || (p.sku && p.sku.toLowerCase().includes(query))
@@ -219,7 +227,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     }
 
     return result;
-  }, [products, searchQuery, categoryFilter, statusFilter, stockFilter, sortKey, sortDirection]);
+  }, [products, searchQuery, categoryFilter, statusFilter, stockFilter, sortKey, sortDirection, showHidden]);
 
   // Paginate filtered products
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -288,6 +296,53 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
       setSavingPrice(false);
     }
   };
+
+  const handleToggleHidden = async (productId: string, currentHidden: boolean) => {
+    setTogglingHidden(productId);
+    try {
+      await toggleHidden(productId, !currentHidden);
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to toggle hidden:", error);
+    } finally {
+      setTogglingHidden(null);
+    }
+  };
+
+  const handleBulkUnhide = async () => {
+    for (const id of selectedIds) {
+      await toggleHidden(id, false);
+    }
+    setSelectedIds(new Set());
+    router.refresh();
+  };
+
+  const handleBulkHide = async () => {
+    for (const id of selectedIds) {
+      await toggleHidden(id, true);
+    }
+    setSelectedIds(new Set());
+    router.refresh();
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginatedProducts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedProducts.map((p) => p.id)));
+    }
+  };
+
+  const hiddenCount = products.filter((p) => p.hidden).length;
 
   const resetBadgeForm = () => {
     setEditingBadgeId(null);
@@ -471,6 +526,19 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           >
             Import CSV
           </button>
+          {hiddenCount > 0 && (
+            <button
+              onClick={() => setShowHidden(!showHidden)}
+              className={`rounded-xl px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+                showHidden
+                  ? "bg-amber-100 text-amber-700 border border-amber-300"
+                  : "bg-zinc-100 text-zinc-600 border border-zinc-200 hover:bg-zinc-200"
+              }`}
+            >
+              {showHidden ? <Eye size={14} /> : <EyeOff size={14} />}
+              {showHidden ? `隱藏商品 (${hiddenCount})` : `顯示隱藏 (${hiddenCount})`}
+            </button>
+          )}
           {showAddButton && (
             <button
               onClick={handleCreateProduct}
@@ -482,11 +550,53 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
         </div>
       </div>
 
+      {/* Multi-select action bar */}
+      {selectedIds.size > 0 && (
+        <div className="mt-3 flex items-center gap-3 rounded-2xl border border-olive-200 bg-olive-50 px-4 py-2.5">
+          <span className="text-sm text-olive-700 font-medium">
+            已選 {selectedIds.size} 件
+          </span>
+          <div className="flex items-center gap-2 ml-auto">
+            {/* 顯示（unhide）按鈕 — 只喺有 hidden 嘅 selection 先出 */}
+            {Array.from(selectedIds).some((id) => products.find((p) => p.id === id)?.hidden) && (
+              <button
+                onClick={handleBulkUnhide}
+                className="rounded-lg bg-white border border-olive-200 px-3 py-1.5 text-xs text-olive-700 font-medium hover:bg-olive-100 transition-colors flex items-center gap-1"
+              >
+                <Eye size={12} /> 顯示
+              </button>
+            )}
+            {Array.from(selectedIds).some((id) => !products.find((p) => p.id === id)?.hidden) && (
+              <button
+                onClick={handleBulkHide}
+                className="rounded-lg bg-white border border-zinc-200 px-3 py-1.5 text-xs text-zinc-600 font-medium hover:bg-zinc-100 transition-colors flex items-center gap-1"
+              >
+                <EyeOff size={12} /> 隱藏
+              </button>
+            )}
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="rounded-lg bg-white border border-zinc-200 px-3 py-1.5 text-xs text-zinc-500 hover:bg-zinc-100 transition-colors"
+            >
+              取消
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-[1400px] w-full text-sm">
             <thead>
               <tr className="text-zinc-500 border-b border-zinc-200">
+                <th className="px-2 py-1 text-center w-8">
+                  <input
+                    type="checkbox"
+                    checked={paginatedProducts.length > 0 && selectedIds.size === paginatedProducts.length}
+                    onChange={toggleSelectAll}
+                    className="h-3.5 w-3.5 accent-olive-600"
+                  />
+                </th>
                 <th className="px-2 py-1 text-left">Photo</th>
                 <th className="px-2 py-1 text-left">Brand</th>
                 <th className="px-2 py-1 text-left">Style</th>
@@ -604,7 +714,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
             <tbody>
               {paginatedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-12 text-center text-zinc-500">
+                  <td colSpan={12} className="px-4 py-12 text-center text-zinc-500">
                     {searchQuery ? "No products match your search." : "No data available."}
                   </td>
                 </tr>
@@ -627,7 +737,16 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     return { key: badge, label: badge, color: null };
                   });
                   return (
-                  <tr key={product.id} className="border-t border-zinc-200 hover:bg-zinc-50">
+                  <tr key={product.id} className={`border-t border-zinc-200 hover:bg-zinc-50 ${product.hidden ? "opacity-50" : ""}`}>
+                    {/* Checkbox */}
+                    <td className="px-2 py-1 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(product.id)}
+                        onChange={() => toggleSelect(product.id)}
+                        className="h-3.5 w-3.5 accent-olive-600"
+                      />
+                    </td>
                     {/* Photo */}
                     <td className="px-2 py-1">
                       {product.imageUrl ? (
@@ -728,15 +847,22 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     </td>
                     {/* Status */}
                     <td className="px-2 py-1">
-                      <span
-                        className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${
-                          product.active
-                            ? "bg-olive-100 text-olive-700 border-olive-200"
-                            : "bg-zinc-100 text-zinc-600 border-zinc-200"
-                        }`}
-                      >
-                        {product.active ? "Active" : "Inactive"}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${
+                            product.active
+                              ? "bg-olive-100 text-olive-700 border-olive-200"
+                              : "bg-zinc-100 text-zinc-600 border-zinc-200"
+                          }`}
+                        >
+                          {product.active ? "Active" : "Inactive"}
+                        </span>
+                        {product.hidden && (
+                          <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-600">
+                            已隱藏
+                          </span>
+                        )}
+                      </div>
                     </td>
                     {/* Updated */}
                     <td className="px-2 py-1 text-zinc-500 text-xs">
@@ -749,8 +875,18 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                         >
                           Edit
                         </button>
-
-
+                        <button
+                          onClick={() => handleToggleHidden(product.id, !!product.hidden)}
+                          disabled={togglingHidden === product.id}
+                          className={`rounded-lg border px-2 py-1.5 text-xs transition-colors disabled:opacity-50 ${
+                            product.hidden
+                              ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
+                              : "border-zinc-200 bg-white text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50"
+                          }`}
+                          title={product.hidden ? "取消隱藏" : "隱藏"}
+                        >
+                          {product.hidden ? <Eye size={12} /> : <EyeOff size={12} />}
+                        </button>
                         </div>
                       </div>
                     </td>
@@ -1006,7 +1142,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
       )}
 
       {(selectedProduct || isCreating) && (
-        <ProductModal product={selectedProduct} onClose={handleCloseModal} locale={locale} />
+        <ProductModal product={selectedProduct} onClose={handleCloseModal} onSaved={() => router.refresh()} locale={locale} />
       )}
 
       {isCsvOpen && (

@@ -37,6 +37,9 @@ type ToggleFeaturedResult = ToggleFeaturedOk | ActionFail;
 type ToggleHotSellingOk = { ok: true };
 type ToggleHotSellingResult = ToggleHotSellingOk | ActionFail;
 
+type ToggleHiddenOk = { ok: true };
+type ToggleHiddenResult = ToggleHiddenOk | ActionFail;
+
 type UpdatePriceOk = { ok: true };
 type UpdatePriceResult = UpdatePriceOk | ActionFail;
 
@@ -372,5 +375,44 @@ export async function updatePrice(
   } catch (error) {
     console.error("Failed to update price:", error);
     return { ok: false, code: "NETWORK_ERROR", message: "Failed to update price" };
+  }
+}
+
+export async function toggleHidden(
+  productId: string,
+  hidden: boolean
+): Promise<ToggleHiddenResult> {
+  const authHeaders = await getAdminAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
+  }
+
+  try {
+    const url = new URL(`/api/admin/products/${productId}`, getApiBaseUrl());
+    const response = await fetch(url.toString(), {
+      method: "PATCH",
+      headers: {
+        ...authHeaders,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ hidden }),
+    });
+
+    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Product>;
+
+    if (!response.ok) {
+      const errorData = json as ApiErrorResponse;
+      return {
+        ok: false,
+        code: errorData.error?.code || "UNKNOWN_ERROR",
+        message: errorData.error?.message || "Failed to toggle hidden",
+      };
+    }
+
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (error) {
+    console.error("Failed to toggle hidden:", error);
+    return { ok: false, code: "NETWORK_ERROR", message: "Failed to toggle hidden" };
   }
 }
