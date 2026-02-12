@@ -23,6 +23,7 @@ export const GET = withApi(
         coverTemplate: true,
         coverPhoto: true,
         logoUrl: true,
+        template: true,
         // Checkout settings
         currency: true,
         deliveryOptions: true,
@@ -96,6 +97,7 @@ export const PUT = withApi(
     if (body.coverTemplate !== undefined) updateData.coverTemplate = body.coverTemplate;
     if (body.coverPhoto !== undefined) updateData.coverPhoto = body.coverPhoto;
     if (body.logo !== undefined) updateData.logoUrl = body.logo;
+    if (body.template !== undefined) updateData.template = body.template;
     // Checkout settings
     if (body.currency !== undefined) updateData.currency = body.currency;
     if (body.deliveryOptions !== undefined) updateData.deliveryOptions = body.deliveryOptions;
@@ -117,6 +119,7 @@ export const PUT = withApi(
         coverTemplate: true,
         coverPhoto: true,
         logoUrl: true,
+        template: true,
         currency: true,
         deliveryOptions: true,
         freeShippingThreshold: true,

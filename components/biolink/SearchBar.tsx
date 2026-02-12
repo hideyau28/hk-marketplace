@@ -31,7 +31,7 @@ export default function SearchBar({ value, onChange, placeholder = "搜尋商品
   };
 
   return (
-    <div className="bg-[#f5f5f0] px-4 pt-4 pb-2">
+    <div className="px-4 pt-4 pb-2">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
         <input
