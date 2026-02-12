@@ -21,6 +21,9 @@ const categoryTranslations: Record<string, { en: string; "zh-HK": string }> = {
   Accessories: { en: "Accessories", "zh-HK": "配飾" },
 };
 
+// Force dynamic rendering because we need headers() for tenant resolution
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; id: string }> }): Promise<Metadata> {
   const { locale, id } = await params;
   const storeName = await getStoreName();
