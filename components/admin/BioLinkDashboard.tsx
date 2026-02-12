@@ -160,12 +160,15 @@ function SortableProductCard({
         <div className="flex justify-center mt-1.5">
           <button
             onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
             aria-label={isSelected ? `取消選擇 ${product.title}` : `選擇 ${product.title}`}
             className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
               isSelected
                 ? "bg-[#FF9500] border-[#FF9500] text-white"
                 : "border-zinc-300 bg-white hover:border-zinc-400"
             }`}
+            style={{ touchAction: 'auto' }}
           >
             {isSelected && <Check size={12} strokeWidth={3} />}
           </button>
