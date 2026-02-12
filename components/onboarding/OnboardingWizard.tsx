@@ -161,6 +161,8 @@ interface OnboardingWizardProps {
   locale: Locale;
 }
 
+const STORAGE_KEY = "onboarding-wizard-state";
+
 export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
   const labels = locale === "zh-HK" ? t["zh-HK"] : t.en;
 
@@ -186,6 +188,31 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
   const [linkCopied, setLinkCopied] = useState(false);
   const [igToast, setIgToast] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // --- Restore state from sessionStorage on mount ---
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.step) setStep(parsed.step);
+        if (parsed.data) setData(parsed.data);
+      }
+    } catch (error) {
+      // Ignore invalid JSON or missing data
+      console.error("Failed to restore onboarding state:", error);
+    }
+  }, []);
+
+  // --- Save state to sessionStorage whenever it changes ---
+  useEffect(() => {
+    try {
+      const state = { step, data };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+      console.error("Failed to save onboarding state:", error);
+    }
+  }, [step, data]);
 
   // --- Slug availability check ---
   const checkSlug = useCallback(
@@ -386,6 +413,12 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
       // Success → show step 4
       setCreatedSlug(json.data?.slug || data.slug);
       setSubmitting(false);
+      // Clear saved state after successful registration
+      try {
+        sessionStorage.removeItem(STORAGE_KEY);
+      } catch (error) {
+        console.error("Failed to clear onboarding state:", error);
+      }
       goNext();
     } catch {
       setGlobalError(labels.registerError);
@@ -428,6 +461,15 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
     setTimeout(() => setIgToast(false), 2500);
     // Attempt to open Instagram app
     window.location.href = "instagram://";
+  };
+
+  // Clear state when user clicks login (they're abandoning registration)
+  const handleLoginClick = () => {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.error("Failed to clear onboarding state:", error);
+    }
   };
 
   const inputClass = (field: string) =>
@@ -564,6 +606,7 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                   {labels.haveAccount}{" "}
                   <a
                     href={`/${locale}/admin/login`}
+                    onClick={handleLoginClick}
                     className="text-[#FF9500] font-medium hover:underline"
                   >
                     {labels.login}
