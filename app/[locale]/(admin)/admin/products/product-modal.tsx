@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { Product } from "@prisma/client";
 import type { Locale } from "@/lib/i18n";
 import { createProduct, updateProduct } from "./actions";
@@ -100,6 +101,7 @@ type ProductModalProps = {
 };
 
 export function ProductModal({ product, onClose, locale }: ProductModalProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -399,7 +401,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
       if (result.ok) {
         onClose();
-        window.location.reload();
+        router.refresh();
       } else {
         setError({ code: result.code, message: result.message });
       }

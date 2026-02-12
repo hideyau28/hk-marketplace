@@ -184,6 +184,7 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
   const [submitting, setSubmitting] = useState(false);
   const [createdSlug, setCreatedSlug] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
+  const [igToast, setIgToast] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // --- Slug availability check ---
@@ -409,6 +410,24 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     }
+  };
+
+  const handleShareIG = async () => {
+    const link = `https://wowlix.com/${createdSlug}`;
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = link;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+    setIgToast(true);
+    setTimeout(() => setIgToast(false), 2500);
+    // Attempt to open Instagram app
+    window.location.href = "instagram://";
   };
 
   const inputClass = (field: string) =>
@@ -795,12 +814,19 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                     {labels.addFirstProduct} &rarr;
                   </a>
                   <button
-                    onClick={handleCopyLink}
+                    onClick={handleShareIG}
                     className="w-full py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px]"
                   >
                     {labels.shareToIG}
                   </button>
                 </div>
+
+                {/* IG toast */}
+                {igToast && (
+                  <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-zinc-800 px-4 py-2 text-sm text-white shadow-lg">
+                    {labels.copied} {locale === "zh-HK" ? "可以貼到 IG 啦" : "Paste your link on Instagram"}
+                  </div>
+                )}
               </div>
             )}
           </motion.div>

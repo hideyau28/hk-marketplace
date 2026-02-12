@@ -7,8 +7,8 @@ import { type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
-import { Star, Flame, Search, Check, X, Pencil } from "lucide-react";
-import { toggleFeatured, toggleHotSelling, updatePrice } from "./actions";
+import { Star, Flame, Search, Check, X, Pencil, Eye, EyeOff } from "lucide-react";
+import { toggleFeatured, toggleHotSelling, updatePrice, updateProduct } from "./actions";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -140,6 +140,8 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const [openFilter, setOpenFilter] = useState<"category" | "status" | "stock" | null>(null);
   const [sortKey, setSortKey] = useState<"originalPrice" | "price" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
+  const [showHidden, setShowHidden] = useState(false);
+  const [togglingActive, setTogglingActive] = useState<string | null>(null);
   // Inline price editing
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState("");
@@ -192,6 +194,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     let result = products.filter((p) => {
+      // When showHidden is off and status filter is "All", hide inactive products
+      if (!showHidden && statusFilter === "All" && !p.active) return false;
+
       const matchesSearch = !query
         || p.title.toLowerCase().includes(query)
         || (p.sku && p.sku.toLowerCase().includes(query))
@@ -219,7 +224,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     }
 
     return result;
-  }, [products, searchQuery, categoryFilter, statusFilter, stockFilter, sortKey, sortDirection]);
+  }, [products, searchQuery, categoryFilter, statusFilter, stockFilter, sortKey, sortDirection, showHidden]);
 
   // Paginate filtered products
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -286,6 +291,18 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
       console.error("Failed to update price:", error);
     } finally {
       setSavingPrice(false);
+    }
+  };
+
+  const handleToggleActive = async (productId: string, newActive: boolean) => {
+    setTogglingActive(productId);
+    try {
+      await updateProduct(productId, { active: newActive }, locale);
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to toggle active:", error);
+    } finally {
+      setTogglingActive(null);
     }
   };
 
@@ -447,6 +464,17 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           />
         </div>
         <div className="flex flex-wrap items-center gap-2 justify-end">
+          <button
+            onClick={() => setShowHidden((v) => !v)}
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
+              showHidden
+                ? "border-olive-300 bg-olive-50 text-olive-700"
+                : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
+            }`}
+          >
+            {showHidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            {showHidden ? "Showing hidden" : "Show hidden"}
+          </button>
           <button
             onClick={() => setIsBadgeModalOpen(true)}
             className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
@@ -627,7 +655,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     return { key: badge, label: badge, color: null };
                   });
                   return (
-                  <tr key={product.id} className="border-t border-zinc-200 hover:bg-zinc-50">
+                  <tr key={product.id} className={`border-t border-zinc-200 hover:bg-zinc-50 ${!product.active ? "opacity-50" : ""}`}>
                     {/* Photo */}
                     <td className="px-2 py-1">
                       {product.imageUrl ? (
@@ -732,10 +760,10 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                         className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${
                           product.active
                             ? "bg-olive-100 text-olive-700 border-olive-200"
-                            : "bg-zinc-100 text-zinc-600 border-zinc-200"
+                            : "bg-red-50 text-red-600 border-red-200"
                         }`}
                       >
-                        {product.active ? "Active" : "Inactive"}
+                        {product.active ? "Active" : "Hidden"}
                       </span>
                     </td>
                     {/* Updated */}
@@ -743,14 +771,21 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       <div className="flex items-center justify-between gap-3">
                         <span>{new Date(product.updatedAt).toISOString().slice(0, 10)}</span>
                         <div className="flex items-center justify-end gap-1">
+                        {!product.active && (
+                          <button
+                            onClick={() => handleToggleActive(product.id, true)}
+                            disabled={togglingActive === product.id}
+                            className="rounded-lg border border-olive-200 bg-olive-50 px-2.5 py-1.5 text-xs text-olive-700 hover:bg-olive-100 disabled:opacity-50"
+                          >
+                            {togglingActive === product.id ? "..." : "Show"}
+                          </button>
+                        )}
                         <button
                           onClick={() => handleEditProduct(product)}
                           className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50"
                         >
                           Edit
                         </button>
-
-
                         </div>
                       </div>
                     </td>
