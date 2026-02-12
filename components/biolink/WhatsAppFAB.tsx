@@ -1,15 +1,47 @@
 "use client";
 
+import type { BioCartItem } from "@/lib/biolink-cart";
+
 type Props = {
   whatsapp: string | null;
+  cart?: BioCartItem[];
 };
 
-export default function WhatsAppFAB({ whatsapp }: Props) {
+/**
+ * 生成 WhatsApp 訊息內容
+ * 有購物車商品 → 訂單清單 + 總價
+ * 冇購物車 → 簡單查詢訊息
+ */
+function buildWhatsAppMessage(cart: BioCartItem[] | undefined): string {
+  if (!cart || cart.length === 0) {
+    return "你好！我想查詢商品";
+  }
+
+  // 計算總價
+  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  // 商品清單
+  const items = cart
+    .map((item, index) => {
+      const variantText = item.variantLabel ? ` (${item.variantLabel})` : "";
+      return `${index + 1}. ${item.name}${variantText} x${item.qty} - $${(item.price * item.qty).toLocaleString()}`;
+    })
+    .join("\n");
+
+  return `你好！我想落單：\n${items}\n合計：$${total.toLocaleString()}`;
+}
+
+export default function WhatsAppFAB({ whatsapp, cart }: Props) {
   if (!whatsapp) return null;
+
+  const message = buildWhatsAppMessage(cart);
+  const phone = whatsapp.replace(/[^0-9]/g, "");
+  const encodedMessage = encodeURIComponent(message);
+  const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
 
   return (
     <a
-      href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}`}
+      href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-4 z-40 max-w-[480px] w-14 h-14 rounded-full bg-[#25D366] flex items-center justify-center shadow-lg shadow-[#25D366]/30 hover:scale-105 active:scale-95 transition-transform"
