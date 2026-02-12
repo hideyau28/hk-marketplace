@@ -34,6 +34,7 @@ type TenantSettings = {
   coverPhoto: string | null;
   logo: string | null;
   email: string | null;
+  template: string;
   // New checkout settings
   currency: string;
   deliveryOptions: DeliveryOption[];
@@ -118,6 +119,12 @@ const COVER_TEMPLATES = [
   { id: "purple", name: "紫羅蘭", color: "#AF52DE" },
 ];
 
+const BIO_LINK_THEMES = [
+  { id: "minimal", name: "簡約", description: "白底黑字", preview: { dark: "#FFFFFF", light: "#F5F5F0" } },
+  { id: "dark", name: "暗黑", description: "暗黑底白字", preview: { dark: "#0F0F0F", light: "#1A1A1A" } },
+  { id: "colorful", name: "繽紛", description: "品牌色背景", preview: { dark: "#FF9500", light: "#F5F5F0" } },
+];
+
 const CURRENCIES = [
   { code: "HKD", symbol: "HK$", label: "港幣" },
   { code: "TWD", symbol: "NT$", label: "新台幣" },
@@ -143,6 +150,7 @@ export default function TenantSettings({ params }: { params: { locale: string } 
     coverPhoto: null,
     logo: null,
     email: null,
+    template: "dark",
     currency: "HKD",
     deliveryOptions: DEFAULT_DELIVERY_OPTIONS,
     freeShippingThreshold: null,
@@ -230,6 +238,10 @@ export default function TenantSettings({ params }: { params: { locale: string } 
 
   const handleCoverTemplateChange = useCallback((templateId: string) => {
     setFormData((prev) => ({ ...prev, coverTemplate: templateId }));
+  }, []);
+
+  const handleThemeChange = useCallback((themeId: string) => {
+    setFormData((prev) => ({ ...prev, template: themeId }));
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -851,6 +863,42 @@ export default function TenantSettings({ params }: { params: { locale: string } 
             </div>
 
             <div className="space-y-6">
+              <div className="space-y-3">
+                <Label>主題</Label>
+                <Description>選擇 Bio Link 前台嘅整體風格</Description>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                  {BIO_LINK_THEMES.map((theme) => (
+                    <button
+                      key={theme.id}
+                      onClick={() => handleThemeChange(theme.id)}
+                      className={cn(
+                        "flex flex-col gap-2 p-3 rounded-lg border-2 transition-all text-left",
+                        formData.template === theme.id
+                          ? "border-zinc-900 ring-2 ring-zinc-900 ring-offset-2"
+                          : "border-zinc-200 hover:border-zinc-300"
+                      )}
+                    >
+                      {/* Preview */}
+                      <div className="flex gap-1 h-16 rounded overflow-hidden">
+                        <div
+                          className="flex-1"
+                          style={{ backgroundColor: theme.preview.dark }}
+                        />
+                        <div
+                          className="flex-1"
+                          style={{ backgroundColor: theme.preview.light }}
+                        />
+                      </div>
+                      {/* Name & description */}
+                      <div>
+                        <div className="text-sm font-semibold text-zinc-900">{theme.name}</div>
+                        <div className="text-xs text-zinc-500">{theme.description}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="space-y-3">
                 <Label>封面色調</Label>
                 <div className="flex gap-3">

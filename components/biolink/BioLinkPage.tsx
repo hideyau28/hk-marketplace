@@ -26,6 +26,7 @@ import {
   type BioCart,
   type BioCartItem,
 } from "@/lib/biolink-cart";
+import { getTheme } from "@/lib/biolink-themes";
 import StickyHeader from "./StickyHeader";
 import CoverPhoto from "./CoverPhoto";
 import ProfileSection from "./ProfileSection";
@@ -59,6 +60,9 @@ export default function BioLinkPage({ tenant, products }: Props) {
   const currency = tenant.currency || "HKD";
   const deliveryOptions: DeliveryOption[] = tenant.deliveryOptions || DEFAULT_DELIVERY_OPTIONS;
   const orderConfirmMessage: OrderConfirmConfig = tenant.orderConfirmMessage || DEFAULT_ORDER_CONFIRM;
+
+  // Get theme based on template
+  const theme = getTheme(tenant.template);
 
   // Filter products by search query
   const filteredProducts = searchQuery
@@ -182,30 +186,55 @@ export default function BioLinkPage({ tenant, products }: Props) {
   );
 
   return (
-    <div className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden bg-[#0f0f0f]">
+    <div
+      className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden"
+      style={{
+        backgroundColor: theme.background,
+        ["--brand-color" as any]: tenant.brandColor || "#FF9500",
+      }}
+    >
       <StickyHeader tenant={tenant} cartCount={cartCount} onCartClick={() => cartCount > 0 && setShowCart(true)} />
       <CoverPhoto url={tenant.coverPhoto} brandColor={tenant.brandColor} coverTemplate={tenant.coverTemplate} />
       <ProfileSection tenant={tenant} />
 
       {/* Search bar */}
-      <SearchBar value={searchQuery} onChange={setSearchQuery} />
+      <div style={{ backgroundColor: theme.darkZone }}>
+        <SearchBar value={searchQuery} onChange={setSearchQuery} />
+      </div>
 
       {/* Dark zone — Featured loot cards */}
       {featured.length > 0 && (
-        <FeaturedSection products={featured} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} />
+        <div style={{ backgroundColor: theme.darkZone }}>
+          <FeaturedSection
+            products={featured}
+            currency={currency}
+            onAdd={handleCardAdd}
+            onImageTap={handleImageTap}
+            textColor={theme.textPrimary}
+            textSecondary={theme.textSecondary}
+          />
+        </div>
       )}
 
       {/* Transition gradient: dark → light */}
       <div
         className="h-20"
         style={{
-          background:
-            "linear-gradient(180deg, #0f0f0f 0%, #f5f5f0 100%)",
+          background: theme.gradient,
         }}
       />
 
       {/* Light zone — Product grid */}
-      <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} searchQuery={searchQuery} />
+      <div style={{ backgroundColor: theme.lightZone }}>
+        <ProductGrid
+          products={grid}
+          currency={currency}
+          onAdd={handleCardAdd}
+          onImageTap={handleImageTap}
+          searchQuery={searchQuery}
+          textColor={theme.id === "dark" ? "#FFFFFF" : "#18181B"}
+        />
+      </div>
 
       {/* Cart bar or WhatsApp FAB */}
       {cartCount > 0 ? (
@@ -282,8 +311,14 @@ export default function BioLinkPage({ tenant, products }: Props) {
       )}
 
       {/* Footer */}
-      <footer className="bg-[#f5f5f0] py-4 pb-20 text-center border-t border-black/[0.04]">
-        <span className="text-[11px] text-zinc-400 font-medium">
+      <footer
+        className="py-4 pb-20 text-center border-t"
+        style={{
+          backgroundColor: theme.lightZone,
+          borderColor: theme.id === "minimal" ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.1)",
+        }}
+      >
+        <span className="text-[11px] font-medium" style={{ color: theme.textSecondary }}>
           Powered by{" "}
         </span>
         <a href="/" className="text-[11px] text-[#FF9500] font-bold hover:underline">Wowlix</a>
