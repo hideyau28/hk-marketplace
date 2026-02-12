@@ -8,10 +8,14 @@ type Props = {
   currency?: string;
   onAdd: (product: ProductForBioLink) => void;
   onImageTap?: (images: string[], startIndex: number) => void;
+  searchQuery?: string;
 };
 
-export default function ProductGrid({ products, currency, onAdd, onImageTap }: Props) {
+export default function ProductGrid({ products, currency, onAdd, onImageTap, searchQuery }: Props) {
   if (products.length === 0) {
+    // 搜尋結果為空
+    const emptyMessage = searchQuery ? "搵唔到商品" : "仲未有商品，快啲加第一件啦！";
+
     return (
       <section className="bg-[#f5f5f0] px-4 py-12">
         <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -21,7 +25,7 @@ export default function ProductGrid({ products, currency, onAdd, onImageTap }: P
             </svg>
           </div>
           <p className="text-zinc-500 text-sm font-medium">
-            仲未有商品，快啲加第一件啦！
+            {emptyMessage}
           </p>
         </div>
       </section>
