@@ -31,9 +31,15 @@ type ParsedRow = {
   errors: string[];
 };
 
+type FailedRow = {
+  rowNumber: number;
+  reason: string;
+};
+
 type ImportResult = {
   successCount: number;
   failureCount: number;
+  failures: FailedRow[];
 };
 
 type CsvUploadProps = {
@@ -43,6 +49,12 @@ type CsvUploadProps = {
 };
 
 function parseCsv(text: string): string[][] {
+  // Strip UTF-8 BOM if present
+  let content = text;
+  if (content.charCodeAt(0) === 0xfeff) {
+    content = content.slice(1);
+  }
+
   const rows: string[][] = [];
   let current: string[] = [];
   let field = "";
@@ -53,9 +65,9 @@ function parseCsv(text: string): string[][] {
     field = "";
   };
 
-  for (let i = 0; i < text.length; i += 1) {
-    const char = text[i];
-    const next = text[i + 1];
+  for (let i = 0; i < content.length; i += 1) {
+    const char = content[i];
+    const next = content[i + 1];
 
     if (char === "\"") {
       if (inQuotes && next === "\"") {
@@ -189,6 +201,7 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [headerError, setHeaderError] = useState("");
   const [importing, setImporting] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -222,6 +235,7 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
     setImporting(true);
     setError(null);
     setResult(null);
+    setProgress({ current: 0, total: validRows.length });
 
     try {
       const payload = validRows.map((row) => ({
@@ -235,6 +249,9 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
         sizes: row.normalized.sizes,
         active: row.normalized.active ?? true,
       }));
+
+      // Show importing state
+      setProgress({ current: validRows.length, total: validRows.length });
 
       const res = await fetch("/api/admin/products/import", {
         method: "POST",
@@ -253,6 +270,7 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
       setError("Import failed. Please try again.");
     } finally {
       setImporting(false);
+      setProgress({ current: 0, total: 0 });
     }
   };
 
@@ -262,6 +280,7 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
     setHeaderError("");
     setResult(null);
     setError(null);
+    setProgress({ current: 0, total: 0 });
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -322,7 +341,7 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
                 disabled={importing || validRows.length === 0 || !!headerError}
                 className="flex-1 rounded-xl bg-olive-600 px-3 py-2 text-xs font-semibold text-white hover:bg-olive-700 disabled:opacity-50"
               >
-                {importing ? "Importing..." : "Confirm Import"}
+                {importing ? `Importing ${progress.current}/${progress.total}...` : "Confirm Import"}
               </button>
             </div>
           </div>
@@ -340,12 +359,54 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
                   <div>
                     {validRows.length} valid, {errorRows.length} errors
                   </div>
-                  {result && (
-                    <div className="text-olive-700 font-semibold">
-                      Successfully imported {result.successCount} products
-                    </div>
-                  )}
                 </div>
+
+                {importing && progress.total > 0 && (
+                  <div className="mt-3 rounded-2xl border border-olive-200 bg-olive-50 px-4 py-3">
+                    <div className="flex items-center justify-between text-xs text-olive-700 mb-2">
+                      <span className="font-semibold">Importing products...</span>
+                      <span>{progress.current} / {progress.total}</span>
+                    </div>
+                    <div className="h-2 bg-olive-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-olive-600 transition-all duration-300"
+                        style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {result && (
+                  <div className="mt-3 rounded-2xl border border-olive-200 bg-olive-50 px-4 py-3">
+                    <div className="text-sm font-semibold text-olive-900 mb-2">
+                      Import Summary
+                    </div>
+                    <div className="text-xs text-olive-700 space-y-1">
+                      <div>✓ Success: {result.successCount} products imported</div>
+                      <div>✗ Failed: {result.failureCount} rows</div>
+                    </div>
+                    {result.failures && result.failures.length > 0 && (
+                      <div className="mt-3 max-h-32 overflow-auto rounded-lg border border-red-200 bg-red-50">
+                        <table className="w-full text-xs">
+                          <thead className="sticky top-0 bg-red-100 text-red-700">
+                            <tr>
+                              <th className="px-2 py-1 text-left font-medium">Row</th>
+                              <th className="px-2 py-1 text-left font-medium">Reason</th>
+                            </tr>
+                          </thead>
+                          <tbody className="text-red-600">
+                            {result.failures.map((failure, idx) => (
+                              <tr key={idx} className="border-t border-red-200">
+                                <td className="px-2 py-1">{failure.rowNumber}</td>
+                                <td className="px-2 py-1">{failure.reason}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {error && (
                   <div className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
