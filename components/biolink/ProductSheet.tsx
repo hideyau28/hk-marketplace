@@ -29,6 +29,25 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
 
   const isDual = dualVariant !== null;
 
+  // 檢測邊個 dimension 係顏色
+  const isColorDimension = (dimName: string) => {
+    const lower = dimName.toLowerCase();
+    return lower.includes("color") || lower.includes("顏色") || lower === "色";
+  };
+
+  // 決定顏色同尺碼嘅 dimension index
+  let colorDimIndex = -1;
+  let sizeDimIndex = -1;
+  if (isDual && dualVariant) {
+    if (isColorDimension(dualVariant.dimensions[0])) {
+      colorDimIndex = 0;
+      sizeDimIndex = 1;
+    } else {
+      colorDimIndex = 1;
+      sizeDimIndex = 0;
+    }
+  }
+
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [qty, setQty] = useState(1);
@@ -57,12 +76,13 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
 
   // 預設選第一個有貨組合
   useEffect(() => {
-    if (isDual && dualVariant) {
-      const dim1Options = dualVariant.options[dualVariant.dimensions[0]] || [];
-      const dim2Options = dualVariant.options[dualVariant.dimensions[1]] || [];
-      for (const c of dim1Options) {
-        for (const s of dim2Options) {
-          const key = `${c}|${s}`;
+    if (isDual && dualVariant && colorDimIndex >= 0 && sizeDimIndex >= 0) {
+      const colorOptions = dualVariant.options[dualVariant.dimensions[colorDimIndex]] || [];
+      const sizeOptions = dualVariant.options[dualVariant.dimensions[sizeDimIndex]] || [];
+      for (const c of colorOptions) {
+        for (const s of sizeOptions) {
+          // 組合 key 要按照原本 dimensions 嘅順序
+          const key = colorDimIndex === 0 ? `${c}|${s}` : `${s}|${c}`;
           const combo = dualVariant.combinations[key];
           if (combo && combo.status !== "hidden" && combo.qty > 0) {
             setSelectedColor(c);
@@ -82,8 +102,9 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
 
   // 計算目前選中組合嘅庫存
   const getSelectedStock = (): number => {
-    if (isDual && dualVariant && selectedColor && selectedSize) {
-      const key = `${selectedColor}|${selectedSize}`;
+    if (isDual && dualVariant && selectedColor && selectedSize && colorDimIndex >= 0) {
+      // 組合 key 要按照原本 dimensions 嘅順序
+      const key = colorDimIndex === 0 ? `${selectedColor}|${selectedSize}` : `${selectedSize}|${selectedColor}`;
       return dualVariant.combinations[key]?.qty ?? 0;
     }
     if (singleVariants && selectedSize) {
@@ -101,13 +122,13 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
     setSelectedSize("");
     setQty(1);
     setShowError(false);
-    if (dualVariant) {
+    if (dualVariant && sizeDimIndex >= 0 && colorDimIndex >= 0) {
       const imgIdx = dualVariant.optionImages?.[color] ?? 0;
       setCarouselIndex(imgIdx);
       // 自動選第一個有貨尺碼
-      const dim2Options = dualVariant.options[dualVariant.dimensions[1]] || [];
-      for (const s of dim2Options) {
-        const key = `${color}|${s}`;
+      const sizeOptions = dualVariant.options[dualVariant.dimensions[sizeDimIndex]] || [];
+      for (const s of sizeOptions) {
+        const key = colorDimIndex === 0 ? `${color}|${s}` : `${s}|${color}`;
         const combo = dualVariant.combinations[key];
         if (combo && combo.status !== "hidden" && combo.qty > 0) {
           setSelectedSize(s);
@@ -131,7 +152,8 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
         setShowError(true);
         return;
       }
-      onAddToCart(product, `${selectedColor}|${selectedSize}`, qty);
+      const variantKey = colorDimIndex === 0 ? `${selectedColor}|${selectedSize}` : `${selectedSize}|${selectedColor}`;
+      onAddToCart(product, variantKey, qty);
     } else {
       if (!selectedSize) {
         setShowError(true);
@@ -143,11 +165,11 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
 
   // 取得尺碼列表（含庫存）
   const getSizeOptions = () => {
-    if (isDual && dualVariant) {
-      const dim2 = dualVariant.dimensions[1];
-      const dim2Options = dualVariant.options[dim2] || [];
-      return dim2Options.map((opt) => {
-        const key = `${selectedColor}|${opt}`;
+    if (isDual && dualVariant && sizeDimIndex >= 0 && colorDimIndex >= 0) {
+      const sizeDim = dualVariant.dimensions[sizeDimIndex];
+      const sizeOptions = dualVariant.options[sizeDim] || [];
+      return sizeOptions.map((opt) => {
+        const key = colorDimIndex === 0 ? `${selectedColor}|${opt}` : `${opt}|${selectedColor}`;
         const combo = dualVariant.combinations[key];
         return {
           name: opt,
@@ -293,39 +315,45 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
             </div>
           </div>
 
-          {/* 顏色（雙維 only） */}
-          {isDual && dualVariant && (
+          {/* 顏色（雙維 only，永遠顯示喺先） */}
+          {isDual && dualVariant && colorDimIndex >= 0 && (
             <div>
               <p className="text-sm font-semibold text-zinc-700 mb-3 border-b border-zinc-100 pb-2">
-                {dualVariant.dimensions[0]}
+                顏色
                 {showError && !selectedColor && (
                   <span className="text-red-500 ml-1 font-normal">請選擇</span>
                 )}
               </p>
               <div className="flex gap-3 flex-wrap">
-                {(dualVariant.options[dualVariant.dimensions[0]] || []).map(
-                  (opt) => (
-                    <button
-                      key={opt}
-                      onClick={() => handleColorChange(opt)}
-                      className={`w-10 h-10 rounded-full border-2 transition-all flex-shrink-0 ${
-                        selectedColor === opt
-                          ? "border-[#FF9500] ring-2 ring-[#FF9500]/30 scale-110"
-                          : "border-zinc-200"
-                      }`}
-                      style={{ backgroundColor: getColorHex(opt) }}
-                      title={opt}
-                    />
-                  )
+                {(dualVariant.options[dualVariant.dimensions[colorDimIndex]] || []).map(
+                  (opt) => {
+                    const colorHex = getColorHex(opt);
+                    const isWhite = colorHex.toLowerCase() === "#fafafa" || opt.toLowerCase().includes("white") || opt.includes("白");
+                    return (
+                      <button
+                        key={opt}
+                        onClick={() => handleColorChange(opt)}
+                        className={`w-10 h-10 rounded-full transition-all flex-shrink-0 ${
+                          selectedColor === opt
+                            ? "border-[#FF9500] ring-2 ring-[#FF9500]/30 scale-110 border-2"
+                            : isWhite
+                              ? "border-zinc-300 border-2"
+                              : "border-zinc-200 border-2"
+                        }`}
+                        style={{ backgroundColor: colorHex }}
+                        title={opt}
+                      />
+                    );
+                  }
                 )}
               </div>
             </div>
           )}
 
-          {/* 尺碼 chips */}
+          {/* 尺碼（用文字顯示） */}
           <div>
             <p className="text-sm font-semibold text-zinc-700 mb-3 border-b border-zinc-100 pb-2">
-              {isDual ? dualVariant!.dimensions[1] : variantLabel}
+              {isDual && sizeDimIndex >= 0 ? dualVariant!.dimensions[sizeDimIndex] : variantLabel}
               {showError && !selectedSize && (
                 <span className="text-red-500 ml-1 font-normal">請選擇</span>
               )}
