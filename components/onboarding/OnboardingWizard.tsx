@@ -62,7 +62,7 @@ const t = {
   },
   "zh-HK": {
     // Step 1
-    welcome: "開始你嘅網上小店",
+    welcome: "開始你嘅網店",
     welcomeSub: "2 分鐘搞掂！",
     storeName: "店舖名稱 *",
     storeNamePlaceholder: "例如：May's Fashion",
@@ -93,10 +93,10 @@ const t = {
     back: "返回",
     // Step 3
     pickStyle: "揀個風格",
-    coverColour: "封面色調：",
+    coverColour: "封面顏色：",
     logoOptional: "頭像（可選）",
     uploadLogo: "上傳",
-    taglineOptional: "簡介（可選）",
+    taglineOptional: "簡介（選填）",
     taglinePlaceholder: "例如：手工烏龍茶專門店",
     // Step 4
     congrats: "你嘅小店開好喇！",
