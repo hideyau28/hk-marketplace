@@ -191,6 +191,7 @@ export default function LootCard({ product, index, currency = "HKD", onAdd, onIm
           {!soldOut && (
             <button
               onClick={() => onAdd(product)}
+              aria-label={`加入購物車 ${product.title}`}
               className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-[#FF9500] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">

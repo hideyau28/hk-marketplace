@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { BioCartItem } from "@/lib/biolink-cart";
 import { formatPrice } from "@/lib/biolink-helpers";
 
@@ -59,6 +60,7 @@ export default function CartSheet({
             </h2>
             <button
               onClick={onClose}
+              aria-label="關閉購物車"
               className="w-8 h-8 rounded-full bg-white/10 text-white/60 flex items-center justify-center text-sm hover:bg-white/20 transition"
             >
               ✕
@@ -75,9 +77,11 @@ export default function CartSheet({
                 className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5"
               >
                 {item.image && (
-                  <img
+                  <Image
                     src={item.image}
                     alt={item.name}
+                    width={48}
+                    height={48}
                     className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                   />
                 )}
@@ -95,6 +99,7 @@ export default function CartSheet({
                   <div className="flex items-center gap-2 mt-1.5">
                     <button
                       onClick={() => onUpdateQty(item.productId, item.variant, -1)}
+                      aria-label="減少數量"
                       className="w-6 h-6 rounded-full bg-white/10 text-white/70 flex items-center justify-center text-sm font-bold hover:bg-white/20 active:scale-95 transition"
                     >
                       −
@@ -104,6 +109,7 @@ export default function CartSheet({
                     </span>
                     <button
                       onClick={() => onUpdateQty(item.productId, item.variant, 1)}
+                      aria-label="增加數量"
                       className="w-6 h-6 rounded-full bg-white/10 text-white/70 flex items-center justify-center text-sm font-bold hover:bg-white/20 active:scale-95 transition"
                     >
                       +
@@ -116,8 +122,8 @@ export default function CartSheet({
                   </p>
                   <button
                     onClick={() => onRemoveItem(item.productId, item.variant)}
+                    aria-label={`移除 ${item.name}`}
                     className="w-6 h-6 rounded-full bg-white/10 text-white/40 flex items-center justify-center text-xs hover:bg-red-500/20 hover:text-red-400 active:scale-95 transition"
-                    title="移除"
                   >
                     ✕
                   </button>

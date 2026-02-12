@@ -110,6 +110,7 @@ export default function AdminSidebar() {
         {/* Close button inside sidebar */}
         <button
           onClick={() => setIsOpen(false)}
+          aria-label="關閉側邊欄"
           className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
         >
           <X size={18} />
