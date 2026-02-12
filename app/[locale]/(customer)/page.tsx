@@ -128,13 +128,25 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const l = locale as Locale;
   const t = getDict(l);
 
+  // Check if we're at root domain (no path-based tenant slug)
+  const { headers } = await import("next/headers");
+  const headersList = await headers();
+  const tenantSlug = headersList.get("x-tenant-slug");
+  const pathSlug = headersList.get("x-tenant-path-slug");
+
+  const DEFAULT_SLUG = "maysshop";
+
+  // If x-tenant-slug is DEFAULT_SLUG and no path slug, show landing page
+  if (tenantSlug === DEFAULT_SLUG && !pathSlug) {
+    return <LandingPage />;
+  }
+
   // Check if tenant exists; if not, show landing page
   let tenantId: string;
   try {
     tenantId = await getServerTenantId();
   } catch (error) {
-    // Tenant not found (likely "wowlix" default slug with no tenant in DB)
-    // Show landing page
+    // Tenant not found
     return <LandingPage />;
   }
 
