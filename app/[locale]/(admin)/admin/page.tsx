@@ -88,10 +88,15 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   const start7 = new Date(now);
   start7.setDate(now.getDate() - 6);
 
-  const [totalProducts, activeProducts, totalOrders, ordersWithAmounts, recentOrders, recentOrdersForCharts] = await Promise.all([
+  const [tenant, totalProducts, activeProducts, totalOrders, pendingOrders, ordersWithAmounts, recentOrders, recentOrdersForCharts] = await Promise.all([
+    prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { name: true },
+    }),
     prisma.product.count({ where: { tenantId } }),
     prisma.product.count({ where: { tenantId, active: true } }),
     prisma.order.count({ where: { tenantId } }),
+    prisma.order.count({ where: { tenantId, status: "PENDING" } }),
     prisma.order.findMany({
       where: { tenantId, status: { in: ["PAID", "FULFILLING", "SHIPPED", "COMPLETED"] } },
       select: { amounts: true },
@@ -191,6 +196,23 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           <div className="text-zinc-500 text-sm">Admin</div>
           <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.dashboard.title}</h1>
           <div className="text-zinc-500 text-sm">{t.admin.dashboard.subtitle}</div>
+        </div>
+      </div>
+
+      {/* Welcome message and quick stats */}
+      <div className="bg-gradient-to-r from-olive-50 to-olive-100/50 rounded-2xl border border-olive-200 p-6 mb-6">
+        <h2 className="text-xl font-semibold text-zinc-900 mb-4">
+          👋 歡迎返嚟，{tenant?.name || "店主"}！
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="bg-white/80 rounded-xl p-4 border border-olive-100">
+            <div className="text-sm text-zinc-600 mb-1">總商品數</div>
+            <div className="text-2xl font-bold text-zinc-900">{totalProducts}</div>
+          </div>
+          <div className="bg-white/80 rounded-xl p-4 border border-olive-100">
+            <div className="text-sm text-zinc-600 mb-1">待處理訂單</div>
+            <div className="text-2xl font-bold text-zinc-900">{pendingOrders}</div>
+          </div>
         </div>
       </div>
 
