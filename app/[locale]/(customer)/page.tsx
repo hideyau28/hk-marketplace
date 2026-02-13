@@ -1,7 +1,7 @@
 import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { getStoreName } from "@/lib/get-store-name";
-import { getServerTenantId } from "@/lib/tenant";
+import { getServerTenantId, isPlatformMode } from "@/lib/tenant";
 import HeroCarouselCMS from "@/components/home/HeroCarouselCMS";
 import RecommendedGrid from "@/components/home/RecommendedGrid";
 import FeaturedSneakers from "@/components/home/FeaturedSneakers";
@@ -18,11 +18,26 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
 
-  // Check if this is the landing page (no tenant)
+  // Platform bare domain → landing page metadata
+  if (await isPlatformMode()) {
+    return {
+      title: "WoWlix — Turn Followers into Customers",
+      description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
+      openGraph: {
+        title: "WoWlix — Turn Followers into Customers",
+        description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
+        url: "https://wowlix.com",
+        siteName: "WoWlix",
+        locale: "zh_HK",
+        type: "website",
+      },
+    };
+  }
+
+  // Fallback: check if tenant exists
   try {
     await getServerTenantId();
   } catch (error) {
-    // Landing page metadata
     return {
       title: "WoWlix — Turn Followers into Customers",
       description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
@@ -131,16 +146,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const l = locale as Locale;
   const t = getDict(l);
 
-  // Check if we're at root domain (no path-based tenant slug)
-  const { headers } = await import("next/headers");
-  const headersList = await headers();
-  const tenantSlug = headersList.get("x-tenant-slug");
-  const pathSlug = headersList.get("x-tenant-path-slug");
-
-  const DEFAULT_SLUG = "maysshop";
-
-  // If x-tenant-slug is DEFAULT_SLUG and no path slug, show landing page
-  if (tenantSlug === DEFAULT_SLUG && !pathSlug) {
+  // Platform bare domain → landing page
+  if (await isPlatformMode()) {
     return <LandingPage />;
   }
 
