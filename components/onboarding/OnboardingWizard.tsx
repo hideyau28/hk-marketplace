@@ -51,10 +51,8 @@ const t = {
     storeLink: "Your store link:",
     copied: "Copied!",
     copyLink: "Copy",
-    loginEmail: "Login Email",
     addFirstProduct: "Add your first product",
     goToAdmin: "Go to admin dashboard",
-    shareToIG: "Share to Instagram",
     creating: "Creating your store...",
     // Errors
     registerError: "Registration failed, please try again",
@@ -104,10 +102,8 @@ const t = {
     storeLink: "你嘅店舖連結：",
     copied: "已複製！",
     copyLink: "複製",
-    loginEmail: "登入 Email",
     addFirstProduct: "加第一件商品",
     goToAdmin: "去管理後台",
-    shareToIG: "分享到 Instagram",
     creating: "建立緊你嘅小店...",
     // Errors
     registerError: "註冊失敗，請再試",
