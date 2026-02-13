@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/admin/session";
 import { signToken } from "@/lib/auth/jwt";
 import { withApi, ok, ApiError } from "@/lib/api/route-helpers";
+import { resolveTemplateId } from "@/lib/cover-templates";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
@@ -21,14 +22,14 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST = withApi(async (req: Request) => {
   try {
-  let body: { name?: string; slug?: string; whatsapp?: string; email?: string; password?: string; coverTemplate?: string; tagline?: string };
+  let body: { name?: string; slug?: string; whatsapp?: string; email?: string; password?: string; coverTemplate?: string; templateId?: string; tagline?: string };
   try {
     body = await req.json();
   } catch {
     throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
   }
 
-  const { name, slug, whatsapp, email, password, coverTemplate, tagline } = body;
+  const { name, slug, whatsapp, email, password, coverTemplate, templateId, tagline } = body;
 
   // --- Validation ---
   if (!name || typeof name !== "string" || name.trim().length < 2 || name.trim().length > 50) {
@@ -64,22 +65,27 @@ export const POST = withApi(async (req: Request) => {
   const cleanWhatsapp = whatsapp?.trim() || "";
   const cleanEmail = email.trim().toLowerCase();
   const cleanTagline = tagline?.trim() || "";
-  const cleanTemplate = coverTemplate?.trim() || "default";
+  const cleanTemplate = resolveTemplateId(templateId?.trim() || coverTemplate?.trim());
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // --- Create Tenant + TenantAdmin atomically ---
   try {
     // Create tenant first, then admin in a sequential transaction
+    const tenantData: Record<string, unknown> = {
+      name: cleanName,
+      slug: cleanSlug,
+      whatsapp: cleanWhatsapp || undefined,
+      description: cleanTagline || undefined,
+      template: cleanTemplate,
+      coverTemplate: cleanTemplate,
+      brandColor: "#FF9500",
+      status: "active",
+    };
+    // templateId column 可能未存在（需要手動 migration）
+    try { tenantData.templateId = cleanTemplate; } catch {}
+
     const tenant = await prisma.tenant.create({
-      data: {
-        name: cleanName,
-        slug: cleanSlug,
-        whatsapp: cleanWhatsapp || undefined,
-        description: cleanTagline || undefined,
-        template: cleanTemplate,
-        brandColor: "#FF9500",
-        status: "active",
-      },
+      data: tenantData as any,
     });
 
     let admin;

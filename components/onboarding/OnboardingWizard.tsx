@@ -41,7 +41,7 @@ const t = {
     back: "Back",
     // Step 3
     pickStyle: "Pick a style",
-    coverColour: "Cover colour:",
+    storeStyle: "Store style",
     logoOptional: "Logo (optional)",
     uploadLogo: "Upload",
     taglineOptional: "Tagline (optional)",
@@ -93,7 +93,7 @@ const t = {
     back: "返回",
     // Step 3
     pickStyle: "揀個風格",
-    coverColour: "封面顏色：",
+    storeStyle: "店舖風格",
     logoOptional: "頭像（可選）",
     uploadLogo: "上傳",
     taglineOptional: "簡介（選填）",
@@ -141,7 +141,7 @@ interface OnboardingData {
   password: string;
   confirmPassword: string;
   whatsapp: string;
-  coverTemplate: string;
+  templateId: string;
   tagline: string;
 }
 
@@ -176,7 +176,7 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
     password: "",
     confirmPassword: "",
     whatsapp: "",
-    coverTemplate: "warm-gradient",
+    templateId: "mochi",
     tagline: "",
   });
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
@@ -380,7 +380,7 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
           email: data.email.trim().toLowerCase(),
           password: data.password,
           whatsapp: data.whatsapp.trim() || undefined,
-          coverTemplate: data.coverTemplate,
+          templateId: data.templateId,
           tagline: data.tagline.trim() || undefined,
         }),
       });
@@ -478,7 +478,7 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
     } focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400`;
 
   const selectedTemplate = COVER_TEMPLATES.find(
-    (t) => t.id === data.coverTemplate
+    (t) => t.id === data.templateId
   );
 
   return (
@@ -733,34 +733,88 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                   {labels.pickStyle}
                 </h2>
 
-                {/* Cover templates */}
+                {/* Template preview gallery — 2x2 grid */}
                 <div>
-                  <p className="text-sm font-medium text-zinc-700 mb-2">
-                    {labels.coverColour}
+                  <p className="text-sm font-medium text-zinc-700 mb-3">
+                    {labels.storeStyle}
                   </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {COVER_TEMPLATES.map((tmpl) => (
-                      <button
-                        key={tmpl.id}
-                        type="button"
-                        onClick={() => update("coverTemplate", tmpl.id)}
-                        className={`h-16 rounded-xl ${tmpl.gradient} flex items-end justify-center pb-1 transition-all ${
-                          data.coverTemplate === tmpl.id
-                            ? "ring-2 ring-[#FF9500] ring-offset-2"
-                            : "hover:scale-105"
-                        }`}
-                      >
-                        <span
-                          className={`text-xs font-medium ${
-                            tmpl.id === "monochrome"
-                              ? "text-zinc-200"
-                              : "text-white"
-                          } drop-shadow-sm`}
+                  <div className="grid grid-cols-2 gap-3">
+                    {COVER_TEMPLATES.map((tmpl) => {
+                      const isSelected = data.templateId === tmpl.id;
+                      const shopInitial = data.shopName?.[0]?.toUpperCase() || "W";
+                      return (
+                        <button
+                          key={tmpl.id}
+                          type="button"
+                          onClick={() => update("templateId", tmpl.id)}
+                          className={`rounded-xl overflow-hidden border-2 transition-all duration-200 text-left ${
+                            isSelected
+                              ? "border-[#FF9500] ring-2 ring-[#FF9500]/30 scale-[1.02]"
+                              : "border-zinc-200 hover:border-zinc-300"
+                          }`}
                         >
-                          {locale === "zh-HK" ? tmpl.label : tmpl.labelEn}
-                        </span>
-                      </button>
-                    ))}
+                          {/* Mini storefront mockup */}
+                          <div style={{ background: tmpl.bg }} className="p-0">
+                            {/* Header gradient band */}
+                            <div
+                              className="h-8"
+                              style={{ background: tmpl.headerGradient }}
+                            />
+                            {/* Body area */}
+                            <div className="px-2.5 pb-2.5 -mt-2.5">
+                              {/* Avatar + shop name */}
+                              <div className="flex items-center gap-1.5">
+                                <div
+                                  className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white flex-shrink-0 border border-white/20"
+                                  style={{ backgroundColor: tmpl.accent }}
+                                >
+                                  {shopInitial}
+                                </div>
+                                <span
+                                  className="text-[9px] font-semibold truncate"
+                                  style={{ color: tmpl.text }}
+                                >
+                                  {data.shopName || "My Shop"}
+                                </span>
+                              </div>
+                              {/* Mock product cards */}
+                              <div className="flex gap-1 mt-1.5">
+                                {[1, 2, 3].map((i) => (
+                                  <div
+                                    key={i}
+                                    className="flex-1 h-7"
+                                    style={{
+                                      backgroundColor: tmpl.card,
+                                      borderRadius: tmpl.borderRadius.image,
+                                      boxShadow: tmpl.shadow === "none" ? undefined : tmpl.shadow,
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                              {/* Mock button */}
+                              <div
+                                className="mt-1.5 h-4 w-2/3 mx-auto"
+                                style={{
+                                  borderRadius: tmpl.borderRadius.button,
+                                  ...(tmpl.buttonStyle === "filled"
+                                    ? { backgroundColor: tmpl.accent }
+                                    : { border: `1px solid ${tmpl.accent}` }),
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {/* Template label + description */}
+                          <div className="bg-white px-2.5 py-2 border-t border-zinc-100">
+                            <p className="text-xs font-semibold text-zinc-800">
+                              {locale === "zh-HK" ? tmpl.label : tmpl.labelEn}
+                            </p>
+                            <p className="text-[10px] text-zinc-500">
+                              {locale === "zh-HK" ? tmpl.descZh : tmpl.descEn}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -816,7 +870,8 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                 {/* Store preview card */}
                 <div className="rounded-xl overflow-hidden border border-zinc-200">
                   <div
-                    className={`h-20 ${selectedTemplate?.gradient || "bg-gradient-to-br from-orange-300 to-amber-400"}`}
+                    className="h-20"
+                    style={{ background: selectedTemplate?.headerGradient || "linear-gradient(135deg, #FFFFFF, #F0F5EE)" }}
                   />
                   <div className="p-3 text-left">
                     <p className="font-semibold text-zinc-900">

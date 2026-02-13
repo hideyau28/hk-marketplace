@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { authenticateAdmin } from "@/lib/auth/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { resolveTemplateId } from "@/lib/cover-templates";
 
 const ROUTE = "/api/admin/tenant-settings";
 
@@ -93,7 +94,7 @@ export const PUT = withApi(
     if (body.location !== undefined) updateData.location = body.location;
     if (body.whatsapp !== undefined) updateData.whatsapp = body.whatsapp;
     if (body.instagram !== undefined) updateData.instagram = body.instagram;
-    if (body.coverTemplate !== undefined) updateData.coverTemplate = body.coverTemplate;
+    if (body.coverTemplate !== undefined) updateData.coverTemplate = resolveTemplateId(body.coverTemplate);
     if (body.coverPhoto !== undefined) updateData.coverPhoto = body.coverPhoto;
     if (body.logo !== undefined) updateData.logoUrl = body.logo;
     // Checkout settings

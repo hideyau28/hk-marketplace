@@ -111,11 +111,10 @@ function SettingsTextarea({
 }
 
 const COVER_TEMPLATES = [
-  { id: "warm", name: "暖橙", color: "#FF9500" },
-  { id: "blue", name: "藍白", color: "#0A84FF" },
-  { id: "pink", name: "粉彩", color: "#FF2D55" },
-  { id: "green", name: "清新", color: "#34C759" },
-  { id: "purple", name: "紫羅蘭", color: "#AF52DE" },
+  { id: "noir", name: "暗黑 Noir", color: "#FF9500" },
+  { id: "linen", name: "棉麻 Linen", color: "#C49A6C" },
+  { id: "mochi", name: "抹茶 Mochi", color: "#2D6A4F" },
+  { id: "petal", name: "花瓣 Petal", color: "#C77D91" },
 ];
 
 const CURRENCIES = [
@@ -139,7 +138,7 @@ export default function TenantSettings({ params }: { params: { locale: string } 
     location: null,
     whatsapp: null,
     instagram: null,
-    coverTemplate: "default",
+    coverTemplate: "mochi",
     coverPhoto: null,
     logo: null,
     email: null,

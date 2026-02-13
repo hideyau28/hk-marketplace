@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import BioLinkPage from "@/components/biolink/BioLinkPage";
+import { resolveTemplateId } from "@/lib/cover-templates";
 import type { Metadata } from "next";
 import type { ProductForBioLink, DualVariantData, DeliveryOption, OrderConfirmConfig } from "@/lib/biolink-helpers";
 import { DEFAULT_DELIVERY_OPTIONS, DEFAULT_ORDER_CONFIRM } from "@/lib/biolink-helpers";
@@ -94,9 +95,10 @@ export default async function SlugPage({ params }: PageProps) {
     variants: p.variants,
   }));
 
-  // Parse JSON checkout settings with defaults
+  // Parse JSON checkout settings with defaults, resolve legacy template IDs
   const tenantForBioLink = {
     ...tenant,
+    coverTemplate: resolveTemplateId(tenant.coverTemplate || tenant.template),
     currency: tenant.currency || "HKD",
     deliveryOptions: (tenant.deliveryOptions as DeliveryOption[] | null) || DEFAULT_DELIVERY_OPTIONS,
     freeShippingThreshold: tenant.freeShippingThreshold,
