@@ -17,6 +17,9 @@ export interface CoverTemplate {
   borderRadius: { card: number; button: number; image: number };
   buttonStyle: "filled" | "outline";
   shadow: string;       // CSS box-shadow (or "none")
+  // Font tokens
+  headingFont: string;  // Google Fonts family name for headings
+  bodyFont: string;     // Google Fonts family name for body text
 }
 
 export const COVER_TEMPLATES: CoverTemplate[] = [
@@ -35,6 +38,8 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     borderRadius: { card: 4, button: 4, image: 2 },
     buttonStyle: "filled",
     shadow: "none",
+    headingFont: "Bebas Neue",
+    bodyFont: "Inter",
   },
   {
     id: "linen",
@@ -51,6 +56,8 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     borderRadius: { card: 16, button: 24, image: 12 },
     buttonStyle: "outline",
     shadow: "0 2px 8px rgba(0,0,0,0.06)",
+    headingFont: "Playfair Display",
+    bodyFont: "Lato",
   },
   {
     id: "mochi",
@@ -67,6 +74,8 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     borderRadius: { card: 12, button: 12, image: 8 },
     buttonStyle: "filled",
     shadow: "0 1px 3px rgba(0,0,0,0.08)",
+    headingFont: "Montserrat",
+    bodyFont: "Inter",
   },
   {
     id: "petal",
@@ -83,6 +92,8 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     borderRadius: { card: 20, button: 999, image: 16 },
     buttonStyle: "filled",
     shadow: "0 2px 12px rgba(199,125,145,0.12)",
+    headingFont: "Cormorant Garamond",
+    bodyFont: "Lato",
   },
 ];
 

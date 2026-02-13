@@ -3,12 +3,14 @@
 import Image from "next/image";
 import { getAvatarFallback } from "@/lib/biolink-helpers";
 import type { TenantForBioLink } from "@/lib/biolink-helpers";
+import { useTemplate } from "@/lib/template-context";
 
 type Props = {
   tenant: TenantForBioLink;
 };
 
 export default function ProfileSection({ tenant }: Props) {
+  const tmpl = useTemplate();
   const fallbackLetter = getAvatarFallback(tenant);
   const color = tenant.brandColor || "#FF9500";
 
@@ -16,8 +18,8 @@ export default function ProfileSection({ tenant }: Props) {
     <div className="relative -mt-12 px-5 pb-4">
       {/* Avatar */}
       <div
-        className="w-20 h-20 rounded-full border-[3px] border-[#0f0f0f] overflow-hidden mx-auto mb-3"
-        style={{ boxShadow: `0 0 20px ${color}40` }}
+        className="w-20 h-20 rounded-full border-[3px] overflow-hidden mx-auto mb-3"
+        style={{ borderColor: tmpl.bg, boxShadow: `0 0 20px ${color}40` }}
       >
         {tenant.logoUrl ? (
           <Image
@@ -38,11 +40,11 @@ export default function ProfileSection({ tenant }: Props) {
       </div>
 
       {/* Name */}
-      <h1 className="text-white text-lg font-bold text-center">{tenant.name}</h1>
+      <h1 className="text-lg font-bold text-center" style={{ color: tmpl.text, fontFamily: tmpl.headingFont }}>{tenant.name}</h1>
 
       {/* Tagline */}
       {tenant.description && (
-        <p className="text-zinc-400 text-sm text-center mt-1 line-clamp-2">
+        <p className="text-sm text-center mt-1 line-clamp-2" style={{ color: tmpl.subtext }}>
           {tenant.description}
         </p>
       )}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
+import { useTemplate } from "@/lib/template-context";
 
 type Props = {
   value: string;
@@ -10,7 +11,9 @@ type Props = {
 };
 
 export default function SearchBar({ value, onChange, placeholder = "搜尋商品..." }: Props) {
+  const tmpl = useTemplate();
   const [localValue, setLocalValue] = useState(value);
+  const [focused, setFocused] = useState(false);
 
   // Debounce 300ms
   useEffect(() => {
@@ -31,15 +34,22 @@ export default function SearchBar({ value, onChange, placeholder = "搜尋商品
   };
 
   return (
-    <div className="bg-[#f5f5f0] px-4 pt-4 pb-2">
+    <div className="px-4 pt-4 pb-2" style={{ backgroundColor: tmpl.bg }}>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
         <input
           type="text"
           value={localValue}
           onChange={(e) => setLocalValue(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           placeholder={placeholder}
-          className="w-full pl-10 pr-10 py-2.5 rounded-full bg-white border border-zinc-200 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#FF9500] focus:border-transparent transition-all"
+          className="w-full pl-10 pr-10 py-2.5 rounded-full border border-zinc-200 text-sm placeholder:text-zinc-400 focus:outline-none focus:border-transparent transition-all"
+          style={{
+            backgroundColor: tmpl.card,
+            color: tmpl.text,
+            ...(focused ? { outline: `2px solid ${tmpl.accent}`, outlineOffset: '0px' } : {}),
+          }}
         />
         {localValue && (
           <button

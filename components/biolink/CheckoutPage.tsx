@@ -7,6 +7,7 @@ import {
   type TenantForBioLink,
   type DeliveryOption,
 } from "@/lib/biolink-helpers";
+import { useTemplate } from "@/lib/template-context";
 
 type OrderResult = {
   orderId: string;
@@ -33,6 +34,7 @@ type Props = {
 };
 
 export default function CheckoutPage({ open, onClose, cart, tenant, onOrderComplete }: Props) {
+  const tmpl = useTemplate();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -149,6 +151,11 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
   if (!open) return null;
 
+  // Derived colors for inputs / borders
+  const inputBg = `${tmpl.card}18`; // ~10% opacity card color
+  const borderColor = `${tmpl.subtext}30`;
+  const subtleBorder = `${tmpl.subtext}20`;
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
@@ -156,16 +163,16 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
       {/* Full panel */}
       <div
-        className="relative w-full max-w-[480px] h-full bg-[#1a1a1a] overflow-y-auto"
-        style={{ animation: "slideUp 0.3s ease-out" }}
+        className="relative w-full max-w-[480px] h-full overflow-y-auto"
+        style={{ backgroundColor: tmpl.bg, animation: "slideUp 0.3s ease-out" }}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-[#1a1a1a] px-5 pt-4 pb-3 border-b border-white/10">
+        <div className="sticky top-0 z-10 px-5 pt-4 pb-3" style={{ backgroundColor: tmpl.bg, borderBottom: `1px solid ${subtleBorder}` }}>
           <div className="flex items-center justify-between">
-            <button onClick={onClose} className="text-white/60 text-sm font-medium">
+            <button onClick={onClose} className="text-sm font-medium" style={{ color: tmpl.subtext }}>
               ← 返回
             </button>
-            <h2 className="text-white font-bold text-base">結帳</h2>
+            <h2 className="font-bold text-base" style={{ color: tmpl.text }}>結帳</h2>
             <div className="w-10" />
           </div>
         </div>
@@ -173,37 +180,46 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
         <div className="px-5 pb-8">
           {/* Customer info */}
           <div className="mt-6">
-            <h3 className="text-white/80 text-xs font-bold uppercase tracking-wider mb-3">聯絡資料</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>聯絡資料</h3>
             <div className="space-y-3">
               <div>
-                <label className="text-white/50 text-xs mb-1 block">姓名 *</label>
+                <label className="text-xs mb-1 block" style={{ color: tmpl.subtext }}>姓名 *</label>
                 <input
                   type="text"
                   placeholder="陳大文"
                   value={name}
                   onChange={(e) => { setName(e.target.value); setError(null); }}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/30 text-sm border border-white/10 focus:border-[#FF9500] focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors"
+                  style={{ backgroundColor: inputBg, color: tmpl.text, border: `1px solid ${borderColor}` }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = tmpl.accent; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = borderColor; }}
                 />
               </div>
               <div>
-                <label className="text-white/50 text-xs mb-1 block">電話 *</label>
+                <label className="text-xs mb-1 block" style={{ color: tmpl.subtext }}>電話 *</label>
                 <input
                   type="tel"
                   placeholder="9XXX XXXX"
                   value={phone}
                   onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 8)); setError(null); }}
                   inputMode="numeric"
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/30 text-sm border border-white/10 focus:border-[#FF9500] focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors"
+                  style={{ backgroundColor: inputBg, color: tmpl.text, border: `1px solid ${borderColor}` }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = tmpl.accent; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = borderColor; }}
                 />
               </div>
               <div>
-                <label className="text-white/50 text-xs mb-1 block">Email（可選）</label>
+                <label className="text-xs mb-1 block" style={{ color: tmpl.subtext }}>Email（可選）</label>
                 <input
                   type="email"
                   placeholder="hello@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/30 text-sm border border-white/10 focus:border-[#FF9500] focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors"
+                  style={{ backgroundColor: inputBg, color: tmpl.text, border: `1px solid ${borderColor}` }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = tmpl.accent; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = borderColor; }}
                 />
               </div>
             </div>
@@ -211,32 +227,32 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
           {/* Delivery options */}
           <div className="mt-6">
-            <h3 className="text-white/80 text-xs font-bold uppercase tracking-wider mb-3">送貨方式</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>送貨方式</h3>
             <div className="space-y-2">
               {enabledOptions.map((opt) => {
                 const showFree = freeShippingReached && opt.price > 0;
+                const isSelected = delivery === opt.id;
                 return (
                   <button
                     key={opt.id}
                     onClick={() => setDelivery(opt.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-colors ${
-                      delivery === opt.id
-                        ? "border-[#FF9500] bg-[#FF9500]/10"
-                        : "border-white/10 bg-white/5"
-                    }`}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-colors"
+                    style={{
+                      borderColor: isSelected ? tmpl.accent : borderColor,
+                      backgroundColor: isSelected ? `${tmpl.accent}18` : inputBg,
+                    }}
                   >
                     <div
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        delivery === opt.id ? "border-[#FF9500]" : "border-white/30"
-                      }`}
+                      className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                      style={{ borderColor: isSelected ? tmpl.accent : `${tmpl.subtext}50` }}
                     >
-                      {delivery === opt.id && (
-                        <div className="w-2 h-2 rounded-full bg-[#FF9500]" />
+                      {isSelected && (
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tmpl.accent }} />
                       )}
                     </div>
                     <div className="flex-1">
-                      <span className="text-white text-sm font-medium">{opt.label}</span>
-                      <span className="text-white/40 text-xs ml-2">
+                      <span className="text-sm font-medium" style={{ color: tmpl.text }}>{opt.label}</span>
+                      <span className="text-xs ml-2" style={{ color: tmpl.subtext }}>
                         {showFree ? (
                           <span className="line-through mr-1">{formatPrice(opt.price, currency)}</span>
                         ) : null}
@@ -259,81 +275,86 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
           {/* Note */}
           <div className="mt-6">
-            <h3 className="text-white/80 text-xs font-bold uppercase tracking-wider mb-3">備註（可選）</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>備註（可選）</h3>
             <textarea
               placeholder="星期六下午方便 / 刻字內容 / 過敏資料..."
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={2}
-              className="w-full px-4 py-3 rounded-xl bg-white/10 text-white placeholder-white/30 text-sm border border-white/10 focus:border-[#FF9500] focus:outline-none transition-colors resize-none"
+              className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors resize-none"
+              style={{ backgroundColor: inputBg, color: tmpl.text, border: `1px solid ${borderColor}` }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = tmpl.accent; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = borderColor; }}
             />
           </div>
 
           {/* Payment method */}
           <div className="mt-6">
-            <h3 className="text-white/80 text-xs font-bold uppercase tracking-wider mb-3">付款方式</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>付款方式</h3>
             <div className="space-y-2">
-              {availablePayments.map((opt) => (
-                <button
-                  key={opt.id}
-                  onClick={() => setPayment(opt.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-colors ${
-                    payment === opt.id
-                      ? "border-[#FF9500] bg-[#FF9500]/10"
-                      : "border-white/10 bg-white/5"
-                  }`}
-                >
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                      payment === opt.id ? "border-[#FF9500]" : "border-white/30"
-                    }`}
+              {availablePayments.map((opt) => {
+                const isSelected = payment === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => setPayment(opt.id)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-colors"
+                    style={{
+                      borderColor: isSelected ? tmpl.accent : borderColor,
+                      backgroundColor: isSelected ? `${tmpl.accent}18` : inputBg,
+                    }}
                   >
-                    {payment === opt.id && (
-                      <div className="w-2 h-2 rounded-full bg-[#FF9500]" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <span className="text-white text-sm font-medium">{opt.label}</span>
-                    <span className="text-white/40 text-xs ml-2">（{opt.sub}）</span>
-                  </div>
-                </button>
-              ))}
+                    <div
+                      className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                      style={{ borderColor: isSelected ? tmpl.accent : `${tmpl.subtext}50` }}
+                    >
+                      {isSelected && (
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tmpl.accent }} />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-sm font-medium" style={{ color: tmpl.text }}>{opt.label}</span>
+                      <span className="text-xs ml-2" style={{ color: tmpl.subtext }}>（{opt.sub}）</span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Order summary */}
           <div className="mt-6">
-            <h3 className="text-white/80 text-xs font-bold uppercase tracking-wider mb-3">訂單摘要</h3>
-            <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>訂單摘要</h3>
+            <div className="rounded-2xl p-4" style={{ backgroundColor: inputBg, border: `1px solid ${subtleBorder}` }}>
               <div className="space-y-2">
                 {cart.map((item) => (
                   <div key={`${item.productId}-${item.variant || "default"}`} className="flex items-center justify-between text-sm">
-                    <span className="text-white/80 flex-1 min-w-0 truncate">
+                    <span className="flex-1 min-w-0 truncate" style={{ color: `${tmpl.text}CC` }}>
                       {item.name}
                       {item.variant ? ` ${item.variant.replace(/\|/g, " · ")}` : ""}
                       {" × "}{item.qty}
                     </span>
-                    <span className="text-white font-medium ml-3 flex-shrink-0">
+                    <span className="font-medium ml-3 flex-shrink-0" style={{ color: tmpl.text }}>
                       {formatPrice(item.price * item.qty, currency)}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-3 pt-3 border-t border-white/10 space-y-1">
+              <div className="mt-3 pt-3 space-y-1" style={{ borderTop: `1px solid ${subtleBorder}` }}>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-white/50">商品小計</span>
-                  <span className="text-white/70">{formatPrice(subtotal, currency)}</span>
+                  <span style={{ color: tmpl.subtext }}>商品小計</span>
+                  <span style={{ color: `${tmpl.text}B3` }}>{formatPrice(subtotal, currency)}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-white/50">運費</span>
-                  <span className="text-white/70">
+                  <span style={{ color: tmpl.subtext }}>運費</span>
+                  <span style={{ color: `${tmpl.text}B3` }}>
                     {deliveryFee > 0 ? formatPrice(deliveryFee, currency) : "免運費"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                  <span className="text-white font-medium">總計</span>
-                  <span className="text-[#FF9500] font-bold text-lg">
+                <div className="flex items-center justify-between pt-2" style={{ borderTop: `1px solid ${subtleBorder}` }}>
+                  <span className="font-medium" style={{ color: tmpl.text }}>總計</span>
+                  <span className="font-bold text-lg" style={{ color: tmpl.accent }}>
                     {formatPrice(total, currency)}
                   </span>
                 </div>
@@ -352,7 +373,8 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="mt-6 w-full py-4 rounded-2xl bg-[#FF9500] text-white font-bold text-base active:scale-[0.98] transition-transform disabled:opacity-50 disabled:active:scale-100"
+            className="mt-6 w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform disabled:opacity-50 disabled:active:scale-100"
+            style={{ backgroundColor: tmpl.accent }}
           >
             {submitting ? "處理中..." : `確認落單　${formatPrice(total, currency)}`}
           </button>

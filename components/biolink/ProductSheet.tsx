@@ -12,6 +12,7 @@ import {
 } from "@/lib/biolink-helpers";
 import { getColorHex } from "@/lib/color-map";
 import { getEmbedUrl } from "@/lib/video-embed";
+import { useTemplate } from "@/lib/template-context";
 
 type Props = {
   product: ProductForBioLink;
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export default function ProductSheet({ product, currency = "HKD", onClose, onAddToCart }: Props) {
+  const tmpl = useTemplate();
   const images = getAllImages(product);
   const dualVariant = getDualVariantData(product);
   const singleVariants = getVisibleVariants(product);
@@ -222,12 +224,15 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
     }
   };
 
+  // Derived border color
+  const sectionBorder = `${tmpl.subtext}25`;
+
   return (
-    <div className="fixed inset-0 z-50 bg-white">
+    <div className="fixed inset-0 z-50" style={{ backgroundColor: tmpl.bg }}>
       {/* Fullscreen modal */}
       <div className="h-full flex flex-col max-w-[480px] mx-auto animate-slide-up">
         {/* Image Carousel Section - 全寬 1:1 */}
-        <div className="relative w-full aspect-square bg-zinc-100">
+        <div className="relative w-full aspect-square" style={{ backgroundColor: `${tmpl.card}` }}>
           {/* Close button - 右上角 */}
           <button
             onClick={onClose}
@@ -297,16 +302,16 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {/* 商品名稱 + 價格 */}
           <div>
-            <h3 className="text-zinc-900 text-xl font-bold mb-2">
+            <h3 className="text-xl font-bold mb-2" style={{ color: tmpl.text }}>
               {product.title}
             </h3>
             <div className="flex items-center gap-2">
-              <span className="text-zinc-900 font-bold text-2xl">
+              <span className="font-bold text-2xl" style={{ color: tmpl.text }}>
                 {formatPrice(product.price, currency)}
               </span>
               {isOnSale && (
                 <>
-                  <span className="text-zinc-400 text-base line-through">
+                  <span className="text-base line-through" style={{ color: tmpl.subtext }}>
                     {formatPrice(product.originalPrice!, currency)}
                   </span>
                   <span className="px-2 py-0.5 text-xs font-bold rounded bg-red-500 text-white">
@@ -320,7 +325,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
           {/* 顏色（雙維 only，永遠顯示喺先） */}
           {isDual && dualVariant && colorDimIndex >= 0 && (
             <div>
-              <p className="text-sm font-semibold text-zinc-700 mb-3 border-b border-zinc-100 pb-2">
+              <p className="text-sm font-semibold mb-3 pb-2" style={{ color: tmpl.text, borderBottom: `1px solid ${sectionBorder}` }}>
                 顏色
                 {showError && !selectedColor && (
                   <span className="text-red-500 ml-1 font-normal">請選擇</span>
@@ -336,14 +341,16 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                         key={opt}
                         onClick={() => handleColorChange(opt)}
                         aria-label={`選擇顏色 ${opt}`}
-                        className={`w-10 h-10 rounded-full transition-all flex-shrink-0 ${
+                        className={`w-10 h-10 rounded-full transition-all flex-shrink-0 border-2 ${
                           selectedColor === opt
-                            ? "border-[#FF9500] ring-2 ring-[#FF9500]/30 scale-110 border-2"
-                            : isWhite
-                              ? "border-zinc-300 border-2"
-                              : "border-zinc-200 border-2"
+                            ? "scale-110"
+                            : ""
                         }`}
-                        style={{ backgroundColor: colorHex }}
+                        style={{
+                          backgroundColor: colorHex,
+                          borderColor: selectedColor === opt ? tmpl.accent : isWhite ? "#d4d4d8" : "#e4e4e7",
+                          boxShadow: selectedColor === opt ? `0 0 0 3px ${tmpl.accent}4D` : undefined,
+                        }}
                       />
                     );
                   }
@@ -354,7 +361,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
 
           {/* 尺碼（用文字顯示） */}
           <div>
-            <p className="text-sm font-semibold text-zinc-700 mb-3 border-b border-zinc-100 pb-2">
+            <p className="text-sm font-semibold mb-3 pb-2" style={{ color: tmpl.text, borderBottom: `1px solid ${sectionBorder}` }}>
               {isDual && sizeDimIndex >= 0 ? dualVariant!.dimensions[sizeDimIndex] : variantLabel}
               {showError && !selectedSize && (
                 <span className="text-red-500 ml-1 font-normal">請選擇</span>
@@ -372,13 +379,14 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                   key={s.name}
                   onClick={() => s.available && handleSizeChange(s.name)}
                   disabled={!s.available}
-                  className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all flex-shrink-0 ${
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium border transition-all flex-shrink-0"
+                  style={
                     selectedSize === s.name
-                      ? "border-[#FF9500] bg-[#FF9500]/10 text-[#FF9500]"
+                      ? { borderColor: tmpl.accent, backgroundColor: `${tmpl.accent}18`, color: tmpl.accent }
                       : s.available
-                        ? "border-zinc-200 text-zinc-700 active:border-zinc-300"
-                        : "border-zinc-100 text-zinc-300 cursor-not-allowed bg-zinc-50 line-through"
-                  }`}
+                        ? { borderColor: sectionBorder, color: tmpl.text }
+                        : { borderColor: `${tmpl.subtext}15`, color: `${tmpl.subtext}60`, backgroundColor: `${tmpl.subtext}08`, textDecoration: "line-through", cursor: "not-allowed" }
+                  }
                 >
                   {s.name}
                   {s.available && s.stock > 0 && s.stock <= 3 && (
@@ -397,7 +405,8 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
               <button
                 onClick={() => setShowDescription(!showDescription)}
                 aria-label={showDescription ? "隱藏商品描述" : "展開商品描述"}
-                className="w-full flex items-center justify-between text-sm font-semibold text-zinc-700 border-b border-zinc-100 pb-2"
+                className="w-full flex items-center justify-between text-sm font-semibold pb-2"
+                style={{ color: tmpl.text, borderBottom: `1px solid ${sectionBorder}` }}
               >
                 <span>商品描述</span>
                 <svg
@@ -411,7 +420,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                 </svg>
               </button>
               {showDescription && (
-                <div className="mt-3 text-sm text-zinc-600 whitespace-pre-wrap">
+                <div className="mt-3 text-sm whitespace-pre-wrap" style={{ color: tmpl.subtext }}>
                   {product.description}
                 </div>
               )}
@@ -420,19 +429,20 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
 
           {/* 數量 stepper */}
           <div>
-            <p className="text-sm font-semibold text-zinc-700 mb-3 border-b border-zinc-100 pb-2">數量</p>
+            <p className="text-sm font-semibold mb-3 pb-2" style={{ color: tmpl.text, borderBottom: `1px solid ${sectionBorder}` }}>數量</p>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 disabled={qty <= 1}
                 aria-label="減少數量"
-                className="w-10 h-10 rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-600 active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-xl border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                style={{ borderColor: sectionBorder, color: tmpl.text }}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
                 </svg>
               </button>
-              <span className="text-lg font-semibold w-10 text-center">
+              <span className="text-lg font-semibold w-10 text-center" style={{ color: tmpl.text }}>
                 {qty}
               </span>
               <button
@@ -441,7 +451,8 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                 }
                 disabled={qty >= selectedStock}
                 aria-label="增加數量"
-                className="w-10 h-10 rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-600 active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-xl border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+                style={{ borderColor: sectionBorder, color: tmpl.text }}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -455,14 +466,15 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
         </div>
 
         {/* 固定底部 CTA */}
-        <div className="absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 py-4 bg-white border-t border-zinc-100">
+        <div className="absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 py-4" style={{ backgroundColor: tmpl.bg, borderTop: `1px solid ${sectionBorder}` }}>
           <button
             onClick={handleAdd}
-            className={`w-full py-4 rounded-xl text-base font-semibold transition-all active:scale-[0.98] ${
+            className="w-full py-4 rounded-xl text-base font-semibold transition-all active:scale-[0.98]"
+            style={
               canAdd
-                ? "bg-[#FF9500] text-white shadow-lg shadow-[#FF9500]/30"
-                : "bg-zinc-200 text-zinc-400"
-            }`}
+                ? { backgroundColor: tmpl.accent, color: "#FFFFFF", boxShadow: `0 10px 15px -3px ${tmpl.accent}4D` }
+                : { backgroundColor: `${tmpl.subtext}30`, color: tmpl.subtext }
+            }
           >
             加入購物車{canAdd ? ` ${formatPrice(product.price * qty, currency)}` : ""}
           </button>

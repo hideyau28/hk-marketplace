@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { getCoverTemplate, resolveTemplateId } from "@/lib/cover-templates";
+import { useTemplate } from "@/lib/template-context";
 
 type Props = {
   url: string | null;
@@ -99,6 +100,7 @@ function getPatternOverlay(rawTemplate: string | null | undefined) {
 }
 
 export default function CoverPhoto({ url, brandColor, coverTemplate }: Props) {
+  const tmpl = useTemplate();
   const ref = useRef<HTMLDivElement>(null);
 
   // Parallax effect on scroll
@@ -135,7 +137,7 @@ export default function CoverPhoto({ url, brandColor, coverTemplate }: Props) {
         )}
       </div>
       {/* Bottom gradient fade into page bg */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#0f0f0f] to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-20" style={{ background: `linear-gradient(to top, ${tmpl.bg}, transparent)` }} />
     </div>
   );
 }

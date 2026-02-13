@@ -11,6 +11,7 @@ import {
   isSoldOut,
   formatPrice,
 } from "@/lib/biolink-helpers";
+import { useTemplate } from "@/lib/template-context";
 import SoldOutOverlay from "./SoldOutOverlay";
 
 type Props = {
@@ -22,6 +23,7 @@ type Props = {
 };
 
 export default function LootCard({ product, index, currency = "HKD", onAdd, onImageTap }: Props) {
+  const tmpl = useTemplate();
   const rarity = getRarity(product);
   const config = rarity ? rarityConfig[rarity] : rarityConfig.common;
   const badge = getBadgeText(product);
@@ -64,8 +66,10 @@ export default function LootCard({ product, index, currency = "HKD", onAdd, onIm
       style={{ animationDelay: `${index * 0.3}s` }}
     >
       <div
-        className={`relative rounded-2xl overflow-hidden bg-[#1a1a1a] border border-white/10 shadow-lg ${config.glow}`}
+        className={`relative rounded-2xl overflow-hidden border shadow-lg ${config.glow}`}
         style={{
+          backgroundColor: tmpl.card,
+          borderColor: tmpl.subtext + '20',
           boxShadow: `0 8px 32px ${config.color}30, 0 0 0 1px ${config.color}20`,
         }}
       >
@@ -158,7 +162,8 @@ export default function LootCard({ product, index, currency = "HKD", onAdd, onIm
 
         {/* Info */}
         <div className="p-3 relative">
-          <h3 className="text-white text-sm font-semibold leading-snug mb-1 pr-10" style={{
+          <h3 className="text-sm font-semibold leading-snug mb-1 pr-10" style={{
+            color: tmpl.text,
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
@@ -170,10 +175,10 @@ export default function LootCard({ product, index, currency = "HKD", onAdd, onIm
           <div className="flex items-center gap-2">
             {isOnSale ? (
               <>
-                <span className="text-white font-bold text-sm">
+                <span className="font-bold text-sm" style={{ color: tmpl.text }}>
                   {formatPrice(product.price, currency)}
                 </span>
-                <span className="text-zinc-500 text-xs line-through">
+                <span className="text-xs line-through" style={{ color: tmpl.subtext }}>
                   {formatPrice(product.originalPrice!, currency)}
                 </span>
                 <span className="px-1 py-0.5 text-[9px] font-bold rounded bg-red-500 text-white">
@@ -181,7 +186,7 @@ export default function LootCard({ product, index, currency = "HKD", onAdd, onIm
                 </span>
               </>
             ) : (
-              <span className="text-white font-bold text-sm">
+              <span className="font-bold text-sm" style={{ color: tmpl.text }}>
                 {formatPrice(product.price, currency)}
               </span>
             )}
@@ -192,7 +197,8 @@ export default function LootCard({ product, index, currency = "HKD", onAdd, onIm
             <button
               onClick={() => onAdd(product)}
               aria-label={`加入購物車 ${product.title}`}
-              className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-[#FF9500] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+              className="absolute bottom-3 right-3 w-8 h-8 rounded-full text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+              style={{ backgroundColor: tmpl.accent }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
