@@ -147,6 +147,8 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const [editPrice, setEditPrice] = useState("");
   const [editOriginalPrice, setEditOriginalPrice] = useState("");
   const [savingPrice, setSavingPrice] = useState(false);
+  // Batch selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const CATEGORY_OPTIONS = [
     "All",
@@ -450,6 +452,36 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     return "↕";
   };
 
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginatedProducts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedProducts.map((p) => p.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const handleBatchHide = async () => {
+    if (selectedIds.size === 0) return;
+    const confirmed = window.confirm(`Hide ${selectedIds.size} selected products?`);
+    if (!confirmed) return;
+
+    for (const id of selectedIds) {
+      await updateProduct(id, { active: false }, locale);
+    }
+    setSelectedIds(new Set());
+    router.refresh();
+  };
+
   return (
     <>
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -510,11 +542,37 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
         </div>
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3">
+          <span className="text-sm text-zinc-700">{selectedIds.size} selected</span>
+          <button
+            onClick={handleBatchHide}
+            className="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-sm text-red-600 hover:bg-red-100"
+          >
+            Hide Selected
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-[1400px] w-full text-sm">
             <thead>
               <tr className="text-zinc-500 border-b border-zinc-200">
+                <th className="px-4 py-3 text-left w-12">
+                  <input
+                    type="checkbox"
+                    checked={paginatedProducts.length > 0 && selectedIds.size === paginatedProducts.length}
+                    onChange={toggleSelectAll}
+                    className="h-5 w-5 rounded border-zinc-300 text-olive-600 focus:ring-olive-500 cursor-pointer"
+                  />
+                </th>
                 <th className="px-2 py-1 text-left">Photo</th>
                 <th className="px-2 py-1 text-left">Brand</th>
                 <th className="px-2 py-1 text-left">Style</th>
@@ -632,7 +690,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
             <tbody>
               {paginatedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-12 text-center text-zinc-500">
+                  <td colSpan={12} className="px-4 py-12 text-center text-zinc-500">
                     {searchQuery ? "No products match your search." : "No data available."}
                   </td>
                 </tr>
@@ -656,14 +714,23 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                   });
                   return (
                   <tr key={product.id} className={`border-t border-zinc-200 hover:bg-zinc-50 ${!product.active ? "opacity-50" : ""}`}>
+                    {/* Checkbox */}
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(product.id)}
+                        onChange={() => toggleSelect(product.id)}
+                        className="h-5 w-5 rounded border-zinc-300 text-olive-600 focus:ring-olive-500 cursor-pointer"
+                      />
+                    </td>
                     {/* Photo */}
-                    <td className="px-2 py-1">
+                    <td className="px-2 py-2">
                       {product.imageUrl ? (
-                        <div className="relative h-[36px] w-[36px] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
-                          <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="36px" />
+                        <div className="relative h-[56px] w-[56px] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+                          <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="56px" />
                         </div>
                       ) : (
-                        <div className="h-[36px] w-[36px] rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
+                        <div className="h-[56px] w-[56px] rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
                       )}
                     </td>
                     {/* Brand */}
