@@ -126,6 +126,16 @@ export async function getTenantId(req?: Request): Promise<string> {
 }
 
 /**
+ * 喺 Server Component 判斷係咪 platform bare domain（wowlix.com）。
+ * Middleware set x-is-platform: "true" 嘅時候 return true。
+ */
+export async function isPlatformMode(): Promise<boolean> {
+  const { headers } = await import("next/headers");
+  const headersList = await headers();
+  return headersList.get("x-is-platform") === "true";
+}
+
+/**
  * Get tenantId inside Next.js Server Components / Server Actions.
  * Reads the x-tenant-slug header set by middleware via next/headers.
  */

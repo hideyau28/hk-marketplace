@@ -5,6 +5,21 @@ const DEFAULT_SLUG = "maysshop";
 const DEFAULT_HOSTS = new Set(["hk-marketplace", "www", "localhost", "127.0.0.1"]);
 
 /**
+ * Bare platform domain 偵測。
+ * wowlix.com / www.wowlix.com → true（show landing page）
+ * maysshop.wowlix.com → false（tenant subdomain）
+ */
+const PLATFORM_ROOT = "wowlix";
+
+function isPlatformBare(hostname: string): boolean {
+  const host = hostname.split(":")[0];
+  const parts = host.split(".");
+  if (parts.length === 2 && parts[0] === PLATFORM_ROOT) return true;
+  if (parts.length === 3 && parts[0] === "www" && parts[1] === PLATFORM_ROOT) return true;
+  return false;
+}
+
+/**
  * 保留字清單 — 呢啲 path segment 唔會被當成 tenant slug。
  * 用於 /{slug} 路由（P4-F 先用到），而家預留。
  */
@@ -83,6 +98,12 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // --- Platform bare domain detection ---
+  const isPlatform = isPlatformBare(request.headers.get("host") || "");
+  if (isPlatform) {
+    tenantSlug = DEFAULT_SLUG;
+  }
+
   // --- Path-based slug routing: /{slug} → /en/{slug} rewrite ---
   // When the first segment is a tenant slug (not a locale or reserved word),
   // rewrite to add /en prefix so Next.js matches app/[locale]/[slug]/page.tsx
@@ -146,6 +167,9 @@ export function middleware(request: NextRequest) {
   // --- Forward tenant slug via request header ---
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-tenant-slug", tenantSlug);
+  if (isPlatform) {
+    requestHeaders.set("x-is-platform", "true");
+  }
 
   return NextResponse.next({
     request: {

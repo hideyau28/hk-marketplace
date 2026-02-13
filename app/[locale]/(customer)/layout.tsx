@@ -16,7 +16,7 @@ import WelcomePopup from "@/components/WelcomePopup";
 import SocialProofPopup from "@/components/SocialProofPopup";
 import CartFlyAnimation from "@/components/CartFlyAnimation";
 import AdminPreviewBanner from "@/components/AdminPreviewBanner";
-import { getServerTenantId } from "@/lib/tenant";
+import { getServerTenantId, isPlatformMode } from "@/lib/tenant";
 
 // Force dynamic rendering because we need headers() for tenant resolution
 export const dynamic = 'force-dynamic';
@@ -36,6 +36,15 @@ export default async function CustomerLayout({
 
   const l = locale as Locale;
   const t = getDict(l);
+
+  // Platform bare domain (wowlix.com) → minimal layout, 冇 store chrome
+  if (await isPlatformMode()) {
+    return (
+      <ThemeProvider>
+        <main>{children}</main>
+      </ThemeProvider>
+    );
+  }
 
   // Fetch welcome popup settings (tenant-aware)
   const tenantId = await getServerTenantId();
