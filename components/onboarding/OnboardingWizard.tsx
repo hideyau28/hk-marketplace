@@ -53,6 +53,7 @@ const t = {
     copyLink: "Copy",
     loginEmail: "Login Email",
     addFirstProduct: "Add your first product",
+    goToAdmin: "Go to admin dashboard",
     shareToIG: "Share to Instagram",
     creating: "Creating your store...",
     // Errors
@@ -105,6 +106,7 @@ const t = {
     copyLink: "複製",
     loginEmail: "登入 Email",
     addFirstProduct: "加第一件商品",
+    goToAdmin: "去管理後台",
     shareToIG: "分享到 Instagram",
     creating: "建立緊你嘅小店...",
     // Errors
@@ -186,7 +188,6 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
   const [submitting, setSubmitting] = useState(false);
   const [createdSlug, setCreatedSlug] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
-  const [igToast, setIgToast] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // --- Restore state from sessionStorage on mount ---
@@ -443,24 +444,6 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     }
-  };
-
-  const handleShareIG = async () => {
-    const link = `https://wowlix.com/${createdSlug}`;
-    try {
-      await navigator.clipboard.writeText(link);
-    } catch {
-      const el = document.createElement("textarea");
-      el.value = link;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
-    }
-    setIgToast(true);
-    setTimeout(() => setIgToast(false), 2500);
-    // Attempt to open Instagram app
-    window.location.href = "instagram://";
   };
 
   // Clear state when user clicks login (they're abandoning registration)
@@ -801,75 +784,90 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
 
             {/* ======== STEP 4: Done ======== */}
             {step === 4 && (
-              <div className="space-y-5 text-center">
-                <div className="text-4xl">🎉</div>
-                <h2 className="text-xl font-bold text-zinc-900">
-                  {labels.congrats}
-                </h2>
-
-                {/* Login email */}
-                <div>
-                  <p className="text-lg font-semibold text-zinc-900">{data.email}</p>
-                  <p className="text-sm text-zinc-500">{labels.loginEmail}</p>
-                </div>
-
-                {/* Store preview card */}
-                <div className="rounded-xl overflow-hidden border border-zinc-200">
-                  <div
-                    className={`h-20 ${selectedTemplate?.gradient || "bg-gradient-to-br from-orange-300 to-amber-400"}`}
-                  />
-                  <div className="p-3 text-left">
-                    <p className="font-semibold text-zinc-900">
-                      {data.shopName}
-                    </p>
-                    {data.tagline && (
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        {data.tagline}
-                      </p>
-                    )}
+              <div className="space-y-6 text-center">
+                {/* Animated Checkmark */}
+                <div className="flex justify-center">
+                  <div className="relative w-20 h-20 rounded-full bg-[#FF9500] flex items-center justify-center animate-[scale-in_0.5s_ease-out]">
+                    <svg
+                      className="w-10 h-10 text-white animate-[draw-check_0.6s_ease-out_0.2s_both]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline
+                        points="20 6 9 17 4 12"
+                        strokeDasharray="24"
+                        strokeDashoffset="24"
+                        style={{
+                          animation: 'draw-check 0.6s ease-out 0.2s forwards'
+                        }}
+                      />
+                    </svg>
                   </div>
                 </div>
 
+                <style jsx>{`
+                  @keyframes scale-in {
+                    0% {
+                      transform: scale(0);
+                      opacity: 0;
+                    }
+                    50% {
+                      transform: scale(1.1);
+                    }
+                    100% {
+                      transform: scale(1);
+                      opacity: 1;
+                    }
+                  }
+                  @keyframes draw-check {
+                    to {
+                      stroke-dashoffset: 0;
+                    }
+                  }
+                `}</style>
+
+                {/* Title */}
+                <h2 className="text-2xl font-bold text-zinc-900">
+                  {labels.congrats}
+                </h2>
+
                 {/* Store link */}
-                <div>
-                  <p className="text-sm text-zinc-500 mb-1">
+                <div className="bg-zinc-50 rounded-xl px-4 py-3 border border-zinc-200">
+                  <p className="text-xs text-zinc-500 mb-1.5">
                     {labels.storeLink}
                   </p>
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-[#FF9500] font-medium text-sm">
+                    <span className="text-[#FF9500] font-semibold text-base">
                       wowlix.com/{createdSlug}
                     </span>
                     <button
                       onClick={handleCopyLink}
-                      className="text-xs px-2 py-1 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
+                      className="text-xs px-3 py-1.5 rounded-lg bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 transition-colors font-medium"
                     >
                       {linkCopied ? labels.copied : labels.copyLink}
                     </button>
                   </div>
                 </div>
 
-                {/* CTAs */}
-                <div className="space-y-2">
-                  <a
-                    href={`/${locale}/admin?welcome=1`}
-                    className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] leading-[48px]"
-                  >
-                    {labels.addFirstProduct} &rarr;
-                  </a>
-                  <button
-                    onClick={handleShareIG}
-                    className="w-full py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px]"
-                  >
-                    {labels.shareToIG}
-                  </button>
-                </div>
+                {/* Main CTA */}
+                <a
+                  href={`/${locale}/admin?welcome=1`}
+                  className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] leading-[48px]"
+                >
+                  {labels.addFirstProduct} &rarr;
+                </a>
 
-                {/* IG toast */}
-                {igToast && (
-                  <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-zinc-800 px-4 py-2 text-sm text-white shadow-lg">
-                    {labels.copied} {locale === "zh-HK" ? "可以貼到 IG 啦" : "Paste your link on Instagram"}
-                  </div>
-                )}
+                {/* Secondary link */}
+                <a
+                  href={`/${locale}/admin`}
+                  className="inline-block text-sm text-zinc-600 hover:text-[#FF9500] transition-colors font-medium"
+                >
+                  {labels.goToAdmin} &rarr;
+                </a>
               </div>
             )}
           </motion.div>
