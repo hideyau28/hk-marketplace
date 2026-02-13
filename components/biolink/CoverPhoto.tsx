@@ -2,26 +2,17 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import { getCoverTemplate, resolveTemplateId } from "@/lib/cover-templates";
+import { hexToRgba, type CoverTemplate } from "@/lib/cover-templates";
 import { useTemplate } from "@/lib/template-context";
 
-type Props = {
-  url: string | null;
-  brandColor: string | null;
-  coverTemplate?: string | null;
-};
-
 // 根據 template token 生成 cover style
-function getCoverStyle(rawTemplate: string | null | undefined, brandColor: string | null) {
-  const tmpl = getCoverTemplate(rawTemplate);
-  const resolved = resolveTemplateId(rawTemplate);
-
-  switch (resolved) {
+function getCoverStyle(tmpl: CoverTemplate) {
+  switch (tmpl.id) {
     case "noir":
       // 暗黑漸變 + subtle 橙色光暈
       return {
         background: `
-          radial-gradient(circle at 30% 20%, rgba(255, 149, 0, 0.15) 0%, transparent 50%),
+          radial-gradient(circle at 30% 20%, ${hexToRgba(tmpl.accent, 0.15)} 0%, transparent 50%),
           ${tmpl.headerGradient}
         `,
       };
@@ -30,7 +21,7 @@ function getCoverStyle(rawTemplate: string | null | undefined, brandColor: strin
       // 米色漸變 + warm glow
       return {
         background: `
-          radial-gradient(circle at 70% 30%, rgba(196, 154, 108, 0.2) 0%, transparent 50%),
+          radial-gradient(circle at 70% 30%, ${hexToRgba(tmpl.accent, 0.2)} 0%, transparent 50%),
           ${tmpl.headerGradient}
         `,
       };
@@ -39,7 +30,7 @@ function getCoverStyle(rawTemplate: string | null | undefined, brandColor: strin
       // 清新白綠漸變
       return {
         background: `
-          radial-gradient(circle at 50% 50%, rgba(45, 106, 79, 0.08) 0%, transparent 60%),
+          radial-gradient(circle at 50% 50%, ${hexToRgba(tmpl.accent, 0.08)} 0%, transparent 60%),
           ${tmpl.headerGradient}
         `,
       };
@@ -48,14 +39,14 @@ function getCoverStyle(rawTemplate: string | null | undefined, brandColor: strin
       // 粉紅漸變 + soft bokeh
       return {
         background: `
-          radial-gradient(circle at 20% 40%, rgba(199, 125, 145, 0.2) 0%, transparent 40%),
-          radial-gradient(circle at 80% 60%, rgba(248, 228, 232, 0.3) 0%, transparent 40%),
+          radial-gradient(circle at 20% 40%, ${hexToRgba(tmpl.accent, 0.2)} 0%, transparent 40%),
+          radial-gradient(circle at 80% 60%, ${hexToRgba(tmpl.accent, 0.12)} 0%, transparent 40%),
           ${tmpl.headerGradient}
         `,
       };
 
     default:
-      // Fallback: use brandColor or template gradient
+      // Fallback: use template gradient
       return {
         background: tmpl.headerGradient,
       };
@@ -63,10 +54,8 @@ function getCoverStyle(rawTemplate: string | null | undefined, brandColor: strin
 }
 
 // SVG pattern overlays（部分 template 有紋理效果）
-function getPatternOverlay(rawTemplate: string | null | undefined) {
-  const resolved = resolveTemplateId(rawTemplate);
-
-  switch (resolved) {
+function getPatternOverlay(tmpl: CoverTemplate) {
+  switch (tmpl.id) {
     case "noir":
       // 幾何格線
       return (
@@ -86,8 +75,8 @@ function getPatternOverlay(rawTemplate: string | null | undefined) {
         <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="linen-tex" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
-              <rect width="1" height="1" fill="#8C7B6B" />
-              <rect x="2" y="2" width="1" height="1" fill="#8C7B6B" />
+              <rect width="1" height="1" fill={tmpl.subtext} />
+              <rect x="2" y="2" width="1" height="1" fill={tmpl.subtext} />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#linen-tex)" />
@@ -99,7 +88,7 @@ function getPatternOverlay(rawTemplate: string | null | undefined) {
   }
 }
 
-export default function CoverPhoto({ url, brandColor, coverTemplate }: Props) {
+export default function CoverPhoto({ url }: { url: string | null }) {
   const tmpl = useTemplate();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -115,8 +104,8 @@ export default function CoverPhoto({ url, brandColor, coverTemplate }: Props) {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  const coverStyle = getCoverStyle(coverTemplate, brandColor);
-  const patternOverlay = getPatternOverlay(coverTemplate);
+  const coverStyle = getCoverStyle(tmpl);
+  const patternOverlay = getPatternOverlay(tmpl);
 
   return (
     <div className="relative h-[200px] overflow-hidden">

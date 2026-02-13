@@ -198,7 +198,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
       style={{ backgroundColor: tmpl.bg, fontFamily: `'${tmpl.bodyFont}', sans-serif` }}
     >
       <StickyHeader tenant={tenant} cartCount={cartCount} onCartClick={() => cartCount > 0 && setShowCart(true)} />
-      <CoverPhoto url={tenant.coverPhoto} brandColor={tenant.brandColor} coverTemplate={tenant.coverTemplate} />
+      <CoverPhoto url={tenant.coverPhoto} />
       <ProfileSection tenant={tenant} />
 
       {/* Search bar */}

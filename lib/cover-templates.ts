@@ -125,6 +125,14 @@ export function resolveTemplateId(id: string | null | undefined): string {
   return LEGACY_MAP[id] || "mochi";
 }
 
+/** Convert hex (#RRGGBB) to rgba string */
+export function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 /** Get template by ID (handles legacy IDs). Always returns a valid template. */
 export function getCoverTemplate(id: string | null | undefined): CoverTemplate {
   const canonicalId = resolveTemplateId(id);
