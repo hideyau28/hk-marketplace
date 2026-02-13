@@ -12,7 +12,7 @@ type Props = {
 export default function ProfileSection({ tenant }: Props) {
   const tmpl = useTemplate();
   const fallbackLetter = getAvatarFallback(tenant);
-  const color = tenant.brandColor || "#FF9500";
+  const color = tenant.brandColor || tmpl.accent;
 
   return (
     <div className="relative -mt-12 px-5 pb-4">

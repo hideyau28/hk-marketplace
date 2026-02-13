@@ -25,7 +25,7 @@ export default function StickyHeader({ tenant, cartCount, onCartClick }: Props) 
   }, []);
 
   const fallback = getAvatarFallback(tenant);
-  const color = tenant.brandColor || "#FF9500";
+  const color = tenant.brandColor || tmpl.accent;
 
   return (
     <div
