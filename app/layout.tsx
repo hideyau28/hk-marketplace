@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { getStoreName } from "@/lib/get-store-name";
+import { isPlatformMode } from "@/lib/tenant";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -16,6 +17,18 @@ const geistMono = localFont({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  // Platform bare domain → WoWlix branding
+  if (await isPlatformMode()) {
+    return {
+      title: "WoWlix — Turn Followers into Customers",
+      description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
+      manifest: "/manifest.json",
+      icons: {
+        icon: "/favicon.svg",
+      },
+    };
+  }
+
   const storeName = await getStoreName();
 
   return {
