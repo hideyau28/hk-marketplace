@@ -115,13 +115,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     select: { name: true, description: true, coverPhoto: true },
   });
   if (!tenant) return {};
+
+  const title = `${tenant.name} | WoWlix`;
+  const description = tenant.description || `Shop at ${tenant.name}`;
+  const ogImage = tenant.coverPhoto || "https://wowlix.com/og-default.png";
+
   return {
-    title: `${tenant.name} | Wowlix`,
-    description: tenant.description || `Shop at ${tenant.name}`,
+    title,
+    description,
     openGraph: {
       title: tenant.name,
-      description: tenant.description || `Shop at ${tenant.name}`,
-      images: tenant.coverPhoto ? [tenant.coverPhoto] : [],
+      description,
+      images: [ogImage],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: tenant.name,
+      description,
+      images: [ogImage],
     },
   };
 }
