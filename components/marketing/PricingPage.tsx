@@ -3,6 +3,50 @@
 import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
 
+/* ─── Inline SVG Icons (monoline, stroke #FF9500) ─── */
+
+const ICONS: Record<string, React.ReactNode> = {
+  seedling: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22V12" />
+      <path d="M12 12C12 8 8 4 4 4c0 4 4 8 8 8z" />
+      <path d="M12 15c0-4 4-8 8-8-4 0-8 4-8 8z" />
+    </svg>
+  ),
+  arrowUp: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 19V5" />
+      <path d="M5 12l7-7 7 7" />
+    </svg>
+  ),
+  star: (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  package: (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16.5 9.4l-9-5.19" />
+      <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+      <path d="M3.27 6.96L12 12.01l8.73-5.05" />
+      <path d="M12 22.08V12" />
+    </svg>
+  ),
+  link: (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+    </svg>
+  ),
+  coin: (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v12" />
+      <path d="M15 9.5c0-1.38-1.34-2.5-3-2.5s-3 1.12-3 2.5 1.34 2.5 3 2.5 3 1.12 3 2.5-1.34 2.5-3 2.5" />
+    </svg>
+  ),
+};
+
 /* ─── Data ─── */
 
 const PLANS = [
@@ -86,7 +130,7 @@ const COMPETITORS = [
 
 const SCENARIOS = [
   {
-    emoji: "🌱",
+    icon: "seedling",
     title: "啱啱開始",
     range: "每月 10-30 單 / $3K-$8K",
     plan: "Free $0",
@@ -94,7 +138,7 @@ const SCENARIOS = [
     planColor: "#10B981",
   },
   {
-    emoji: "🚀",
+    icon: "arrowUp",
     title: "開始有回頭客",
     range: "每月 50-100 單 / $10K-$20K",
     plan: "Lite $78",
@@ -102,7 +146,7 @@ const SCENARIOS = [
     planColor: "#FF9500",
   },
   {
-    emoji: "👑",
+    icon: "star",
     title: "認真做品牌",
     range: "每月 120-200 單 / $20K-$30K",
     plan: "Pro $198",
@@ -114,36 +158,28 @@ const SCENARIOS = [
 const DEMOS = [
   {
     name: "Noir",
-    type: "波鞋店",
-    fans: "5.2K",
-    months: 4,
+    desc: "型格街頭風",
     gradient: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
     textColor: "#fff",
     accent: "#FF9500",
   },
   {
     name: "Linen",
-    type: "手作店",
-    fans: "1.8K",
-    months: 2,
+    desc: "溫暖手感風",
     gradient: "linear-gradient(135deg, #F5F0EB 0%, #E8DDD3 100%)",
     textColor: "#3D2E1E",
     accent: "#8B7355",
   },
   {
     name: "Mochi",
-    type: "烘焙店",
-    fans: "2.3K",
-    months: 3,
+    desc: "清新甜美風",
     gradient: "linear-gradient(135deg, #FFF8F0 0%, #FFE8CC 100%)",
     textColor: "#5C3D00",
     accent: "#FF9500",
   },
   {
     name: "Petal",
-    type: "美妝店",
-    fans: "3.1K",
-    months: 1,
+    desc: "柔美花漾風",
     gradient: "linear-gradient(135deg, #FFF0F5 0%, #FFE0EB 100%)",
     textColor: "#8B2252",
     accent: "#D4447C",
@@ -827,12 +863,12 @@ export default function PricingPage() {
           {/* 3-Step Mini Flow */}
           <div style={{ display: "flex", justifyContent: "center", gap: 40, marginTop: 56, flexWrap: "wrap" }}>
             {[
-              { icon: "📦", label: "上貨", desc: "加商品、定價、上圖" },
-              { icon: "🔗", label: "分享 Link", desc: "放喺 IG Bio" },
-              { icon: "💰", label: "收單", desc: "客人自助落單付款" },
+              { icon: "package", label: "上貨", desc: "加商品、定價、上圖" },
+              { icon: "link", label: "分享 Link", desc: "放喺 IG Bio" },
+              { icon: "coin", label: "收單", desc: "客人自助落單付款" },
             ].map((step, i) => (
               <div key={i} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 32, marginBottom: 4 }}>{step.icon}</div>
+                <div style={{ marginBottom: 4 }}>{ICONS[step.icon]}</div>
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{step.label}</div>
                 <div style={{ fontSize: 12, color: "#999" }}>{step.desc}</div>
               </div>
@@ -907,7 +943,7 @@ export default function PricingPage() {
                   cursor: "default",
                 }}
               >
-                <div style={{ fontSize: 40, marginBottom: 12 }}>{s.emoji}</div>
+                <div style={{ marginBottom: 12 }}>{ICONS[s.icon]}</div>
                 <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>{s.title}</h3>
                 <div style={{ fontSize: 14, color: "#888", marginBottom: 16 }}>{s.range}</div>
                 <div
@@ -946,7 +982,7 @@ export default function PricingPage() {
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
-              用 WoWlix 開嘅店
+              4 款精選主題
             </h2>
             <p style={{ color: "#888", fontSize: 16 }}>每間店都有自己嘅風格</p>
           </div>
@@ -1007,10 +1043,8 @@ export default function PricingPage() {
                   </div>
                 </div>
                 <div style={{ padding: "16px 16px 20px", textAlign: "center" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{d.type}</div>
-                  <div style={{ fontSize: 11, color: "#999" }}>
-                    IG 粉絲 {d.fans} · 用咗 {d.months} 個月
-                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{d.name}</div>
+                  <div style={{ fontSize: 11, color: "#999" }}>{d.desc}</div>
                 </div>
               </div>
             ))}
