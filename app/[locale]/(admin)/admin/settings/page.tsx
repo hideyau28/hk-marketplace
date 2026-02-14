@@ -269,14 +269,14 @@ export default function TenantSettings({ params }: { params: { locale: string } 
       } else {
         setSaveState("error");
         if (res.status === 409) {
-          setErrorMessage("網址已被使用，請選擇其他網址");
+          setErrorMessage(locale === "zh-HK" ? "網址已被使用，請選擇其他網址" : "URL already taken, please choose another");
         } else {
-          setErrorMessage(data.error?.message || "儲存失敗");
+          setErrorMessage(data.error?.message || (locale === "zh-HK" ? "儲存失敗" : "Save failed"));
         }
       }
     } catch (err) {
       setSaveState("error");
-      setErrorMessage(`網絡錯誤: ${err instanceof Error ? err.message : String(err)}`);
+      setErrorMessage(locale === "zh-HK" ? `網絡錯誤: ${err instanceof Error ? err.message : String(err)}` : `Network error: ${err instanceof Error ? err.message : String(err)}`);
     }
   }, [formData]);
 
@@ -296,13 +296,13 @@ export default function TenantSettings({ params }: { params: { locale: string } 
         setAccountEmail(data.email);
         setFormData((prev) => ({ ...prev, email: data.email }));
         setEditingEmail(false);
-        setAccountSuccess("Email 已更新");
+        setAccountSuccess(locale === "zh-HK" ? "Email 已更新" : "Email updated");
         setTimeout(() => setAccountSuccess(""), 3000);
       } else {
-        setAccountError(data.error || "更新失敗");
+        setAccountError(data.error || (locale === "zh-HK" ? "更新失敗" : "Update failed"));
       }
     } catch {
-      setAccountError("網絡錯誤");
+      setAccountError(locale === "zh-HK" ? "網絡錯誤" : "Network error");
     } finally {
       setAccountSaving(false);
     }
@@ -310,11 +310,11 @@ export default function TenantSettings({ params }: { params: { locale: string } 
 
   const handleSavePassword = async () => {
     if (newPw !== confirmNewPw) {
-      setAccountError("新密碼不一致");
+      setAccountError(locale === "zh-HK" ? "新密碼不一致" : "Passwords do not match");
       return;
     }
     if (newPw.length < 8) {
-      setAccountError("新密碼最少 8 個字");
+      setAccountError(locale === "zh-HK" ? "新密碼最少 8 個字" : "Password must be at least 8 characters");
       return;
     }
     setAccountSaving(true);
@@ -332,13 +332,13 @@ export default function TenantSettings({ params }: { params: { locale: string } 
         setCurrentPw("");
         setNewPw("");
         setConfirmNewPw("");
-        setAccountSuccess("密碼已更新");
+        setAccountSuccess(locale === "zh-HK" ? "密碼已更新" : "Password updated");
         setTimeout(() => setAccountSuccess(""), 3000);
       } else {
-        setAccountError(data.error || "更新失敗");
+        setAccountError(data.error || (locale === "zh-HK" ? "更新失敗" : "Update failed"));
       }
     } catch {
-      setAccountError("網絡錯誤");
+      setAccountError(locale === "zh-HK" ? "網絡錯誤" : "Network error");
     } finally {
       setAccountSaving(false);
     }
@@ -420,7 +420,7 @@ export default function TenantSettings({ params }: { params: { locale: string } 
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 text-sm font-medium text-emerald-600"
                 >
-                  <CheckCircle2 className="h-4 w-4" /> 已儲存
+                  <CheckCircle2 className="h-4 w-4" /> {locale === "zh-HK" ? "已儲存" : "Saved"}
                 </motion.div>
               )}
               {saveState === "error" && (
@@ -428,7 +428,7 @@ export default function TenantSettings({ params }: { params: { locale: string } 
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="flex items-center gap-2 rounded-full bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-sm font-medium text-red-600"
                 >
-                  <AlertCircle className="h-4 w-4" /> {errorMessage || "失敗"}
+                  <AlertCircle className="h-4 w-4" /> {errorMessage || (locale === "zh-HK" ? "失敗" : "Failed")}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -442,9 +442,9 @@ export default function TenantSettings({ params }: { params: { locale: string } 
               )}
             >
               {saveState === "saving" ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> 儲存中</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> {locale === "zh-HK" ? "儲存中" : "Saving"}</>
               ) : (
-                <><Save className="h-4 w-4" /> 儲存</>
+                <><Save className="h-4 w-4" /> {locale === "zh-HK" ? "儲存" : "Save"}</>
               )}
             </button>
           </div>
