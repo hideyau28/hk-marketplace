@@ -20,6 +20,8 @@ export interface CoverTemplate {
   // Font tokens
   headingFont: string;  // Google Fonts family name for headings
   bodyFont: string;     // Google Fonts family name for body text
+  // Banner
+  defaultBanner: string; // path to default cover image in /public
 }
 
 export const COVER_TEMPLATES: CoverTemplate[] = [
@@ -40,6 +42,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     shadow: "none",
     headingFont: "Bebas Neue",
     bodyFont: "Inter",
+    defaultBanner: "/banners/noir.webp",
   },
   {
     id: "linen",
@@ -58,6 +61,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     shadow: "0 2px 8px rgba(0,0,0,0.06)",
     headingFont: "Playfair Display",
     bodyFont: "Lato",
+    defaultBanner: "/banners/linen.webp",
   },
   {
     id: "mochi",
@@ -76,6 +80,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     shadow: "0 1px 3px rgba(0,0,0,0.08)",
     headingFont: "Montserrat",
     bodyFont: "Inter",
+    defaultBanner: "/banners/mochi.webp",
   },
   {
     id: "petal",
@@ -94,6 +99,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     shadow: "0 2px 12px rgba(199,125,145,0.12)",
     headingFont: "Cormorant Garamond",
     bodyFont: "Lato",
+    defaultBanner: "/banners/petal.webp",
   },
 ];
 

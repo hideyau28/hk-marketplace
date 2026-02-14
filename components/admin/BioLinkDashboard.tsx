@@ -20,6 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import ProductEditSheet from "./ProductEditSheet";
+import { getCoverTemplate } from "@/lib/cover-templates";
 
 type Product = {
   id: string;
@@ -41,6 +42,7 @@ type Tenant = {
   name: string;
   slug: string;
   coverPhoto: string | null;
+  coverTemplate: string | null;
   logoUrl: string | null;
   brandColor: string | null;
 };
@@ -193,6 +195,9 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
   const isZh = locale === "zh-HK";
   const storeUrl = `wowlix.com/${tenant.slug}`;
   const brandColor = tenant.brandColor || "#FF9500";
+  const tmpl = getCoverTemplate(tenant.coverTemplate);
+  // Admin header banner：自訂 cover → template default banner
+  const headerBanner = tenant.coverPhoto || tmpl.defaultBanner;
 
   // dnd-kit sensors — activationConstraint prevents accidental drags
   const pointerSensor = useSensor(PointerSensor, {
@@ -373,13 +378,18 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
   return (
     <div className="px-4 pb-4">
       {/* Cover / Header */}
-      <div
-        className="relative rounded-2xl overflow-hidden mb-6 -mx-4 -mt-0"
-        style={{
-          background: `linear-gradient(135deg, ${brandColor}, ${brandColor}cc)`,
-        }}
-      >
-        <div className="px-6 py-8 text-center text-white">
+      <div className="relative rounded-2xl overflow-hidden mb-6 -mx-4 -mt-0">
+        {/* Banner image */}
+        <Image
+          src={headerBanner}
+          alt="Store banner"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 480px"
+        />
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative px-6 py-8 text-center text-white">
           {/* Avatar */}
           <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 text-2xl font-bold overflow-hidden relative">
             {tenant.logoUrl ? (

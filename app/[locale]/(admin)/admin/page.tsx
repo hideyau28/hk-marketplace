@@ -50,7 +50,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
     const [tenant, products, pendingOrders] = await Promise.all([
       prisma.tenant.findUnique({
         where: { id: tenantId },
-        select: { name: true, slug: true, coverPhoto: true, logoUrl: true, brandColor: true },
+        select: { name: true, slug: true, coverPhoto: true, coverTemplate: true, logoUrl: true, brandColor: true },
       }),
       prisma.product.findMany({
         where: { tenantId, active: true },
