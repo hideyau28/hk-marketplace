@@ -653,7 +653,9 @@ export default function PricingPage() {
         overflowX: "hidden",
       }}
     >
-      <style jsx global>{`
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&family=Noto+Sans+TC:wght@400;500;700;900&display=swap");
         @keyframes pulse {
           0%,
@@ -695,7 +697,9 @@ export default function PricingPage() {
           cursor: pointer;
           box-shadow: 0 2px 8px rgba(255, 149, 0, 0.4);
         }
-      `}</style>
+      `,
+        }}
+      />
 
       {/* NAV */}
       <nav
