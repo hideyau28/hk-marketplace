@@ -33,7 +33,7 @@ const t = {
     passwordMinError: "At least 8 characters",
     whatsapp: "WhatsApp (optional)",
     whatsappPlaceholder: "e.g. 91234567",
-    whatsappHint: "8-digit HK number",
+    whatsappHint: "8-digit HK number, no +852 needed",
     whatsappFormatError: "Must be 8 digits",
     confirmPassword: "Confirm Password *",
     confirmPasswordPlaceholder: "Re-enter your password",
@@ -46,12 +46,14 @@ const t = {
     uploadLogo: "Upload",
     taglineOptional: "Tagline (optional)",
     taglinePlaceholder: "e.g. Artisan Oolong Tea Shop",
+    taglineSkipHint: "You can skip this step",
     // Step 4
     congrats: "Your store is ready!",
     storeLink: "Your store link:",
     copied: "Copied!",
     copyLink: "Copy",
     addFirstProduct: "Add your first product",
+    openStore: "Open store",
     goToAdmin: "Go to admin dashboard",
     creating: "Creating your store...",
     // Errors
@@ -85,7 +87,7 @@ const t = {
     passwordMinError: "最少 8 個字",
     whatsapp: "WhatsApp（可選）",
     whatsappPlaceholder: "例如 91234567",
-    whatsappHint: "8 位香港號碼",
+    whatsappHint: "8 位香港號碼，不需要 +852",
     whatsappFormatError: "需要 8 位數字",
     confirmPassword: "確認密碼 *",
     confirmPasswordPlaceholder: "再輸入一次密碼",
@@ -98,12 +100,14 @@ const t = {
     uploadLogo: "上傳",
     taglineOptional: "簡介（選填）",
     taglinePlaceholder: "例如：手工烏龍茶專門店",
+    taglineSkipHint: "可以跳過",
     // Step 4
     congrats: "你嘅小店開好喇！",
     storeLink: "你嘅店舖連結：",
     copied: "已複製！",
     copyLink: "複製",
     addFirstProduct: "加第一件商品",
+    openStore: "打開店面",
     goToAdmin: "去管理後台",
     creating: "建立緊你嘅小店...",
     // Errors
@@ -812,6 +816,9 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                     maxLength={100}
                     className={inputClass("tagline")}
                   />
+                  <p className="text-zinc-400 text-xs mt-1">
+                    {labels.taglineSkipHint}
+                  </p>
                 </div>
 
                 {/* Nav buttons */}
@@ -890,6 +897,16 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                   className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] leading-[48px]"
                 >
                   {labels.addFirstProduct} &rarr;
+                </a>
+
+                {/* Open store CTA */}
+                <a
+                  href={`https://wowlix.com/${createdSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-3 rounded-xl border-2 border-[#FF9500] text-[#FF9500] font-semibold text-base hover:bg-[#FF9500]/5 transition-colors min-h-[48px] leading-[48px]"
+                >
+                  {labels.openStore} &rarr;
                 </a>
 
                 {/* Secondary link */}

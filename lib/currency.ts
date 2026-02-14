@@ -11,9 +11,9 @@ const RATES: Record<Currency, number> = {
 };
 
 const SYMBOLS: Record<Currency, string> = {
-  HKD: "$",
+  HKD: "HK$",
   CNY: "¥",
-  USD: "$",
+  USD: "US$",
 };
 
 const STORAGE_KEY = "hk-marketplace-currency";
