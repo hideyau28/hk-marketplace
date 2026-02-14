@@ -6,14 +6,15 @@ import type { Metadata } from "next";
 import type { ProductForBioLink, DualVariantData, DeliveryOption, OrderConfirmConfig } from "@/lib/biolink-helpers";
 import { DEFAULT_DELIVERY_OPTIONS, DEFAULT_ORDER_CONFIRM } from "@/lib/biolink-helpers";
 
+// Force dynamic — 需要 runtime DB 查詢，唔可以 static generate
+export const dynamic = 'force-dynamic';
+
 type PageProps = {
   params: Promise<{ slug: string; locale: string }>;
 };
 
-export default async function SlugPage({ params }: PageProps) {
-  const { slug } = await params;
-
-  const tenant = await prisma.tenant.findUnique({
+async function fetchTenant(slug: string) {
+  return prisma.tenant.findUnique({
     where: { slug },
     select: {
       id: true,
@@ -43,11 +44,11 @@ export default async function SlugPage({ params }: PageProps) {
       orderConfirmMessage: true,
     },
   });
+}
 
-  if (!tenant) notFound();
-
-  const products = await prisma.product.findMany({
-    where: { tenantId: tenant.id, active: true },
+async function fetchProducts(tenantId: string) {
+  return prisma.product.findMany({
+    where: { tenantId, active: true },
     orderBy: { updatedAt: "desc" },
     select: {
       id: true,
@@ -77,6 +78,27 @@ export default async function SlugPage({ params }: PageProps) {
       },
     },
   });
+}
+
+export default async function SlugPage({ params }: PageProps) {
+  const { slug } = await params;
+
+  let tenant;
+  try {
+    tenant = await fetchTenant(slug);
+  } catch (error) {
+    console.error(`[slug] tenant query failed for slug="${slug}":`, error);
+    notFound();
+  }
+
+  if (!tenant) notFound();
+
+  let products: Awaited<ReturnType<typeof fetchProducts>> = [];
+  try {
+    products = await fetchProducts(tenant.id);
+  } catch (error) {
+    console.error(`[slug] products query failed for tenant="${tenant.slug}":`, error);
+  }
 
   // Serialize for client component (dates → strings via JSON, Json fields → typed)
   const serialized: ProductForBioLink[] = products.map((p) => ({
@@ -110,10 +132,18 @@ export default async function SlugPage({ params }: PageProps) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const tenant = await prisma.tenant.findUnique({
-    where: { slug },
-    select: { name: true, description: true, coverPhoto: true },
-  });
+
+  let tenant;
+  try {
+    tenant = await prisma.tenant.findUnique({
+      where: { slug },
+      select: { name: true, description: true, coverPhoto: true },
+    });
+  } catch (error) {
+    console.error(`[slug] metadata query failed for slug="${slug}":`, error);
+    return {};
+  }
+
   if (!tenant) return {};
 
   const title = `${tenant.name} | WoWlix`;

@@ -64,9 +64,17 @@ function makeClient() {
     needsSsl = true;
   }
 
-  const poolConfig: any = { connectionString: normalizedUrl };
+  const poolConfig: any = {
+    connectionString: normalizedUrl,
+    // Serverless-friendly pool settings
+    max: 10,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 10_000,
+  };
   if (needsSsl) {
-    poolConfig.ssl = { rejectUnauthorized: true };
+    // Neon Postgres: sslmode=require 已在 URL，rejectUnauthorized: false
+    // 避免 Vercel 環境 CA trust store 與 Neon cert 不匹配導致連線失敗
+    poolConfig.ssl = { rejectUnauthorized: false };
   }
 
   const pool = new Pool(poolConfig);
