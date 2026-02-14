@@ -1131,9 +1131,25 @@ export default function LandingPage() {
             <span>W</span>o<span>W</span>lix
           </span>
         </div>
-        <Link href="/en/start" className="nav-cta">
-          免費開店
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+          <Link
+            href="/zh-HK/pricing"
+            style={{
+              color: "var(--gray-400)",
+              textDecoration: "none",
+              fontSize: "15px",
+              fontWeight: 600,
+              transition: "color 0.3s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--white)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--gray-400)")}
+          >
+            定價
+          </Link>
+          <Link href="/en/start" className="nav-cta">
+            免費開店
+          </Link>
+        </div>
       </nav>
 
       <section className="hero">
