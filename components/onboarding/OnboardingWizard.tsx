@@ -51,14 +51,14 @@ const t = {
     storeLink: "Your store link:",
     copied: "Copied!",
     copyLink: "Copy",
-    loginEmail: "Login Email",
     addFirstProduct: "Add your first product",
-    shareToIG: "Share to Instagram",
+    goToAdmin: "Go to admin dashboard",
     creating: "Creating your store...",
     // Errors
     registerError: "Registration failed, please try again",
     haveAccount: "Already have an account?",
     login: "Log in",
+    loginEmail: "Login Email",
   },
   "zh-HK": {
     // Step 1
@@ -103,14 +103,14 @@ const t = {
     storeLink: "你嘅店舖連結：",
     copied: "已複製！",
     copyLink: "複製",
-    loginEmail: "登入 Email",
     addFirstProduct: "加第一件商品",
-    shareToIG: "分享到 Instagram",
+    goToAdmin: "去管理後台",
     creating: "建立緊你嘅小店...",
     // Errors
     registerError: "註冊失敗，請再試",
     haveAccount: "已有帳號？",
     login: "登入",
+    loginEmail: "登入 Email",
   },
 } as const;
 
@@ -186,7 +186,6 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
   const [submitting, setSubmitting] = useState(false);
   const [createdSlug, setCreatedSlug] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
-  const [igToast, setIgToast] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // --- Restore state from sessionStorage on mount ---
@@ -443,24 +442,6 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
     }
-  };
-
-  const handleShareIG = async () => {
-    const link = `https://wowlix.com/${createdSlug}`;
-    try {
-      await navigator.clipboard.writeText(link);
-    } catch {
-      const el = document.createElement("textarea");
-      el.value = link;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
-    }
-    setIgToast(true);
-    setTimeout(() => setIgToast(false), 2500);
-    // Attempt to open Instagram app
-    window.location.href = "instagram://";
   };
 
   // Clear state when user clicks login (they're abandoning registration)
@@ -886,45 +867,38 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                 </div>
 
                 {/* Store link */}
-                <div>
-                  <p className="text-sm text-zinc-500 mb-1">
+                <div className="bg-zinc-50 rounded-xl px-4 py-3 border border-zinc-200">
+                  <p className="text-xs text-zinc-500 mb-1.5">
                     {labels.storeLink}
                   </p>
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-[#FF9500] font-medium text-sm">
+                    <span className="text-[#FF9500] font-semibold text-base">
                       wowlix.com/{createdSlug}
                     </span>
                     <button
                       onClick={handleCopyLink}
-                      className="text-xs px-2 py-1 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
+                      className="text-xs px-3 py-1.5 rounded-lg bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 transition-colors font-medium"
                     >
                       {linkCopied ? labels.copied : labels.copyLink}
                     </button>
                   </div>
                 </div>
 
-                {/* CTAs */}
-                <div className="space-y-2">
-                  <a
-                    href={`/${locale}/admin?welcome=1`}
-                    className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] leading-[48px]"
-                  >
-                    {labels.addFirstProduct} &rarr;
-                  </a>
-                  <button
-                    onClick={handleShareIG}
-                    className="w-full py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px]"
-                  >
-                    {labels.shareToIG}
-                  </button>
-                </div>
+                {/* Main CTA */}
+                <a
+                  href={`/${locale}/admin?welcome=1`}
+                  className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] leading-[48px]"
+                >
+                  {labels.addFirstProduct} &rarr;
+                </a>
 
-                {/* IG toast */}
-                {igToast && (
-                  <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-xl bg-zinc-800 px-4 py-2 text-sm text-white shadow-lg">
-                    {labels.copied} {locale === "zh-HK" ? "可以貼到 IG 啦" : "Paste your link on Instagram"}
-                  </div>
-                )}
+                {/* Secondary link */}
+                <a
+                  href={`/${locale}/admin`}
+                  className="inline-block text-sm text-zinc-600 hover:text-[#FF9500] transition-colors font-medium"
+                >
+                  {labels.goToAdmin} &rarr;
+                </a>
               </div>
             )}
           </motion.div>
