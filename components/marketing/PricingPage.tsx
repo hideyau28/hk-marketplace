@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ShoppingBag, Smartphone, RefreshCw, Award } from "lucide-react";
+import type { Locale } from "@/lib/i18n";
 
 /* ─── Inline SVG Icons (monoline, stroke #FF9500) ─── */
 
@@ -29,173 +30,124 @@ const ICONS: Record<string, React.ReactNode> = {
 
 /* ─── Data ─── */
 
-const PLANS = [
-  {
-    name: "Free",
-    price: 0,
-    period: "/月",
-    subtitle: "零成本試水溫",
-    cta: "免費開始",
-    ctaStyle: "outline" as const,
-    features: [
-      "10 件商品",
-      "每月 50 單",
-      "FPS + PayMe + AlipayHK",
-      "Mochi 店舖主題",
-      "1 員工帳號（店主）",
-    ],
-    noFeatures: ["WhatsApp 預填訊息", "優惠碼", "訂單匯出", "數據分析"],
-    footnote: "永久免費・隨時升級",
-    bg: "white" as const,
-    highlight: false,
-  },
-  {
-    name: "Lite",
-    price: 78,
-    period: "/月",
-    subtitle: "認真副業首選",
-    cta: "立即訂閱",
-    ctaStyle: "primary" as const,
-    badge: "最受歡迎",
-    features: [
-      "50 件商品",
-      "無限訂單",
-      "FPS + PayMe + AlipayHK + 銀行過數",
-      "全部主題（持續更新）",
-      "WhatsApp 預填訊息",
-      "優惠碼",
-      "訂單 CSV 匯出",
-      "基本數據分析",
-      "2 員工帳號",
-    ],
-    noFeatures: [] as string[],
-    footnote: "月繳・隨時取消・0% 平台抽成",
-    bg: "warm" as const,
-    highlight: true,
-  },
-  {
-    name: "Pro",
-    price: 198,
-    period: "/月",
-    subtitle: "全職生意必備",
-    cta: "免費試 14 日",
-    ctaStyle: "dark" as const,
-    features: [
-      "無限商品",
-      "無限訂單",
-      "全部收款方式",
-      "全部主題（持續更新）",
-      "WhatsApp 預填訊息",
-      "優惠碼",
-      "訂單 CSV 匯出",
-      "進階數據分析 + 熱賣排行",
-      "棄單挽回",
-      "CRM 客戶庫",
-      "自訂域名（需自備）",
-      "移除 WoWlix branding",
-      "3 員工帳號",
-    ],
-    noFeatures: [] as string[],
-    footnote: "14 日免費試用・0% 平台抽成",
-    bg: "dark" as const,
-    highlight: false,
-  },
-];
+function getPlans(isZh: boolean) {
+  return [
+    {
+      name: "Free",
+      price: 0,
+      period: isZh ? "/月" : "/mo",
+      subtitle: isZh ? "零成本試水溫" : "Zero cost to start",
+      cta: isZh ? "免費開始" : "Start Free",
+      ctaStyle: "outline" as const,
+      features: isZh
+        ? ["10 件商品", "每月 50 單", "FPS + PayMe + AlipayHK", "Mochi 店舖主題", "1 員工帳號（店主）"]
+        : ["10 products", "50 orders/mo", "FPS + PayMe + AlipayHK", "Mochi theme", "1 staff account (owner)"],
+      noFeatures: isZh
+        ? ["WhatsApp 預填訊息", "優惠碼", "訂單匯出", "數據分析"]
+        : ["WhatsApp prefill", "Coupons", "Order export", "Analytics"],
+      footnote: isZh ? "永久免費・隨時升級" : "Free forever · upgrade anytime",
+      bg: "white" as const,
+      highlight: false,
+    },
+    {
+      name: "Lite",
+      price: 78,
+      period: isZh ? "/月" : "/mo",
+      subtitle: isZh ? "認真副業首選" : "For growing side hustles",
+      cta: isZh ? "立即訂閱" : "Subscribe",
+      ctaStyle: "primary" as const,
+      badge: isZh ? "最受歡迎" : "Most popular",
+      features: isZh
+        ? ["50 件商品", "無限訂單", "FPS + PayMe + AlipayHK + 銀行過數", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "基本數據分析", "2 員工帳號"]
+        : ["50 products", "Unlimited orders", "FPS + PayMe + AlipayHK + Bank transfer", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Basic analytics", "2 staff accounts"],
+      noFeatures: [] as string[],
+      footnote: isZh ? "月繳・隨時取消・0% 平台抽成" : "Monthly · cancel anytime · 0% platform fee",
+      bg: "warm" as const,
+      highlight: true,
+    },
+    {
+      name: "Pro",
+      price: 198,
+      period: isZh ? "/月" : "/mo",
+      subtitle: isZh ? "全職生意必備" : "For full-time businesses",
+      cta: isZh ? "免費試 14 日" : "Try 14 days free",
+      ctaStyle: "dark" as const,
+      features: isZh
+        ? ["無限商品", "無限訂單", "全部收款方式", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "進階數據分析 + 熱賣排行", "棄單挽回", "CRM 客戶庫", "自訂域名（需自備）", "移除 WoWlix branding", "3 員工帳號"]
+        : ["Unlimited products", "Unlimited orders", "All payment methods", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Advanced analytics + bestseller ranking", "Abandoned cart recovery", "CRM customer database", "Custom domain (BYOD)", "Remove WoWlix branding", "3 staff accounts"],
+      noFeatures: [] as string[],
+      footnote: isZh ? "14 日免費試用・0% 平台抽成" : "14-day free trial · 0% platform fee",
+      bg: "dark" as const,
+      highlight: false,
+    },
+  ];
+}
 
-const COMPETITORS = [
-  { name: "本地網店平台 A", base: 499, rate: 0.008, color: "#94A3B8" },
-  { name: "海外網店平台", base: 195, rate: 0.02, color: "#94A3B8" },
-  { name: "本地網店平台 B", base: 374, rate: 0, color: "#94A3B8" },
-];
+function getCompetitors(isZh: boolean) {
+  return [
+    { name: isZh ? "本地網店平台 A" : "Local Platform A", base: 499, rate: 0.008, color: "#94A3B8" },
+    { name: isZh ? "海外網店平台" : "Global Platform", base: 195, rate: 0.02, color: "#94A3B8" },
+    { name: isZh ? "本地網店平台 B" : "Local Platform B", base: 374, rate: 0, color: "#94A3B8" },
+  ];
+}
 
-const SCENARIOS = [
-  {
-    icon: "smartphone",
-    title: "啱啱開始",
-    range: "每月 10-30 單 / $3K-$8K",
-    plan: "Free $0",
-    desc: "零成本開舖，試下市場反應先",
-    planColor: "#10B981",
-  },
-  {
-    icon: "refreshCw",
-    title: "開始有回頭客",
-    range: "每月 50-100 單 / $10K-$20K",
-    plan: "Lite $78",
-    desc: "$78 = 一晚外賣錢，換走每晚跟單 1 小時",
-    planColor: "#FF9500",
-  },
-  {
-    icon: "award",
-    title: "認真做品牌",
-    range: "每月 120-200 單 / $20K-$30K",
-    plan: "Pro $198",
-    desc: "自訂域名 + CRM，唔再比人覺得係 IG 雜嘜檔",
-    planColor: "#1A1A1A",
-  },
-];
+function getScenarios(isZh: boolean) {
+  return [
+    {
+      icon: "smartphone",
+      title: isZh ? "啱啱開始" : "Just starting",
+      range: isZh ? "每月 10-30 單 / $3K-$8K" : "10-30 orders/mo / $3K-$8K",
+      plan: "Free $0",
+      desc: isZh ? "零成本開舖，試下市場反應先" : "Zero cost to open shop, test the market first",
+      planColor: "#10B981",
+    },
+    {
+      icon: "refreshCw",
+      title: isZh ? "開始有回頭客" : "Getting repeat customers",
+      range: isZh ? "每月 50-100 單 / $10K-$20K" : "50-100 orders/mo / $10K-$20K",
+      plan: "Lite $78",
+      desc: isZh ? "$78 = 一晚外賣錢，換走每晚跟單 1 小時" : "$78 = one takeout dinner, saves 1 hour of order management daily",
+      planColor: "#FF9500",
+    },
+    {
+      icon: "award",
+      title: isZh ? "認真做品牌" : "Building a brand",
+      range: isZh ? "每月 120-200 單 / $20K-$30K" : "120-200 orders/mo / $20K-$30K",
+      plan: "Pro $198",
+      desc: isZh ? "自訂域名 + CRM，唔再比人覺得係 IG 雜嘜檔" : "Custom domain + CRM, look like a real brand",
+      planColor: "#1A1A1A",
+    },
+  ];
+}
 
-const DEMOS = [
-  {
-    name: "Noir",
-    desc: "型格街頭風",
-    gradient: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
-    textColor: "#fff",
-    accent: "#FF9500",
-  },
-  {
-    name: "Linen",
-    desc: "溫暖手感風",
-    gradient: "linear-gradient(135deg, #F5F0EB 0%, #E8DDD3 100%)",
-    textColor: "#3D2E1E",
-    accent: "#8B7355",
-  },
-  {
-    name: "Mochi",
-    desc: "清新甜美風",
-    gradient: "linear-gradient(135deg, #FFF8F0 0%, #FFE8CC 100%)",
-    textColor: "#5C3D00",
-    accent: "#FF9500",
-  },
-  {
-    name: "Petal",
-    desc: "柔美花漾風",
-    gradient: "linear-gradient(135deg, #FFF0F5 0%, #FFE0EB 100%)",
-    textColor: "#8B2252",
-    accent: "#D4447C",
-  },
-];
+function getDemos(isZh: boolean) {
+  return [
+    { name: "Noir", desc: isZh ? "型格街頭風" : "Urban streetwear", gradient: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)", textColor: "#fff", accent: "#FF9500" },
+    { name: "Linen", desc: isZh ? "溫暖手感風" : "Warm & natural", gradient: "linear-gradient(135deg, #F5F0EB 0%, #E8DDD3 100%)", textColor: "#3D2E1E", accent: "#8B7355" },
+    { name: "Mochi", desc: isZh ? "清新甜美風" : "Fresh & sweet", gradient: "linear-gradient(135deg, #FFF8F0 0%, #FFE8CC 100%)", textColor: "#5C3D00", accent: "#FF9500" },
+    { name: "Petal", desc: isZh ? "柔美花漾風" : "Soft & floral", gradient: "linear-gradient(135deg, #FFF0F5 0%, #FFE0EB 100%)", textColor: "#8B2252", accent: "#D4447C" },
+  ];
+}
 
-const FAQS = [
-  {
-    q: "WoWlix 真係 0% 平台抽成？",
-    a: "真係。WoWlix 不收任何交易抽成或隱藏費用。如果你日後使用信用卡收款，支付通道（如 Stripe）會收取標準手續費，但呢個係支付商收嘅，WoWlix 唔會額外加價。而家用 FPS / PayMe / AlipayHK 就真係 0 成本。",
-  },
-  {
-    q: "Free Plan 有咩限制？",
-    a: "10 件商品、每月 50 單。夠你試水溫。想上更多款式、要優惠碼同數據分析就升 Lite，$78 搞掂。",
-  },
-  {
-    q: "我可以用 PayMe / FPS / AlipayHK 收錢？",
-    a: "可以，Free plan 已經支援。客人結帳時揀付款方式，你後台確認收款就得。",
-  },
-  {
-    q: "「棄單挽回」係咩？",
-    a: "當客人落咗單但未付款，Pro plan 會自動整理成列表，你可以一鍵 WhatsApp 提醒佢哋完成付款。呢啲「差少少就買」嘅客人，追返一個就值回 plan 費。",
-  },
-  {
-    q: "CRM 客戶庫包咩功能？",
-    a: "記錄每個客人嘅購買紀錄、消費總額、標籤分類（如 VIP / 回頭客）。你可以篩選「買過蛋糕」嘅客人，一鍵匯出名單做推廣。",
-  },
-  {
-    q: "同其他網店平台有咩分別？",
-    a: "其他平台功能多但貴（$374-$499/月起步，仲要抽成 0.5-5%）。WoWlix 專做 IG 小店最需要嘅功能，$0 起步、0% 平台抽成。你唔需要 POS、直播、多國貨幣。你需要收錢、發貨、好睇嘅店面。",
-  },
-  {
-    q: "我可以隨時取消？生意做大咗點算？",
-    a: "月繳制，隨時取消，冇綁約。生意做大就升 Pro，$198 有 CRM + 自訂域名 + 無限商品。如果有日你需要 POS + 全渠道零售，我哋會幫你順利搬遷，唔鎖你嘅數據。",
-  },
-];
+function getFaqs(isZh: boolean) {
+  return isZh ? [
+    { q: "WoWlix 真係 0% 平台抽成？", a: "真係。WoWlix 不收任何交易抽成或隱藏費用。如果你日後使用信用卡收款，支付通道（如 Stripe）會收取標準手續費，但呢個係支付商收嘅，WoWlix 唔會額外加價。而家用 FPS / PayMe / AlipayHK 就真係 0 成本。" },
+    { q: "Free Plan 有咩限制？", a: "10 件商品、每月 50 單。夠你試水溫。想上更多款式、要優惠碼同數據分析就升 Lite，$78 搞掂。" },
+    { q: "我可以用 PayMe / FPS / AlipayHK 收錢？", a: "可以，Free plan 已經支援。客人結帳時揀付款方式，你後台確認收款就得。" },
+    { q: "「棄單挽回」係咩？", a: "當客人落咗單但未付款，Pro plan 會自動整理成列表，你可以一鍵 WhatsApp 提醒佢哋完成付款。呢啲「差少少就買」嘅客人，追返一個就值回 plan 費。" },
+    { q: "CRM 客戶庫包咩功能？", a: "記錄每個客人嘅購買紀錄、消費總額、標籤分類（如 VIP / 回頭客）。你可以篩選「買過蛋糕」嘅客人，一鍵匯出名單做推廣。" },
+    { q: "同其他網店平台有咩分別？", a: "其他平台功能多但貴（$374-$499/月起步，仲要抽成 0.5-5%）。WoWlix 專做 IG 小店最需要嘅功能，$0 起步、0% 平台抽成。你唔需要 POS、直播、多國貨幣。你需要收錢、發貨、好睇嘅店面。" },
+    { q: "我可以隨時取消？生意做大咗點算？", a: "月繳制，隨時取消，冇綁約。生意做大就升 Pro，$198 有 CRM + 自訂域名 + 無限商品。如果有日你需要 POS + 全渠道零售，我哋會幫你順利搬遷，唔鎖你嘅數據。" },
+  ] : [
+    { q: "Is WoWlix really 0% platform fee?", a: "Yes. WoWlix charges zero transaction fees or hidden costs. If you later use credit card payments, the payment gateway (e.g. Stripe) will charge standard processing fees, but WoWlix adds no extra charges. FPS / PayMe / AlipayHK is truly zero cost." },
+    { q: "What are the Free plan limits?", a: "10 products, 50 orders/month. Enough to test the waters. Need more products, coupons, and analytics? Upgrade to Lite for $78." },
+    { q: "Can I accept PayMe / FPS / AlipayHK?", a: "Yes, even on the Free plan. Customers select their payment method at checkout, and you confirm payment in the admin panel." },
+    { q: "What is 'abandoned cart recovery'?", a: "When a customer places an order but doesn't pay, the Pro plan automatically creates a list so you can WhatsApp remind them to complete payment. Recovering just one customer pays for the plan." },
+    { q: "What does the CRM include?", a: "Purchase history, total spending, customer tags (VIP / repeat). You can filter customers who bought specific items and export the list for marketing." },
+    { q: "How is WoWlix different from other platforms?", a: "Other platforms are feature-rich but expensive ($374-$499/mo + 0.5-5% fees). WoWlix focuses on what IG shops actually need: $0 to start, 0% platform fee. You don't need POS or live streaming. You need payments, shipping, and a beautiful storefront." },
+    { q: "Can I cancel anytime? What if my business grows?", a: "Monthly billing, cancel anytime, no lock-in. As you grow, upgrade to Pro for $198 with CRM + custom domain + unlimited products. If you ever need POS + omnichannel retail, we'll help you migrate smoothly." },
+  ];
+}
 
 type FeatureRow = {
   name: string;
@@ -205,17 +157,29 @@ type FeatureRow = {
   highlight?: boolean;
 };
 
-const FEATURE_TABLE: FeatureRow[] = [
-  { name: "商品數量", free: "10", lite: "50", pro: "無限" },
-  { name: "每月訂單", free: "50", lite: "無限", pro: "無限" },
-  { name: "收款方式", free: "3 種", lite: "4 種", pro: "全部" },
-  { name: "WhatsApp 預填訊息", free: false, lite: true, pro: true },
-  { name: "優惠碼", free: false, lite: true, pro: true },
-  { name: "棄單挽回", free: false, lite: false, pro: true },
-  { name: "CRM 客戶庫", free: false, lite: false, pro: true },
-  { name: "自訂域名", free: false, lite: false, pro: true },
-  { name: "平台抽成", free: "0%", lite: "0%", pro: "0%", highlight: true },
-];
+function getFeatureTable(isZh: boolean): FeatureRow[] {
+  return isZh ? [
+    { name: "商品數量", free: "10", lite: "50", pro: "無限" },
+    { name: "每月訂單", free: "50", lite: "無限", pro: "無限" },
+    { name: "收款方式", free: "3 種", lite: "4 種", pro: "全部" },
+    { name: "WhatsApp 預填訊息", free: false, lite: true, pro: true },
+    { name: "優惠碼", free: false, lite: true, pro: true },
+    { name: "棄單挽回", free: false, lite: false, pro: true },
+    { name: "CRM 客戶庫", free: false, lite: false, pro: true },
+    { name: "自訂域名", free: false, lite: false, pro: true },
+    { name: "平台抽成", free: "0%", lite: "0%", pro: "0%", highlight: true },
+  ] : [
+    { name: "Products", free: "10", lite: "50", pro: "Unlimited" },
+    { name: "Orders/month", free: "50", lite: "Unlimited", pro: "Unlimited" },
+    { name: "Payment methods", free: "3", lite: "4", pro: "All" },
+    { name: "WhatsApp prefill", free: false, lite: true, pro: true },
+    { name: "Coupons", free: false, lite: true, pro: true },
+    { name: "Abandoned cart recovery", free: false, lite: false, pro: true },
+    { name: "CRM", free: false, lite: false, pro: true },
+    { name: "Custom domain", free: false, lite: false, pro: true },
+    { name: "Platform fee", free: "0%", lite: "0%", pro: "0%", highlight: true },
+  ];
+}
 
 /* ─── Sub-components ─── */
 
@@ -243,9 +207,9 @@ function AnimatedNumber({ value, duration = 600 }: { value: number; duration?: n
   return <>{display.toLocaleString()}</>;
 }
 
-type Plan = (typeof PLANS)[number];
+type Plan = ReturnType<typeof getPlans>[number];
 
-function PlanCard({ plan }: { plan: Plan }) {
+function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
   const [hovered, setHovered] = useState(false);
 
   const bgStyles: Record<string, React.CSSProperties> = {
@@ -330,12 +294,12 @@ function PlanCard({ plan }: { plan: Plan }) {
           color: "#FF9500",
         }}
       >
-        0% 平台抽成
+        {isZh ? "0% 平台抽成" : "0% platform fee"}
       </div>
       <div style={{ marginTop: 28 }}>
         <div style={{ fontSize: 16, fontWeight: 600, opacity: 0.7, marginBottom: 4 }}>{plan.name}</div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
-          <span style={{ fontSize: 14, opacity: 0.5 }}>HK$</span>
+          <span style={{ fontSize: 14, opacity: 0.5 }}>$</span>
           <span style={{ fontSize: 52, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>{plan.price}</span>
           <span style={{ fontSize: 16, opacity: 0.5 }}>{plan.period}</span>
         </div>
@@ -375,11 +339,12 @@ function PlanCard({ plan }: { plan: Plan }) {
   );
 }
 
-function Calculator() {
+function Calculator({ isZh }: { isZh: boolean }) {
   const [gmv, setGmv] = useState(10000);
   const [usePro, setUsePro] = useState(false);
   const [showSources, setShowSources] = useState(false);
 
+  const COMPETITORS = getCompetitors(isZh);
   const wowlixCost = usePro ? 198 : 78;
   const costs = COMPETITORS.map((c) => ({
     ...c,
@@ -405,7 +370,7 @@ function Calculator() {
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
       <div style={{ marginBottom: 32 }}>
         <label style={{ fontSize: 16, fontWeight: 600, display: "block", marginBottom: 16 }}>
-          你每月大概做幾多生意？
+          {isZh ? "你每月大概做幾多生意？" : "How much revenue per month?"}
         </label>
         <div style={{ position: "relative", marginBottom: 8 }}>
           <input
@@ -425,9 +390,9 @@ function Calculator() {
         </div>
         <div style={{ textAlign: "center", marginTop: 12 }}>
           <span style={{ fontSize: 32, fontWeight: 800, color: "#FF9500" }}>
-            HK${gmv.toLocaleString()}
+            ${gmv.toLocaleString()}
           </span>
-          <span style={{ fontSize: 16, opacity: 0.5 }}>/月</span>
+          <span style={{ fontSize: 16, opacity: 0.5 }}>{isZh ? "/月" : "/mo"}</span>
         </div>
       </div>
 
@@ -448,7 +413,7 @@ function Calculator() {
               transition: "all 0.2s",
             }}
           >
-            {v ? "用 Pro 比較" : "用 Lite 比較"}
+            {v ? (isZh ? "用 Pro 比較" : "Compare Pro") : (isZh ? "用 Lite 比較" : "Compare Lite")}
           </button>
         ))}
       </div>
@@ -535,13 +500,13 @@ function Calculator() {
           borderRadius: 16,
         }}
       >
-        <div style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>每月至少慳</div>
+        <div style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>{isZh ? "每月至少慳" : "Save at least per month"}</div>
         <div style={{ fontSize: 40, fontWeight: 800, color: "#FF9500" }}>
-          HK$
+          $
           <AnimatedNumber value={Math.max(0, Math.round(saving))} />
         </div>
         <div style={{ fontSize: 16, opacity: 0.6, marginTop: 4 }}>
-          一年慳 <strong>HK${Math.max(0, Math.round(saving * 12)).toLocaleString()}</strong>
+          {isZh ? "一年慳" : "Save per year"} <strong>${Math.max(0, Math.round(saving * 12)).toLocaleString()}</strong>
         </div>
       </div>
 
@@ -557,7 +522,7 @@ function Calculator() {
             textDecoration: "underline",
           }}
         >
-          {showSources ? "收起計算方式及來源 ▴" : "計算方式及來源 ▾"}
+          {showSources ? (isZh ? "收起計算方式及來源 ▴" : "Hide methodology ▴") : (isZh ? "計算方式及來源 ▾" : "Methodology & sources ▾")}
         </button>
         {showSources && (
           <div
@@ -572,17 +537,17 @@ function Calculator() {
               lineHeight: 1.8,
             }}
           >
-            <strong>計算方式：</strong>月費 + (每月營業額 × 平台抽成率)
+            <strong>{isZh ? "計算方式：" : "Formula: "}</strong>{isZh ? "月費 + (每月營業額 × 平台抽成率)" : "Monthly fee + (monthly revenue × platform fee rate)"}
             <br />
-            <strong>數據截至 2026 年 2 月，基於各平台官方公開定價頁：</strong>
+            <strong>{isZh ? "數據截至 2026 年 2 月，基於各平台官方公開定價頁：" : "Data as of Feb 2026, based on official pricing pages:"}</strong>
             <br />
-            • 本地網店平台 A = SHOPLINE Basic（$499/月 + 0.8% 流量維護費）
+            {isZh ? "• 本地網店平台 A = SHOPLINE Basic（$499/月 + 0.8% 流量維護費）" : "• Local Platform A = SHOPLINE Basic ($499/mo + 0.8% traffic fee)"}
             <br />
-            • 本地網店平台 B = Boutir Essential（$374/月，年繳月均價）
+            {isZh ? "• 本地網店平台 B = Boutir Essential（$374/月，年繳月均價）" : "• Local Platform B = Boutir Essential ($374/mo annual avg)"}
             <br />
-            • 海外網店平台 = Shopify Basic（$195/月 + 2% 第三方支付費）
+            {isZh ? "• 海外網店平台 = Shopify Basic（$195/月 + 2% 第三方支付費）" : "• Global Platform = Shopify Basic ($195/mo + 2% third-party payment fee)"}
             <br />
-            <span style={{ opacity: 0.5 }}>* 費用可能因方案、促銷或支付方式而有所不同</span>
+            <span style={{ opacity: 0.5 }}>{isZh ? "* 費用可能因方案、促銷或支付方式而有所不同" : "* Fees may vary by plan, promotion, or payment method"}</span>
           </div>
         )}
       </div>
@@ -590,8 +555,9 @@ function Calculator() {
   );
 }
 
-function FAQ() {
+function FAQ({ isZh }: { isZh: boolean }) {
   const [open, setOpen] = useState<number | null>(null);
+  const FAQS = getFaqs(isZh);
   return (
     <div style={{ maxWidth: 680, margin: "0 auto" }}>
       {FAQS.map((faq, i) => (
@@ -644,7 +610,12 @@ function FAQ() {
 
 /* ─── Main page ─── */
 
-export default function PricingPage() {
+export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
+  const isZh = locale === "zh-HK";
+  const PLANS = getPlans(isZh);
+  const SCENARIOS = getScenarios(isZh);
+  const DEMOS = getDemos(isZh);
+  const FEATURE_TABLE = getFeatureTable(isZh);
   return (
     <div
       style={{
@@ -685,15 +656,32 @@ export default function PricingPage() {
           background: #e5e7eb;
           border-radius: 999px;
           outline: none;
+          height: 8px;
+          cursor: pointer;
         }
         .pricing-page input[type="range"]::-webkit-slider-thumb {
           -webkit-appearance: none;
-          width: 24px;
-          height: 24px;
+          width: 28px;
+          height: 28px;
           border-radius: 50%;
           background: #ff9500;
           cursor: pointer;
           box-shadow: 0 2px 8px rgba(255, 149, 0, 0.4);
+          border: 3px solid #fff;
+        }
+        .pricing-page input[type="range"]::-moz-range-thumb {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: #ff9500;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(255, 149, 0, 0.4);
+          border: 3px solid #fff;
+        }
+        .pricing-page input[type="range"]::-moz-range-track {
+          background: #e5e7eb;
+          border-radius: 999px;
+          height: 8px;
         }
       `}</style>
 
@@ -728,7 +716,7 @@ export default function PricingPage() {
           <span style={{ color: "#FF9500" }}>W</span>lix
         </Link>
         <Link
-          href="/en/start"
+          href={`/${locale}/start`}
           style={{
             background: "#FF9500",
             color: "#fff",
@@ -740,7 +728,7 @@ export default function PricingPage() {
             transition: "all 0.2s",
           }}
         >
-          免費開店
+          {isZh ? "免費開店" : "Start Free"}
         </Link>
       </nav>
 
@@ -786,7 +774,7 @@ export default function PricingPage() {
               justifyContent: "center",
             }}
           >
-            {["0% 平台抽成", "$0 起", "2 分鐘開店"].map((t, i) => (
+            {(isZh ? ["0% 平台抽成", "$0 起", "2 分鐘開店"] : ["0% platform fee", "$0 start", "2-min setup"]).map((badge, i) => (
               <span
                 key={i}
                 style={{
@@ -798,7 +786,7 @@ export default function PricingPage() {
                   fontWeight: 700,
                 }}
               >
-                {t}
+                {badge}
               </span>
             ))}
           </div>
@@ -811,17 +799,17 @@ export default function PricingPage() {
               letterSpacing: "-0.02em",
             }}
           >
-            全港最平 IG 網店
+            {isZh ? "全港最平 IG 網店" : "The most affordable IG shop"}
             <br />
-            <span style={{ color: "#FF9500" }}>開店神器</span>
+            <span style={{ color: "#FF9500" }}>{isZh ? "開店神器" : "builder in HK"}</span>
           </h1>
           <p style={{ fontSize: 18, color: "#666", maxWidth: 500, margin: "0 auto 32px", lineHeight: 1.6 }}>
-            仲用 Google Form 接單？
+            {isZh ? "仲用 Google Form 接單？" : "Still using Google Forms for orders?"}
             <br />
-            WoWlix 幫你慳時間、慳錢、專心賣嘢
+            {isZh ? "WoWlix 幫你慳時間、慳錢、專心賣嘢" : "WoWlix saves you time, money, and lets you focus on selling"}
           </p>
           <Link
-            href="/en/start"
+            href={`/${locale}/start`}
             style={{
               display: "inline-block",
               background: "#FF9500",
@@ -837,16 +825,23 @@ export default function PricingPage() {
               textDecoration: "none",
             }}
           >
-            免費開店 →
+            {isZh ? "免費開店 →" : "Start Free →"}
           </Link>
 
           {/* 3-Step Mini Flow */}
           <div style={{ display: "flex", justifyContent: "center", gap: 40, marginTop: 56, flexWrap: "wrap" }}>
-            {[
-              { icon: "package", label: "上貨", desc: "加商品、定價、上圖" },
-              { icon: "link", label: "分享 Link", desc: "放喺 IG Bio" },
-              { icon: "shoppingBag", label: "收單", desc: "客人自助落單付款" },
-            ].map((step, i) => (
+            {(isZh
+              ? [
+                  { icon: "package", label: "上貨", desc: "加商品、定價、上圖" },
+                  { icon: "link", label: "分享 Link", desc: "放喺 IG Bio" },
+                  { icon: "shoppingBag", label: "收單", desc: "客人自助落單付款" },
+                ]
+              : [
+                  { icon: "package", label: "Upload", desc: "Add products, set price, upload images" },
+                  { icon: "link", label: "Share Link", desc: "Put in IG Bio" },
+                  { icon: "shoppingBag", label: "Get Orders", desc: "Customers self-serve checkout" },
+                ]
+            ).map((step, i) => (
               <div key={i} style={{ textAlign: "center" }}>
                 <div style={{ marginBottom: 4 }}>{ICONS[step.icon]}</div>
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{step.label}</div>
@@ -862,9 +857,9 @@ export default function PricingPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, marginBottom: 8 }}>
-              揀個啱你嘅 Plan
+              {isZh ? "揀個啱你嘅 Plan" : "Pick the right plan"}
             </h2>
-            <p style={{ color: "#888", fontSize: 16 }}>全部 plan 0% 平台抽成・月繳無綁約</p>
+            <p style={{ color: "#888", fontSize: 16 }}>{isZh ? "全部 plan 0% 平台抽成・月繳無綁約" : "All plans 0% platform fee · monthly, no lock-in"}</p>
           </div>
           <div
             style={{
@@ -876,11 +871,13 @@ export default function PricingPage() {
             }}
           >
             {PLANS.map((plan, i) => (
-              <PlanCard key={i} plan={plan} />
+              <PlanCard key={i} plan={plan} isZh={isZh} />
             ))}
           </div>
           <p style={{ textAlign: "center", fontSize: 12, color: "#999", marginTop: 24 }}>
-            * WoWlix 不收平台抽成。如使用信用卡等第三方支付，需支付通道手續費（由支付商收取，WoWlix 不額外加價）。
+            {isZh
+              ? "* WoWlix 不收平台抽成。如使用信用卡等第三方支付，需支付通道手續費（由支付商收取，WoWlix 不額外加價）。"
+              : "* WoWlix charges no platform fees. Third-party payment gateway fees (e.g. Stripe) are charged by the provider, not WoWlix."}
           </p>
         </div>
       </section>
@@ -890,11 +887,11 @@ export default function PricingPage() {
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
-              你每月可以慳幾多？
+              {isZh ? "你每月可以慳幾多？" : "How much can you save?"}
             </h2>
-            <p style={{ color: "#888", fontSize: 16 }}>拉下 Slider，睇下用其他平台你實際要畀幾多</p>
+            <p style={{ color: "#888", fontSize: 16 }}>{isZh ? "拉下 Slider，睇下用其他平台你實際要畀幾多" : "Drag the slider to compare actual costs on other platforms"}</p>
           </div>
-          <Calculator />
+          <Calculator isZh={isZh} />
         </div>
       </section>
 
@@ -903,9 +900,9 @@ export default function PricingPage() {
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
-              邊個 Plan 啱你？
+              {isZh ? "邊個 Plan 啱你？" : "Which plan is right for you?"}
             </h2>
-            <p style={{ color: "#888", fontSize: 16 }}>搵到你嘅階段，即刻開始</p>
+            <p style={{ color: "#888", fontSize: 16 }}>{isZh ? "搵到你嘅階段，即刻開始" : "Find your stage and get started"}</p>
           </div>
           <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
             {SCENARIOS.map((s, i) => (
@@ -962,9 +959,9 @@ export default function PricingPage() {
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
-              4 款精選主題
+              {isZh ? "4 款精選主題" : "4 curated themes"}
             </h2>
-            <p style={{ color: "#888", fontSize: 16 }}>每間店都有自己嘅風格</p>
+            <p style={{ color: "#888", fontSize: 16 }}>{isZh ? "每間店都有自己嘅風格" : "Every shop has its own style"}</p>
           </div>
           <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
             {DEMOS.map((d, i) => (
@@ -1052,7 +1049,7 @@ export default function PricingPage() {
       <section style={{ padding: "80px 24px", background: "#FAFAFA" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>功能一覽</h2>
+            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>{isZh ? "功能一覽" : "Feature comparison"}</h2>
           </div>
           <div
             style={{
@@ -1124,9 +1121,9 @@ export default function PricingPage() {
       <section style={{ padding: "80px 24px", background: "#fff" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>常見問題</h2>
+            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>{isZh ? "常見問題" : "FAQ"}</h2>
           </div>
-          <FAQ />
+          <FAQ isZh={isZh} />
         </div>
       </section>
 
@@ -1161,13 +1158,13 @@ export default function PricingPage() {
               marginBottom: 12,
             }}
           >
-            仲用 Google Form 接單？
+            {isZh ? "仲用 Google Form 接單？" : "Still using Google Forms?"}
           </h2>
           <p style={{ fontSize: 18, color: "rgba(255,255,255,0.5)", marginBottom: 32 }}>
-            2 分鐘開店・0% 平台抽成・$0 起步
+            {isZh ? "2 分鐘開店・0% 平台抽成・$0 起步" : "2-min setup · 0% platform fee · $0 to start"}
           </p>
           <Link
-            href="/en/start"
+            href={`/${locale}/start`}
             style={{
               display: "inline-block",
               background: "#FF9500",
@@ -1182,7 +1179,7 @@ export default function PricingPage() {
               textDecoration: "none",
             }}
           >
-            免費開店 →
+            {isZh ? "免費開店 →" : "Start Free →"}
           </Link>
         </div>
       </section>

@@ -148,7 +148,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   // Platform bare domain → landing page
   if (await isPlatformMode()) {
-    return <LandingPage />;
+    return <LandingPage locale={l} />;
   }
 
   // Check if tenant exists; if not, show landing page
@@ -157,7 +157,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     tenantId = await getServerTenantId();
   } catch (error) {
     // Tenant not found
-    return <LandingPage />;
+    return <LandingPage locale={l} />;
   }
 
   const [sectionsRaw, bannersRaw, allProductsRaw] = await Promise.all([

@@ -41,9 +41,10 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
   const [delivery, setDelivery] = useState("");
   const [address, setAddress] = useState("");
   const [note, setNote] = useState("");
-  const [payment, setPayment] = useState<"fps" | "payme" | "stripe">("fps");
+  const [payment, setPayment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [availablePayments, setAvailablePayments] = useState<Array<{ id: string; label: string; sub: string }>>([]);
 
   const currency = tenant.currency || "HKD";
   const enabledOptions = (tenant.deliveryOptions || []).filter((o: DeliveryOption) => o.enabled);
@@ -55,22 +56,46 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
     }
   }, [enabledOptions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Available payment methods
-  const availablePayments: Array<{ id: "fps" | "payme" | "stripe"; label: string; sub: string }> = [];
-  if (tenant.fpsEnabled) availablePayments.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
-  if (tenant.paymeEnabled) availablePayments.push({ id: "payme", label: "PayMe", sub: "手動確認" });
-  if (tenant.stripeOnboarded && tenant.stripeAccountId) {
-    availablePayments.push({ id: "stripe", label: "信用卡", sub: "Stripe" });
-  }
-  if (availablePayments.length === 0) {
-    availablePayments.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
-  }
-
+  // Fetch all active payment methods from API
   useEffect(() => {
-    if (availablePayments.length > 0 && !availablePayments.find((p) => p.id === payment)) {
-      setPayment(availablePayments[0].id);
-    }
-  }, [tenant.fpsEnabled, tenant.paymeEnabled, tenant.stripeOnboarded]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetch("/api/payment-config")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok && data.data?.providers?.length > 0) {
+          const methods = data.data.providers.map((p: { providerId: string; nameZh: string; name: string; type: string }) => ({
+            id: p.providerId,
+            label: p.nameZh || p.name,
+            sub: p.type === "online" ? "線上支付" : "手動確認",
+          }));
+          setAvailablePayments(methods);
+          setPayment(methods[0].id);
+        } else {
+          // Fallback to legacy tenant flags
+          const fallback: Array<{ id: string; label: string; sub: string }> = [];
+          if (tenant.fpsEnabled) fallback.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
+          if (tenant.paymeEnabled) fallback.push({ id: "payme", label: "PayMe", sub: "手動確認" });
+          if (tenant.stripeOnboarded && tenant.stripeAccountId) {
+            fallback.push({ id: "stripe", label: "信用卡", sub: "Stripe" });
+          }
+          if (fallback.length === 0) {
+            fallback.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
+          }
+          setAvailablePayments(fallback);
+          setPayment(fallback[0].id);
+        }
+      })
+      .catch(() => {
+        // Fallback to legacy tenant flags on error
+        const fallback: Array<{ id: string; label: string; sub: string }> = [];
+        if (tenant.fpsEnabled) fallback.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
+        if (tenant.paymeEnabled) fallback.push({ id: "payme", label: "PayMe", sub: "手動確認" });
+        if (fallback.length === 0) {
+          fallback.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
+        }
+        setAvailablePayments(fallback);
+        setPayment(fallback[0].id);
+      });
+  }, [tenant.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 面交/自取唔使填地址，其他送貨方式需要
   const needsAddress = !!delivery && !["meetup", "pickup", "self-pickup"].includes(delivery);

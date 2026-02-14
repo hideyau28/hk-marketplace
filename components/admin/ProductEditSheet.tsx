@@ -1632,7 +1632,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
           {/* Price */}
           <div>
             <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-              {isZh ? "價錢 (HK$) *" : "Price (HK$) *"}
+              {isZh ? "價錢 ($) *" : "Price ($) *"}
             </label>
             <input
               type="number"
