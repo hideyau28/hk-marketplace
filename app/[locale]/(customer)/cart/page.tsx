@@ -107,7 +107,8 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
             <p className="text-zinc-600 dark:text-zinc-400">{t.cart.empty}</p>
             <Link
               href={`/${locale}`}
-              className="mt-4 inline-block rounded-2xl bg-olive-600 px-6 py-3 text-white font-semibold hover:bg-olive-700"
+              className="mt-4 inline-block rounded-2xl px-6 py-3 text-white font-semibold hover:brightness-90"
+              style={{ backgroundColor: "var(--tmpl-accent, #2D6A4F)" }}
             >
               繼續購物
             </Link>
@@ -249,7 +250,8 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
         <div className="mt-6">
           <Link
             href={`/${locale}/checkout`}
-            className="block w-full rounded-2xl bg-olive-600 py-4 text-center text-white font-semibold hover:bg-olive-700"
+            className="block w-full rounded-2xl py-4 text-center text-white font-semibold hover:brightness-90"
+            style={{ backgroundColor: "var(--tmpl-accent, #2D6A4F)" }}
           >
             {t.cart.checkout}
           </Link>

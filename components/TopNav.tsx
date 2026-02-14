@@ -242,7 +242,7 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
             className={`relative flex items-center gap-1 transition-transform duration-150 ${
               cartBounce ? "scale-125" : "scale-100"
             }`}
-            style={{ color: "var(--tenant-primary, #6B7A2F)" }}
+            style={{ color: "var(--tmpl-accent, #2D6A4F)" }}
             href={`/${locale}/cart`}
           >
             <ShoppingCart size={20} />

@@ -57,14 +57,16 @@ export default function BottomTab({ t }: { t: Translations }) {
         {tabs.map((tab) => {
           const href = tab.href(locale);
           const active = isActive(pathname, href);
-          const color = active ? "text-olive-600 dark:text-olive-500" : "text-zinc-500 dark:text-zinc-400";
           const label = t.nav[tab.labelKey];
 
           return (
             <Link
               key={tab.key}
               href={href}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 ${color}`}
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 ${
+                active ? "" : "text-zinc-500 dark:text-zinc-400"
+              }`}
+              style={active ? { color: "var(--tmpl-accent, #2D6A4F)" } : undefined}
               aria-current={active ? "page" : undefined}
             >
               <tab.Icon size={18} />

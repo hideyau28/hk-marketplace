@@ -94,7 +94,8 @@ function SaleCardItem({ product, locale, isFirst, isLast }: { product: Product; 
         {showCartIcon && selectedSize && (
           <button
             onClick={handleAddToCart}
-            className="absolute bottom-16 right-2 w-8 h-8 rounded-full bg-[#6B7A2F] text-white flex items-center justify-center shadow-md hover:bg-[#5a6827] transition-all z-10"
+            className="absolute bottom-16 right-2 w-8 h-8 rounded-full text-white flex items-center justify-center shadow-md hover:brightness-90 transition-all z-10"
+            style={{ backgroundColor: "var(--tmpl-accent, #2D6A4F)" }}
             aria-label="Add to cart"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">

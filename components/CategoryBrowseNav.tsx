@@ -61,7 +61,7 @@ export default function CategoryBrowseNav({ locale }: CategoryBrowseNavProps) {
                         ? "text-white"
                         : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                     }`}
-                    style={isActive ? { backgroundColor: "var(--tenant-primary, #6B7A2F)" } : undefined}
+                    style={isActive ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
                   >
                     {cat.name}
                   </Link>
@@ -98,7 +98,7 @@ export default function CategoryBrowseNav({ locale }: CategoryBrowseNavProps) {
                               ? "text-white"
                               : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
                           }`}
-                          style={isChildActive ? { backgroundColor: "var(--tenant-primary, #6B7A2F)" } : undefined}
+                          style={isChildActive ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
                         >
                           {child.name}
                         </Link>

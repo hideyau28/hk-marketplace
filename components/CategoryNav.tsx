@@ -107,9 +107,10 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
             onClick={() => handlePillClick("shoeType", "adult")}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 ${
               filters.shoeType === "adult"
-                ? "bg-[#6B7A2F] text-white"
+                ? "text-white"
                 : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
+            style={filters.shoeType === "adult" ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
           >
             {isZh ? "男裝" : "Men"}
           </button>
@@ -119,9 +120,10 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
             onClick={() => handlePillClick("shoeType", "womens")}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 ${
               filters.shoeType === "womens"
-                ? "bg-[#6B7A2F] text-white"
+                ? "text-white"
                 : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
+            style={filters.shoeType === "womens" ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
           >
             {isZh ? "女裝" : "Women"}
           </button>
@@ -131,9 +133,10 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
             onClick={() => handlePillClick("shoeType", "kids")}
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 ${
               filters.shoeType === "kids"
-                ? "bg-[#6B7A2F] text-white"
+                ? "text-white"
                 : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
+            style={filters.shoeType === "kids" ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
           >
             {isZh ? "童裝" : "Kids"}
           </button>
@@ -149,9 +152,10 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
                 onClick={() => handleCategoryClick(cat.key)}
                 className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors shrink-0 ${
                   isActive
-                    ? "bg-[#6B7A2F] text-white"
+                    ? "text-white"
                     : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                 }`}
+                style={isActive ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
               >
                 {isZh ? cat.label : cat.labelEn}
               </button>

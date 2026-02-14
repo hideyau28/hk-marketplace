@@ -7,6 +7,11 @@
   --background: #FAFAF7;
   --foreground: #111111;
 
+  /* Template design tokens — defaults to mochi, set dynamically by StorefrontTemplate */
+  --tmpl-accent: #2D6A4F;
+  --tmpl-heading-font: 'Montserrat', sans-serif;
+  --tmpl-body-font: 'Inter', sans-serif;
+
   /* Army Green Theme Tokens */
   --primary: #2F4F3E;
   --primary-dark: #223A2F;
