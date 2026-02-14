@@ -116,6 +116,9 @@ export function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-tenant-slug", tenantSlug);
     requestHeaders.set("x-tenant-path-slug", pathSlug);
+    if (isPlatform) {
+      requestHeaders.set("x-is-platform", "true");
+    }
     return NextResponse.rewrite(rewriteUrl, {
       request: { headers: requestHeaders },
     });

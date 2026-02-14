@@ -64,9 +64,14 @@ function makeClient() {
     needsSsl = true;
   }
 
-  const poolConfig: any = { connectionString: normalizedUrl };
+  const poolConfig: any = {
+    connectionString: normalizedUrl,
+    // 15s timeout for Neon cold starts in serverless
+    connectionTimeoutMillis: 15000,
+  };
   if (needsSsl) {
-    poolConfig.ssl = { rejectUnauthorized: true };
+    // rejectUnauthorized: false — Neon/Vercel 環境下 CA 驗證有時失敗
+    poolConfig.ssl = { rejectUnauthorized: false };
   }
 
   const pool = new Pool(poolConfig);
