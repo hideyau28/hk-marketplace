@@ -1,11 +1,13 @@
 import PricingPage from "@/components/marketing/PricingPage";
+import type { Locale } from "@/lib/i18n";
 
 export const metadata = {
-  title: "定價方案 | WoWlix — 全港最平 IG 網店開店神器",
+  title: "Pricing | WoWlix — IG Shop Builder",
   description:
-    "0% 平台抽成，$0 起步。Free / Lite $78 / Pro $198 三個方案，IG 小店最啱用。",
+    "0% platform fee, $0 to start. Free / Lite $78 / Pro $198 plans for IG shops.",
 };
 
-export default function Page() {
-  return <PricingPage />;
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return <PricingPage locale={locale as Locale} />;
 }

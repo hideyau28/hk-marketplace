@@ -252,7 +252,7 @@ export function getAvatarFallback(tenant: { name: string }): string {
 // ─── Price formatting ───
 
 const CURRENCIES: Record<string, { symbol: string; code: string }> = {
-  HKD: { symbol: "HK$", code: "HKD" },
+  HKD: { symbol: "$", code: "HKD" },
   TWD: { symbol: "NT$", code: "TWD" },
   SGD: { symbol: "S$", code: "SGD" },
   MYR: { symbol: "RM", code: "MYR" },
