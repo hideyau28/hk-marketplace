@@ -570,11 +570,10 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     type="checkbox"
                     checked={paginatedProducts.length > 0 && selectedIds.size === paginatedProducts.length}
                     onChange={toggleSelectAll}
-                    className="h-5 w-5 rounded border-zinc-300 text-olive-600 focus:ring-olive-500 cursor-pointer"
+                    className="h-5 w-5 rounded border-2 border-zinc-400 accent-olive-600 focus:ring-olive-500 cursor-pointer"
                   />
                 </th>
-                <th className="px-2 py-1 text-left">Photo</th>
-                <th className="px-2 py-1 text-left">Brand</th>
+                <th className="px-2 py-1 text-left min-w-[220px]">Product</th>
                 <th className="px-2 py-1 text-left">Style</th>
                 <th className="px-2 py-1 text-left relative">
                   <button
@@ -690,7 +689,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
             <tbody>
               {paginatedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="px-4 py-12 text-center text-zinc-500">
+                  <td colSpan={11} className="px-4 py-12 text-center text-zinc-500">
                     {searchQuery ? "No products match your search." : "No data available."}
                   </td>
                 </tr>
@@ -720,21 +719,25 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                         type="checkbox"
                         checked={selectedIds.has(product.id)}
                         onChange={() => toggleSelect(product.id)}
-                        className="h-5 w-5 rounded border-zinc-300 text-olive-600 focus:ring-olive-500 cursor-pointer"
+                        className="h-5 w-5 rounded border-2 border-zinc-400 accent-olive-600 focus:ring-olive-500 cursor-pointer"
                       />
                     </td>
-                    {/* Photo */}
+                    {/* Product: thumbnail + title + brand */}
                     <td className="px-2 py-2">
-                      {product.imageUrl ? (
-                        <div className="relative h-[56px] w-[56px] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
-                          <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="56px" />
+                      <div className="flex items-center gap-3">
+                        {product.imageUrl ? (
+                          <div className="relative h-[48px] w-[48px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+                            <Image src={product.imageUrl} alt={product.title} fill className="object-contain" sizes="48px" />
+                          </div>
+                        ) : (
+                          <div className="h-[48px] w-[48px] flex-shrink-0 rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
+                        )}
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-zinc-900 truncate">{product.title}</div>
+                          <div className="text-xs text-zinc-500 truncate">{product.brand || "—"}</div>
                         </div>
-                      ) : (
-                        <div className="h-[56px] w-[56px] rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
-                      )}
+                      </div>
                     </td>
-                    {/* Brand */}
-                    <td className="px-2 py-1 text-zinc-900 font-semibold text-sm">{product.brand || "—"}</td>
                     {/* Style */}
                     <td className="px-2 py-1 text-zinc-500 text-sm">{product.sku || "—"}</td>
                     {/* Category */}
