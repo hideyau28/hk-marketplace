@@ -179,6 +179,14 @@ export default function BioLinkPage({ tenant, products }: Props) {
     [handleAddToCart]
   );
 
+  // Tap 產品卡 → 開 product sheet
+  const handleProductTap = useCallback(
+    (product: ProductForBioLink) => {
+      setSheetProduct(product);
+    },
+    []
+  );
+
   // Tap 圖片 → 開 lightbox
   const handleImageTap = useCallback(
     (images: string[], startIndex: number, videoUrl?: string | null) => {
@@ -206,14 +214,14 @@ export default function BioLinkPage({ tenant, products }: Props) {
 
       {/* Featured loot cards */}
       {featured.length > 0 && (
-        <FeaturedSection products={featured} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} />
+        <FeaturedSection products={featured} currency={currency} onAdd={handleCardAdd} onTap={handleProductTap} onImageTap={handleImageTap} />
       )}
 
       {/* Spacer (no longer a gradient since bg is unified) */}
       {featured.length > 0 && <div className="h-6" />}
 
       {/* Light zone — Product grid */}
-      <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} searchQuery={searchQuery} />
+      <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onTap={handleProductTap} onImageTap={handleImageTap} searchQuery={searchQuery} />
 
       {/* Cart bar or WhatsApp FAB */}
       {cartCount > 0 ? (

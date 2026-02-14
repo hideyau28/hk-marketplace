@@ -19,10 +19,11 @@ type Props = {
   index: number;
   currency?: string;
   onAdd: (product: ProductForBioLink) => void;
+  onTap?: (product: ProductForBioLink) => void;
   onImageTap?: (images: string[], startIndex: number, videoUrl?: string | null) => void;
 };
 
-export default function LootCard({ product, index, currency = "HKD", onAdd, onImageTap }: Props) {
+export default function LootCard({ product, index, currency = "HKD", onAdd, onTap, onImageTap }: Props) {
   const tmpl = useTemplate();
   const rarity = getRarity(product);
   const config = rarity ? rarityConfig[rarity] : rarityConfig.common;
@@ -160,8 +161,9 @@ export default function LootCard({ product, index, currency = "HKD", onAdd, onIm
           )}
         </div>
 
-        {/* Info */}
+        {/* Info — 點擊標題/價格開 product sheet */}
         <div className="p-3 relative">
+          <div className={onTap ? "cursor-pointer" : ""} onClick={() => onTap?.(product)}>
           <h3 className="text-sm font-semibold leading-snug mb-1 pr-10" style={{
             color: tmpl.text,
             display: '-webkit-box',
@@ -190,6 +192,7 @@ export default function LootCard({ product, index, currency = "HKD", onAdd, onIm
                 {formatPrice(product.price, currency)}
               </span>
             )}
+          </div>
           </div>
 
           {/* + 圓形按鈕 — 右下角 */}
