@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { compressImage, isAcceptedImageType } from "@/lib/compress-image";
 
 type ImageUploadProps = {
   currentUrl?: string;
@@ -18,15 +19,15 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      setError("Please select an image file");
+    // Validate file type — only JPG, PNG, WebP
+    if (!isAcceptedImageType(file)) {
+      setError("Only JPG, PNG, WebP accepted");
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Image must be less than 5MB");
+    // Validate file size (max 10MB before compression)
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Image must be less than 10MB");
       return;
     }
 
@@ -34,8 +35,11 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
     setIsUploading(true);
 
     try {
+      // 壓縮到 500KB 以下
+      const compressed = await compressImage(file);
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", compressed);
 
       const response = await fetch("/api/admin/upload", {
         method: "POST",
@@ -96,12 +100,12 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
             <>
               <ImageIcon className="h-10 w-10 text-zinc-400 mb-2" />
               <span className="text-sm text-zinc-600 font-medium">Upload Product Image</span>
-              <span className="text-xs text-zinc-400 mt-1">PNG, JPG up to 5MB</span>
+              <span className="text-xs text-zinc-400 mt-1">JPG, PNG, WebP — auto-compressed</span>
             </>
           )}
           <input
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             onChange={handleFileChange}
             disabled={disabled || isUploading}
             className="hidden"

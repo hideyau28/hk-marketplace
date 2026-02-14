@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Camera, Loader2, Trash2, Plus, Search, ChevronDown, ChevronRight } from "lucide-react";
 import { VARIANT_PRESETS, EXTENDED_PRESETS, COLOR_PRESET_ID, type VariantPreset } from "@/lib/variant-presets";
+import { compressImage, isAcceptedImageType } from "@/lib/compress-image";
 
 type Product = {
   id: string;
@@ -307,15 +308,21 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     setError("");
 
     for (const file of Array.from(files)) {
-      if (!file.type.startsWith("image/")) continue;
-      if (file.size > 5 * 1024 * 1024) {
-        setError(isZh ? "圖片唔可以大過 5MB" : "Image must be less than 5MB");
+      if (!isAcceptedImageType(file)) {
+        setError(isZh ? "只接受 JPG、PNG、WebP 圖片" : "Only JPG, PNG, WebP accepted");
+        continue;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setError(isZh ? "圖片唔可以大過 10MB" : "Image must be less than 10MB");
         continue;
       }
 
       try {
+        // 壓縮到 500KB 以下
+        const compressed = await compressImage(file);
+
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", compressed);
 
         const res = await fetch("/api/admin/upload", {
           method: "POST",
@@ -1581,7 +1588,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                 <input
                   ref={cameraInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   capture="environment"
                   className="hidden"
                   onChange={(e) => handleUpload(e.target.files)}
@@ -1599,7 +1606,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   multiple
                   className="hidden"
                   onChange={(e) => handleUpload(e.target.files)}

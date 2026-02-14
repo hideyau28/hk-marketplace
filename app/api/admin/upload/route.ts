@@ -30,6 +30,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate file type — only JPEG, PNG, WebP
+    const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Only JPG, PNG, WebP images are accepted",
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate file size (max 5MB server-side guard)
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Image must be less than 5MB",
+          },
+        },
+        { status: 400 }
+      );
+    }
+
     // Convert file to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
