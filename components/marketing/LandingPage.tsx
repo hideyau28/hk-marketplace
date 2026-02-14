@@ -546,135 +546,6 @@ export default function LandingPage() {
           font-weight: 300;
         }
 
-        .paths {
-          background: #0f0f0f;
-        }
-
-        .paths-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 24px;
-          margin-top: 60px;
-        }
-
-        .path-card {
-          background: #161616;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: var(--radius);
-          padding: 48px 40px;
-          position: relative;
-          overflow: hidden;
-          transition: all 0.4s;
-        }
-        .path-card:hover {
-          border-color: rgba(255, 149, 0, 0.2);
-          transform: translateY(-4px);
-        }
-        .path-card::before {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 3px;
-          background: linear-gradient(90deg, var(--orange), transparent);
-          opacity: 0;
-          transition: opacity 0.4s;
-        }
-        .path-card:hover::before {
-          opacity: 1;
-        }
-
-        .path-icon {
-          font-size: 48px;
-          margin-bottom: 24px;
-        }
-
-        .path-card h3 {
-          font-size: 28px;
-          font-weight: 800;
-          margin-bottom: 8px;
-          letter-spacing: -0.5px;
-        }
-
-        .path-card .subtitle {
-          font-size: 15px;
-          color: var(--gray-400);
-          margin-bottom: 28px;
-          line-height: 1.5;
-        }
-
-        .path-features {
-          list-style: none;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          margin-bottom: 36px;
-        }
-        .path-features li {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          font-size: 15px;
-          color: var(--gray-200);
-        }
-        .path-features .check {
-          width: 20px;
-          height: 20px;
-          background: rgba(255, 149, 0, 0.12);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 11px;
-          color: var(--orange);
-          flex-shrink: 0;
-        }
-
-        .path-price {
-          font-family: "Space Mono", monospace;
-          font-size: 14px;
-          color: var(--gray-400);
-          margin-bottom: 24px;
-        }
-        .path-price strong {
-          font-size: 32px;
-          color: var(--white);
-          font-weight: 700;
-        }
-
-        .path-cta {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 14px 32px;
-          border-radius: 100px;
-          font-size: 15px;
-          font-weight: 700;
-          text-decoration: none;
-          font-family: inherit;
-          transition: all 0.3s;
-          border: none;
-          cursor: pointer;
-        }
-        .path-cta.primary {
-          background: var(--orange);
-          color: var(--black);
-        }
-        .path-cta.primary:hover {
-          box-shadow: 0 8px 30px rgba(255, 149, 0, 0.3);
-          transform: translateY(-1px);
-        }
-        .path-cta.outline {
-          background: transparent;
-          color: var(--white);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .path-cta.outline:hover {
-          border-color: var(--orange);
-          color: var(--orange);
-        }
-
         .features {
           background: var(--black);
         }
@@ -1105,7 +976,6 @@ export default function LandingPage() {
             padding: 80px 20px;
           }
 
-          .paths-grid,
           .features-grid,
           .pricing-grid,
           .proof-grid {
@@ -1156,7 +1026,7 @@ export default function LandingPage() {
               <Link href="/en/start" className="btn-primary">
                 免費開店 <span className="arrow">→</span>
               </Link>
-              <a href="#paths" className="btn-ghost">
+              <a href="#features" className="btn-ghost">
                 了解更多
               </a>
             </div>
@@ -1232,94 +1102,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="paths section-pad" id="paths">
-        <div className="container">
-          <div className="section-label reveal">兩種模式</div>
-          <h2 className="section-title reveal">你係邊種店主？</h2>
-          <p className="section-desc reveal">
-            無論你係 IG 賣手作定認真做生意，WoWlix 都幫到你。
-          </p>
-
-          <div className="paths-grid">
-            <div className="path-card reveal">
-              <div className="path-icon">📱</div>
-              <h3>IG 購物連結</h3>
-              <div className="subtitle">
-                放喺 IG bio 嘅購物頁面
-                <br />
-                客人一 tap 就睇到所有商品
-              </div>
-              <ul className="path-features">
-                <li>
-                  <span className="check">✓</span> 商品展示（相片 + 價錢）
-                </li>
-                <li>
-                  <span className="check">✓</span> 多款式選擇（顏色/尺碼）
-                </li>
-                <li>
-                  <span className="check">✓</span> 購物車 + 線上結帳
-                </li>
-                <li>
-                  <span className="check">✓</span> 訂單管理
-                </li>
-                <li>
-                  <span className="check">✓</span> 手機全面操作
-                </li>
-                <li>
-                  <span className="check">✓</span> 2 分鐘開店
-                </li>
-              </ul>
-              <div className="path-price">
-                <strong>$0</strong> /月 · 免費開始
-              </div>
-              <Link href="/en/start" className="path-cta primary">
-                免費開店 →
-              </Link>
-            </div>
-
-            <div
-              className="path-card reveal"
-              style={{ opacity: 0.65 }}
-            >
-              <div className="path-icon">🏪</div>
-              <h3>Full Store</h3>
-              <div className="subtitle">
-                完整品牌網店
-                <br />
-                由展示到收款一條龍
-              </div>
-              <ul className="path-features">
-                <li>
-                  <span className="check">✓</span> 購物連結所有功能
-                </li>
-                <li>
-                  <span className="check">✓</span> 獨立品牌網店
-                </li>
-                <li>
-                  <span className="check">✓</span> 信用卡 / FPS 收款
-                </li>
-                <li>
-                  <span className="check">✓</span> 自訂 domain
-                </li>
-                <li>
-                  <span className="check">✓</span> 進階數據統計
-                </li>
-              </ul>
-              <div className="path-price" style={{ color: "var(--orange)" }}>
-                即將推出
-              </div>
-              <span
-                className="path-cta outline"
-                style={{ cursor: "default", opacity: 0.5 }}
-              >
-                敬請期待
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="features section-pad">
+      <section className="features section-pad" id="features">
         <div className="container">
           <div className="section-label reveal">點解揀 WoWlix</div>
           <h2 className="section-title reveal">
