@@ -87,7 +87,7 @@ function getCompetitors(isZh: boolean) {
   return [
     { name: isZh ? "本地網店平台 A" : "Local Platform A", base: 499, rate: 0.008, color: "#94A3B8" },
     { name: isZh ? "海外網店平台" : "Global Platform", base: 195, rate: 0.02, color: "#94A3B8" },
-    { name: isZh ? "本地網店平台 B" : "Local Platform B", base: 374, rate: 0, color: "#94A3B8" },
+    { name: isZh ? "本地網店平台 B" : "Local Platform B", base: 374, rate: 0.005, color: "#94A3B8" },
   ];
 }
 
@@ -366,6 +366,9 @@ function Calculator({ isZh }: { isZh: boolean }) {
 
   const marks = [5000, 10000, 20000, 30000, 50000];
 
+  // TODO: remove after verifying bar chart updates
+  console.log("[Calculator]", { gmv, costs: costs.map(c => ({ name: c.name, total: c.total })), maxCost, saving });
+
   return (
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
       <div style={{ marginBottom: 32 }}>
@@ -419,8 +422,8 @@ function Calculator({ isZh }: { isZh: boolean }) {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {costs.map((c, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {costs.map((c) => (
+          <div key={c.name} style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div
               style={{
                 width: 120,
