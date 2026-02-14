@@ -8,10 +8,11 @@ type Props = {
   products: ProductForBioLink[];
   currency?: string;
   onAdd: (product: ProductForBioLink) => void;
+  onTap?: (product: ProductForBioLink) => void;
   onImageTap?: (images: string[], startIndex: number) => void;
 };
 
-export default function FeaturedSection({ products, currency, onAdd, onImageTap }: Props) {
+export default function FeaturedSection({ products, currency, onAdd, onTap, onImageTap }: Props) {
   const tmpl = useTemplate();
 
   if (products.length === 0) return null;
@@ -28,7 +29,7 @@ export default function FeaturedSection({ products, currency, onAdd, onImageTap 
       <div className="flex gap-4 overflow-x-auto px-5 pb-4 scrollbar-hide snap-x snap-mandatory">
         {products.map((p, i) => (
           <div key={p.id} className="snap-start">
-            <LootCard product={p} index={i} currency={currency} onAdd={onAdd} onImageTap={onImageTap} />
+            <LootCard product={p} index={i} currency={currency} onAdd={onAdd} onTap={onTap} onImageTap={onImageTap} />
           </div>
         ))}
         {/* Right padding spacer */}

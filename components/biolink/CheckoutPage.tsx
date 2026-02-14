@@ -39,6 +39,7 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [delivery, setDelivery] = useState("");
+  const [address, setAddress] = useState("");
   const [note, setNote] = useState("");
   const [payment, setPayment] = useState<"fps" | "payme" | "stripe">("fps");
   const [submitting, setSubmitting] = useState(false);
@@ -71,6 +72,9 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
     }
   }, [tenant.fpsEnabled, tenant.paymeEnabled, tenant.stripeOnboarded]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // 面交/自取唔使填地址，其他送貨方式需要
+  const needsAddress = !!delivery && !["meetup", "pickup", "self-pickup"].includes(delivery);
+
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
   // Calculate delivery fee
@@ -86,8 +90,9 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
     if (name.trim().length < 2) return "請輸入姓名（最少 2 個字）";
     if (!/^\d{8}$/.test(phone.trim())) return "請輸入 8 位電話號碼";
     if (!delivery) return "請選擇送貨方式";
+    if (needsAddress && address.trim().length < 5) return "請輸入送貨地址";
     return null;
-  }, [name, phone, delivery]);
+  }, [name, phone, delivery, needsAddress, address]);
 
   const handleSubmit = async () => {
     const validationError = validate();
@@ -115,7 +120,7 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
             image: item.image,
           })),
           customer: { name: name.trim(), phone: phone.trim(), email: email.trim() || null },
-          delivery: { method: delivery },
+          delivery: { method: delivery, address: needsAddress ? address.trim() : null },
           payment: { method: payment },
           note: note.trim() || null,
           total: subtotal,
@@ -272,6 +277,26 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
               </p>
             )}
           </div>
+
+          {/* 送貨地址 — 非面交/自取先顯示 */}
+          {needsAddress && (
+            <div className="mt-6">
+              <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>送貨地址</h3>
+              <div>
+                <label className="text-xs mb-1 block" style={{ color: tmpl.subtext }}>地址 *</label>
+                <textarea
+                  placeholder="例：九龍觀塘成業街 10 號 xx 大廈 5 樓 A 室"
+                  value={address}
+                  onChange={(e) => { setAddress(e.target.value); setError(null); }}
+                  rows={2}
+                  className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors resize-none"
+                  style={{ backgroundColor: inputBg, color: tmpl.text, border: `1px solid ${borderColor}` }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = tmpl.accent; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = borderColor; }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Note */}
           <div className="mt-6">
