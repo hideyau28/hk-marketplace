@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { BioCartItem } from "@/lib/biolink-cart";
 import { formatPrice } from "@/lib/biolink-helpers";
+import { useTemplate } from "@/lib/template-context";
 
 type Props = {
   open: boolean;
@@ -27,6 +28,8 @@ export default function CartSheet({
   onClearCart,
   onCheckout,
 }: Props) {
+  const tmpl = useTemplate();
+
   if (!open) return null;
 
   const cartTotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
@@ -44,24 +47,28 @@ export default function CartSheet({
 
       {/* Sheet */}
       <div
-        className="relative w-full max-w-[480px] max-h-[80vh] bg-[#1a1a1a] rounded-t-3xl overflow-y-auto"
-        style={{ animation: "slideUp 0.3s ease-out" }}
+        className="relative w-full max-w-[480px] max-h-[80vh] rounded-t-3xl overflow-y-auto"
+        style={{ backgroundColor: tmpl.bg, animation: "slideUp 0.3s ease-out" }}
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: tmpl.subtext + "40" }} />
         </div>
 
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-[#1a1a1a] px-5 pb-3 border-b border-white/10">
+        <div
+          className="sticky top-0 z-10 px-5 pb-3 border-b"
+          style={{ backgroundColor: tmpl.bg, borderColor: tmpl.subtext + "20" }}
+        >
           <div className="flex items-center justify-between">
-            <h2 className="text-white font-bold text-base">
+            <h2 className="font-bold text-base" style={{ color: tmpl.text }}>
               購物車（{cartCount} 件）
             </h2>
             <button
               onClick={onClose}
               aria-label="關閉購物車"
-              className="w-8 h-8 rounded-full bg-white/10 text-white/60 flex items-center justify-center text-sm hover:bg-white/20 transition"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-sm hover:opacity-80 transition"
+              style={{ backgroundColor: tmpl.subtext + "20", color: tmpl.subtext }}
             >
               ✕
             </button>
@@ -74,7 +81,8 @@ export default function CartSheet({
             {items.map((item) => (
               <div
                 key={`${item.productId}-${item.variant || "default"}`}
-                className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5"
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5"
+                style={{ backgroundColor: tmpl.card }}
               >
                 {item.image && (
                   <Image
@@ -86,13 +94,13 @@ export default function CartSheet({
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">{item.name}</p>
+                  <p className="text-sm font-medium truncate" style={{ color: tmpl.text }}>{item.name}</p>
                   {item.variant && (
-                    <p className="text-white/50 text-xs">
+                    <p className="text-xs" style={{ color: tmpl.subtext }}>
                       {item.variantLabel || item.variant.replace(/\|/g, " · ")}
                     </p>
                   )}
-                  <p className="text-white/70 text-xs mt-0.5">
+                  <p className="text-xs mt-0.5" style={{ color: tmpl.subtext }}>
                     {formatPrice(item.price, currency)}
                   </p>
                   {/* Qty controls */}
@@ -100,30 +108,33 @@ export default function CartSheet({
                     <button
                       onClick={() => onUpdateQty(item.productId, item.variant, -1)}
                       aria-label="減少數量"
-                      className="w-6 h-6 rounded-full bg-white/10 text-white/70 flex items-center justify-center text-sm font-bold hover:bg-white/20 active:scale-95 transition"
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold hover:opacity-80 active:scale-95 transition"
+                      style={{ backgroundColor: tmpl.subtext + "20", color: tmpl.subtext }}
                     >
                       −
                     </button>
-                    <span className="text-white text-sm font-medium tabular-nums w-5 text-center">
+                    <span className="text-sm font-medium tabular-nums w-5 text-center" style={{ color: tmpl.text }}>
                       {item.qty}
                     </span>
                     <button
                       onClick={() => onUpdateQty(item.productId, item.variant, 1)}
                       aria-label="增加數量"
-                      className="w-6 h-6 rounded-full bg-white/10 text-white/70 flex items-center justify-center text-sm font-bold hover:bg-white/20 active:scale-95 transition"
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold hover:opacity-80 active:scale-95 transition"
+                      style={{ backgroundColor: tmpl.subtext + "20", color: tmpl.subtext }}
                     >
                       +
                     </button>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <p className="text-white text-sm font-bold">
+                  <p className="text-sm font-bold" style={{ color: tmpl.text }}>
                     {formatPrice(item.price * item.qty, currency)}
                   </p>
                   <button
                     onClick={() => onRemoveItem(item.productId, item.variant)}
                     aria-label={`移除 ${item.name}`}
-                    className="w-6 h-6 rounded-full bg-white/10 text-white/40 flex items-center justify-center text-xs hover:bg-red-500/20 hover:text-red-400 active:scale-95 transition"
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs hover:bg-red-500/20 hover:text-red-400 active:scale-95 transition"
+                    style={{ backgroundColor: tmpl.subtext + "20", color: tmpl.subtext }}
                   >
                     ✕
                   </button>
@@ -133,10 +144,10 @@ export default function CartSheet({
           </div>
 
           {/* Subtotal */}
-          <div className="mt-4 pt-4 border-t border-white/10">
+          <div className="mt-4 pt-4 border-t" style={{ borderColor: tmpl.subtext + "20" }}>
             <div className="flex items-center justify-between">
-              <span className="text-white/60 text-sm">小計</span>
-              <span className="text-white text-lg font-bold">
+              <span className="text-sm" style={{ color: tmpl.subtext }}>小計</span>
+              <span className="text-lg font-bold" style={{ color: tmpl.text }}>
                 {formatPrice(cartTotal, currency)}
               </span>
             </div>
@@ -152,7 +163,7 @@ export default function CartSheet({
               ) : (
                 freeShippingDiff != null &&
                 freeShippingDiff > 0 && (
-                  <p className="text-sm text-white/50">
+                  <p className="text-sm" style={{ color: tmpl.subtext }}>
                     仲差 {formatPrice(freeShippingDiff, currency)} 就免運費
                   </p>
                 )
@@ -163,7 +174,8 @@ export default function CartSheet({
           {/* Checkout button */}
           <button
             onClick={onCheckout}
-            className="mt-5 w-full py-4 rounded-2xl bg-[#FF9500] text-white font-bold text-base active:scale-[0.98] transition-transform"
+            className="mt-5 w-full py-4 rounded-2xl font-bold text-base active:scale-[0.98] transition-transform"
+            style={{ backgroundColor: tmpl.accent, color: tmpl.text }}
           >
             去結帳　{formatPrice(cartTotal, currency)}
           </button>
@@ -171,7 +183,8 @@ export default function CartSheet({
           {/* Clear cart */}
           <button
             onClick={onClearCart}
-            className="mt-3 w-full py-2.5 text-white/40 text-sm font-medium hover:text-white/60 transition-colors"
+            className="mt-3 w-full py-2.5 text-sm font-medium hover:opacity-70 transition-colors"
+            style={{ color: tmpl.subtext }}
           >
             🗑️ 清空購物車
           </button>

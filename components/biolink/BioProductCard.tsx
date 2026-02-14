@@ -11,6 +11,7 @@ import {
   getLowStockCount,
   formatPrice,
 } from "@/lib/biolink-helpers";
+import { useTemplate } from "@/lib/template-context";
 import SoldOutOverlay from "./SoldOutOverlay";
 import NewBadge from "./NewBadge";
 import LowStockBadge from "./LowStockBadge";
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export default function BioProductCard({ product, currency = "HKD", onAdd, onImageTap }: Props) {
+  const tmpl = useTemplate();
   const images = getAllImages(product);
   const heroImage = images[0] || null;
   const variants = getVisibleVariants(product);
@@ -59,10 +61,19 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onIma
     : 0;
 
   return (
-    <div className="rounded-2xl overflow-hidden bg-white shadow-sm border border-black/[0.04]">
+    <div
+      className="overflow-hidden"
+      style={{
+        backgroundColor: tmpl.card,
+        borderRadius: tmpl.borderRadius.card,
+        boxShadow: tmpl.shadow === "none" ? undefined : tmpl.shadow,
+        border: `1px solid ${tmpl.subtext}15`,
+      }}
+    >
       {/* Image 1:1 with carousel */}
       <div
         className="relative aspect-square overflow-hidden cursor-pointer"
+        style={{ borderRadius: `${tmpl.borderRadius.image}px ${tmpl.borderRadius.image}px 0 0` }}
         onClick={handleImageTap}
       >
         {heroImage ? (
@@ -83,8 +94,8 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onIma
             ))}
           </div>
         ) : (
-          <div className="w-full h-full bg-zinc-100 flex items-center justify-center">
-            <span className="text-zinc-400 text-3xl font-bold">
+          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: `${tmpl.subtext}15` }}>
+            <span className="text-3xl font-bold" style={{ color: tmpl.subtext }}>
               {product.title.charAt(0)}
             </span>
           </div>
@@ -130,7 +141,8 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onIma
 
       {/* Content */}
       <div className="p-3 relative">
-        <h3 className="text-zinc-900 text-sm font-semibold leading-snug mb-1 pr-10" style={{
+        <h3 className="text-sm font-semibold leading-snug mb-1 pr-10" style={{
+          color: tmpl.text,
           display: '-webkit-box',
           WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical',
@@ -142,10 +154,10 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onIma
         <div className="flex items-center gap-2">
           {isOnSale ? (
             <>
-              <span className="text-zinc-900 font-bold text-base">
+              <span className="font-bold text-base" style={{ color: tmpl.text }}>
                 {formatPrice(product.price, currency)}
               </span>
-              <span className="text-zinc-400 text-xs line-through">
+              <span className="text-xs line-through" style={{ color: tmpl.subtext }}>
                 {formatPrice(product.originalPrice!, currency)}
               </span>
               <span className="px-1 py-0.5 text-[9px] font-bold rounded bg-red-500 text-white">
@@ -153,7 +165,7 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onIma
               </span>
             </>
           ) : (
-            <span className="text-zinc-900 font-bold text-base">
+            <span className="font-bold text-base" style={{ color: tmpl.text }}>
               {formatPrice(product.price, currency)}
             </span>
           )}
@@ -165,10 +177,9 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onIma
           disabled={soldOut}
           aria-label={`加入購物車 ${product.title}`}
           className={`absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-transform ${
-            soldOut
-              ? "bg-zinc-300 text-zinc-400 cursor-not-allowed"
-              : "bg-[#FF9500] text-white active:scale-95"
+            soldOut ? "bg-zinc-300 text-zinc-400 cursor-not-allowed" : "text-white active:scale-95"
           }`}
+          style={soldOut ? undefined : { backgroundColor: tmpl.accent }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

@@ -2,6 +2,7 @@
 
 import { formatPrice, type OrderConfirmConfig } from "@/lib/biolink-helpers";
 import { buildMerchantNotifyUrl } from "@/lib/whatsapp-notify";
+import { useTemplate } from "@/lib/template-context";
 
 type OrderItem = {
   name: string;
@@ -32,6 +33,7 @@ type Props = {
 };
 
 export default function OrderConfirmation({ order, onClose, orderConfirmMessage }: Props) {
+  const tmpl = useTemplate();
   const currency = order.currency || "HKD";
   const config = orderConfirmMessage || { thanks: "多謝訂購！", whatsappTemplate: "你好！我落咗單 #{orderNumber}" };
 
@@ -59,6 +61,10 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
   const paymeHasContent = isPayme && (order.paymeInfo!.qrCode || order.paymeInfo!.link);
   const showPaymentFallback = (isFps && !fpsHasContent) || (isPayme && !paymeHasContent);
 
+  // Derived border / card colors
+  const subtleBorder = `${tmpl.subtext}20`;
+  const cardBg = `${tmpl.card}18`;
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
@@ -66,8 +72,8 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
 
       {/* Panel */}
       <div
-        className="relative w-full max-w-[480px] max-h-[90vh] bg-[#1a1a1a] rounded-t-3xl overflow-y-auto"
-        style={{ animation: "slideUp 0.3s ease-out" }}
+        className="relative w-full max-w-[480px] max-h-[90vh] rounded-t-3xl overflow-y-auto"
+        style={{ backgroundColor: tmpl.bg, animation: "slideUp 0.3s ease-out" }}
       >
         <div className="px-5 pt-6 pb-8">
           {/* Success header — customizable thanks message */}
@@ -77,43 +83,43 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
             </div>
-            <h2 className="text-white text-xl font-bold">{config.thanks}</h2>
-            <p className="text-white/50 text-sm mt-1">訂單編號：{order.orderNumber}</p>
-            <p className="text-white/40 text-xs mt-0.5">狀態：待確認付款</p>
+            <h2 className="text-xl font-bold" style={{ color: tmpl.text }}>{config.thanks}</h2>
+            <p className="text-sm mt-1" style={{ color: tmpl.subtext }}>訂單編號：{order.orderNumber}</p>
+            <p className="text-xs mt-0.5" style={{ color: `${tmpl.subtext}99` }}>狀態：待確認付款</p>
           </div>
 
           {/* Order summary */}
           {order.items && order.items.length > 0 && (
-            <div className="bg-white/5 rounded-2xl p-4 border border-white/10 mb-4">
+            <div className="rounded-2xl p-4 mb-4" style={{ backgroundColor: cardBg, border: `1px solid ${subtleBorder}` }}>
               <div className="space-y-2">
                 {order.items.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between text-sm">
-                    <span className="text-white/80 flex-1 min-w-0 truncate">
+                    <span className="flex-1 min-w-0 truncate" style={{ color: `${tmpl.text}CC` }}>
                       {item.name} × {item.qty}
                     </span>
-                    <span className="text-white font-medium ml-3 flex-shrink-0">
+                    <span className="font-medium ml-3 flex-shrink-0" style={{ color: tmpl.text }}>
                       {formatPrice(item.unitPrice * item.qty, currency)}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-3 pt-3 border-t border-white/10">
+              <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${subtleBorder}` }}>
                 {order.delivery && (
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-white/50">送貨方式</span>
-                    <span className="text-white/70">{order.delivery.label}</span>
+                    <span style={{ color: tmpl.subtext }}>送貨方式</span>
+                    <span style={{ color: `${tmpl.text}B3` }}>{order.delivery.label}</span>
                   </div>
                 )}
                 {order.delivery?.fee != null && order.delivery.fee > 0 && (
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-white/50">運費</span>
-                    <span className="text-white/70">{formatPrice(order.delivery.fee, currency)}</span>
+                    <span style={{ color: tmpl.subtext }}>運費</span>
+                    <span style={{ color: `${tmpl.text}B3` }}>{formatPrice(order.delivery.fee, currency)}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-white/50 text-sm">合計</span>
-                  <span className="text-[#FF9500] font-bold text-lg">{formatPrice(order.total, currency)}</span>
+                  <span className="text-sm" style={{ color: tmpl.subtext }}>合計</span>
+                  <span className="font-bold text-lg" style={{ color: tmpl.accent }}>{formatPrice(order.total, currency)}</span>
                 </div>
               </div>
             </div>
@@ -121,9 +127,9 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
 
           {/* FPS Payment info */}
           {order.fpsInfo && fpsHasContent && (
-            <div className="bg-white/5 rounded-2xl p-5 border border-white/10 mb-4">
-              <p className="text-white text-sm font-medium text-center mb-4">
-                請用 FPS 轉帳 <span className="text-[#FF9500] font-bold">{formatPrice(order.total, currency)}</span> 到：
+            <div className="rounded-2xl p-5 mb-4" style={{ backgroundColor: cardBg, border: `1px solid ${subtleBorder}` }}>
+              <p className="text-sm font-medium text-center mb-4" style={{ color: tmpl.text }}>
+                請用 FPS 轉帳 <span className="font-bold" style={{ color: tmpl.accent }}>{formatPrice(order.total, currency)}</span> 到：
               </p>
 
               {order.fpsInfo.qrCode && (
@@ -139,13 +145,13 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
               )}
 
               {order.fpsInfo.id && (
-                <p className="text-center text-white/70 text-sm">
-                  FPS ID: <span className="text-white font-mono font-bold">{order.fpsInfo.id}</span>
+                <p className="text-center text-sm" style={{ color: `${tmpl.text}B3` }}>
+                  FPS ID: <span className="font-mono font-bold" style={{ color: tmpl.text }}>{order.fpsInfo.id}</span>
                 </p>
               )}
               {order.fpsInfo.accountName && (
-                <p className="text-center text-white/70 text-sm mt-1">
-                  收款人: <span className="text-white font-medium">{order.fpsInfo.accountName}</span>
+                <p className="text-center text-sm mt-1" style={{ color: `${tmpl.text}B3` }}>
+                  收款人: <span className="font-medium" style={{ color: tmpl.text }}>{order.fpsInfo.accountName}</span>
                 </p>
               )}
             </div>
@@ -153,9 +159,9 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
 
           {/* PayMe Payment info */}
           {order.paymeInfo && paymeHasContent && (
-            <div className="bg-white/5 rounded-2xl p-5 border border-white/10 mb-4">
-              <p className="text-white text-sm font-medium text-center mb-4">
-                請用 PayMe 付款 <span className="text-[#FF9500] font-bold">{formatPrice(order.total, currency)}</span>
+            <div className="rounded-2xl p-5 mb-4" style={{ backgroundColor: cardBg, border: `1px solid ${subtleBorder}` }}>
+              <p className="text-sm font-medium text-center mb-4" style={{ color: tmpl.text }}>
+                請用 PayMe 付款 <span className="font-bold" style={{ color: tmpl.accent }}>{formatPrice(order.total, currency)}</span>
               </p>
 
               {order.paymeInfo.qrCode && (
@@ -185,14 +191,14 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
 
           {/* Fallback: 冇 QR / ID / link 時顯示 WhatsApp 聯絡 */}
           {showPaymentFallback && (
-            <div className="bg-white/5 rounded-2xl p-5 border border-white/10 mb-4 text-center">
-              <p className="text-white/70 text-sm">
+            <div className="rounded-2xl p-5 mb-4 text-center" style={{ backgroundColor: cardBg, border: `1px solid ${subtleBorder}` }}>
+              <p className="text-sm" style={{ color: tmpl.subtext }}>
                 請 WhatsApp 聯絡店主完成付款
               </p>
             </div>
           )}
 
-          {/* WhatsApp notify merchant */}
+          {/* WhatsApp notify merchant — 保持 WhatsApp brand green */}
           {notifyUrl && (
             <a
               href={notifyUrl}
@@ -211,7 +217,8 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
           {/* Continue shopping button */}
           <button
             onClick={onClose}
-            className="mt-4 w-full py-3.5 rounded-xl bg-white/10 text-white/80 font-medium text-sm active:scale-[0.98] transition-transform"
+            className="mt-4 w-full py-3.5 rounded-xl font-medium text-sm active:scale-[0.98] transition-transform"
+            style={{ backgroundColor: `${tmpl.text}15`, color: `${tmpl.text}CC` }}
           >
             🛍️ 繼續購物
           </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import type {
   ProductForBioLink,
   TenantForBioLink,
@@ -26,6 +26,9 @@ import {
   type BioCart,
   type BioCartItem,
 } from "@/lib/biolink-cart";
+import { getCoverTemplate } from "@/lib/cover-templates";
+import { TemplateProvider } from "@/lib/template-context";
+import { getGoogleFontsUrl } from "@/lib/fonts";
 import StickyHeader from "./StickyHeader";
 import CoverPhoto from "./CoverPhoto";
 import ProfileSection from "./ProfileSection";
@@ -47,6 +50,9 @@ type Props = {
 };
 
 export default function BioLinkPage({ tenant, products }: Props) {
+  const tmpl = useMemo(() => getCoverTemplate(tenant.coverTemplate), [tenant.coverTemplate]);
+  const fontsUrl = useMemo(() => getGoogleFontsUrl(tmpl), [tmpl]);
+
   const [cart, setCart] = useState<BioCart>({ tenantId: tenant.id, items: [] });
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -182,27 +188,29 @@ export default function BioLinkPage({ tenant, products }: Props) {
   );
 
   return (
-    <div className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden bg-[#0f0f0f]">
+    <TemplateProvider value={tmpl}>
+    {/* Google Fonts for current template */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <link rel="stylesheet" href={fontsUrl} />
+    <div
+      className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden"
+      style={{ backgroundColor: tmpl.bg, fontFamily: `'${tmpl.bodyFont}', sans-serif` }}
+    >
       <StickyHeader tenant={tenant} cartCount={cartCount} onCartClick={() => cartCount > 0 && setShowCart(true)} />
-      <CoverPhoto url={tenant.coverPhoto} brandColor={tenant.brandColor} coverTemplate={tenant.coverTemplate} />
+      <CoverPhoto url={tenant.coverPhoto} />
       <ProfileSection tenant={tenant} />
 
       {/* Search bar */}
       <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
-      {/* Dark zone — Featured loot cards */}
+      {/* Featured loot cards */}
       {featured.length > 0 && (
         <FeaturedSection products={featured} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} />
       )}
 
-      {/* Transition gradient: dark → light */}
-      <div
-        className="h-20"
-        style={{
-          background:
-            "linear-gradient(180deg, #0f0f0f 0%, #f5f5f0 100%)",
-        }}
-      />
+      {/* Spacer (no longer a gradient since bg is unified) */}
+      {featured.length > 0 && <div className="h-6" />}
 
       {/* Light zone — Product grid */}
       <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onImageTap={handleImageTap} searchQuery={searchQuery} />
@@ -276,18 +284,19 @@ export default function BioLinkPage({ tenant, products }: Props) {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-full bg-zinc-900/90 text-white text-sm font-medium shadow-lg animate-slide-up">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-full text-sm font-medium shadow-lg animate-slide-up" style={{ backgroundColor: tmpl.card, color: tmpl.text }}>
           {toast}
         </div>
       )}
 
       {/* Footer */}
-      <footer className="bg-[#f5f5f0] py-4 pb-20 text-center border-t border-black/[0.04]">
-        <span className="text-[11px] text-zinc-400 font-medium">
+      <footer className="py-4 pb-20 text-center border-t" style={{ backgroundColor: tmpl.bg, borderColor: `${tmpl.subtext}20` }}>
+        <span className="text-[11px] font-medium" style={{ color: tmpl.subtext }}>
           Powered by{" "}
         </span>
-        <a href="/" className="text-[11px] text-[#FF9500] font-bold hover:underline">Wowlix</a>
+        <a href="/" className="text-[11px] font-bold hover:underline" style={{ color: tmpl.accent }}>Wowlix</a>
       </footer>
     </div>
+    </TemplateProvider>
   );
 }
