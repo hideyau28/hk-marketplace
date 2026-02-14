@@ -6,6 +6,9 @@ import type { Metadata } from "next";
 import type { ProductForBioLink, DualVariantData, DeliveryOption, OrderConfirmConfig } from "@/lib/biolink-helpers";
 import { DEFAULT_DELIVERY_OPTIONS, DEFAULT_ORDER_CONFIRM } from "@/lib/biolink-helpers";
 
+// Force dynamic rendering — tenant slug pages need DB access per request
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   params: Promise<{ slug: string; locale: string }>;
 };
@@ -13,36 +16,42 @@ type PageProps = {
 export default async function SlugPage({ params }: PageProps) {
   const { slug } = await params;
 
-  const tenant = await prisma.tenant.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      description: true,
-      whatsapp: true,
-      instagram: true,
-      brandColor: true,
-      logoUrl: true,
-      coverPhoto: true,
-      coverTemplate: true,
-      template: true,
-      fpsEnabled: true,
-      fpsAccountName: true,
-      fpsAccountId: true,
-      fpsQrCodeUrl: true,
-      paymeEnabled: true,
-      paymeLink: true,
-      paymeQrCodeUrl: true,
-      stripeAccountId: true,
-      stripeOnboarded: true,
-      // Checkout settings
-      currency: true,
-      deliveryOptions: true,
-      freeShippingThreshold: true,
-      orderConfirmMessage: true,
-    },
-  });
+  let tenant;
+  try {
+    tenant = await prisma.tenant.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        whatsapp: true,
+        instagram: true,
+        brandColor: true,
+        logoUrl: true,
+        coverPhoto: true,
+        coverTemplate: true,
+        template: true,
+        fpsEnabled: true,
+        fpsAccountName: true,
+        fpsAccountId: true,
+        fpsQrCodeUrl: true,
+        paymeEnabled: true,
+        paymeLink: true,
+        paymeQrCodeUrl: true,
+        stripeAccountId: true,
+        stripeOnboarded: true,
+        // Checkout settings
+        currency: true,
+        deliveryOptions: true,
+        freeShippingThreshold: true,
+        orderConfirmMessage: true,
+      },
+    });
+  } catch (err) {
+    console.error(`[slug/${slug}] tenant query failed:`, err);
+    notFound();
+  }
 
   if (!tenant) notFound();
 
@@ -76,6 +85,9 @@ export default async function SlugPage({ params }: PageProps) {
         },
       },
     },
+  }).catch((err) => {
+    console.error(`[slug/${slug}] products query failed:`, err);
+    return [];
   });
 
   // Serialize for client component (dates → strings via JSON, Json fields → typed)
@@ -110,30 +122,36 @@ export default async function SlugPage({ params }: PageProps) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const tenant = await prisma.tenant.findUnique({
-    where: { slug },
-    select: { name: true, description: true, coverPhoto: true },
-  });
-  if (!tenant) return {};
 
-  const title = `${tenant.name} | WoWlix`;
-  const description = tenant.description || `Shop at ${tenant.name}`;
-  const ogImage = tenant.coverPhoto || "https://wowlix.com/og-default.png";
+  try {
+    const tenant = await prisma.tenant.findUnique({
+      where: { slug },
+      select: { name: true, description: true, coverPhoto: true },
+    });
+    if (!tenant) return {};
 
-  return {
-    title,
-    description,
-    openGraph: {
-      title: tenant.name,
+    const title = `${tenant.name} | WoWlix`;
+    const description = tenant.description || `Shop at ${tenant.name}`;
+    const ogImage = tenant.coverPhoto || "https://wowlix.com/og-default.png";
+
+    return {
+      title,
       description,
-      images: [ogImage],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: tenant.name,
-      description,
-      images: [ogImage],
-    },
-  };
+      openGraph: {
+        title: tenant.name,
+        description,
+        images: [ogImage],
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: tenant.name,
+        description,
+        images: [ogImage],
+      },
+    };
+  } catch (err) {
+    console.error(`[slug/${slug}] metadata query failed:`, err);
+    return {};
+  }
 }
