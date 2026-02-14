@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Product } from "@prisma/client";
 import type { Locale } from "@/lib/i18n";
-import { createProduct, updateProduct } from "./actions";
+import { createProduct, updateProduct, syncVariants } from "./actions";
 import ImageUpload from "@/components/admin/ImageUpload";
-import { GripVertical, X, Plus, Trash2 } from "lucide-react";
+import VariantMatrixEditor, { type VariantRow } from "@/components/admin/VariantMatrixEditor";
+import { PRODUCT_TYPES, getProductTypePreset } from "@/lib/product-type-presets";
+import { GripVertical, X, Plus } from "lucide-react";
 
-// Shoe size systems with default sizes
+// Legacy shoe size systems (kept for backward compatibility)
 const SIZE_SYSTEMS: Record<string, { label: string; sizes: string[] }> = {
   mens_us: { label: "Men's US", sizes: ["US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 9.5", "US 10", "US 10.5", "US 11", "US 11.5", "US 12", "US 13", "US 14"] },
   womens_us: { label: "Women's US", sizes: ["US 5", "US 5.5", "US 6", "US 6.5", "US 7", "US 7.5", "US 8", "US 8.5", "US 9", "US 9.5", "US 10", "US 10.5", "US 11"] },
@@ -18,20 +20,13 @@ const SIZE_SYSTEMS: Record<string, { label: string; sizes: string[] }> = {
   eu: { label: "EU", sizes: ["EU 36", "EU 37", "EU 38", "EU 39", "EU 40", "EU 41", "EU 42", "EU 43", "EU 44", "EU 45", "EU 46", "EU 47"] },
 };
 
-// Category options (dropdown)
+// Category options (for sneakers)
 const CATEGORIES = [
-  "Air Jordan",
-  "Dunk/SB",
-  "Air Max",
-  "Air Force",
-  "Running",
-  "Basketball",
-  "Lifestyle",
-  "Training",
-  "Sandals",
+  "Air Jordan", "Dunk/SB", "Air Max", "Air Force",
+  "Running", "Basketball", "Lifestyle", "Training", "Sandals",
 ];
 
-// Shoe type options (dropdown)
+// Shoe type options (for sneakers)
 const SHOE_TYPES = [
   { value: "adult", label: "男裝" },
   { value: "womens", label: "女裝" },
@@ -40,7 +35,7 @@ const SHOE_TYPES = [
   { value: "toddler", label: "TD 幼童" },
 ];
 
-// Promotion badges options (checkbox pills)
+// Promotion badges
 const PROMOTION_BADGES = [
   { value: "店長推介", label: "店長推介" },
   { value: "今期熱賣", label: "今期熱賣" },
@@ -65,10 +60,7 @@ function extractBadgeIds(input: unknown): string[] {
     return input.filter((item): item is string => typeof item === "string" && isCuid(item));
   }
   if (typeof input === "string") {
-    return input
-      .split(",")
-      .map((item) => item.trim())
-      .filter((item) => item && isCuid(item));
+    return input.split(",").map((item) => item.trim()).filter((item) => item && isCuid(item));
   }
   return [];
 }
@@ -77,25 +69,17 @@ function extractBadgeIds(input: unknown): string[] {
 function detectSizeSystem(sizeInventory: Record<string, number>): string {
   const keys = Object.keys(sizeInventory);
   if (keys.length === 0) return "";
-
-  // Check for EU sizes
   if (keys.some(k => k.startsWith("EU "))) return "eu";
-  // Check for toddler sizes (C suffix without Y)
   if (keys.some(k => /^\d+C$/.test(k) || /^US \d+C$/.test(k))) return "td_toddler";
-  // Check for PS kids sizes (Y suffix with small numbers or C suffix)
   if (keys.some(k => /^(1|2|3)(\.5)?Y$/.test(k))) return "ps_kids";
-  // Check for GS youth sizes (Y suffix with larger numbers)
   if (keys.some(k => /^(3\.5|[4-7])(\.5)?Y$/.test(k))) return "gs_youth";
-  // Check for women's US sizes (smaller US numbers)
   if (keys.some(k => k.match(/^US (5|5\.5|6|6\.5)$/))) return "womens_us";
-  // Default to men's US
   if (keys.some(k => k.startsWith("US "))) return "mens_us";
-
   return "";
 }
 
 type ProductModalProps = {
-  product: Product | null;
+  product: (Product & { variants?: any[] }) | null;
   onClose: () => void;
   locale: Locale;
 };
@@ -106,7 +90,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Parse existing sizeInventory
+  // Parse existing sizeInventory (legacy)
   const existingSizeInventory = (() => {
     const sizes = (product as any)?.sizes;
     if (sizes && typeof sizes === "object" && !Array.isArray(sizes)) {
@@ -114,51 +98,31 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     }
     return {};
   })();
-
-  // Auto-detect size system from existing inventory
   const detectedSizeSystem = detectSizeSystem(existingSizeInventory);
 
-  const [brand, setBrand] = useState(product?.brand || "Nike");
+  // --- Core product fields ---
+  const [brand, setBrand] = useState(product?.brand || "");
   const [title, setTitle] = useState(product?.title || "");
   const [sku, setSku] = useState((product as any)?.sku || "");
   const [price, setPrice] = useState(product?.price.toString() || "");
-  const [originalPrice, setOriginalPrice] = useState(
-    product?.originalPrice?.toString() || ""
-  );
+  const [originalPrice, setOriginalPrice] = useState(product?.originalPrice?.toString() || "");
   const [imageUrl, setImageUrl] = useState(product?.imageUrl || "");
-  // Multi-image support
   const [images, setImages] = useState<string[]>(
     (product as any)?.images && Array.isArray((product as any).images)
-      ? ((product as any).images as string[])
-      : []
+      ? ((product as any).images as string[]) : []
   );
   const [videoUrl, setVideoUrl] = useState((product as any)?.videoUrl || "");
   const [newImageUrl, setNewImageUrl] = useState("");
   const [category, setCategory] = useState(product?.category || "");
   const [active, setActive] = useState(product?.active ?? true);
   const [featured, setFeatured] = useState((product as any)?.featured ?? false);
-  // shoeType
   const [shoeType, setShoeType] = useState((product as any)?.shoeType || "");
-  // Size system - auto-detect from existing inventory
-  const [sizeSystem, setSizeSystem] = useState(detectedSizeSystem);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  // Size inventory: { "US 7": 5, "US 8": 10, ... }
-  const [sizeInventory, setSizeInventory] = useState<Record<string, number>>(existingSizeInventory);
-
-  // Custom sizes added by user (sizes in inventory that aren't in the current system)
-  const [customSizes, setCustomSizes] = useState<string[]>(() => {
-    if (!detectedSizeSystem) return [];
-    const systemSizes = SIZE_SYSTEMS[detectedSizeSystem]?.sizes || [];
-    const existingKeys = Object.keys(existingSizeInventory);
-    return existingKeys.filter(k => !systemSizes.includes(k));
-  });
-  const [newCustomSize, setNewCustomSize] = useState("");
-
-  // Promotion badges as checkboxes
+  // --- Promotion & product badges ---
   const [promotionBadges, setPromotionBadges] = useState<string[]>(
     (product as any)?.promotionBadges && Array.isArray((product as any).promotionBadges)
-      ? ((product as any).promotionBadges as string[])
-      : []
+      ? ((product as any).promotionBadges as string[]) : []
   );
   const [badgeOptions, setBadgeOptions] = useState<BadgeOption[]>([]);
   const [badgeLoading, setBadgeLoading] = useState(false);
@@ -167,25 +131,139 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     extractBadgeIds((product as any)?.badges)
   );
   const [isBadgeDropdownOpen, setIsBadgeDropdownOpen] = useState(false);
-  // Drag state for image reordering
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  // Calculate total stock from size inventory
-  const totalStock = Object.values(sizeInventory).reduce((sum, qty) => sum + qty, 0);
+  // --- NEW: Product Type & Variant System ---
+  const [productType, setProductType] = useState<string>((product as any)?.productType || "");
+  const [inventoryMode, setInventoryMode] = useState<"limited" | "made_to_order">(
+    (product as any)?.inventoryMode === "made_to_order" ? "made_to_order" : "limited"
+  );
 
-  // Close on backdrop click
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget && !isPending) {
-      onClose();
+  // Option dimensions
+  const [option1Label, setOption1Label] = useState("尺碼");
+  const [option1SizeSystem, setOption1SizeSystem] = useState("");
+  const [option1Values, setOption1Values] = useState<string[]>([]);
+  const [option2Label, setOption2Label] = useState("顏色");
+  const [option2Values, setOption2Values] = useState<string[]>([]);
+  const [newOption2Value, setNewOption2Value] = useState("");
+  const [variantRows, setVariantRows] = useState<VariantRow[]>([]);
+
+  // Legacy size system (for sneakers backward compat)
+  const [sizeSystem, setSizeSystem] = useState(detectedSizeSystem);
+  const [sizeInventory, setSizeInventory] = useState<Record<string, number>>(existingSizeInventory);
+  const [customSizes, setCustomSizes] = useState<string[]>(() => {
+    if (!detectedSizeSystem) return [];
+    const systemSizes = SIZE_SYSTEMS[detectedSizeSystem]?.sizes || [];
+    return Object.keys(existingSizeInventory).filter(k => !systemSizes.includes(k));
+  });
+  const [newCustomSize, setNewCustomSize] = useState("");
+
+  // Determine if using new variant system or legacy size system
+  const useVariantSystem = productType !== "" && productType !== "sneakers";
+  const typePreset = productType ? getProductTypePreset(productType) : undefined;
+
+  // Auto-set option1 label and size system when product type changes
+  useEffect(() => {
+    if (!typePreset) return;
+    if (typePreset.noSize) {
+      setOption1Label("");
+      setOption1SizeSystem("");
+      setOption1Values([]);
+    } else if (typePreset.sizeSystems.length > 0) {
+      setOption1Label("尺碼");
+      const defaultSys = typePreset.defaultSizeSystem || typePreset.sizeSystems[0].id;
+      setOption1SizeSystem(defaultSys);
+      // Don't auto-select values; let user pick
     }
+  }, [productType]);
+
+  // Get preset sizes for option 1
+  const option1PresetSizes = useMemo(() => {
+    if (!typePreset || typePreset.noSize) return [];
+    const sys = typePreset.sizeSystems.find((s) => s.id === option1SizeSystem);
+    return sys?.sizes || [];
+  }, [typePreset, option1SizeSystem]);
+
+  // Load existing variants into the editor (from product object or API)
+  useEffect(() => {
+    if (!product) return;
+
+    const loadVariants = (variants: any[]) => {
+      const optKeys = new Set<string>();
+      for (const v of variants) {
+        if (v.options && typeof v.options === "object") {
+          Object.keys(v.options).forEach((k) => optKeys.add(k));
+        }
+      }
+      const keys = Array.from(optKeys);
+
+      if (keys.length >= 1) {
+        setOption1Label(keys[0]);
+        const vals1 = new Set<string>();
+        for (const v of variants) {
+          if (v.options?.[keys[0]]) vals1.add(v.options[keys[0]]);
+        }
+        setOption1Values(Array.from(vals1));
+      }
+      if (keys.length >= 2) {
+        setOption2Label(keys[1]);
+        const vals2 = new Set<string>();
+        for (const v of variants) {
+          if (v.options?.[keys[1]]) vals2.add(v.options[keys[1]]);
+        }
+        setOption2Values(Array.from(vals2));
+      }
+
+      const rows: VariantRow[] = variants.map((v: any) => {
+        const o1 = keys.length >= 1 ? (v.options?.[keys[0]] || "") : "";
+        const o2 = keys.length >= 2 ? (v.options?.[keys[1]] || "") : undefined;
+        return {
+          key: o2 ? `${o1}|${o2}` : o1,
+          option1Value: o1,
+          option2Value: o2,
+          price: v.price?.toString() || price,
+          stock: v.stock?.toString() || "0",
+          active: v.active ?? true,
+        };
+      });
+      setVariantRows(rows);
+    };
+
+    // If variants are already in the product object, use them
+    const existingVariants = (product as any).variants as any[] | undefined;
+    if (existingVariants && existingVariants.length > 0) {
+      loadVariants(existingVariants);
+      return;
+    }
+
+    // Otherwise fetch from API
+    const fetchVariants = async () => {
+      try {
+        const res = await fetch(`/api/admin/products/${product.id}/variants`);
+        const json = await res.json();
+        if (json.ok && json.data?.variants?.length > 0) {
+          loadVariants(json.data.variants);
+        }
+      } catch {
+        // Ignore fetch errors, just means no variants
+      }
+    };
+    fetchVariants();
+  }, [product?.id]);
+
+  // Stock calculations
+  const legacyTotalStock = Object.values(sizeInventory).reduce((sum, qty) => sum + qty, 0);
+  const variantTotalStock = variantRows
+    .filter((v) => v.active)
+    .reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+
+  // --- Event handlers ---
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget && !isPending) onClose();
   };
 
-  // Close on Escape key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !isPending) {
-        onClose();
-      }
+      if (e.key === "Escape" && !isPending) onClose();
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
@@ -208,51 +286,34 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
           return;
         }
         if (isActive) setBadgeOptions(json.badges || []);
-      } catch (error) {
-        console.error("Failed to load badges:", error);
+      } catch (err) {
+        console.error("Failed to load badges:", err);
         if (isActive) setBadgeError("Failed to load badges.");
       } finally {
         if (isActive) setBadgeLoading(false);
       }
     };
     loadBadges();
-    return () => {
-      isActive = false;
-    };
+    return () => { isActive = false; };
   }, []);
 
-  // Image management
+  // Image handlers
   const handleAddImage = () => {
     if (newImageUrl.trim() && images.length < 10) {
       setImages([...images, newImageUrl.trim()]);
       setNewImageUrl("");
     }
   };
-
-  const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
-
-  // Swap an extra image to become the main image
+  const handleRemoveImage = (index: number) => setImages(images.filter((_, i) => i !== index));
   const handleSetAsMainImage = (index: number) => {
-    const newMainImage = images[index];
-    const oldMainImage = imageUrl;
-
-    // Set the selected image as main
-    setImageUrl(newMainImage);
-
-    // Remove the selected image from extras and add old main if it exists
+    const newMain = images[index];
+    const oldMain = imageUrl;
+    setImageUrl(newMain);
     const newImages = images.filter((_, i) => i !== index);
-    if (oldMainImage) {
-      newImages.unshift(oldMainImage); // Add old main to beginning of extras
-    }
+    if (oldMain) newImages.unshift(oldMain);
     setImages(newImages);
   };
-
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
-  };
-
+  const handleDragStart = (index: number) => setDraggedIndex(index);
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === index) return;
@@ -262,67 +323,62 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     setImages(newImages);
     setDraggedIndex(index);
   };
+  const handleDragEnd = () => setDraggedIndex(null);
 
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-  };
-
-  // Toggle promotion badge
+  // Badge handlers
   const togglePromotionBadge = (badge: string) => {
-    if (promotionBadges.includes(badge)) {
-      setPromotionBadges(promotionBadges.filter((b) => b !== badge));
-    } else {
-      setPromotionBadges([...promotionBadges, badge]);
-    }
+    setPromotionBadges((prev) =>
+      prev.includes(badge) ? prev.filter((b) => b !== badge) : [...prev, badge]
+    );
   };
-
   const toggleProductBadge = (badgeId: string) => {
     setSelectedBadgeIds((prev) =>
       prev.includes(badgeId) ? prev.filter((id) => id !== badgeId) : [...prev, badgeId]
     );
   };
 
-  // Size inventory handlers
+  // Legacy size handlers
   const handleSizeCheck = (size: string, checked: boolean) => {
     if (checked) {
       setSizeInventory((prev) => ({ ...prev, [size]: prev[size] || 0 }));
     } else {
-      setSizeInventory((prev) => {
-        const next = { ...prev };
-        delete next[size];
-        return next;
-      });
+      setSizeInventory((prev) => { const next = { ...prev }; delete next[size]; return next; });
     }
   };
-
   const handleSizeStockChange = (size: string, stock: number) => {
     setSizeInventory((prev) => ({ ...prev, [size]: Math.max(0, stock) }));
   };
-
   const handleAddCustomSize = () => {
     if (newCustomSize.trim() && !customSizes.includes(newCustomSize.trim())) {
       setCustomSizes([...customSizes, newCustomSize.trim()]);
       setNewCustomSize("");
     }
   };
-
   const handleRemoveCustomSize = (size: string) => {
     setCustomSizes(customSizes.filter((s) => s !== size));
-    setSizeInventory((prev) => {
-      const next = { ...prev };
-      delete next[size];
-      return next;
-    });
+    setSizeInventory((prev) => { const next = { ...prev }; delete next[size]; return next; });
   };
 
-  // When size system changes, preserve existing inventory if switching to a compatible system
-  const handleSizeSystemChange = (newSystem: string) => {
-    setSizeSystem(newSystem);
-    if (!newSystem) {
-      // Don't clear inventory, just change display
+  // Option 1 (size) toggle
+  const toggleOption1Value = (val: string) => {
+    setOption1Values((prev) =>
+      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
+    );
+  };
+
+  // Option 2 (color/flavor) handlers
+  const addOption2Value = () => {
+    const v = newOption2Value.trim();
+    if (v && !option2Values.includes(v)) {
+      setOption2Values([...option2Values, v]);
+      setNewOption2Value("");
     }
   };
+  const removeOption2Value = (val: string) => {
+    setOption2Values(option2Values.filter((v) => v !== val));
+  };
 
+  // --- Submit ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -333,7 +389,6 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       return;
     }
 
-    // Parse originalPrice (optional)
     let originalPriceNum: number | null = null;
     if (originalPrice.trim()) {
       originalPriceNum = parseFloat(originalPrice);
@@ -343,38 +398,36 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
       }
     }
 
-    if (!brand.trim()) {
-      setError({ code: "VALIDATION_ERROR", message: "Brand is required" });
-      return;
-    }
-
     if (!title.trim()) {
       setError({ code: "VALIDATION_ERROR", message: "Title is required" });
       return;
     }
 
-    if (!category) {
-      setError({ code: "VALIDATION_ERROR", message: "Category is required" });
-      return;
-    }
-
-    if (!shoeType) {
-      setError({ code: "VALIDATION_ERROR", message: "Shoe Type is required" });
-      return;
-    }
-
-    // Filter size inventory to only include sizes with stock > 0
-    const filteredSizeInventory: Record<string, number> = {};
-    Object.entries(sizeInventory).forEach(([size, stock]) => {
-      if (stock > 0) {
-        filteredSizeInventory[size] = stock;
+    // Sneaker-specific validation
+    if (productType === "sneakers" || productType === "") {
+      if (!category) {
+        setError({ code: "VALIDATION_ERROR", message: "Category is required" });
+        return;
       }
-    });
+      if (!shoeType) {
+        setError({ code: "VALIDATION_ERROR", message: "Shoe Type is required" });
+        return;
+      }
+    }
 
     startTransition(async () => {
-      let result;
-      const productData = {
-        brand: brand.trim(),
+      // Build product data
+      const filteredSizeInventory: Record<string, number> = {};
+      Object.entries(sizeInventory).forEach(([size, stock]) => {
+        if (stock > 0) filteredSizeInventory[size] = stock;
+      });
+
+      // Calculate total stock: from variants if using variant system, otherwise from legacy sizes
+      const hasNewVariants = useVariantSystem && variantRows.length > 0;
+      const totalStock = hasNewVariants ? variantTotalStock : legacyTotalStock;
+
+      const productData: any = {
+        brand: brand.trim() || null,
         title: title.trim(),
         sku: sku.trim() || undefined,
         price: priceNum,
@@ -391,30 +444,61 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         sizes: Object.keys(filteredSizeInventory).length > 0 ? filteredSizeInventory : null,
         stock: totalStock,
         promotionBadges: promotionBadges.length > 0 ? promotionBadges : undefined,
+        productType: productType || null,
+        inventoryMode,
       };
 
+      let result;
       if (product) {
         result = await updateProduct(product.id, productData, locale);
       } else {
         result = await createProduct(productData as any, locale);
       }
 
-      if (result.ok) {
-        onClose();
-        router.refresh();
-      } else {
+      if (!result.ok) {
         setError({ code: result.code, message: result.message });
+        return;
       }
+
+      // Sync variants if using variant system
+      const savedProductId = product?.id || (result as any).data?.id;
+      if (hasNewVariants && savedProductId) {
+        const variantsPayload = variantRows
+          .filter((v) => v.active)
+          .map((v, idx) => {
+            const options: Record<string, string> = {};
+            if (option1Label && v.option1Value) options[option1Label] = v.option1Value;
+            if (option2Label && v.option2Value) options[option2Label] = v.option2Value;
+            const nameparts = [v.option1Value, v.option2Value].filter(Boolean);
+            return {
+              name: nameparts.join(" - "),
+              price: parseFloat(v.price) || priceNum,
+              stock: inventoryMode === "made_to_order" ? 999 : (parseInt(v.stock) || 0),
+              options,
+              active: true,
+              sortOrder: idx,
+            };
+          });
+
+        const syncResult = await syncVariants(savedProductId, variantsPayload, locale);
+        if (!syncResult.ok) {
+          setError({ code: syncResult.code, message: syncResult.message });
+          return;
+        }
+      }
+
+      onClose();
+      router.refresh();
     });
   };
 
-  // Calculate discount percentage
+  // Discount calculation
   const priceNum = parseFloat(price) || 0;
   const originalPriceNum = parseFloat(originalPrice) || 0;
   const isOnSale = originalPriceNum > priceNum && priceNum > 0;
   const discountPercent = isOnSale ? Math.round((1 - priceNum / originalPriceNum) * 100) : 0;
 
-  // Get all available sizes (system sizes + custom sizes)
+  // Legacy size system
   const systemSizes = sizeSystem ? SIZE_SYSTEMS[sizeSystem]?.sizes || [] : [];
   const allAvailableSizes = [...systemSizes, ...customSizes];
 
@@ -427,7 +511,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         ref={modalRef}
         className="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-3xl border border-zinc-200 bg-white"
       >
-        {/* Sticky header with X button */}
+        {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl border-b border-zinc-100 bg-white px-6 py-4">
           <h2 className="text-xl font-semibold text-zinc-900">
             {product ? "Edit Product" : "Create Product"}
@@ -441,7 +525,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
           </button>
         </div>
 
-        {/* Scrollable content */}
+        {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {error && (
             <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4">
@@ -451,11 +535,36 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
           )}
 
           <form id="product-form" onSubmit={handleSubmit}>
+            {/* Product Type Selector */}
+            <div className="mb-6 rounded-2xl border border-zinc-200 p-4">
+              <label className="block text-zinc-700 text-sm font-medium mb-3">產品類型</label>
+              <div className="flex flex-wrap gap-2">
+                {PRODUCT_TYPES.map((pt) => (
+                  <button
+                    key={pt.id}
+                    type="button"
+                    onClick={() => setProductType(pt.id)}
+                    disabled={isPending}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors border disabled:opacity-50 ${
+                      productType === pt.id
+                        ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
+                        : "bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100"
+                    }`}
+                  >
+                    {pt.icon} {pt.label}
+                  </button>
+                ))}
+              </div>
+              {!productType && (
+                <p className="mt-2 text-xs text-zinc-400">未選產品類型 = 使用舊版波鞋模式</p>
+              )}
+            </div>
+
             {/* Two-column layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* LEFT COLUMN - Images */}
               <div className="space-y-4">
-                {/* Main Product Image */}
+                {/* Main Image */}
                 <div className="rounded-2xl border border-zinc-200 p-4">
                   <label className="block text-zinc-700 text-sm font-medium mb-3">主圖 (Main Image)</label>
                   <ImageUpload
@@ -466,62 +575,38 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                   {imageUrl && (
                     <div className="mt-3 relative">
                       <img src={imageUrl} alt="Main" className="w-full h-48 object-contain rounded-xl border border-zinc-200 bg-zinc-50" />
-                      <button
-                        type="button"
-                        onClick={() => setImageUrl("")}
-                        className="absolute top-2 right-2 p-1 rounded-full bg-white/90 text-zinc-500 hover:text-red-500 hover:bg-white shadow-sm"
-                      >
+                      <button type="button" onClick={() => setImageUrl("")}
+                        className="absolute top-2 right-2 p-1 rounded-full bg-white/90 text-zinc-500 hover:text-red-500 hover:bg-white shadow-sm">
                         <X size={16} />
                       </button>
                     </div>
                   )}
-                  <input
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    disabled={isPending}
+                  <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} disabled={isPending}
                     className="mt-3 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                    placeholder="Or paste image URL here"
-                  />
+                    placeholder="Or paste image URL here" />
                 </div>
 
-                {/* Additional Images (max 10) */}
+                {/* Additional Images */}
                 <div className="rounded-2xl border border-zinc-200 p-4">
                   <label className="block text-zinc-700 text-sm font-medium mb-3">
                     額外圖片 <span className="text-zinc-400 font-normal">({images.length}/10)</span>
                   </label>
-
-                  {/* Image thumbnails grid */}
                   {images.length > 0 && (
                     <div className="grid grid-cols-4 gap-2 mb-3">
                       {images.map((img, index) => (
-                        <div
-                          key={index}
-                          draggable
-                          onDragStart={() => handleDragStart(index)}
-                          onDragOver={(e) => handleDragOver(e, index)}
-                          onDragEnd={handleDragEnd}
+                        <div key={index} draggable onDragStart={() => handleDragStart(index)}
+                          onDragOver={(e) => handleDragOver(e, index)} onDragEnd={handleDragEnd}
                           className={`group relative aspect-square rounded-xl overflow-hidden border cursor-move transition-all ${
                             draggedIndex === index ? "border-olive-500 ring-2 ring-olive-200" : "border-zinc-200"
-                          }`}
-                        >
+                          }`}>
                           <img src={img} alt={`Image ${index + 1}`} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
-                          {/* Set as main image button - shows on hover */}
-                          <button
-                            type="button"
-                            onClick={() => handleSetAsMainImage(index)}
-                            disabled={isPending}
-                            className="absolute inset-x-1 bottom-6 py-1 px-1 text-[10px] font-medium text-white bg-[#6B7A2F]/90 hover:bg-[#6B7A2F] rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                          >
-                            ⭐ 設為主圖
+                          <button type="button" onClick={() => handleSetAsMainImage(index)} disabled={isPending}
+                            className="absolute inset-x-1 bottom-6 py-1 px-1 text-[10px] font-medium text-white bg-[#6B7A2F]/90 hover:bg-[#6B7A2F] rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50">
+                            設為主圖
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(index)}
-                            disabled={isPending}
-                            className="absolute top-1 right-1 p-1 rounded-full bg-white/90 text-zinc-500 hover:text-red-500 hover:bg-white shadow-sm disabled:opacity-50"
-                          >
+                          <button type="button" onClick={() => handleRemoveImage(index)} disabled={isPending}
+                            className="absolute top-1 right-1 p-1 rounded-full bg-white/90 text-zinc-500 hover:text-red-500 hover:bg-white shadow-sm disabled:opacity-50">
                             <X size={12} />
                           </button>
                           <div className="absolute bottom-1 left-1 p-0.5 rounded bg-white/80">
@@ -531,30 +616,14 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       ))}
                     </div>
                   )}
-
-                  {/* Add new image */}
                   {images.length < 10 && (
                     <div className="flex gap-2">
-                      <input
-                        type="url"
-                        value={newImageUrl}
-                        onChange={(e) => setNewImageUrl(e.target.value)}
-                        disabled={isPending}
+                      <input type="url" value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} disabled={isPending}
                         className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                         placeholder="Paste additional image URL"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddImage();
-                          }
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddImage}
-                        disabled={isPending || !newImageUrl.trim()}
-                        className="rounded-xl bg-zinc-100 px-3 py-2 text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
-                      >
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddImage(); } }} />
+                      <button type="button" onClick={handleAddImage} disabled={isPending || !newImageUrl.trim()}
+                        className="rounded-xl bg-zinc-100 px-3 py-2 text-zinc-700 hover:bg-zinc-200 disabled:opacity-50">
                         <Plus size={18} />
                       </button>
                     </div>
@@ -564,16 +633,11 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                 {/* Video URL */}
                 <div className="rounded-2xl border border-zinc-200 p-4">
                   <label className="block text-zinc-700 text-sm font-medium mb-3">影片連結（可選）</label>
-                  <input
-                    type="url"
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    disabled={isPending}
+                  <input type="url" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} disabled={isPending}
                     className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                    placeholder="貼 IG Reel 或 YouTube 連結"
-                  />
+                    placeholder="貼 IG Reel 或 YouTube 連結" />
                   {videoUrl.trim() && (
-                    <p className="mt-2 text-xs text-zinc-400">支援 YouTube / IG Reel 連結，會喺產品圖片位顯示 embed 影片</p>
+                    <p className="mt-2 text-xs text-zinc-400">支援 YouTube / IG Reel 連結</p>
                   )}
                 </div>
               </div>
@@ -582,78 +646,44 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               <div className="space-y-4">
                 {/* Brand */}
                 <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">Brand *</label>
-                  <input
-                    type="text"
-                    value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
-                    disabled={isPending}
+                  <label className="block text-zinc-700 text-sm font-medium mb-2">Brand</label>
+                  <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)} disabled={isPending}
                     className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                    placeholder="Nike"
-                    required
-                  />
+                    placeholder="品牌名" />
                 </div>
 
-                {/* Model / Description */}
+                {/* Title */}
                 <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">Model / Description *</label>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    disabled={isPending}
+                  <label className="block text-zinc-700 text-sm font-medium mb-2">產品名稱 *</label>
+                  <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isPending}
                     className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                    placeholder="Air Jordan 1 Retro High OG"
-                    required
-                  />
+                    placeholder="產品名稱" required />
                 </div>
 
-                {/* SKU / Model Number */}
+                {/* SKU */}
                 <div>
                   <label className="block text-zinc-700 text-sm font-medium mb-2">SKU / Model Number</label>
-                  <input
-                    type="text"
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value)}
-                    disabled={isPending}
+                  <input type="text" value={sku} onChange={(e) => setSku(e.target.value)} disabled={isPending}
                     className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                    placeholder="553558-067"
-                  />
+                    placeholder="553558-067" />
                 </div>
 
-                {/* Price section */}
+                {/* Price */}
                 <div className="rounded-xl border border-zinc-200 p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-zinc-700 text-sm font-medium mb-2">售價 HKD *</label>
-                      <input
-                        type="number"
-                        step="1"
-                        min="0"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        disabled={isPending}
+                      <input type="number" step="1" min="0" value={price} onChange={(e) => setPrice(e.target.value)} disabled={isPending}
                         className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                        placeholder="899"
-                        required
-                      />
+                        placeholder="899" required />
                     </div>
                     <div>
                       <label className="block text-zinc-700 text-sm font-medium mb-2">原價 HKD</label>
-                      <input
-                        type="number"
-                        step="1"
-                        min="0"
-                        value={originalPrice}
-                        onChange={(e) => setOriginalPrice(e.target.value)}
-                        disabled={isPending}
+                      <input type="number" step="1" min="0" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} disabled={isPending}
                         className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                        placeholder="1299"
-                      />
+                        placeholder="1299" />
                     </div>
                   </div>
-
-                  {/* Discount preview */}
                   {isOnSale ? (
                     <div className="rounded-lg bg-red-50 border border-red-200 p-2.5">
                       <div className="flex items-center gap-2">
@@ -667,57 +697,63 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                   )}
                 </div>
 
-                {/* Category Dropdown */}
-                <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">Category *</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    disabled={isPending}
-                    required
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                  >
-                    <option value="">-- 選擇類別 --</option>
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
+                {/* Sneaker-specific fields: Category + Shoe Type */}
+                {(productType === "sneakers" || productType === "") && (
+                  <>
+                    <div>
+                      <label className="block text-zinc-700 text-sm font-medium mb-2">Category *</label>
+                      <select value={category} onChange={(e) => setCategory(e.target.value)} disabled={isPending} required
+                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50">
+                        <option value="">-- 選擇類別 --</option>
+                        {CATEGORIES.map((cat) => (<option key={cat} value={cat}>{cat}</option>))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-zinc-700 text-sm font-medium mb-2">鞋類 / Shoe Type *</label>
+                      <select value={shoeType} onChange={(e) => setShoeType(e.target.value)} disabled={isPending} required
+                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50">
+                        <option value="">-- 選擇鞋類 --</option>
+                        {SHOE_TYPES.map((type) => (<option key={type.value} value={type.value}>{type.label}</option>))}
+                      </select>
+                    </div>
+                  </>
+                )}
 
-                {/* Shoe Type Dropdown */}
-                <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">鞋類 / Shoe Type *</label>
-                  <select
-                    value={shoeType}
-                    onChange={(e) => setShoeType(e.target.value)}
-                    disabled={isPending}
-                    required
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                  >
-                    <option value="">-- 選擇鞋類 --</option>
-                    {SHOE_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
-                    ))}
-                  </select>
+                {/* Inventory Mode Toggle */}
+                <div className="rounded-xl border border-zinc-200 p-4">
+                  <label className="block text-zinc-700 text-sm font-medium mb-3">庫存模式</label>
+                  <div className="flex gap-3">
+                    <button type="button" onClick={() => setInventoryMode("limited")} disabled={isPending}
+                      className={`flex-1 rounded-xl py-2.5 text-sm font-medium border transition-colors disabled:opacity-50 ${
+                        inventoryMode === "limited"
+                          ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
+                          : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100"
+                      }`}>
+                      有限庫存
+                    </button>
+                    <button type="button" onClick={() => setInventoryMode("made_to_order")} disabled={isPending}
+                      className={`flex-1 rounded-xl py-2.5 text-sm font-medium border transition-colors disabled:opacity-50 ${
+                        inventoryMode === "made_to_order"
+                          ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
+                          : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100"
+                      }`}>
+                      接單製作
+                    </button>
+                  </div>
+                  {inventoryMode === "made_to_order" && (
+                    <p className="mt-2 text-xs text-zinc-400">接單製作：無限量，庫存自動設為 999</p>
+                  )}
                 </div>
 
                 {/* Product Badges */}
                 <div>
                   <label className="block text-zinc-700 text-sm font-medium mb-2">產品標籤</label>
                   <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setIsBadgeDropdownOpen((prev) => !prev)}
-                      className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-left text-sm text-zinc-900 flex items-center justify-between"
-                    >
-                      <span>
-                        {selectedBadgeIds.length > 0
-                          ? `${selectedBadgeIds.length} badges selected`
-                          : "Select badges"}
-                      </span>
+                    <button type="button" onClick={() => setIsBadgeDropdownOpen((prev) => !prev)}
+                      className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-left text-sm text-zinc-900 flex items-center justify-between">
+                      <span>{selectedBadgeIds.length > 0 ? `${selectedBadgeIds.length} badges selected` : "Select badges"}</span>
                       <span className="text-xs text-zinc-400">▼</span>
                     </button>
-
                     {isBadgeDropdownOpen && (
                       <div className="absolute z-20 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-lg">
                         {badgeLoading ? (
@@ -728,21 +764,10 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                           badgeOptions.map((badge) => {
                             const isSelected = selectedBadgeIds.includes(badge.id);
                             return (
-                              <button
-                                key={badge.id}
-                                type="button"
-                                onClick={() => toggleProductBadge(badge.id)}
-                                className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 ${
-                                  isSelected ? "bg-olive-50" : ""
-                                }`}
-                              >
-                                <span
-                                  className="h-3 w-3 rounded-full"
-                                  style={{ backgroundColor: badge.color }}
-                                />
-                                <span className="text-zinc-800">
-                                  {badge.nameZh} / {badge.nameEn}
-                                </span>
+                              <button key={badge.id} type="button" onClick={() => toggleProductBadge(badge.id)}
+                                className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 ${isSelected ? "bg-olive-50" : ""}`}>
+                                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: badge.color }} />
+                                <span className="text-zinc-800">{badge.nameZh} / {badge.nameEn}</span>
                                 {isSelected && <span className="ml-auto text-olive-600">✓</span>}
                               </button>
                             );
@@ -751,24 +776,17 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       </div>
                     )}
                   </div>
-                  {badgeError && (
-                    <p className="mt-2 text-xs text-red-600">{badgeError}</p>
-                  )}
+                  {badgeError && <p className="mt-2 text-xs text-red-600">{badgeError}</p>}
                   <div className="mt-2 flex flex-wrap gap-2">
                     {selectedBadgeIds.map((id) => {
-                      const badge = badgeOptions.find((option) => option.id === id);
+                      const badge = badgeOptions.find((o) => o.id === id);
                       const label = badge ? `${badge.nameZh} / ${badge.nameEn}` : id;
                       const color = badge?.color || "#6B7A2F";
                       return (
-                        <button
-                          key={id}
-                          type="button"
-                          onClick={() => toggleProductBadge(id)}
+                        <button key={id} type="button" onClick={() => toggleProductBadge(id)}
                           className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs text-white"
-                          style={{ backgroundColor: color }}
-                        >
-                          <span>{label}</span>
-                          <span className="text-white/80">✕</span>
+                          style={{ backgroundColor: color }}>
+                          <span>{label}</span><span className="text-white/80">✕</span>
                         </button>
                       );
                     })}
@@ -782,183 +800,210 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     {PROMOTION_BADGES.map((badge) => {
                       const isSelected = promotionBadges.includes(badge.value);
                       return (
-                        <button
-                          key={badge.value}
-                          type="button"
-                          onClick={() => togglePromotionBadge(badge.value)}
-                          disabled={isPending}
+                        <button key={badge.value} type="button" onClick={() => togglePromotionBadge(badge.value)} disabled={isPending}
                           className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors border disabled:opacity-50 ${
-                            isSelected
-                              ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
-                              : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
-                          }`}
-                        >
+                            isSelected ? "bg-[#6B7A2F] text-white border-[#6B7A2F]" : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
+                          }`}>
                           {badge.label}
                         </button>
                       );
                     })}
                   </div>
-                  <p className="text-xs text-zinc-400 mt-1.5">「快將售罄」會在庫存 ≤ 5 時自動顯示</p>
                 </div>
 
-                {/* Active & Featured toggles */}
+                {/* Active & Featured */}
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="active"
-                      checked={active}
-                      onChange={(e) => setActive(e.target.checked)}
-                      disabled={isPending}
-                      className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50"
-                    />
+                    <input type="checkbox" id="active" checked={active} onChange={(e) => setActive(e.target.checked)} disabled={isPending}
+                      className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50" />
                     <label htmlFor="active" className="text-zinc-700 text-sm">Active</label>
                   </div>
                   <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="featured"
-                      checked={featured}
-                      onChange={(e) => setFeatured(e.target.checked)}
-                      disabled={isPending}
-                      className="h-4 w-4 accent-yellow-500 disabled:opacity-50"
-                    />
-                    <label htmlFor="featured" className="text-zinc-700 text-sm">⭐ Featured</label>
+                    <input type="checkbox" id="featured" checked={featured} onChange={(e) => setFeatured(e.target.checked)} disabled={isPending}
+                      className="h-4 w-4 accent-yellow-500 disabled:opacity-50" />
+                    <label htmlFor="featured" className="text-zinc-700 text-sm">Featured</label>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* FULL WIDTH - Size System Table */}
-            <div className="mt-6 rounded-2xl border border-zinc-200 p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="block text-zinc-700 text-sm font-medium">尺碼系統</label>
-                <div className="flex items-center gap-3">
-                  <select
-                    value={sizeSystem}
-                    onChange={(e) => handleSizeSystemChange(e.target.value)}
-                    disabled={isPending}
-                    className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
-                  >
-                    <option value="">No sizes</option>
-                    {Object.entries(SIZE_SYSTEMS).map(([key, val]) => (
-                      <option key={key} value={key}>{val.label}</option>
+            {/* FULL WIDTH — Variant System (new types) */}
+            {useVariantSystem && typePreset && (
+              <div className="mt-6 space-y-4">
+                {/* Option 1: Size (from preset) */}
+                {!typePreset.noSize && (
+                  <div className="rounded-2xl border border-zinc-200 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-zinc-700 text-sm font-medium">選項 1：{option1Label}</label>
+                      {typePreset.sizeSystems.length > 1 && (
+                        <select value={option1SizeSystem} onChange={(e) => setOption1SizeSystem(e.target.value)} disabled={isPending}
+                          className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50">
+                          {typePreset.sizeSystems.map((sys) => (
+                            <option key={sys.id} value={sys.id}>{sys.label}</option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {option1PresetSizes.map((size) => {
+                        const selected = option1Values.includes(size);
+                        return (
+                          <button key={size} type="button" onClick={() => toggleOption1Value(size)} disabled={isPending}
+                            className={`rounded-lg px-3 py-1.5 text-sm border transition-colors disabled:opacity-50 ${
+                              selected
+                                ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
+                                : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
+                            }`}>
+                            {size}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-zinc-400">已選 {option1Values.length} 個</p>
+                  </div>
+                )}
+
+                {/* Option 2: Color / Flavor / etc. */}
+                <div className="rounded-2xl border border-zinc-200 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <label className="text-zinc-700 text-sm font-medium">選項 2：</label>
+                    <input type="text" value={option2Label} onChange={(e) => setOption2Label(e.target.value)} disabled={isPending}
+                      className="rounded-lg border border-zinc-200 px-2 py-1 text-sm w-24 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                      placeholder="顏色" />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {option2Values.map((val) => (
+                      <span key={val} className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-700">
+                        {val}
+                        <button type="button" onClick={() => removeOption2Value(val)} disabled={isPending}
+                          className="text-zinc-400 hover:text-red-500 disabled:opacity-50">
+                          <X size={12} />
+                        </button>
+                      </span>
                     ))}
-                  </select>
-                  <div className="text-sm text-zinc-600">
-                    總庫存: <span className="font-semibold text-zinc-900">{totalStock}</span>
                   </div>
-                </div>
-              </div>
-
-              {sizeSystem && (
-                <>
-                  {/* Size inventory table */}
-                  <div className="overflow-x-auto max-h-[250px] overflow-y-auto border border-zinc-100 rounded-xl">
-                    <table className="w-full text-sm">
-                      <thead className="sticky top-0 bg-zinc-50">
-                        <tr className="text-zinc-500 border-b border-zinc-200">
-                          <th className="py-2 px-3 text-center font-medium w-12">✓</th>
-                          <th className="py-2 px-3 text-left font-medium">Size</th>
-                          <th className="py-2 px-3 text-right font-medium w-24">Stock</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {allAvailableSizes.map((size) => {
-                          const isChecked = size in sizeInventory;
-                          const stock = sizeInventory[size] || 0;
-                          const isCustom = customSizes.includes(size);
-                          return (
-                            <tr key={size} className="border-b border-zinc-100 hover:bg-zinc-50">
-                              <td className="py-2 px-3 text-center">
-                                <input
-                                  type="checkbox"
-                                  checked={isChecked}
-                                  onChange={(e) => handleSizeCheck(size, e.target.checked)}
-                                  disabled={isPending}
-                                  className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50"
-                                />
-                              </td>
-                              <td className="py-2 px-3 text-zinc-900">
-                                <div className="flex items-center gap-2">
-                                  {size}
-                                  {isCustom && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleRemoveCustomSize(size)}
-                                      className="text-zinc-400 hover:text-red-500"
-                                    >
-                                      <X size={12} />
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="py-2 px-3 text-right">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={isChecked ? stock : ""}
-                                  onChange={(e) => handleSizeStockChange(size, parseInt(e.target.value) || 0)}
-                                  disabled={isPending || !isChecked}
-                                  className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50 disabled:bg-zinc-50"
-                                  placeholder="0"
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Add custom size */}
-                  <div className="flex gap-2 pt-2">
-                    <input
-                      type="text"
-                      value={newCustomSize}
-                      onChange={(e) => setNewCustomSize(e.target.value)}
-                      disabled={isPending}
+                  <div className="flex gap-2">
+                    <input type="text" value={newOption2Value} onChange={(e) => setNewOption2Value(e.target.value)} disabled={isPending}
                       className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
-                      placeholder="自訂尺碼 (e.g. US 14)"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleAddCustomSize();
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddCustomSize}
-                      disabled={isPending || !newCustomSize.trim()}
-                      className="rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
-                    >
-                      ＋ 自訂尺碼
+                      placeholder={`輸入${option2Label}值（例如：黑色）`}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addOption2Value(); } }} />
+                    <button type="button" onClick={addOption2Value} disabled={isPending || !newOption2Value.trim()}
+                      className="rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50">
+                      <Plus size={18} />
                     </button>
                   </div>
-                </>
-              )}
-            </div>
+                </div>
+
+                {/* Variant Matrix */}
+                {(option1Values.length > 0 || option2Values.length > 0) && (
+                  <div className="rounded-2xl border border-zinc-200 p-4">
+                    <label className="block text-zinc-700 text-sm font-medium mb-3">Variant Matrix</label>
+                    <VariantMatrixEditor
+                      option1Label={option1Label}
+                      option1Values={option1Values}
+                      option2Label={option2Label}
+                      option2Values={option2Values}
+                      basePrice={price}
+                      inventoryMode={inventoryMode}
+                      variants={variantRows}
+                      onVariantsChange={setVariantRows}
+                      disabled={isPending}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* FULL WIDTH — Legacy Size System (sneakers / no type) */}
+            {!useVariantSystem && (
+              <div className="mt-6 rounded-2xl border border-zinc-200 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-zinc-700 text-sm font-medium">尺碼系統</label>
+                  <div className="flex items-center gap-3">
+                    <select value={sizeSystem} onChange={(e) => setSizeSystem(e.target.value)} disabled={isPending}
+                      className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50">
+                      <option value="">No sizes</option>
+                      {Object.entries(SIZE_SYSTEMS).map(([key, val]) => (
+                        <option key={key} value={key}>{val.label}</option>
+                      ))}
+                    </select>
+                    <div className="text-sm text-zinc-600">
+                      總庫存: <span className="font-semibold text-zinc-900">{legacyTotalStock}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {sizeSystem && (
+                  <>
+                    <div className="overflow-x-auto max-h-[250px] overflow-y-auto border border-zinc-100 rounded-xl">
+                      <table className="w-full text-sm">
+                        <thead className="sticky top-0 bg-zinc-50">
+                          <tr className="text-zinc-500 border-b border-zinc-200">
+                            <th className="py-2 px-3 text-center font-medium w-12">✓</th>
+                            <th className="py-2 px-3 text-left font-medium">Size</th>
+                            <th className="py-2 px-3 text-right font-medium w-24">Stock</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allAvailableSizes.map((size) => {
+                            const isChecked = size in sizeInventory;
+                            const stock = sizeInventory[size] || 0;
+                            const isCustom = customSizes.includes(size);
+                            return (
+                              <tr key={size} className="border-b border-zinc-100 hover:bg-zinc-50">
+                                <td className="py-2 px-3 text-center">
+                                  <input type="checkbox" checked={isChecked}
+                                    onChange={(e) => handleSizeCheck(size, e.target.checked)} disabled={isPending}
+                                    className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50" />
+                                </td>
+                                <td className="py-2 px-3 text-zinc-900">
+                                  <div className="flex items-center gap-2">
+                                    {size}
+                                    {isCustom && (
+                                      <button type="button" onClick={() => handleRemoveCustomSize(size)}
+                                        className="text-zinc-400 hover:text-red-500"><X size={12} /></button>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="py-2 px-3 text-right">
+                                  <input type="number" min="0" value={isChecked ? stock : ""}
+                                    onChange={(e) => handleSizeStockChange(size, parseInt(e.target.value) || 0)}
+                                    disabled={isPending || !isChecked}
+                                    className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50 disabled:bg-zinc-50"
+                                    placeholder="0" />
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <input type="text" value={newCustomSize} onChange={(e) => setNewCustomSize(e.target.value)} disabled={isPending}
+                        className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                        placeholder="自訂尺碼 (e.g. US 14)"
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCustomSize(); } }} />
+                      <button type="button" onClick={handleAddCustomSize} disabled={isPending || !newCustomSize.trim()}
+                        className="rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50">
+                        + 自訂尺碼
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </form>
         </div>
 
-        {/* Sticky footer with buttons */}
+        {/* Footer */}
         <div className="sticky bottom-0 rounded-b-3xl border-t border-zinc-100 bg-white px-6 py-4">
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isPending}
-              className="flex-1 rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
-            >
+            <button type="button" onClick={onClose} disabled={isPending}
+              className="flex-1 rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50">
               Cancel
             </button>
-            <button
-              type="submit"
-              form="product-form"
-              disabled={isPending}
-              className="flex-1 rounded-xl bg-[#6B7A2F] px-4 py-3 text-sm text-white font-semibold hover:bg-[#5a6827] disabled:opacity-50"
-            >
+            <button type="submit" form="product-form" disabled={isPending}
+              className="flex-1 rounded-xl bg-[#6B7A2F] px-4 py-3 text-sm text-white font-semibold hover:bg-[#5a6827] disabled:opacity-50">
               {isPending ? "Saving..." : product ? "Update" : "Create"}
             </button>
           </div>

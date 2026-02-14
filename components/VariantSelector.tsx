@@ -19,13 +19,19 @@ type VariantSelectorProps = {
   onVariantSelect: (variant: VariantData | null) => void;
 };
 
-// Option key translations
+// Option key translations (supports both English and Chinese keys)
 const OPTION_LABELS: Record<string, Record<string, string>> = {
   color: { "zh-HK": "顏色", en: "Color" },
   colour: { "zh-HK": "顏色", en: "Color" },
   size: { "zh-HK": "尺碼", en: "Size" },
   material: { "zh-HK": "材質", en: "Material" },
   style: { "zh-HK": "款式", en: "Style" },
+  // Chinese option keys used by new variant system
+  "顏色": { "zh-HK": "顏色", en: "Color" },
+  "尺碼": { "zh-HK": "尺碼", en: "Size" },
+  "口味": { "zh-HK": "口味", en: "Flavor" },
+  "材質": { "zh-HK": "材質", en: "Material" },
+  "款式": { "zh-HK": "款式", en: "Style" },
 };
 
 function findMatchingVariant(
@@ -149,7 +155,7 @@ export default function VariantSelector({
         </div>
       ))}
 
-      {/* Variant stock warnings */}
+      {/* Variant stock & price info */}
       {matchedVariant && matchedVariant.stock <= 0 && (
         <div className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">
           {locale === "zh-HK" ? "已售罄" : "Out of stock"}
@@ -157,7 +163,17 @@ export default function VariantSelector({
       )}
       {matchedVariant && matchedVariant.stock > 0 && matchedVariant.stock <= 5 && (
         <div className="text-sm font-semibold text-orange-600">
-          🔥 快將售罄 - 僅剩 {matchedVariant.stock} 件
+          {locale === "zh-HK" ? `快將售罄 - 僅剩 ${matchedVariant.stock} 件` : `Low stock - ${matchedVariant.stock} left`}
+        </div>
+      )}
+      {matchedVariant && matchedVariant.stock > 5 && matchedVariant.stock < 999 && (
+        <div className="text-sm text-zinc-500 dark:text-zinc-400">
+          {locale === "zh-HK" ? `庫存: ${matchedVariant.stock} 件` : `In stock: ${matchedVariant.stock}`}
+        </div>
+      )}
+      {matchedVariant && matchedVariant.stock >= 999 && (
+        <div className="text-sm text-green-600 dark:text-green-400">
+          {locale === "zh-HK" ? "接單製作" : "Made to order"}
         </div>
       )}
     </div>
