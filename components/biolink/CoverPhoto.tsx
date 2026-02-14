@@ -107,12 +107,15 @@ export default function CoverPhoto({ url }: { url: string | null }) {
   const coverStyle = getCoverStyle(tmpl);
   const patternOverlay = getPatternOverlay(tmpl);
 
+  // 渲染優先級：自訂 cover → template default banner → gradient fallback
+  const bannerSrc = url || tmpl.defaultBanner;
+
   return (
-    <div className="relative h-[200px] overflow-hidden">
+    <div className="relative h-[200px] sm:h-[280px] overflow-hidden">
       <div ref={ref} className="absolute inset-0 will-change-transform">
-        {url ? (
+        {bannerSrc ? (
           <Image
-            src={url}
+            src={bannerSrc}
             alt="Cover"
             fill
             className="object-cover"
