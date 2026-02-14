@@ -188,6 +188,9 @@ model Product {
   sku             String?  @unique
   featured        Boolean  @default(false)
   promotionBadges String[]         @default([])
+  // Product type & inventory mode
+  productType     String?          // 波鞋, 服裝, 童裝, 飾物-戒指, 飾物-其他, 烘焙食品, 美妝, 其他
+  inventoryMode   String           @default("limited") // "limited" | "made_to_order"
   // Category relation
   categoryId      String?
   categoryRel     Category?        @relation(fields: [categoryId], references: [id])

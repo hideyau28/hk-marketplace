@@ -279,6 +279,12 @@ export const POST = withApi(
         sizes: payload.sizes ?? undefined,
         stock: payload.stock ?? 0,
         active: payload.active ?? true,
+        productType: body.productType ?? null,
+        inventoryMode: body.inventoryMode ?? "limited",
+        sku: body.sku ?? null,
+        shoeType: body.shoeType ?? null,
+        featured: body.featured ?? false,
+        promotionBadges: body.promotionBadges ?? [],
       },
     });
 

@@ -48,6 +48,11 @@ export const PATCH = withApi(
     if (body.sizeSystem !== undefined) updateData.sizeSystem = body.sizeSystem;
     if (body.sizes !== undefined) updateData.sizes = body.sizes;
     if (body.stock !== undefined) updateData.stock = body.stock;
+    if (body.productType !== undefined) updateData.productType = body.productType;
+    if (body.inventoryMode !== undefined) updateData.inventoryMode = body.inventoryMode;
+    if (body.promotionBadges !== undefined) updateData.promotionBadges = body.promotionBadges;
+    if (body.sku !== undefined) updateData.sku = body.sku || null;
+    if (body.shoeType !== undefined) updateData.shoeType = body.shoeType;
 
     const updated = await prisma.product.update({
       where: { id },

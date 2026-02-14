@@ -122,7 +122,7 @@ export async function fetchProducts(active?: boolean): Promise<FetchProductsResu
 
 export async function createProduct(
   data: {
-    brand: string;
+    brand?: string | null;
     title: string;
     price: number;
     originalPrice?: number | null;
@@ -138,6 +138,9 @@ export async function createProduct(
     sizes?: Record<string, number> | null;
     stock?: number;
     promotionBadges?: string[];
+    productType?: string | null;
+    inventoryMode?: string;
+    sku?: string;
   },
   locale?: string
 ): Promise<CreateProductResult> {
@@ -199,6 +202,9 @@ export async function updateProduct(
     sizes?: Record<string, number> | null;
     stock?: number;
     promotionBadges?: string[];
+    productType?: string | null;
+    inventoryMode?: string;
+    sku?: string;
   },
   locale?: string
 ): Promise<UpdateProductResult> {
@@ -326,6 +332,56 @@ export async function toggleHotSelling(
   } catch (error) {
     console.error("Failed to toggle hot selling:", error);
     return { ok: false, code: "NETWORK_ERROR", message: "Failed to toggle hot selling" };
+  }
+}
+
+type SyncVariantsOk = { ok: true };
+type SyncVariantsResult = SyncVariantsOk | ActionFail;
+
+export async function syncVariants(
+  productId: string,
+  variants: {
+    name: string;
+    price?: number;
+    stock?: number;
+    options?: Record<string, string>;
+    active?: boolean;
+    sortOrder?: number;
+  }[],
+  locale?: string
+): Promise<SyncVariantsResult> {
+  const authHeaders = await getAdminAuthHeaders();
+  if (Object.keys(authHeaders).length === 0) {
+    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
+  }
+
+  try {
+    const url = new URL(`/api/admin/products/${productId}/variants/sync`, getApiBaseUrl());
+    const response = await fetch(url.toString(), {
+      method: "PUT",
+      headers: {
+        ...authHeaders,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ variants }),
+    });
+
+    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<any>;
+
+    if (!response.ok) {
+      const errorData = json as ApiErrorResponse;
+      return {
+        ok: false,
+        code: errorData.error?.code || "UNKNOWN_ERROR",
+        message: errorData.error?.message || "Failed to sync variants",
+      };
+    }
+
+    if (locale) revalidatePath(`/${locale}/admin/products`, "page");
+    return { ok: true };
+  } catch (error) {
+    console.error("Failed to sync variants:", error);
+    return { ok: false, code: "NETWORK_ERROR", message: "Failed to sync variants" };
   }
 }
 
