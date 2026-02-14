@@ -74,8 +74,8 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
   return (
     <div className="space-y-3">
       {preview ? (
-        <div className="relative rounded-2xl border border-zinc-200 bg-zinc-50 overflow-hidden">
-          <img src={preview} alt="Preview" className="w-full h-48 object-cover" />
+        <div className="relative rounded-lg border border-zinc-200 bg-zinc-50 overflow-hidden">
+          <img src={preview} alt="Preview" className="w-full aspect-square object-cover" />
           <button
             type="button"
             onClick={handleClear}
@@ -87,7 +87,7 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
         </div>
       ) : (
         <label
-          className={`flex flex-col items-center justify-center w-full h-48 rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer ${
+          className={`flex flex-col items-center justify-center w-full aspect-square rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer ${
             disabled || isUploading ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >

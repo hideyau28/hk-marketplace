@@ -574,7 +574,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                   />
                   {imageUrl && (
                     <div className="mt-3 relative">
-                      <img src={imageUrl} alt="Main" className="w-full h-48 object-contain rounded-xl border border-zinc-200 bg-zinc-50" />
+                      <img src={imageUrl} alt="Main" className="w-full aspect-square object-cover rounded-lg border border-zinc-200 bg-zinc-50" />
                       <button type="button" onClick={() => setImageUrl("")}
                         className="absolute top-2 right-2 p-1 rounded-full bg-white/90 text-zinc-500 hover:text-red-500 hover:bg-white shadow-sm">
                         <X size={16} />
@@ -596,7 +596,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       {images.map((img, index) => (
                         <div key={index} draggable onDragStart={() => handleDragStart(index)}
                           onDragOver={(e) => handleDragOver(e, index)} onDragEnd={handleDragEnd}
-                          className={`group relative aspect-square rounded-xl overflow-hidden border cursor-move transition-all ${
+                          className={`group relative aspect-square rounded-lg overflow-hidden border cursor-move transition-all ${
                             draggedIndex === index ? "border-olive-500 ring-2 ring-olive-200" : "border-zinc-200"
                           }`}>
                           <img src={img} alt={`Image ${index + 1}`} className="w-full h-full object-cover" />
