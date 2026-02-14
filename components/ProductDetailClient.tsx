@@ -32,14 +32,15 @@ type ProductDetailClientProps = {
 };
 
 // Badge color mapping for product detail page
-const BADGE_COLORS: Record<string, string> = {
-  "店長推介": "bg-[#6B7A2F] text-white",
-  "今期熱賣": "bg-orange-500 text-white",
-  "新品上架": "bg-blue-500 text-white",
-  "限時優惠": "bg-red-500 text-white",
-  "人氣之選": "bg-purple-500 text-white",
-  "快將售罄": "bg-red-600 text-white",
+const BADGE_COLORS: Record<string, { className: string; style?: React.CSSProperties }> = {
+  "店長推介": { className: "text-white", style: { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } },
+  "今期熱賣": { className: "bg-orange-500 text-white" },
+  "新品上架": { className: "bg-blue-500 text-white" },
+  "限時優惠": { className: "bg-red-500 text-white" },
+  "人氣之選": { className: "bg-purple-500 text-white" },
+  "快將售罄": { className: "bg-red-600 text-white" },
 };
+const DEFAULT_BADGE = { className: "bg-zinc-500 text-white" };
 
 export default function ProductDetailClient({ product, locale, t }: ProductDetailClientProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -162,14 +163,18 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
         if (badges.length === 0) return null;
         return (
           <div className="flex flex-wrap gap-2">
-            {badges.map((badge, idx) => (
-              <span
-                key={idx}
-                className={`rounded-full px-3 py-1 text-sm font-medium ${BADGE_COLORS[badge] || "bg-zinc-500 text-white"}`}
-              >
-                {badge === "快將售罄" ? `🔥 ${badge}` : badge}
-              </span>
-            ))}
+            {badges.map((badge, idx) => {
+              const bc = BADGE_COLORS[badge] || DEFAULT_BADGE;
+              return (
+                <span
+                  key={idx}
+                  className={`rounded-full px-3 py-1 text-sm font-medium ${bc.className}`}
+                  style={bc.style}
+                >
+                  {badge === "快將售罄" ? `🔥 ${badge}` : badge}
+                </span>
+              );
+            })}
           </div>
         );
       })()}
@@ -233,8 +238,9 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
           className={`flex-1 rounded-lg py-3.5 text-base font-semibold ${
             isDisabled
               ? "bg-zinc-300 text-zinc-500 cursor-not-allowed"
-              : "bg-olive-600 text-white hover:bg-olive-700"
+              : "text-white hover:brightness-90"
           }`}
+          style={!isDisabled ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
         >
           {added ? t.product.addedToCart : isDisabled && needsVariant && !selectedVariant ? selectVariantFirstText : isDisabled && needsSize ? selectSizeFirstText : t.product.addToCart}
         </button>
@@ -263,8 +269,9 @@ export default function ProductDetailClient({ product, locale, t }: ProductDetai
             className={`flex-1 rounded-lg py-3.5 text-base font-semibold ${
               isDisabled
                 ? "bg-zinc-300 text-zinc-500 cursor-not-allowed"
-                : "bg-olive-600 text-white hover:bg-olive-700"
+                : "text-white hover:brightness-90"
             }`}
+            style={!isDisabled ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
           >
             {added ? t.product.addedToCart : isDisabled && needsVariant && !selectedVariant ? selectVariantFirstText : isDisabled && needsSize ? selectSizeFirstText : t.product.addToCart}
           </button>

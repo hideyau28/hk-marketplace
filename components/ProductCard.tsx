@@ -28,7 +28,7 @@ type ProductCardProps = {
   fillWidth?: boolean;
 };
 
-const DEFAULT_BADGE_COLOR = "#6B7A2F";
+const DEFAULT_BADGE_COLOR = "var(--tmpl-accent, #2D6A4F)";
 
 function CartIcon() {
   return (
@@ -221,7 +221,8 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
           <button
             ref={cartButtonRef}
             onClick={handleAddToCart}
-            className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-[#6B7A2F] text-white flex items-center justify-center shadow-lg hover:bg-[#5a6827] transition-all animate-fade-in z-10"
+            className="absolute bottom-2 right-2 w-8 h-8 rounded-full text-white flex items-center justify-center shadow-lg hover:brightness-90 transition-all animate-fade-in z-10"
+            style={{ backgroundColor: "var(--tmpl-accent, #2D6A4F)" }}
             aria-label="Add to cart"
           >
             <CartIcon />

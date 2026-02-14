@@ -98,7 +98,7 @@ export const GET = withApi(async (req) => {
             });
           }
         } else {
-          resolvedBadges.push({ nameZh: entry, nameEn: entry, color: "#6B7A2F" });
+          resolvedBadges.push({ nameZh: entry, nameEn: entry, color: "" });
         }
       }
     }

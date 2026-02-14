@@ -91,8 +91,8 @@ function KidsCardItem({ product, locale, isFirst, isLast }: { product: Product; 
             {showCartIcon && selectedSize && (
               <button
                 onClick={handleAddToCart}
-                className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-[#6B7A2F] text-white flex items-center justify-center shadow-lg hover:bg-[#5a6827] transition-all z-10"
-                style={{ animation: "fadeIn 0.2s ease-out" }}
+                className="absolute bottom-2 right-2 w-8 h-8 rounded-full text-white flex items-center justify-center shadow-lg hover:brightness-90 transition-all z-10"
+                style={{ backgroundColor: "var(--tmpl-accent, #2D6A4F)", animation: "fadeIn 0.2s ease-out" }}
                 aria-label="Add to cart"
               >
                 <CartIcon />

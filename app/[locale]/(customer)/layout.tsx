@@ -16,6 +16,7 @@ import WelcomePopup from "@/components/WelcomePopup";
 import SocialProofPopup from "@/components/SocialProofPopup";
 import CartFlyAnimation from "@/components/CartFlyAnimation";
 import AdminPreviewBanner from "@/components/AdminPreviewBanner";
+import StorefrontTemplate from "@/components/StorefrontTemplate";
 import { getServerTenantId, isPlatformMode } from "@/lib/tenant";
 
 // Force dynamic rendering because we need headers() for tenant resolution
@@ -46,11 +47,17 @@ export default async function CustomerLayout({
     );
   }
 
-  // Fetch welcome popup settings (tenant-aware)
+  // Fetch tenant template + welcome popup settings (tenant-aware)
   const tenantId = await getServerTenantId();
-  const storeSettings = await prisma.storeSettings.findFirst({
-    where: { tenantId },
-  }).catch(() => null);
+  const [tenantRow, storeSettings] = await Promise.all([
+    prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { templateId: true },
+    }).catch(() => null),
+    prisma.storeSettings.findFirst({
+      where: { tenantId },
+    }).catch(() => null),
+  ]);
 
   // Fetch products for social proof popup
   const socialProofProducts = await prisma.product.findMany({
@@ -72,24 +79,26 @@ export default async function CustomerLayout({
 
   return (
     <ThemeProvider>
-      <CurrencyProvider>
-        <FilterProvider>
-          <AuthProvider>
-            <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-              <Analytics />
-              <AdminPreviewBanner locale={l} />
-              <TopNav locale={l} t={t} storeName={storeName} />
-              <CategoryNavWrapper locale={l} />
-              <main>{children}</main>
-              <Footer locale={l} t={t} storeName={storeName} />
-              <BottomTab t={t} />
-              <WelcomePopup config={welcomePopupConfig} />
-              <SocialProofPopup products={socialProofProducts} />
-              <CartFlyAnimation />
-            </div>
-          </AuthProvider>
-        </FilterProvider>
-      </CurrencyProvider>
+      <StorefrontTemplate templateId={tenantRow?.templateId || "mochi"}>
+        <CurrencyProvider>
+          <FilterProvider>
+            <AuthProvider>
+              <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+                <Analytics />
+                <AdminPreviewBanner locale={l} />
+                <TopNav locale={l} t={t} storeName={storeName} />
+                <CategoryNavWrapper locale={l} />
+                <main>{children}</main>
+                <Footer locale={l} t={t} storeName={storeName} />
+                <BottomTab t={t} />
+                <WelcomePopup config={welcomePopupConfig} />
+                <SocialProofPopup products={socialProofProducts} />
+                <CartFlyAnimation />
+              </div>
+            </AuthProvider>
+          </FilterProvider>
+        </CurrencyProvider>
+      </StorefrontTemplate>
     </ThemeProvider>
   );
 }

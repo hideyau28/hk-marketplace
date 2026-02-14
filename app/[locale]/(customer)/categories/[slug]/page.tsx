@@ -78,7 +78,7 @@ export default async function CategoryPage({ params }: Props) {
             resolvedBadges.push({ nameZh: badge.nameZh, nameEn: badge.nameEn, color: badge.color });
           }
         } else {
-          resolvedBadges.push({ nameZh: entry, nameEn: entry, color: "#6B7A2F" });
+          resolvedBadges.push({ nameZh: entry, nameEn: entry, color: "" });
         }
       }
     }
@@ -161,7 +161,7 @@ export default async function CategoryPage({ params }: Props) {
                 href={`/${locale}/categories/${child.slug}`}
                 className="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
                 style={{
-                  backgroundColor: "var(--tenant-primary, #6B7A2F)",
+                  backgroundColor: "var(--tmpl-accent, #2D6A4F)",
                   color: "white",
                   opacity: 0.85,
                 }}

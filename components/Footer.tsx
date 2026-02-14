@@ -16,28 +16,28 @@ export default function Footer({ locale, t, storeName = "May's Shop" }: { locale
         <div className="flex justify-center items-center gap-1 mb-4 text-[11px]">
           <Link
             href={`/${locale}/about`}
-            className="text-zinc-400 hover:text-olive-400 transition-colors"
+            className="text-zinc-400 hover:text-zinc-200 transition-colors"
           >
             {t.footer.about}
           </Link>
           <span className="text-zinc-600">·</span>
           <Link
             href={`/${locale}/contact`}
-            className="text-zinc-400 hover:text-olive-400 transition-colors"
+            className="text-zinc-400 hover:text-zinc-200 transition-colors"
           >
             {t.footer.contact}
           </Link>
           <span className="text-zinc-600">·</span>
           <Link
             href={`/${locale}/privacy`}
-            className="text-zinc-400 hover:text-olive-400 transition-colors"
+            className="text-zinc-400 hover:text-zinc-200 transition-colors"
           >
             {t.footer.privacy}
           </Link>
           <span className="text-zinc-600">·</span>
           <Link
             href={`/${locale}/terms`}
-            className="text-zinc-400 hover:text-olive-400 transition-colors"
+            className="text-zinc-400 hover:text-zinc-200 transition-colors"
           >
             {t.footer.terms}
           </Link>
@@ -49,7 +49,7 @@ export default function Footer({ locale, t, storeName = "May's Shop" }: { locale
             href="https://instagram.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-10 h-10 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-olive-600 transition-colors"
+            className="w-10 h-10 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-zinc-600 transition-colors"
             aria-label="Instagram"
           >
             <Instagram size={20} className="text-white" />
@@ -58,7 +58,7 @@ export default function Footer({ locale, t, storeName = "May's Shop" }: { locale
             href="https://facebook.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-10 h-10 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-olive-600 transition-colors"
+            className="w-10 h-10 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-zinc-600 transition-colors"
             aria-label="Facebook"
           >
             <Facebook size={20} className="text-white" />

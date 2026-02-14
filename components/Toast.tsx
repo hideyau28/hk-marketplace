@@ -46,7 +46,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
-              className="pointer-events-auto flex items-center gap-2 rounded-full bg-[#6B7A2F] px-6 py-3 text-white shadow-lg"
+              className="pointer-events-auto flex items-center gap-2 rounded-full px-6 py-3 text-white shadow-lg"
+              style={{ backgroundColor: "var(--tmpl-accent, #2D6A4F)" }}
             >
               <span className="text-sm font-medium">{toast.message}</span>
             </motion.div>
