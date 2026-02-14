@@ -1557,7 +1557,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             </label>
             <div className="flex gap-2 flex-wrap">
               {images.map((url, idx) => (
-                <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border border-zinc-200">
+                <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-zinc-200">
                   <img src={url} alt="" className="w-full h-full object-cover" />
                   <button
                     type="button"
@@ -1570,7 +1570,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
               ))}
 
               {uploading && (
-                <div className="w-20 h-20 rounded-xl border-2 border-dashed border-zinc-300 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center">
                   <Loader2 size={20} className="text-zinc-400 animate-spin" />
                 </div>
               )}
@@ -1580,7 +1580,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                 <button
                   type="button"
                   onClick={() => cameraInputRef.current?.click()}
-                  className="w-20 h-20 rounded-xl border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] transition-colors"
+                  className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] transition-colors"
                 >
                   <Camera size={18} className="text-zinc-400" />
                   <span className="text-[10px] text-zinc-400 mt-0.5">{isZh ? "影相" : "Camera"}</span>
@@ -1598,7 +1598,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-20 h-20 rounded-xl border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] transition-colors"
+                  className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] transition-colors"
                 >
                   <Plus size={18} className="text-zinc-400" />
                   <span className="text-[10px] text-zinc-400 mt-0.5">{isZh ? "上傳" : "Upload"}</span>
