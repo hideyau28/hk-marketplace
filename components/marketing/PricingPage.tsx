@@ -2,28 +2,14 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { ShoppingBag, Smartphone, RefreshCw, Award } from "lucide-react";
 
 /* ─── Inline SVG Icons (monoline, stroke #FF9500) ─── */
 
 const ICONS: Record<string, React.ReactNode> = {
-  seedling: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22V12" />
-      <path d="M12 12C12 8 8 4 4 4c0 4 4 8 8 8z" />
-      <path d="M12 15c0-4 4-8 8-8-4 0-8 4-8 8z" />
-    </svg>
-  ),
-  arrowUp: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 19V5" />
-      <path d="M5 12l7-7 7 7" />
-    </svg>
-  ),
-  star: (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  ),
+  smartphone: <Smartphone size={32} color="#FF9500" strokeWidth={2} />,
+  refreshCw: <RefreshCw size={32} color="#FF9500" strokeWidth={2} />,
+  award: <Award size={32} color="#FF9500" strokeWidth={2} />,
   package: (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M16.5 9.4l-9-5.19" />
@@ -38,13 +24,7 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
     </svg>
   ),
-  coin: (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 6v12" />
-      <path d="M15 9.5c0-1.38-1.34-2.5-3-2.5s-3 1.12-3 2.5 1.34 2.5 3 2.5 3 1.12 3 2.5-1.34 2.5-3 2.5" />
-    </svg>
-  ),
+  shoppingBag: <ShoppingBag size={28} color="#FF9500" strokeWidth={2} />,
 };
 
 /* ─── Data ─── */
@@ -130,7 +110,7 @@ const COMPETITORS = [
 
 const SCENARIOS = [
   {
-    icon: "seedling",
+    icon: "smartphone",
     title: "啱啱開始",
     range: "每月 10-30 單 / $3K-$8K",
     plan: "Free $0",
@@ -138,7 +118,7 @@ const SCENARIOS = [
     planColor: "#10B981",
   },
   {
-    icon: "arrowUp",
+    icon: "refreshCw",
     title: "開始有回頭客",
     range: "每月 50-100 單 / $10K-$20K",
     plan: "Lite $78",
@@ -146,7 +126,7 @@ const SCENARIOS = [
     planColor: "#FF9500",
   },
   {
-    icon: "star",
+    icon: "award",
     title: "認真做品牌",
     range: "每月 120-200 單 / $20K-$30K",
     plan: "Pro $198",
@@ -865,7 +845,7 @@ export default function PricingPage() {
             {[
               { icon: "package", label: "上貨", desc: "加商品、定價、上圖" },
               { icon: "link", label: "分享 Link", desc: "放喺 IG Bio" },
-              { icon: "coin", label: "收單", desc: "客人自助落單付款" },
+              { icon: "shoppingBag", label: "收單", desc: "客人自助落單付款" },
             ].map((step, i) => (
               <div key={i} style={{ textAlign: "center" }}>
                 <div style={{ marginBottom: 4 }}>{ICONS[step.icon]}</div>
@@ -1036,10 +1016,26 @@ export default function PricingPage() {
                           height: 60,
                           borderRadius: 8,
                           background:
-                            d.textColor === "#fff" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
+                            d.textColor === "#fff"
+                              ? "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)"
+                              : `linear-gradient(135deg, ${d.accent}18 0%, ${d.accent}08 100%)`,
                         }}
                       />
                     ))}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: "6px 16px",
+                      borderRadius: 6,
+                      background: d.accent,
+                      color: "#fff",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    Shop Now
                   </div>
                 </div>
                 <div style={{ padding: "16px 16px 20px", textAlign: "center" }}>
