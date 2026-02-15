@@ -399,6 +399,14 @@ export const translations = {
         returnsPolicy: "Returns Policy",
         shippingPolicy: "Shipping Policy",
       },
+      payments: {
+        title: "Payment Methods",
+        subtitle: "Manage payment methods for your store",
+        save: "Save Changes",
+        saving: "Saving...",
+        saved: "Saved successfully",
+        saveFailed: "Failed to save",
+      },
       content: {
         title: "Content Management",
         subtitle: "Manage site content",
@@ -817,6 +825,14 @@ export const translations = {
         tagline: "標語",
         returnsPolicy: "退貨政策",
         shippingPolicy: "配送政策",
+      },
+      payments: {
+        title: "付款方式設定",
+        subtitle: "管理商店收款方式，啟用或停用各付款方式並填寫設定",
+        save: "儲存變更",
+        saving: "儲存中...",
+        saved: "已儲存",
+        saveFailed: "儲存失敗",
       },
       content: {
         title: "內容管理",
