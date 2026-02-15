@@ -14,6 +14,11 @@ const SAFE_CONFIG_KEYS = new Set([
   "paypalEmail",
 ]);
 
+// Legacy PaymentMethod.type → registry provider ID mapping
+const LEGACY_TYPE_MAP: Record<string, string> = {
+  alipay: "alipay_hk",
+};
+
 // GET /api/payment-config — public endpoint for enabled payment providers
 export const GET = withApi(async (req) => {
   const tenantId = await getTenantId(req);
@@ -90,10 +95,16 @@ export const GET = withApi(async (req) => {
 
   const providers = [];
 
+  console.log("[payment-config] fallback: legacy PaymentMethod records", legacyMethods.map(m => ({ id: m.id, type: m.type, name: m.name, active: m.active })));
+
   // Legacy PaymentMethod records (type field maps to registry provider ID)
   for (const pm of legacyMethods) {
-    const provider = getProvider(pm.type);
-    if (!provider) continue;
+    const providerId = LEGACY_TYPE_MAP[pm.type] || pm.type;
+    const provider = getProvider(providerId);
+    if (!provider) {
+      console.log(`[payment-config] skipping unknown provider type: ${pm.type} (mapped: ${providerId})`);
+      continue;
+    }
 
     const safeConfig: Record<string, unknown> = {};
     if (pm.qrImage) safeConfig.qrCodeUrl = pm.qrImage;
@@ -110,7 +121,7 @@ export const GET = withApi(async (req) => {
     }
 
     providers.push({
-      providerId: pm.type,
+      providerId,
       displayName: pm.name,
       name: provider.name,
       nameZh: provider.nameZh,

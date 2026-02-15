@@ -361,13 +361,10 @@ function Calculator({ isZh }: { isZh: boolean }) {
   });
   costs.sort((a, b) => b.total - a.total);
   const maxCost = Math.max(...costs.map((c) => c.total));
-  const cheapestCompetitor = Math.min(...COMPETITORS.map((c) => c.base + gmv * c.rate));
-  const saving = cheapestCompetitor - wowlixCost;
+  const mostExpensiveCompetitor = Math.max(...COMPETITORS.map((c) => c.base + gmv * c.rate));
+  const saving = mostExpensiveCompetitor - wowlixCost;
 
   const marks = [5000, 10000, 20000, 30000, 50000];
-
-  // TODO: remove after verifying bar chart updates
-  console.log("[Calculator]", { gmv, costs: costs.map(c => ({ name: c.name, total: c.total })), maxCost, saving });
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
@@ -503,7 +500,7 @@ function Calculator({ isZh }: { isZh: boolean }) {
           borderRadius: 16,
         }}
       >
-        <div style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>{isZh ? "每月至少慳" : "Save at least per month"}</div>
+        <div style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>{isZh ? "每月最多慳" : "Save up to per month"}</div>
         <div style={{ fontSize: 40, fontWeight: 800, color: "#FF9500" }}>
           $
           <AnimatedNumber value={Math.max(0, Math.round(saving))} />
