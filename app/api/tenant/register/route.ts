@@ -22,14 +22,14 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST = withApi(async (req: Request) => {
   try {
-  let body: { name?: string; slug?: string; whatsapp?: string; email?: string; password?: string; coverTemplate?: string; templateId?: string; tagline?: string };
+  let body: { name?: string; slug?: string; whatsapp?: string; instagram?: string; email?: string; password?: string; coverTemplate?: string; templateId?: string; tagline?: string; paymentMethods?: string[] };
   try {
     body = await req.json();
   } catch {
     throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
   }
 
-  const { name, slug, whatsapp, email, password, coverTemplate, templateId, tagline } = body;
+  const { name, slug, whatsapp, instagram, email, password, coverTemplate, templateId, tagline, paymentMethods } = body;
 
   // --- Validation ---
   if (!name || typeof name !== "string" || name.trim().length < 2 || name.trim().length > 50) {
@@ -63,6 +63,7 @@ export const POST = withApi(async (req: Request) => {
 
   const cleanName = name.trim();
   const cleanWhatsapp = whatsapp?.trim() || "";
+  const cleanInstagram = instagram?.trim().replace(/^@/, "") || "";
   const cleanEmail = email.trim().toLowerCase();
   const cleanTagline = tagline?.trim() || "";
   const cleanTemplate = resolveTemplateId(templateId?.trim() || coverTemplate?.trim());
@@ -75,6 +76,7 @@ export const POST = withApi(async (req: Request) => {
       name: cleanName,
       slug: cleanSlug,
       whatsapp: cleanWhatsapp || undefined,
+      instagram: cleanInstagram || undefined,
       description: cleanTagline || undefined,
       template: cleanTemplate,
       coverTemplate: cleanTemplate,
@@ -104,16 +106,25 @@ export const POST = withApi(async (req: Request) => {
       throw adminErr;
     }
 
-    // --- Default payment config: FPS enabled ---
-    await prisma.tenantPaymentConfig.create({
-      data: {
-        tenantId: tenant.id,
-        providerId: "fps",
-        enabled: true,
-        displayName: "FPS 轉數快",
-        sortOrder: 0,
-      },
-    }).catch(() => {}); // 非致命，唔好 block 整個 registration
+    // --- Payment configs: use selected methods or default to FPS ---
+    const PAYMENT_DISPLAY_NAMES: Record<string, string> = {
+      fps: "FPS 轉數快",
+      payme: "PayMe",
+      alipay_hk: "AlipayHK",
+      bank_transfer: "銀行過數",
+    };
+    const methods = paymentMethods?.length ? paymentMethods : ["fps"];
+    for (let i = 0; i < methods.length; i++) {
+      await prisma.tenantPaymentConfig.create({
+        data: {
+          tenantId: tenant.id,
+          providerId: methods[i],
+          enabled: true,
+          displayName: PAYMENT_DISPLAY_NAMES[methods[i]] || methods[i],
+          sortOrder: i,
+        },
+      }).catch(() => {}); // 非致命，唔好 block 整個 registration
+    }
 
     // --- Default store settings with delivery options ---
     await prisma.storeSettings.create({
@@ -121,6 +132,7 @@ export const POST = withApi(async (req: Request) => {
         tenantId: tenant.id,
         storeName: cleanName,
         whatsappNumber: cleanWhatsapp || undefined,
+        instagramUrl: cleanInstagram ? `https://instagram.com/${cleanInstagram}` : undefined,
         tagline: cleanTagline || undefined,
         // SF智能櫃
         sfLockerFee: 35,
