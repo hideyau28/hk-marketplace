@@ -10,7 +10,22 @@ const LEGACY_TYPE_MAP: Record<string, string> = {
 
 // GET /api/payment-config — public endpoint for enabled payment providers
 export const GET = withApi(async (req) => {
-  const tenantId = await getTenantId(req);
+  let tenantId: string | null = null;
+
+  // Query param override — biolink checkout passes ?tenant=<slug>
+  const url = new URL(req.url);
+  const tenantParam = url.searchParams.get("tenant");
+  if (tenantParam) {
+    const t = await prisma.tenant.findUnique({
+      where: { slug: tenantParam },
+      select: { id: true },
+    });
+    if (t) tenantId = t.id;
+  }
+
+  if (!tenantId) {
+    tenantId = await getTenantId(req);
+  }
 
   // Query PaymentMethod table + Tenant flags
   const [legacyMethods, tenant] = await Promise.all([

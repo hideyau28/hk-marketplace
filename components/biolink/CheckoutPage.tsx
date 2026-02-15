@@ -58,7 +58,7 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
   // Fetch all active payment methods from API
   useEffect(() => {
-    fetch("/api/payment-config")
+    fetch(`/api/payment-config?tenant=${tenant.slug}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.ok && data.data?.providers?.length > 0) {
