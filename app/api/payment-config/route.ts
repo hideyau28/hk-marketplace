@@ -3,18 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/tenant";
 import { getProvider } from "@/lib/payments/registry";
 
-// Config keys safe to expose to customers (no secrets)
-const SAFE_CONFIG_KEYS = new Set([
-  "qrCodeUrl",
-  "accountName",
-  "accountId",
-  "accountNumber",
-  "bankName",
-  "paymeLink",
-  "paypalEmail",
-]);
-
-// Legacy PaymentMethod.type → registry provider ID mapping
+// PaymentMethod.type → registry provider ID mapping
 const LEGACY_TYPE_MAP: Record<string, string> = {
   alipay: "alipay_hk",
 };
@@ -23,55 +12,7 @@ const LEGACY_TYPE_MAP: Record<string, string> = {
 export const GET = withApi(async (req) => {
   const tenantId = await getTenantId(req);
 
-  const configs = await prisma.tenantPaymentConfig.findMany({
-    where: { tenantId, enabled: true },
-    orderBy: { sortOrder: "asc" },
-  });
-
-  // If new TenantPaymentConfig has records, use them
-  if (configs.length > 0) {
-    const providers = [];
-
-    for (const cfg of configs) {
-      const provider = getProvider(cfg.providerId);
-      if (!provider) continue;
-
-      // Extract only safe config fields for customer display
-      const rawConfig = (cfg.config as Record<string, unknown>) || {};
-      const safeConfig: Record<string, unknown> = {};
-      for (const key of SAFE_CONFIG_KEYS) {
-        if (rawConfig[key] !== undefined) {
-          safeConfig[key] = rawConfig[key];
-        }
-      }
-
-      // Get instructions from provider's createSession (manual providers)
-      let instructions: string | undefined;
-      if (provider.type === "manual") {
-        try {
-          const session = await provider.createSession({}, rawConfig);
-          instructions = session.instructions;
-        } catch {
-          // Fallback — no instructions
-        }
-      }
-
-      providers.push({
-        providerId: cfg.providerId,
-        displayName: cfg.displayName || null,
-        name: provider.name,
-        nameZh: provider.nameZh,
-        type: provider.type,
-        icon: provider.icon,
-        config: safeConfig,
-        instructions,
-      });
-    }
-
-    return ok(req, { providers });
-  }
-
-  // Fallback: query legacy PaymentMethod table + Tenant flags
+  // Query PaymentMethod table + Tenant flags
   const [legacyMethods, tenant] = await Promise.all([
     prisma.paymentMethod.findMany({
       where: { tenantId, active: true },
@@ -95,16 +36,11 @@ export const GET = withApi(async (req) => {
 
   const providers = [];
 
-  console.log("[payment-config] fallback: legacy PaymentMethod records", legacyMethods.map(m => ({ id: m.id, type: m.type, name: m.name, active: m.active })));
-
-  // Legacy PaymentMethod records (type field maps to registry provider ID)
+  // PaymentMethod records (type field maps to registry provider ID)
   for (const pm of legacyMethods) {
     const providerId = LEGACY_TYPE_MAP[pm.type] || pm.type;
     const provider = getProvider(providerId);
-    if (!provider) {
-      console.log(`[payment-config] skipping unknown provider type: ${pm.type} (mapped: ${providerId})`);
-      continue;
-    }
+    if (!provider) continue;
 
     const safeConfig: Record<string, unknown> = {};
     if (pm.qrImage) safeConfig.qrCodeUrl = pm.qrImage;
@@ -132,7 +68,7 @@ export const GET = withApi(async (req) => {
     });
   }
 
-  // If no legacy PaymentMethod records either, use Tenant flags as last resort
+  // If no PaymentMethod records, use Tenant flags as last resort
   if (providers.length === 0 && tenant) {
     if (tenant.fpsEnabled) {
       const fp = getProvider("fps");
