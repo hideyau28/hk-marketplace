@@ -505,7 +505,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
             type="button"
             onClick={() => applyCoupon()}
             disabled={applyingCoupon}
-            className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+            className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 min-h-[44px]"
           >
             {applyingCoupon ? t.checkout.applying : t.checkout.apply}
           </button>
@@ -551,7 +551,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
         type="button"
         onClick={handleSubmit}
         disabled={processing || !isFormValid()}
-        className="mt-6 w-full rounded-xl bg-olive-600 py-3.5 text-center font-semibold text-white hover:bg-olive-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-6 w-full rounded-xl bg-olive-600 py-3.5 text-center font-semibold text-white hover:bg-olive-700 disabled:cursor-not-allowed disabled:opacity-50 min-h-[48px]"
       >
         {uploadingProof
           ? locale === "zh-HK"
@@ -805,17 +805,17 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                       setAddressTouched(false);
                       setAddressError(null);
                     }}
-                    className={`rounded-xl border-2 p-3 text-center transition-all ${
+                    className={`rounded-xl border-2 p-2 sm:p-3 text-center transition-all min-h-[72px] ${
                       fulfillmentType === opt.key
                         ? "border-olive-600 bg-olive-50 dark:bg-olive-900/20"
                         : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900"
                     }`}
                   >
-                    <div className="text-xl mb-1">{opt.icon}</div>
-                    <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    <div className="text-lg sm:text-xl mb-0.5 sm:mb-1">{opt.icon}</div>
+                    <div className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">
                       {locale === "zh-HK" ? opt.label : opt.labelEn}
                     </div>
-                    <div className="text-xs text-olive-600 font-medium mt-0.5">{opt.price}</div>
+                    <div className="text-[10px] sm:text-xs text-olive-600 font-medium mt-0.5">{opt.price}</div>
                   </button>
                 ))}
               </div>

@@ -142,7 +142,7 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
           <button
             key={tab.value}
             onClick={() => handleStatusChange(tab.value)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+            className={`rounded-full px-4 py-2.5 text-sm font-medium transition-colors min-h-[44px] ${
               selectedStatus === tab.value
                 ? "bg-olive-600 text-white"
                 : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"

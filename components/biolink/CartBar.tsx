@@ -48,7 +48,7 @@ export default function CartBar({ count, total, currency = "HKD", whatsapp, onCh
           </div>
           <button
             onClick={handleCheckout}
-            className="px-5 py-2 rounded-xl text-sm font-bold active:scale-95 transition-transform"
+            className="px-5 py-2.5 rounded-xl text-sm font-bold active:scale-95 transition-transform min-h-[44px]"
             style={{ backgroundColor: tmpl.accent, color: tmpl.text }}
           >
             結帳

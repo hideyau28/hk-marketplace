@@ -291,7 +291,7 @@ const PLANS = [
 
 function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
   return (
-    <div style={{ position: "relative", width: 280, height: 520, margin: "0 auto" }}>
+    <div style={{ position: "relative", width: 260, maxWidth: "100%", height: 490, margin: "0 auto" }}>
       {/* Phone frame */}
       <div style={{
         width: "100%", height: "100%",
@@ -344,18 +344,18 @@ function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
           </div>
         </div>
       </div>
-      {/* Floating notification */}
-      <div style={{
+      {/* Floating notification — hidden on very small screens to avoid overflow */}
+      <div className="hidden sm:flex" style={{
         position: "absolute", top: 60, right: -30,
         background: "#fff", borderRadius: 12, padding: "8px 14px",
         boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
         fontSize: 12, fontWeight: 600, color: "#1A1A1A",
         animation: "float 3s ease-in-out infinite",
-        display: "flex", alignItems: "center", gap: 6,
+        alignItems: "center", gap: 6,
       }}>
         <span style={{ color: "#FF9500" }}>$</span> {t.float1}
       </div>
-      <div style={{
+      <div className="hidden sm:block" style={{
         position: "absolute", bottom: 80, left: -24,
         background: "#fff", borderRadius: 12, padding: "8px 14px",
         boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
@@ -428,8 +428,8 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <Link href={`/${locale}/pricing`} style={{ fontSize: 14, fontWeight: 600, color: "#666", textDecoration: "none" }}>{t.navPricing}</Link>
           <Link href={`/${locale}/start`} style={{
             background: "#FF9500", color: "#fff", border: "none",
-            padding: "10px 24px", borderRadius: 10, fontSize: 14, fontWeight: 700,
-            textDecoration: "none",
+            padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 700,
+            textDecoration: "none", minHeight: 44, display: "inline-flex", alignItems: "center",
           }}>{t.navCta}</Link>
         </div>
       </nav>
@@ -441,7 +441,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         display: "flex", alignItems: "center", gap: 60,
         flexWrap: "wrap" as const, justifyContent: "center",
       }}>
-        <div style={{ flex: 1, minWidth: 320, maxWidth: 520, animation: "fadeInUp 0.8s ease" }}>
+        <div style={{ flex: 1, minWidth: 0, maxWidth: 520, animation: "fadeInUp 0.8s ease" }}>
           <div style={{
             display: "inline-block", background: "#FFF3E0", color: "#E68600",
             padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 700, marginBottom: 20,
@@ -476,7 +476,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             }}>{t.ctaSecondary}</Link>
           </div>
         </div>
-        <div style={{ flex: 1, minWidth: 300, maxWidth: 400, animation: "fadeInUp 1s ease 0.2s both" }}>
+        <div style={{ flex: 1, minWidth: 0, maxWidth: 400, animation: "fadeInUp 1s ease 0.2s both" }}>
           <PhoneMockup t={t} />
         </div>
       </section>
@@ -492,7 +492,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               { title: t.step2t, desc: t.step2d },
               { title: t.step3t, desc: t.step3d },
             ]).map((step, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, flex: 1, minWidth: 200 }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, flex: 1, minWidth: 0, width: "100%" }}>
                 <div style={{
                   width: 64, height: 64, borderRadius: 16,
                   background: "#FFF3E0", display: "flex", alignItems: "center", justifyContent: "center",
@@ -533,15 +533,16 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               { pain: t.pain3, result: t.pain3r },
             ]).map((p, i) => (
               <div key={i} style={{
-                display: "flex", alignItems: "center", gap: 16,
-                padding: "20px 24px",
+                display: "flex", alignItems: "flex-start", gap: 12,
+                padding: "16px",
                 background: "#FFF5F5", borderRadius: 16,
                 border: "1px solid #FFE5E5",
               }}>
-                {PAIN_ICONS[i]}
-                <div>
-                  <span style={{ fontSize: 16, fontWeight: 700 }}>{p.pain}</span>
-                  <span style={{ fontSize: 15, color: "#888", marginLeft: 8 }}>{p.result}</span>
+                <div style={{ flexShrink: 0, paddingTop: 2 }}>{PAIN_ICONS[i]}</div>
+                <div style={{ minWidth: 0 }}>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>{p.pain}</span>
+                  <br />
+                  <span style={{ fontSize: 14, color: "#888" }}>{p.result}</span>
                 </div>
               </div>
             ))}
@@ -569,7 +570,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             </h2>
             <p style={{ color: "#888", fontSize: 16 }}>{t.featSub}</p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))", gap: 20 }}>
             {([
               { title: t.feat1t, desc: t.feat1d, detail: t.feat1detail },
               { title: t.feat2t, desc: t.feat2d, detail: t.feat2detail },
@@ -598,13 +599,13 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               const p = PLANS[i];
               return (
                 <div key={i} style={{
-                  padding: "24px 28px",
+                  padding: "24px 20px",
                   background: p.bg,
                   color: p.color,
                   border: `2px solid ${p.border}`,
                   borderRadius: 20,
-                  minWidth: 160,
-                  flex: 1,
+                  minWidth: 0,
+                  flex: "1 1 100px",
                   maxWidth: 200,
                   transform: p.highlight ? "scale(1.05)" : "scale(1)",
                   boxShadow: p.highlight ? "0 8px 30px rgba(255,149,0,0.15)" : "none",
@@ -650,7 +651,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" as const, marginBottom: 48 }}>
             {TEMPLATES.map((tmpl, i) => (
               <div key={i} style={{
-                width: 180, borderRadius: 20, overflow: "hidden",
+                flex: "1 1 140px", maxWidth: 200, minWidth: 140, borderRadius: 20, overflow: "hidden",
                 border: "1px solid #E5E7EB", background: "#fff",
                 boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
                 transition: "all 0.3s",
@@ -699,7 +700,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               { icon: IconShield, title: t.trust2t, desc: t.trust2d },
               { icon: IconKey, title: t.trust3t, desc: t.trust3d },
             ]).map((item, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 200 }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, width: "100%" }}>
                 <div style={{
                   width: 48, height: 48, borderRadius: 12,
                   background: "#FFF3E0", display: "flex", alignItems: "center", justifyContent: "center",
@@ -760,10 +761,10 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         padding: "24px", textAlign: "center" as const,
         background: "#111", color: "rgba(255,255,255,0.3)", fontSize: 12,
       }}>
-        <div style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 8 }}>
-          <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none" }}>{t.footerPricing}</Link>
-          <Link href={`/${locale}/terms`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none" }}>{t.footerTerms}</Link>
-          <Link href={`/${locale}/privacy`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none" }}>{t.footerPrivacy}</Link>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 8 }}>
+          <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>{t.footerPricing}</Link>
+          <Link href={`/${locale}/terms`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>{t.footerTerms}</Link>
+          <Link href={`/${locale}/privacy`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>{t.footerPrivacy}</Link>
         </div>
         {t.footerCopy}
       </footer>

@@ -257,8 +257,8 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
           : hovered
           ? "0 12px 40px rgba(0,0,0,0.1)"
           : "0 4px 20px rgba(0,0,0,0.06)",
-        flex: 1,
-        minWidth: 280,
+        flex: "1 1 280px",
+        minWidth: 0,
         maxWidth: 380,
         overflow: "hidden",
       }}
@@ -330,6 +330,7 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
           transition: "all 0.2s",
           width: "100%",
           marginBottom: 12,
+          minHeight: 48,
         }}
       >
         {plan.cta}
@@ -402,7 +403,7 @@ function Calculator({ isZh }: { isZh: boolean }) {
             key={String(v)}
             onClick={() => setUsePro(v)}
             style={{
-              padding: "8px 20px",
+              padding: "10px 20px",
               borderRadius: 20,
               border: "none",
               background: usePro === v ? "#FF9500" : "#F3F4F6",
@@ -411,6 +412,7 @@ function Calculator({ isZh }: { isZh: boolean }) {
               fontSize: 14,
               cursor: "pointer",
               transition: "all 0.2s",
+              minHeight: 44,
             }}
           >
             {v ? (isZh ? "用 Pro 比較" : "Compare Pro") : (isZh ? "用 Lite 比較" : "Compare Lite")}
@@ -423,8 +425,8 @@ function Calculator({ isZh }: { isZh: boolean }) {
           <div key={c.name} style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div
               style={{
-                width: 120,
-                fontSize: 13,
+                width: 90,
+                fontSize: 12,
                 fontWeight: c.isWowlix ? 700 : 400,
                 color: c.isWowlix ? "#FF9500" : "#666",
                 textAlign: "right",
@@ -520,6 +522,8 @@ function Calculator({ isZh }: { isZh: boolean }) {
             color: "#999",
             cursor: "pointer",
             textDecoration: "underline",
+            minHeight: 44,
+            padding: "10px 16px",
           }}
         >
           {showSources ? (isZh ? "收起計算方式及來源 ▴" : "Hide methodology ▴") : (isZh ? "計算方式及來源 ▾" : "Methodology & sources ▾")}
@@ -566,18 +570,19 @@ function FAQ({ isZh }: { isZh: boolean }) {
             onClick={() => setOpen(open === i ? null : i)}
             style={{
               width: "100%",
-              padding: "20px 0",
+              padding: "16px 0",
               background: "none",
               border: "none",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               cursor: "pointer",
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: 600,
               color: "#1A1A1A",
               textAlign: "left",
-              gap: 16,
+              gap: 12,
+              minHeight: 48,
             }}
           >
             <span>{faq.q}</span>
@@ -720,12 +725,15 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           style={{
             background: "#FF9500",
             color: "#fff",
-            padding: "10px 24px",
+            padding: "12px 24px",
             borderRadius: 100,
             fontSize: 14,
             fontWeight: 700,
             textDecoration: "none",
             transition: "all 0.2s",
+            minHeight: 44,
+            display: "inline-flex",
+            alignItems: "center",
           }}
         >
           {isZh ? "免費開店" : "Start Free"}
@@ -909,8 +917,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               <div
                 key={i}
                 style={{
-                  flex: 1,
-                  minWidth: 260,
+                  flex: "1 1 260px",
                   maxWidth: 320,
                   background: "#fff",
                   borderRadius: 20,
@@ -963,12 +970,14 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             </h2>
             <p style={{ color: "#888", fontSize: 16 }}>{isZh ? "每間店都有自己嘅風格" : "Every shop has its own style"}</p>
           </div>
-          <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
             {DEMOS.map((d, i) => (
               <div
                 key={i}
                 style={{
-                  width: 220,
+                  flex: "1 1 150px",
+                  maxWidth: 220,
+                  minWidth: 150,
                   borderRadius: 20,
                   overflow: "hidden",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
@@ -1051,12 +1060,14 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>{isZh ? "功能一覽" : "Feature comparison"}</h2>
           </div>
+          <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
           <div
             style={{
               background: "#fff",
               borderRadius: 20,
               overflow: "hidden",
               border: "1px solid #E5E7EB",
+              minWidth: 480,
             }}
           >
             {/* Header */}
@@ -1113,6 +1124,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 ))}
               </div>
             ))}
+          </div>
           </div>
         </div>
       </section>
