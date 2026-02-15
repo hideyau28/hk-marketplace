@@ -88,6 +88,10 @@ const t = {
     registerError: "Registration failed, please try again",
     haveAccount: "Already have an account?",
     login: "Log in",
+    // Billing
+    setupBilling: "Set up billing",
+    setupBillingDesc: "Activate your {plan} plan ($\u200B{price}/mo) via Stripe",
+    setupBillingLater: "Set up later in admin",
   },
   "zh-HK": {
     // Step 1: Plan
@@ -169,6 +173,10 @@ const t = {
     registerError: "註冊失敗，請再試",
     haveAccount: "已有帳號？",
     login: "登入",
+    // Billing
+    setupBilling: "設定付款",
+    setupBillingDesc: "透過 Stripe 啟用你嘅 {plan} 方案（${price}/月）",
+    setupBillingLater: "之後喺後台設定",
   },
 } as const;
 
@@ -326,6 +334,7 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
   const [submitting, setSubmitting] = useState(false);
   const [createdSlug, setCreatedSlug] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
+  const [billingRedirecting, setBillingRedirecting] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // --- Restore state from sessionStorage on mount ---
@@ -589,6 +598,27 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
     } catch (error) {
       console.error("Failed to clear onboarding state:", error);
     }
+  };
+
+  const handleSetupBilling = async () => {
+    if (data.plan !== "lite" && data.plan !== "pro") return;
+    setBillingRedirecting(true);
+    try {
+      const res = await fetch("/api/admin/subscription/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: data.plan }),
+      });
+      const json = await res.json();
+      if (json.ok && json.data?.url) {
+        window.location.href = json.data.url;
+        return;
+      }
+    } catch {
+      // Fallback to billing page
+    }
+    setBillingRedirecting(false);
+    window.location.href = `/${locale}/admin/billing`;
   };
 
   const inputClass = (field: string) =>
@@ -1235,12 +1265,36 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                   </div>
                 </div>
 
+                {/* Billing CTA for paid plans */}
+                {(data.plan === "lite" || data.plan === "pro") && (
+                  <div className="space-y-2">
+                    <button
+                      onClick={handleSetupBilling}
+                      disabled={billingRedirecting}
+                      className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] disabled:opacity-70"
+                    >
+                      {billingRedirecting
+                        ? "..."
+                        : `${labels.setupBilling} →`}
+                    </button>
+                    <p className="text-[11px] text-zinc-400">
+                      {labels.setupBillingDesc
+                        .replace("{plan}", data.plan === "pro" ? "Pro" : "Lite")
+                        .replace("{price}", data.plan === "pro" ? "198" : "78")}
+                    </p>
+                  </div>
+                )}
+
                 {/* Main CTA: Open my store */}
                 <a
                   href={`https://wowlix.com/${createdSlug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] leading-[48px]"
+                  className={`block w-full py-3 rounded-xl font-semibold text-base transition-colors min-h-[48px] leading-[48px] ${
+                    data.plan === "lite" || data.plan === "pro"
+                      ? "border-2 border-[#FF9500] text-[#FF9500] hover:bg-[#FF9500]/5"
+                      : "bg-[#FF9500] text-white hover:bg-[#E68600]"
+                  }`}
                 >
                   {labels.openMyStore} &rarr;
                 </a>
@@ -1248,7 +1302,7 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                 {/* Secondary CTA: Go to admin */}
                 <a
                   href={`/${locale}/admin`}
-                  className="block w-full py-3 rounded-xl border-2 border-[#FF9500] text-[#FF9500] font-semibold text-base hover:bg-[#FF9500]/5 transition-colors min-h-[48px] leading-[48px]"
+                  className="block w-full py-3 rounded-xl border-2 border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px] leading-[48px]"
                 >
                   {labels.goToAdmin} &rarr;
                 </a>

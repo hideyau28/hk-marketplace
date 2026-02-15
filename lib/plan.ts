@@ -69,7 +69,12 @@ function resolvePlan(raw: string | null | undefined): PlanName {
 export async function getPlan(tenantId: string) {
   const tenant = await prisma.tenant.findUniqueOrThrow({
     where: { id: tenantId },
-    select: { plan: true, planExpiresAt: true, trialEndsAt: true },
+    select: {
+      plan: true,
+      planExpiresAt: true,
+      trialEndsAt: true,
+      planGracePeriodEndsAt: true,
+    },
   });
 
   const plan = resolvePlan(tenant.plan);
@@ -79,8 +84,27 @@ export async function getPlan(tenantId: string) {
   const isExpired = tenant.planExpiresAt ? tenant.planExpiresAt < now : false;
   const isTrialing = tenant.trialEndsAt ? tenant.trialEndsAt > now : false;
 
-  // If plan expired, fall back to free limits
-  const effectivePlan: PlanName = isExpired ? "free" : plan;
+  // Grace period: 到期後仍有 7 日寬限
+  const isInGracePeriod =
+    tenant.planGracePeriodEndsAt !== null &&
+    tenant.planGracePeriodEndsAt > now;
+
+  // Grace period 已過 → 強制降級到 free
+  const gracePeriodExpired =
+    tenant.planGracePeriodEndsAt !== null &&
+    tenant.planGracePeriodEndsAt <= now;
+
+  // 如果 plan expired 且 grace period 已過（或冇 grace period），降級到 free
+  // 如果仲喺 grace period 內，保留原 plan（畀時間 user 更新付款）
+  let effectivePlan: PlanName;
+  if (gracePeriodExpired) {
+    effectivePlan = "free";
+  } else if (isExpired && !isInGracePeriod) {
+    effectivePlan = "free";
+  } else {
+    effectivePlan = plan;
+  }
+
   const effectiveLimits = PLAN_LIMITS[effectivePlan];
 
   return {
@@ -89,6 +113,8 @@ export async function getPlan(tenantId: string) {
     limits: effectiveLimits,
     isExpired,
     isTrialing,
+    isInGracePeriod,
+    gracePeriodExpired,
     planExpiresAt: tenant.planExpiresAt,
     trialEndsAt: tenant.trialEndsAt,
   };

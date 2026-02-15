@@ -315,12 +315,14 @@ model Tenant {
   mode                 String    @default("biolink")
   status               String    @default("active")
   // Plan & billing
-  plan                 String    @default("free")
-  planExpiresAt        DateTime?
-  trialEndsAt          DateTime?
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
-  subscriptionEndsAt   DateTime?
+  plan                    String    @default("free")
+  planExpiresAt           DateTime?
+  planStartedAt           DateTime?
+  planGracePeriodEndsAt   DateTime?
+  trialEndsAt             DateTime?
+  stripeCustomerId        String?
+  stripeSubscriptionId    String?
+  subscriptionEndsAt      DateTime?
   // Stripe Connect (tenant's own Stripe account for receiving payments)
   stripeAccountId      String?
   stripeOnboarded      Boolean   @default(false)
