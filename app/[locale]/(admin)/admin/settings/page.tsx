@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Save, Loader2, CheckCircle2, AlertCircle, Store, Phone, Palette, User, Truck, DollarSign, MessageSquare, Plus, Pencil, Trash2 } from "lucide-react";
+import { Save, Loader2, CheckCircle2, AlertCircle, Store, Phone, Palette, User, Truck, DollarSign, MessageSquare, Plus, Pencil, Trash2, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -172,6 +172,15 @@ export default function TenantSettings({ params }: { params: { locale: string } 
   const [addingDelivery, setAddingDelivery] = useState(false);
   const [newDeliveryLabel, setNewDeliveryLabel] = useState("");
   const [newDeliveryPrice, setNewDeliveryPrice] = useState("");
+  // Plan status
+  const [planData, setPlanData] = useState<{
+    plan: string;
+    isExpired: boolean;
+    isTrialing: boolean;
+    planExpiresAt: string | null;
+    trialEndsAt: string | null;
+    usage: { sku: { current: number; limit: number }; orders: { current: number; limit: number } };
+  } | null>(null);
 
   const locale = params.locale;
 
@@ -207,11 +216,20 @@ export default function TenantSettings({ params }: { params: { locale: string } 
         }
       } catch {
         // Ignore errors
-      } finally {
-        if (mounted) {
-          setDataLoaded(true);
-        }
       }
+
+      // Load plan data (non-blocking)
+      try {
+        const planRes = await fetch("/api/admin/plan");
+        if (planRes.ok) {
+          const planJson = await planRes.json();
+          if (mounted && planJson.ok) setPlanData(planJson.data);
+        }
+      } catch {
+        // Ignore plan load errors
+      }
+
+      if (mounted) setDataLoaded(true);
     }
 
     loadData();
@@ -451,6 +469,111 @@ export default function TenantSettings({ params }: { params: { locale: string } 
         </div>
 
         <div className="mt-8 space-y-6">
+          {/* Plan Status */}
+          {planData && (
+            <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-zinc-600" />
+                  {locale === "zh-HK" ? "方案狀態" : "Plan Status"}
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                  {locale === "zh-HK" ? "你嘅訂閱方案同用量" : "Your subscription plan and usage"}
+                </p>
+              </div>
+
+              {/* Current plan badge */}
+              <div className="flex items-center gap-3">
+                <span className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold",
+                  planData.plan === "pro" ? "bg-violet-100 text-violet-700" :
+                  planData.plan === "lite" ? "bg-blue-100 text-blue-700" :
+                  "bg-zinc-100 text-zinc-700"
+                )}>
+                  {planData.plan === "pro" ? "Pro" : planData.plan === "lite" ? "Lite" : "Free"}
+                </span>
+                {planData.isTrialing && (
+                  <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                    {locale === "zh-HK" ? "試用中" : "Trial"}
+                  </span>
+                )}
+                {planData.isExpired && (
+                  <span className="text-xs text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                    {locale === "zh-HK" ? "已到期" : "Expired"}
+                  </span>
+                )}
+              </div>
+
+              {/* SKU usage */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-zinc-600">{locale === "zh-HK" ? "產品 (SKU)" : "Products (SKU)"}</span>
+                  <span className="font-medium text-zinc-900">
+                    {planData.usage.sku.current} / {planData.usage.sku.limit === Infinity || planData.usage.sku.limit > 999999 ? "∞" : planData.usage.sku.limit}
+                  </span>
+                </div>
+                {planData.usage.sku.limit !== Infinity && planData.usage.sku.limit <= 999999 && (
+                  <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        planData.usage.sku.current / planData.usage.sku.limit >= 0.9 ? "bg-red-500" :
+                        planData.usage.sku.current / planData.usage.sku.limit >= 0.7 ? "bg-amber-500" :
+                        "bg-emerald-500"
+                      )}
+                      style={{ width: `${Math.min(100, (planData.usage.sku.current / planData.usage.sku.limit) * 100)}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Orders usage */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-zinc-600">{locale === "zh-HK" ? "本月訂單" : "Orders this month"}</span>
+                  <span className="font-medium text-zinc-900">
+                    {planData.usage.orders.current} / {planData.usage.orders.limit === Infinity || planData.usage.orders.limit > 999999 ? "∞" : planData.usage.orders.limit}
+                  </span>
+                </div>
+                {planData.usage.orders.limit !== Infinity && planData.usage.orders.limit <= 999999 && (
+                  <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        planData.usage.orders.current / planData.usage.orders.limit >= 0.9 ? "bg-red-500" :
+                        planData.usage.orders.current / planData.usage.orders.limit >= 0.7 ? "bg-amber-500" :
+                        "bg-emerald-500"
+                      )}
+                      style={{ width: `${Math.min(100, (planData.usage.orders.current / planData.usage.orders.limit) * 100)}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Upgrade CTA — show for free/lite or when near limit */}
+              {(planData.plan === "free" || planData.plan === "lite" ||
+                planData.usage.sku.current / (planData.usage.sku.limit || 1) >= 0.8 ||
+                planData.usage.orders.current / (planData.usage.orders.limit || 1) >= 0.8
+              ) && planData.plan !== "pro" && (
+                <div className="flex items-center gap-3 p-3 bg-violet-50 border border-violet-200 rounded-lg">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-violet-900">
+                      {locale === "zh-HK" ? "升級解鎖更多功能" : "Upgrade to unlock more features"}
+                    </p>
+                    <p className="text-xs text-violet-600 mt-0.5">
+                      {locale === "zh-HK"
+                        ? "升級至 Lite 或 Pro 方案，獲得更多產品配額同進階功能"
+                        : "Upgrade to Lite or Pro for more products and advanced features"}
+                    </p>
+                  </div>
+                  <button className="px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors flex-shrink-0">
+                    {locale === "zh-HK" ? "升級" : "Upgrade"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Basic Info */}
           <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
             <div>
