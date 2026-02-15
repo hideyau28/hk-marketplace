@@ -29,6 +29,8 @@ export const GET = withApi(
         deliveryOptions: true,
         freeShippingThreshold: true,
         orderConfirmMessage: true,
+        // Branding
+        hideBranding: true,
       },
     });
 
@@ -104,6 +106,7 @@ export const PUT = withApi(
     // Allow explicitly setting to null
     if (body.freeShippingThreshold === null) updateData.freeShippingThreshold = null;
     if (body.orderConfirmMessage !== undefined) updateData.orderConfirmMessage = body.orderConfirmMessage;
+    if (body.hideBranding !== undefined) updateData.hideBranding = body.hideBranding;
 
     const updated = await prisma.tenant.update({
       where: { id: tenantId },
@@ -122,6 +125,7 @@ export const PUT = withApi(
         deliveryOptions: true,
         freeShippingThreshold: true,
         orderConfirmMessage: true,
+        hideBranding: true,
       },
     });
 

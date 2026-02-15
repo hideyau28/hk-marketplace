@@ -182,6 +182,7 @@ export const translations = {
       terms: "Terms",
       follow: "Follow Us",
       rights: "All rights reserved.",
+      poweredBy: "Powered by",
     },
     size: {
       selectSize: "Select Size",
@@ -680,6 +681,7 @@ export const translations = {
       terms: "條款及細則",
       follow: "關注我們",
       rights: "版權所有。",
+      poweredBy: "技術提供",
     },
     size: {
       selectSize: "選擇尺碼",

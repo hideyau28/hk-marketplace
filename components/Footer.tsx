@@ -3,7 +3,7 @@ import type { Locale } from "@/lib/i18n";
 import type { Translations } from "@/lib/translations";
 import { Instagram, Facebook } from "lucide-react";
 
-export default function Footer({ locale, t, storeName = "May's Shop" }: { locale: Locale; t: Translations; storeName?: string }) {
+export default function Footer({ locale, t, storeName = "May's Shop", hideBranding = false }: { locale: Locale; t: Translations; storeName?: string; hideBranding?: boolean }) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -80,6 +80,21 @@ export default function Footer({ locale, t, storeName = "May's Shop" }: { locale
         <p className="text-zinc-500 text-xs">
           © {currentYear} {storeName}. {t.footer.rights}
         </p>
+
+        {/* Powered by WoWlix — hidden only for Pro with hideBranding */}
+        {!hideBranding && (
+          <p className="text-zinc-600 text-[10px] mt-2">
+            {t.footer.poweredBy}{" "}
+            <a
+              href="https://wowlix.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-400 hover:text-zinc-200 transition-colors underline"
+            >
+              WoWlix
+            </a>
+          </p>
+        )}
       </div>
     </footer>
   );
