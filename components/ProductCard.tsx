@@ -161,9 +161,11 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
     <div
       ref={cardRef}
       className={`group flex flex-col h-full ${cardWidthClass} rounded-2xl border border-zinc-200/50 bg-white shadow-sm dark:bg-zinc-900 dark:border-zinc-800 ${
-        isOnSale
-          ? "ring-1 ring-red-200 bg-red-50/30 dark:ring-red-900/50 dark:bg-red-950/20"
-          : ""
+        p.stock === 0
+          ? "opacity-60 grayscale"
+          : isOnSale
+            ? "ring-1 ring-red-200 bg-red-50/30 dark:ring-red-900/50 dark:bg-red-950/20"
+            : ""
       }`}
     >
       {/* Image container - with cart icon outside Link to prevent navigation */}
@@ -188,10 +190,17 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
               </div>
             )}
 
-            {/* Sold out overlay */}
+            {/* Out of stock overlay — greyed out with badge */}
             {p.stock === 0 && (
-              <div className="absolute inset-0 bg-zinc-900/60 flex items-center justify-center">
-                <span className="text-white font-semibold text-sm">已售罄</span>
+              <div className="absolute inset-0 bg-white/60 dark:bg-zinc-900/60" />
+            )}
+
+            {/* Out of stock badge */}
+            {p.stock === 0 && (
+              <div className="absolute top-2 left-2">
+                <span className="px-2 py-0.5 text-xs font-semibold rounded bg-zinc-500 text-white">
+                  {isZh ? "暫時缺貨" : "Out of Stock"}
+                </span>
               </div>
             )}
 
