@@ -202,6 +202,16 @@ export const translations = {
       backHome: "Back to Home",
       statusNote: "This order is currently in status \"{status}\".",
     },
+    errorPage: {
+      notFoundTitle: "Page Not Found",
+      notFoundDesc: "The page you're looking for doesn't exist or has been moved.",
+      backToHome: "Back to Home",
+      errorTitle: "Something Went Wrong",
+      errorDesc: "An unexpected error occurred. Please try again.",
+      retry: "Try Again",
+      productNotFound: "This product doesn't exist or has been removed.",
+      browseProducts: "Browse Products",
+    },
     toast: {
       outOfStock: "Out of stock",
     },
@@ -713,6 +723,16 @@ export const translations = {
       currentStatus: "目前狀態：",
       backHome: "返回首頁",
       statusNote: "此訂單目前狀態為「{status}」。",
+    },
+    errorPage: {
+      notFoundTitle: "搵唔到呢個頁面",
+      notFoundDesc: "你搵緊嘅頁面唔存在或者已經搬咗。",
+      backToHome: "返回首頁",
+      errorTitle: "出咗啲問題",
+      errorDesc: "伺服器出現錯誤，請稍後再試。",
+      retry: "重試",
+      productNotFound: "呢個商品唔存在或者已經下架。",
+      browseProducts: "瀏覽商品",
     },
     toast: {
       outOfStock: "缺貨中",

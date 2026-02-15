@@ -1,6 +1,14 @@
-import Link from "next/link";
+"use client";
 
-export default function NotFound() {
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { getDict, type Locale } from "@/lib/i18n";
+
+export default function LocaleNotFound() {
+  const pathname = usePathname();
+  const locale = pathname?.startsWith("/zh-HK") ? "zh-HK" : "en";
+  const t = getDict(locale as Locale);
+
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
@@ -13,22 +21,19 @@ export default function NotFound() {
 
         <div className="mb-8">
           <h1 className="text-8xl font-extrabold text-orange-500 mb-4">404</h1>
-          <h2 className="text-2xl font-semibold text-white mb-2">
-            搵唔到呢個頁面
+          <h2 className="text-2xl font-semibold text-white mb-3">
+            {t.errorPage.notFoundTitle}
           </h2>
-          <p className="text-zinc-400">
-            你搵緊嘅頁面唔存在或者已經搬咗。
-          </p>
-          <p className="text-zinc-500 text-sm mt-1">
-            The page you&apos;re looking for doesn&apos;t exist or has been moved.
+          <p className="text-zinc-400 leading-relaxed">
+            {t.errorPage.notFoundDesc}
           </p>
         </div>
 
         <Link
-          href="/"
+          href={`/${locale}`}
           className="inline-block rounded-2xl bg-orange-500 px-8 py-4 text-white font-semibold hover:bg-orange-600 transition-colors"
         >
-          返回首頁 / Back to Home
+          {t.errorPage.backToHome}
         </Link>
       </div>
     </div>
