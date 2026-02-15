@@ -5,6 +5,7 @@ import { ShoppingCart, DollarSign, ArrowRight, Package, TrendingUp, Lock } from 
 import Link from "next/link";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import DashboardCharts from "@/components/admin/DashboardCharts";
+import TopSellingProducts from "@/components/admin/TopSellingProducts";
 import WelcomeToast from "@/components/admin/WelcomeToast";
 import BioLinkDashboard from "@/components/admin/BioLinkDashboard";
 import { getDict, type Locale } from "@/lib/i18n";
@@ -95,7 +96,10 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   // Fetch earliest date needed (whichever is earlier: monthStart or start30)
   const fetchSince = monthStart < start30 ? monthStart : start30;
 
-  const analyticsEnabled = await hasFeature(tenantId, "analytics");
+  const [analyticsEnabled, topSellersEnabled] = await Promise.all([
+    hasFeature(tenantId, "analytics"),
+    hasFeature(tenantId, "top_sellers"),
+  ]);
 
   const [tenant, recentOrders, allRecentOrders] = await Promise.all([
     prisma.tenant.findUnique({
@@ -295,6 +299,18 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           <p className="text-sm text-zinc-500 max-w-md mx-auto">{t.admin.dashboard.upgradeDesc}</p>
         </div>
       )}
+
+      {/* Top Sellers section (Pro only) */}
+      {topSellersEnabled ? (
+        <TopSellingProducts t={t.admin.dashboard} />
+      ) : analyticsEnabled ? (
+        /* Lite plan: show upgrade CTA for top sellers */
+        <div className="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-8 text-center">
+          <Lock size={32} className="mx-auto text-zinc-400 mb-3" />
+          <h3 className="text-lg font-semibold text-zinc-900 mb-2">{t.admin.dashboard.topSellersProOnly}</h3>
+          <p className="text-sm text-zinc-500 max-w-md mx-auto">{t.admin.dashboard.topSellersProDesc}</p>
+        </div>
+      ) : null}
 
       {/* Quick links */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">

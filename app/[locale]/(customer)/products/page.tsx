@@ -61,6 +61,7 @@ export default function ProductsPage() {
   const setFilters = filterContext?.setFilters;
 
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [topSellerIds, setTopSellerIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialFiltersApplied, setInitialFiltersApplied] = useState(false);
 
@@ -114,14 +115,16 @@ export default function ProductsPage() {
     setInitialFiltersApplied(true);
   }, [searchParams, setFilters, initialFiltersApplied]);
 
-  // Fetch all products on mount
+  // Fetch all products and top sellers on mount
   useEffect(() => {
-    fetch("/api/products?limit=500")
-      .then((res) => res.json())
-      .then((response) => {
-        // API returns { ok, requestId, data: { products: [...] } }
-        const products = response.data?.products || [];
+    Promise.all([
+      fetch("/api/products?limit=500").then((res) => res.json()),
+      fetch("/api/top-sellers").then((res) => res.json()).catch(() => ({ data: { topSellerIds: [] } })),
+    ])
+      .then(([productsRes, topSellersRes]) => {
+        const products = productsRes.data?.products || [];
         setAllProducts(products);
+        setTopSellerIds(topSellersRes.data?.topSellerIds || []);
         setLoading(false);
       })
       .catch(() => {
@@ -197,19 +200,31 @@ export default function ProductsPage() {
         : "All Products";
   }, [filters, isZh]);
 
-  // Map to ProductCard format
-  const productList = filteredProducts.map((p) => ({
-    id: p.id,
-    brand: p.brand || undefined,
-    title: p.title,
-    image: p.imageUrl || undefined,
-    price: p.price,
-    originalPrice: p.originalPrice,
-    stock: p.stock ?? 0,
-    badges: p.badges && Array.isArray(p.badges) ? p.badges : undefined,
-    resolvedBadges: (p as { resolvedBadges?: { nameZh: string; nameEn: string; color: string }[] }).resolvedBadges,
-    sizes: p.sizes,
-  }));
+  // Map to ProductCard format, inject hot badge for top sellers
+  const topSellerSet = useMemo(() => new Set(topSellerIds), [topSellerIds]);
+
+  const productList = filteredProducts.map((p) => {
+    const existingBadges: { nameZh: string; nameEn: string; color: string }[] =
+      (p as { resolvedBadges?: { nameZh: string; nameEn: string; color: string }[] }).resolvedBadges || [];
+
+    const isTopSeller = topSellerSet.has(p.id);
+    const resolvedBadges = isTopSeller
+      ? [{ nameZh: "\uD83D\uDD25 \u71B1\u8CE3", nameEn: "\uD83D\uDD25 Hot", color: "#ef4444" }, ...existingBadges]
+      : existingBadges;
+
+    return {
+      id: p.id,
+      brand: p.brand || undefined,
+      title: p.title,
+      image: p.imageUrl || undefined,
+      price: p.price,
+      originalPrice: p.originalPrice,
+      stock: p.stock ?? 0,
+      badges: p.badges && Array.isArray(p.badges) ? p.badges : undefined,
+      resolvedBadges,
+      sizes: p.sizes,
+    };
+  });
 
   if (loading) {
     return (
