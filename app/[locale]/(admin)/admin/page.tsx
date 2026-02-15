@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getAdminTenantId } from "@/lib/tenant";
 import { verifyToken } from "@/lib/auth/jwt";
-import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "lucide-react";
+import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import DashboardCharts from "@/components/admin/DashboardCharts";
@@ -88,7 +88,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   const start7 = new Date(now);
   start7.setDate(now.getDate() - 6);
 
-  const [tenant, totalProducts, activeProducts, totalOrders, pendingOrders, ordersWithAmounts, recentOrders, recentOrdersForCharts] = await Promise.all([
+  const [tenant, totalProducts, activeProducts, totalOrders, pendingOrders, abandonedOrders, ordersWithAmounts, recentOrders, recentOrdersForCharts] = await Promise.all([
     prisma.tenant.findUnique({
       where: { id: tenantId },
       select: { name: true },
@@ -97,6 +97,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
     prisma.product.count({ where: { tenantId, active: true } }),
     prisma.order.count({ where: { tenantId } }),
     prisma.order.count({ where: { tenantId, status: "PENDING" } }),
+    prisma.order.count({ where: { tenantId, status: "ABANDONED" } }),
     prisma.order.findMany({
       where: { tenantId, status: { in: ["PAID", "FULFILLING", "SHIPPED", "COMPLETED"] } },
       select: { amounts: true },
@@ -226,17 +227,18 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mt-8">
         <StatCard label={t.admin.dashboard.totalProducts} value={totalProducts} icon={<Package size={24} />} />
         <StatCard label={t.admin.dashboard.activeProducts} value={activeProducts} icon={<CheckCircle size={24} />} />
         <StatCard label={t.admin.dashboard.totalOrders} value={totalOrders} icon={<ShoppingCart size={24} />} />
         <StatCard label={t.admin.dashboard.totalRevenue} value={formattedRevenue} icon={<DollarSign size={24} />} />
         <StatCard label={t.admin.dashboard.averageOrder} value={`$${avgOrderAmount.toFixed(0)}`} icon={<DollarSign size={24} />} />
+        <StatCard label={locale === "zh-HK" ? "棄單數" : "Abandoned"} value={abandonedOrders} icon={<ShoppingBag size={24} />} />
       </div>
 
       <DashboardCharts ordersLast30={ordersLast30} revenueLast30={revenueLast30} topProducts={topProducts} pageViewsLast7={pageViewsLast7} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
         <Link
           href={`/${locale}/admin/products`}
           className="flex items-center justify-between bg-white rounded-2xl border border-zinc-200 p-4 hover:bg-zinc-50 transition-colors"
@@ -254,6 +256,18 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           <div className="flex items-center gap-3">
             <ShoppingCart size={20} className="text-zinc-400" />
             <span className="font-medium text-zinc-900">View All Orders</span>
+          </div>
+          <ArrowRight size={20} className="text-zinc-400" />
+        </Link>
+        <Link
+          href={`/${locale}/admin/cart-recovery`}
+          className="flex items-center justify-between bg-white rounded-2xl border border-zinc-200 p-4 hover:bg-zinc-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <ShoppingBag size={20} className="text-zinc-400" />
+            <span className="font-medium text-zinc-900">
+              {locale === "zh-HK" ? "棄單挽回" : "Cart Recovery"}
+            </span>
           </div>
           <ArrowRight size={20} className="text-zinc-400" />
         </Link>

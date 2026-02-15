@@ -17,6 +17,7 @@ const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   COMPLETED: ["REFUNDED"],
   CANCELLED: [],
   REFUNDED: [],
+  ABANDONED: ["PENDING"],
   // Legacy statuses
   PAID: ["FULFILLING", "CONFIRMED", "CANCELLED", "REFUNDED", "DISPUTED"],
   FULFILLING: ["SHIPPED", "PROCESSING", "CANCELLED"],
@@ -32,6 +33,7 @@ const STATUS_DISPLAY: Record<OrderStatus, { en: string; zh: string }> = {
   COMPLETED: { en: "Completed", zh: "已完成" },
   CANCELLED: { en: "Cancelled", zh: "已取消" },
   REFUNDED: { en: "Refunded", zh: "已退款" },
+  ABANDONED: { en: "Abandoned", zh: "棄單" },
   PAID: { en: "Paid", zh: "已付款" },
   FULFILLING: { en: "Fulfilling", zh: "配送中" },
   DISPUTED: { en: "Disputed", zh: "爭議中" },

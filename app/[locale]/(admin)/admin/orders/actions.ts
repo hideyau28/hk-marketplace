@@ -33,6 +33,7 @@ const ORDER_STATUSES = [
   "COMPLETED",
   "CANCELLED",
   "REFUNDED",
+  "ABANDONED",
   // Legacy statuses
   "PAID",
   "FULFILLING",

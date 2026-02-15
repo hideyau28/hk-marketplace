@@ -116,6 +116,7 @@ model Order {
   confirmedAt             DateTime?
   deliveredAt             DateTime?
   processingAt            DateTime?
+  abandonedAt             DateTime?
   // Admin management fields
   adminNotes              String?          // JSON array of {timestamp, note, author}
   trackingNumber          String?
@@ -357,6 +358,7 @@ model Tenant {
   productVariants      ProductVariant[]
   attributeDefinitions AttributeDefinition[]
   paymentConfigs       TenantPaymentConfig[]
+  checkoutDrafts       CheckoutDraft[]
 }
 
 model TenantAdmin {
@@ -383,6 +385,7 @@ enum OrderStatus {
   COMPLETED
   CANCELLED
   REFUNDED
+  ABANDONED
   // Legacy statuses (backward compatibility)
   PAID
   FULFILLING
@@ -548,4 +551,25 @@ model TenantPaymentConfig {
 
   @@unique([tenantId, providerId])
   @@index([tenantId])
+}
+
+// 棄單挽回 — 儲存未完成嘅 checkout 草稿
+model CheckoutDraft {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  sessionId     String   // browser session identifier
+  customerName  String?
+  phone         String?
+  email         String?
+  items         Json     // cart items snapshot
+  amounts       Json?    // subtotal, delivery fee, total etc.
+  formData      Json?    // fulfillment type, address, notes etc.
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  convertedAt   DateTime? // set when order is placed (draft → order)
+
+  @@unique([tenantId, sessionId])
+  @@index([tenantId])
+  @@index([createdAt])
 }

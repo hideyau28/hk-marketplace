@@ -32,6 +32,7 @@ const statusConfig: Record<string, { label: string; labelZh: string; color: stri
   DELIVERED: { label: "Delivered", labelZh: "已送達", color: "bg-green-100 text-green-700" },
   COMPLETED: { label: "Completed", labelZh: "完成", color: "bg-green-100 text-green-700" },
   CANCELLED: { label: "Cancelled", labelZh: "已取消", color: "bg-zinc-100 text-zinc-500" },
+  ABANDONED: { label: "Abandoned", labelZh: "棄單", color: "bg-red-100 text-red-700" },
   FULFILLING: { label: "Fulfilling", labelZh: "配送中", color: "bg-blue-100 text-blue-700" },
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
@@ -11,6 +11,7 @@ import { useCurrency } from "@/lib/currency";
 import { useAuth } from "@/lib/auth-context";
 import CheckoutPaymentSelector, { type PaymentProviderOption } from "@/components/CheckoutPaymentSelector";
 import ManualPaymentFlow from "@/components/ManualPaymentFlow";
+import { useCheckoutDraft, clearCheckoutSession } from "@/lib/useCheckoutDraft";
 
 type FulfillmentType = "delivery" | "sf-locker" | "pickup";
 
@@ -183,6 +184,30 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const homeDeliveryIslandExtra = storeSettings?.homeDeliveryIslandExtra ?? DEFAULT_HOME_DELIVERY_ISLAND_EXTRA;
   const sfLockerFee = storeSettings?.sfLockerFee ?? DEFAULT_SF_LOCKER_FEE;
   const sfLockerFreeAbove = storeSettings?.sfLockerFreeAbove ?? DEFAULT_SF_LOCKER_FREE_ABOVE;
+
+  // 棄單挽回：自動儲存 checkout 草稿
+  const getDraftData = useCallback(() => {
+    if (cart.length === 0) return null;
+    return {
+      customerName,
+      phone,
+      email,
+      items: cart,
+      amounts: {
+        subtotal: getCartTotal(cart),
+        deliveryFee: 0,
+        discount,
+        total: 0,
+      },
+      formData: {
+        fulfillmentType,
+        district: district || undefined,
+        addressLine: addressLine || undefined,
+      },
+    };
+  }, [customerName, phone, email, cart, discount, fulfillmentType, district, addressLine]);
+
+  useCheckoutDraft(getDraftData);
 
   const subtotal = getCartTotal(cart);
   const isOutlyingIslands = district === "離島" || district === "Outlying Islands";
@@ -382,6 +407,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
 
         if (result.ok) {
           clearCart();
+          clearCheckoutSession();
           showToast(locale === "zh-HK" ? "訂單已提交！我們會盡快確認您的付款。" : "Order submitted! We'll confirm your payment shortly.");
           router.push(`/${locale}/orders/${result.data.id}`);
         } else {
@@ -419,6 +445,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
 
       if (sessionData.ok && sessionData.data?.url) {
         clearCart();
+        clearCheckoutSession();
         window.location.href = sessionData.data.url;
       } else {
         alert(

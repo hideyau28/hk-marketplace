@@ -23,6 +23,7 @@ const STATUS_TABS = [
   { value: "DELIVERED", label: { en: "Delivered", zh: "已送達" } },
   { value: "COMPLETED", label: { en: "Completed", zh: "已完成" } },
   { value: "CANCELLED", label: { en: "Cancelled", zh: "已取消" } },
+  { value: "ABANDONED", label: { en: "Abandoned", zh: "棄單" } },
 ];
 
 const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
@@ -35,6 +36,7 @@ const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
   COMPLETED: { en: "Completed", zh: "已完成" },
   CANCELLED: { en: "Cancelled", zh: "已取消" },
   REFUNDED: { en: "Refunded", zh: "已退款" },
+  ABANDONED: { en: "Abandoned", zh: "棄單" },
   // Legacy statuses
   PAID: { en: "Paid", zh: "已付款" },
   FULFILLING: { en: "Fulfilling", zh: "配送中" },
@@ -73,7 +75,7 @@ function orderStatusBadgeClass(status: string) {
   if (s === "COMPLETED" || s === "DELIVERED") {
     return "bg-zinc-100 text-zinc-600 border border-zinc-200";
   }
-  if (s === "CANCELLED") {
+  if (s === "CANCELLED" || s === "ABANDONED") {
     return "bg-red-100 text-red-700 border border-red-200";
   }
   if (s === "REFUNDED") {

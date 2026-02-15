@@ -23,6 +23,7 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   COMPLETED: ["REFUNDED"],
   CANCELLED: [], // Terminal state
   REFUNDED: [], // Terminal state
+  ABANDONED: ["PENDING"], // 棄單可以恢復回 PENDING
   // Legacy statuses (backward compatibility)
   PAID: ["FULFILLING", "CONFIRMED", "CANCELLED", "REFUNDED", "DISPUTED"],
   FULFILLING: ["SHIPPED", "PROCESSING", "CANCELLED"],
