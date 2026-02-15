@@ -58,8 +58,8 @@ export default async function AdminHomepage({
         <SidebarToggle />
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Homepage CMS</h1>
-          <div className="text-zinc-500 text-sm">管理首頁 Sections 同 Banners</div>
+          <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.homepage.title}</h1>
+          <div className="text-zinc-500 text-sm">{t.admin.homepage.subtitle}</div>
         </div>
       </div>
 

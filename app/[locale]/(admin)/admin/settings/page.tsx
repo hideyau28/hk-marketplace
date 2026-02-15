@@ -421,17 +421,15 @@ export default function TenantSettings({ params }: { params: { locale: string } 
   return (
     <div className="bg-zinc-50 text-zinc-900 pb-20">
       <div className="mx-auto max-w-4xl px-6 py-12">
-        <div className="mb-6">
-          <SidebarToggle />
-        </div>
-
         {/* Header */}
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div className="space-y-1.5">
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">⚙️ 商店設定</h1>
-            <p className="text-zinc-600 text-base max-w-lg">
-              管理你嘅商店基本資料、聯絡方式同外觀設定
-            </p>
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <SidebarToggle />
+            <div>
+              <div className="text-zinc-500 text-sm">Admin</div>
+              <h1 className="text-2xl font-semibold text-zinc-900">{locale === "zh-HK" ? "商店設定" : "Settings"}</h1>
+              <div className="text-zinc-500 text-sm">{locale === "zh-HK" ? "管理商店基本資料、外觀同偏好設定" : "Manage your store info, branding, and preferences"}</div>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">

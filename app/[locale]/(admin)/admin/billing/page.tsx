@@ -257,16 +257,16 @@ export default function BillingPage() {
   return (
     <div className="bg-zinc-50 text-zinc-900 pb-20 min-h-screen">
       <div className="mx-auto max-w-4xl px-6 py-12">
-        <div className="mb-6">
-          <SidebarToggle />
-        </div>
-
         {/* Header */}
-        <div className="space-y-1.5 mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
-            {t.title}
-          </h1>
-          <p className="text-zinc-600 text-base max-w-lg">{t.subtitle}</p>
+        <div className="flex items-center gap-4 mb-8">
+          <SidebarToggle />
+          <div>
+            <div className="text-zinc-500 text-sm">Admin</div>
+            <h1 className="text-2xl font-semibold text-zinc-900">
+              {t.title}
+            </h1>
+            <div className="text-zinc-500 text-sm">{t.subtitle}</div>
+          </div>
         </div>
 
         {/* Success/Cancel banners */}

@@ -13,7 +13,7 @@ export default function OrdersLoading() {
         <div className="h-12 w-full bg-zinc-200 rounded-2xl animate-pulse"></div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
+      <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white">
         <div className="p-4 space-y-4">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="flex items-center gap-4 p-4 border-b border-zinc-100 last:border-0">

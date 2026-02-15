@@ -2,6 +2,7 @@ import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { getAdminTenantId } from "@/lib/tenant";
 import SidebarToggle from "@/components/admin/SidebarToggle";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 import { formatDistanceToNow } from "date-fns";
 
 type PageProps = {
@@ -42,11 +43,11 @@ export default async function AdminLogsPage({ params, searchParams }: PageProps)
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
           <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.logs.title}</h1>
-          <div className="text-zinc-500 text-sm">{t.admin.products.subtitle}</div>
+          <div className="text-zinc-500 text-sm">{t.admin.logs.subtitle}</div>
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
+      <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-[900px] w-full text-sm">
             <thead>
@@ -62,8 +63,12 @@ export default async function AdminLogsPage({ params, searchParams }: PageProps)
             <tbody>
               {logs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-zinc-500">
-                    {t.admin.common.noData}
+                  <td colSpan={5}>
+                    <AdminEmptyState
+                      icon="scroll"
+                      title={t.admin.common.noData}
+                      description={l === "zh-HK" ? "操作記錄會喺呢度顯示" : "Activity logs will appear here"}
+                    />
                   </td>
                 </tr>
               ) : (

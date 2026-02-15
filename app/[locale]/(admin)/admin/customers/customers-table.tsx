@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 
 export type CustomerSummary = {
   phone: string;
@@ -127,32 +128,12 @@ export function CustomersTable({
 
       {/* Customer cards */}
       {customers.length === 0 ? (
-        <div className="mt-6 rounded-3xl border border-zinc-200 bg-white px-4 py-12 text-center">
-          <div className="text-zinc-400 mb-2">
-            <svg
-              className="h-12 w-12 mx-auto"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-          </div>
-          <div className="text-zinc-500 font-medium">
-            {searchQuery
-              ? t.admin.customers.noResults
-              : t.admin.customers.noCustomers}
-          </div>
-          <div className="text-zinc-400 text-sm mt-1">
-            {searchQuery
-              ? t.admin.customers.noResultsDesc
-              : t.admin.customers.noCustomersDesc}
-          </div>
+        <div className="mt-6 rounded-2xl border border-zinc-200 bg-white">
+          <AdminEmptyState
+            icon="users"
+            title={searchQuery ? t.admin.customers.noResults : t.admin.customers.noCustomers}
+            description={searchQuery ? t.admin.customers.noResultsDesc : t.admin.customers.noCustomersDesc}
+          />
         </div>
       ) : (
         <div className="mt-6 space-y-3">

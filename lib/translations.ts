@@ -415,6 +415,7 @@ export const translations = {
       },
       coupons: {
         title: "Coupon Management",
+        subtitle: "Configure discount rules for customers",
         addCoupon: "Add Coupon",
         code: "Code",
         type: "Type",
@@ -452,6 +453,7 @@ export const translations = {
       },
       logs: {
         title: "Activity Log",
+        subtitle: "View admin activity and audit trail",
         action: "Action",
         resource: "Resource",
         details: "Details",
@@ -460,6 +462,7 @@ export const translations = {
       },
       settings: {
         title: "Settings",
+        subtitle: "Manage your store info, branding, and preferences",
         storeSettings: "Store Settings",
         storeName: "Store Name",
         tagline: "Tagline",
@@ -490,6 +493,10 @@ export const translations = {
         buttonLink: "Button Link",
         imageUrl: "Image URL",
         sortOrder: "Sort Order",
+      },
+      homepage: {
+        title: "Homepage Management",
+        subtitle: "Manage banners and sections on the storefront",
       },
       customers: {
         title: "Customers",
@@ -937,6 +944,7 @@ export const translations = {
       },
       coupons: {
         title: "優惠碼管理",
+        subtitle: "為顧客設定折扣規則",
         addCoupon: "新增優惠碼",
         code: "折扣碼",
         type: "類型",
@@ -974,6 +982,7 @@ export const translations = {
       },
       logs: {
         title: "活動日誌",
+        subtitle: "查看管理員操作記錄同審計軌跡",
         action: "動作",
         resource: "目標",
         details: "詳情",
@@ -982,6 +991,7 @@ export const translations = {
       },
       settings: {
         title: "設定",
+        subtitle: "管理商店基本資料、外觀同偏好設定",
         storeSettings: "商店設定",
         storeName: "商店名稱",
         tagline: "標語",
@@ -1012,6 +1022,10 @@ export const translations = {
         buttonLink: "按鈕連結",
         imageUrl: "圖片網址",
         sortOrder: "排序",
+      },
+      homepage: {
+        title: "首頁管理",
+        subtitle: "管理店面首頁嘅 Banners 同版面",
       },
       customers: {
         title: "客戶管理",

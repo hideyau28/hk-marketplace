@@ -5,6 +5,7 @@ import type { Coupon } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import CouponModal from "./coupon-modal";
 import { getDict, type Locale } from "@/lib/i18n";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 
 type CouponsTableProps = {
   coupons: Coupon[];
@@ -42,7 +43,7 @@ export default function CouponsTable({ coupons, locale }: CouponsTableProps) {
         </button>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
+      <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-[980px] w-full text-sm">
             <thead>
@@ -61,8 +62,12 @@ export default function CouponsTable({ coupons, locale }: CouponsTableProps) {
             <tbody>
               {coupons.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-zinc-500">
-                    {t.admin.coupons.noCoupons}
+                  <td colSpan={9}>
+                    <AdminEmptyState
+                      icon="ticket"
+                      title={t.admin.coupons.noCoupons}
+                      description={t.admin.coupons.configureDiscount}
+                    />
                   </td>
                 </tr>
               ) : (

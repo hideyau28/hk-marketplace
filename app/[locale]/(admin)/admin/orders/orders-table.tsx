@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 import type { OrderWithPayments } from "./actions";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 
 type OrdersTableProps = {
   orders: OrderWithPayments[];
@@ -206,8 +207,12 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
 
       {/* Orders cards */}
       {orders.length === 0 ? (
-        <div className="mt-6 rounded-3xl border border-zinc-200 bg-white px-4 py-12 text-center text-zinc-500">
-          {locale === "zh-HK" ? "沒有訂單" : "No orders found"}
+        <div className="mt-6 rounded-2xl border border-zinc-200 bg-white">
+          <AdminEmptyState
+            icon="cart"
+            title={locale === "zh-HK" ? "沒有訂單" : "No orders found"}
+            description={locale === "zh-HK" ? "訂單會喺呢度顯示" : "Orders will appear here once placed"}
+          />
         </div>
       ) : (
         <div className="mt-6 space-y-3">

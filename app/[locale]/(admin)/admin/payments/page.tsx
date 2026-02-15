@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getAdminTenantId } from "@/lib/tenant";
-import type { Locale } from "@/lib/i18n";
+import { getDict, type Locale } from "@/lib/i18n";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import PaymentMethodsList from "./payments-list";
 
@@ -11,6 +11,7 @@ type PageProps = {
 export default async function AdminPaymentsPage({ params }: PageProps) {
   const { locale } = await params;
   const l = locale as Locale;
+  const t = getDict(l);
 
   const tenantId = await getAdminTenantId();
   const paymentMethods = await prisma.paymentMethod.findMany({
@@ -24,8 +25,8 @@ export default async function AdminPaymentsPage({ params }: PageProps) {
         <SidebarToggle />
         <div>
           <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">付款方式管理</h1>
-          <div className="text-zinc-500 text-sm">管理 FPS、PayMe、Alipay HK 付款設定</div>
+          <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.payments.title}</h1>
+          <div className="text-zinc-500 text-sm">{t.admin.payments.subtitle}</div>
         </div>
       </div>
 

@@ -9,6 +9,7 @@ import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
 import { Star, Flame, Search, Check, X, Pencil, Eye, EyeOff } from "lucide-react";
 import { toggleFeatured, toggleHotSelling, updatePrice, updateProduct } from "./actions";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -560,7 +561,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
         </div>
       )}
 
-      <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
+      <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-[1400px] w-full text-sm">
             <thead>
@@ -689,8 +690,12 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
             <tbody>
               {paginatedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-12 text-center text-zinc-500">
-                    {searchQuery ? "No products match your search." : "No data available."}
+                  <td colSpan={11}>
+                    <AdminEmptyState
+                      icon="package"
+                      title={searchQuery ? "No products match your search" : "No products yet"}
+                      description={searchQuery ? "Try a different search term" : "Add your first product to get started"}
+                    />
                   </td>
                 </tr>
               ) : (

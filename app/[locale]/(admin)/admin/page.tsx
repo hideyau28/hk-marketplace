@@ -10,6 +10,7 @@ import WelcomeToast from "@/components/admin/WelcomeToast";
 import BioLinkDashboard from "@/components/admin/BioLinkDashboard";
 import { getDict, type Locale } from "@/lib/i18n";
 import { hasFeature } from "@/lib/plan";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 
 type StatCardProps = {
   label: string;
@@ -346,7 +347,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         </div>
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
           {recentOrders.length === 0 ? (
-            <div className="p-8 text-center text-zinc-500">No orders yet</div>
+            <AdminEmptyState icon="cart" title={locale === "zh-HK" ? "暫時未有訂單" : "No orders yet"} description={locale === "zh-HK" ? "收到訂單後會喺呢度顯示" : "Orders will appear here once placed"} />
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-[800px] w-full text-sm">

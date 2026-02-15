@@ -80,7 +80,7 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
       {result.ok ? (
         <OrdersTable orders={result.data} locale={l} currentStatus={status} searchQuery={q} csvExportEnabled={csvExportEnabled} />
       ) : (
-        <div className="mt-6 rounded-3xl border border-red-500/20 bg-red-500/10 p-6">
+        <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/10 p-6">
           <div className="text-red-400 font-semibold">{t.common.error}</div>
           <div className="mt-2 text-red-300 text-sm">
             <div className="font-mono">{result.code}</div>
