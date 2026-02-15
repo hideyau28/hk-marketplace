@@ -337,6 +337,8 @@ model Tenant {
   deliveryOptions       Json?    @default("[{\"id\":\"meetup\",\"label\":\"面交\",\"price\":0,\"enabled\":true},{\"id\":\"sf-collect\",\"label\":\"順豐到付\",\"price\":0,\"enabled\":true},{\"id\":\"sf-prepaid\",\"label\":\"順豐寄付\",\"price\":30,\"enabled\":true}]")
   freeShippingThreshold Int?
   orderConfirmMessage   Json?    @default("{\"thanks\":\"多謝你嘅訂單！\",\"whatsappTemplate\":\"你好！我落咗單 #{orderNumber}\"}")
+  // Branding
+  hideBranding         Boolean   @default(false)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 

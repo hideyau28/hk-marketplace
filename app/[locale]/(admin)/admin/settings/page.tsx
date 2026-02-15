@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Save, Loader2, CheckCircle2, AlertCircle, Store, Phone, Palette, User, Truck, DollarSign, MessageSquare, Plus, Pencil, Trash2, Crown } from "lucide-react";
+import { Save, Loader2, CheckCircle2, AlertCircle, Store, Phone, Palette, User, Truck, DollarSign, MessageSquare, Plus, Pencil, Trash2, Crown, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -40,6 +40,7 @@ type TenantSettings = {
   freeShippingThreshold: number | null;
   freeShippingEnabled: boolean;
   orderConfirmMessage: OrderConfirmConfig;
+  hideBranding: boolean;
 };
 
 type SaveState = "idle" | "saving" | "success" | "error";
@@ -150,6 +151,7 @@ export default function TenantSettings({ params }: { params: { locale: string } 
       thanks: "多謝你嘅訂單！",
       whatsappTemplate: "你好！我落咗單 #{orderNumber}",
     },
+    hideBranding: false,
   });
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -210,6 +212,7 @@ export default function TenantSettings({ params }: { params: { locale: string } 
               whatsappTemplate: "你好！我落咗單 #{orderNumber}",
             },
             currency: d.currency || "HKD",
+            hideBranding: d.hideBranding ?? false,
           });
           setOriginalSlug(d.slug);
           if (d.email) setAccountEmail(d.email);
@@ -1024,6 +1027,54 @@ export default function TenantSettings({ params }: { params: { locale: string } 
                   </div>
                 </div>
                 <Description>商店嘅 logo 或頭像</Description>
+              </div>
+
+              {/* Hide Branding Toggle (Pro only) */}
+              <div className="pt-4 border-t border-zinc-200 space-y-3">
+                <div className="flex items-center gap-3">
+                  {planData?.plan === "pro" ? (
+                    <button
+                      onClick={() => setFormData((prev) => ({ ...prev, hideBranding: !prev.hideBranding }))}
+                      className={cn(
+                        "w-10 h-6 rounded-full relative transition-colors flex-shrink-0",
+                        formData.hideBranding ? "bg-emerald-500" : "bg-zinc-300"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-all",
+                          formData.hideBranding ? "left-[18px]" : "left-0.5"
+                        )}
+                      />
+                    </button>
+                  ) : (
+                    <div className="w-10 h-6 rounded-full bg-zinc-200 relative flex-shrink-0 cursor-not-allowed">
+                      <div className="w-5 h-5 rounded-full bg-white shadow absolute top-0.5 left-0.5" />
+                    </div>
+                  )}
+                  <Label className={planData?.plan !== "pro" ? "text-zinc-400" : undefined}>
+                    {locale === "zh-HK" ? "隱藏 WoWlix 品牌" : "Hide WoWlix branding"}
+                  </Label>
+                  {planData?.plan !== "pro" && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 text-xs font-medium">
+                      <Lock className="h-3 w-3" /> Pro
+                    </span>
+                  )}
+                </div>
+                <Description>
+                  {planData?.plan !== "pro"
+                    ? (locale === "zh-HK"
+                        ? "升級至 Pro 方案即可移除頁底嘅「Powered by WoWlix」字樣"
+                        : "Upgrade to Pro to remove the \"Powered by WoWlix\" text from your store footer")
+                    : (locale === "zh-HK"
+                        ? "開啟後會隱藏頁底嘅「Powered by WoWlix」字樣"
+                        : "When enabled, hides the \"Powered by WoWlix\" text from your store footer")}
+                </Description>
+                {planData?.plan !== "pro" && (
+                  <button className="px-4 py-2 text-sm font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-colors">
+                    {locale === "zh-HK" ? "升級至 Pro" : "Upgrade to Pro"}
+                  </button>
+                )}
               </div>
             </div>
           </div>

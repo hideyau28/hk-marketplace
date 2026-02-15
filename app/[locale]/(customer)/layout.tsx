@@ -52,7 +52,7 @@ export default async function CustomerLayout({
   const [tenantRow, storeSettings] = await Promise.all([
     prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { templateId: true },
+      select: { templateId: true, hideBranding: true, plan: true, planExpiresAt: true },
     }).catch(() => null),
     prisma.storeSettings.findFirst({
       where: { tenantId },
@@ -68,6 +68,10 @@ export default async function CustomerLayout({
 
   // Get store name with fallback
   const storeName = storeSettings?.storeName || "May's Shop";
+
+  // Only Pro plan (not expired) with hideBranding enabled can hide branding
+  const isPro = tenantRow?.plan === "pro" && (!tenantRow?.planExpiresAt || tenantRow.planExpiresAt > new Date());
+  const effectiveHideBranding = isPro && (tenantRow?.hideBranding ?? false);
 
   const welcomePopupConfig = {
     enabled: storeSettings?.welcomePopupEnabled ?? true,
@@ -89,7 +93,7 @@ export default async function CustomerLayout({
                 <TopNav locale={l} t={t} storeName={storeName} />
                 <CategoryNavWrapper locale={l} />
                 <main>{children}</main>
-                <Footer locale={l} t={t} storeName={storeName} />
+                <Footer locale={l} t={t} storeName={storeName} hideBranding={effectiveHideBranding} />
                 <BottomTab t={t} />
                 <WelcomePopup config={welcomePopupConfig} />
                 <SocialProofPopup products={socialProofProducts} />
