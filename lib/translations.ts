@@ -210,6 +210,10 @@ export const translations = {
     whatsapp: {
       productMessage: "I want to ask about this product: {name}",
       defaultMessage: "Hi! I'd like to ask a question",
+      contactStore: "WhatsApp Store",
+      contactCustomer: "WhatsApp Customer",
+      orderContactStoreMessage: "Hi, I just placed an order at {storeName}, order #{orderNumber}. I'd like to confirm the order status.",
+      orderContactCustomerMessage: "Hi {customerName}, your order #{orderNumber} has been confirmed. We'll arrange it as soon as possible.",
     },
     admin: {
       common: {
@@ -637,6 +641,10 @@ export const translations = {
     whatsapp: {
       productMessage: "我想查詢呢個產品：{name}",
       defaultMessage: "你好！我想查詢",
+      contactStore: "WhatsApp 聯絡店主",
+      contactCustomer: "WhatsApp 客人",
+      orderContactStoreMessage: "你好，我啱啱喺 {storeName} 落咗單，訂單號 #{orderNumber}，想確認訂單狀態。",
+      orderContactCustomerMessage: "你好 {customerName}，你嘅訂單 #{orderNumber} 已確認，我哋會盡快安排。",
     },
     admin: {
       common: {

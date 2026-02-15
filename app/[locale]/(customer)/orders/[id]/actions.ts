@@ -1,5 +1,8 @@
 "use server";
 
+import { prisma } from "@/lib/prisma";
+import { hasFeature } from "@/lib/plan";
+
 export async function getOrderById(orderId: string) {
   try {
     const adminSecret = process.env.ADMIN_SECRET;
@@ -18,7 +21,29 @@ export async function getOrderById(orderId: string) {
     const result = await response.json();
 
     if (result.ok) {
-      return { ok: true as const, data: result.data };
+      // Fetch tenant whatsapp + name for the WhatsApp contact button
+      let tenantWhatsapp: string | null = null;
+      let tenantName: string | null = null;
+      let whatsappEnabled = false;
+
+      const tenantId = result.data.tenantId;
+      if (tenantId) {
+        const tenant = await prisma.tenant.findUnique({
+          where: { id: tenantId },
+          select: { whatsapp: true, name: true },
+        });
+        tenantWhatsapp = tenant?.whatsapp ?? null;
+        tenantName = tenant?.name ?? null;
+        whatsappEnabled = await hasFeature(tenantId, "whatsapp");
+      }
+
+      return {
+        ok: true as const,
+        data: result.data,
+        tenantWhatsapp,
+        tenantName,
+        whatsappEnabled,
+      };
     } else {
       return { ok: false as const, error: result.error.message };
     }
