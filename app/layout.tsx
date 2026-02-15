@@ -25,6 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
       manifest: "/manifest.json",
       icons: {
         icon: "/favicon.svg",
+        apple: "/icon-192x192.png",
       },
     };
   }
@@ -37,6 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
     manifest: "/manifest.json",
     icons: {
       icon: "/favicon.svg",
+      apple: "/icon-192x192.png",
     },
   };
 }

@@ -18,19 +18,25 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
 
+  const platformTitle = "WoWlix — 一條 Link 開網店";
+  const platformDescription = "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。";
+  const platformOg = {
+    title: platformTitle,
+    description: platformDescription,
+    url: "https://wowlix.com",
+    siteName: "WoWlix",
+    images: ["https://wowlix.com/og-default.png"],
+    locale: "zh_HK",
+    type: "website" as const,
+  };
+
   // Platform bare domain → landing page metadata
   if (await isPlatformMode()) {
     return {
-      title: "WoWlix — Turn Followers into Customers",
-      description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
-      openGraph: {
-        title: "WoWlix — Turn Followers into Customers",
-        description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
-        url: "https://wowlix.com",
-        siteName: "WoWlix",
-        locale: "zh_HK",
-        type: "website",
-      },
+      title: platformTitle,
+      description: platformDescription,
+      openGraph: platformOg,
+      twitter: { card: "summary_large_image", title: platformTitle, description: platformDescription, images: ["https://wowlix.com/og-default.png"] },
     };
   }
 
@@ -39,16 +45,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     await getServerTenantId();
   } catch (error) {
     return {
-      title: "WoWlix — Turn Followers into Customers",
-      description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
-      openGraph: {
-        title: "WoWlix — Turn Followers into Customers",
-        description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
-        url: "https://wowlix.com",
-        siteName: "WoWlix",
-        locale: "zh_HK",
-        type: "website",
-      },
+      title: platformTitle,
+      description: platformDescription,
+      openGraph: platformOg,
+      twitter: { card: "summary_large_image", title: platformTitle, description: platformDescription, images: ["https://wowlix.com/og-default.png"] },
     };
   }
 

@@ -1,11 +1,14 @@
 import { MetadataRoute } from 'next'
+import { prisma } from '@/lib/prisma'
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_VERCEL_URL
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : 'https://hk-market.com'
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = process.env.APP_URL
+    || (process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : 'https://wowlix.com')
 
-  return [
+  // Static public pages
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -25,22 +28,36 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${baseUrl}/en/collections`,
+      url: `${baseUrl}/en/pricing`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/en/cart`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/en/orders`,
+      url: `${baseUrl}/zh-HK/pricing`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
-      priority: 0.6,
+      priority: 0.8,
     },
   ]
+
+  // Dynamic: all active tenant storefronts
+  let tenantPages: MetadataRoute.Sitemap = []
+  try {
+    const tenants = await prisma.tenant.findMany({
+      where: { plan: { not: undefined } },
+      select: { slug: true, updatedAt: true },
+    })
+
+    tenantPages = tenants.map((t) => ({
+      url: `${baseUrl}/en/${t.slug}`,
+      lastModified: t.updatedAt,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }))
+  } catch (err) {
+    console.error('[sitemap] Failed to fetch tenants:', err)
+  }
+
+  return [...staticPages, ...tenantPages]
 }

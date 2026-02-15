@@ -44,16 +44,24 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     ? `選購 ${product.title}${product.brand ? ` (${product.brand})` : ""}，正品保證！`
     : `Shop ${product.title}${product.brand ? ` by ${product.brand}` : ""} at ${storeName}. 100% authentic!`;
 
+  const ogImages = product.imageUrl ? [product.imageUrl] : [];
+
   return {
-    title: `${product.title} - ${storeName}`,
+    title: `${product.title} | ${storeName}`,
     description,
     openGraph: {
-      title: `${product.title} - ${storeName}`,
+      title: `${product.title} | ${storeName}`,
       description,
       siteName: storeName,
       type: "website",
       locale: locale === "zh-HK" ? "zh_HK" : "en_US",
-      images: product.imageUrl ? [product.imageUrl] : [],
+      images: ogImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.title} | ${storeName}`,
+      description,
+      images: ogImages,
     },
   };
 }
