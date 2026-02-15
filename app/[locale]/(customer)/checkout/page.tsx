@@ -90,6 +90,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponApplied, setCouponApplied] = useState(false);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [couponFeatureEnabled, setCouponFeatureEnabled] = useState(false);
 
   const [selectedProvider, setSelectedProvider] = useState<PaymentProviderOption | null>(null);
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
@@ -116,6 +117,12 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       .then((res) => res.json())
       .then((data) => {
         if (data?.data) setStoreSettings(data.data);
+      })
+      .catch(() => {});
+    fetch("/api/features/coupon")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.data?.enabled) setCouponFeatureEnabled(true);
       })
       .catch(() => {});
   }, []);
@@ -485,6 +492,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
         ))}
       </div>
 
+      {couponFeatureEnabled && (
       <div className="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-700">
         <div className="flex items-center gap-2">
           <input
@@ -505,10 +513,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
         {couponError && <div className="mt-2 text-xs text-red-600">{couponError}</div>}
         {couponApplied && discount > 0 && (
           <div className="mt-2 text-xs text-olive-700">
-            {locale === "zh-HK" ? "已套用優惠碼" : "Coupon applied"}
+            {t.checkout.couponApplied}
           </div>
         )}
       </div>
+      )}
 
       <div className="mt-4 space-y-2 border-t border-zinc-200 pt-4 text-sm dark:border-zinc-700">
         <div className="flex justify-between">

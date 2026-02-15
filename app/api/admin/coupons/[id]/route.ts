@@ -9,6 +9,7 @@ type CouponUpdatePayload = {
   discountType?: unknown;
   discountValue?: unknown;
   minOrder?: unknown;
+  maxUsage?: unknown;
   active?: unknown;
   expiresAt?: unknown;
 };
@@ -82,6 +83,18 @@ export const PATCH = withApi(async (req: Request, { params }: { params: Promise<
     } else {
       assertNonNegativeNumber(body.minOrder, "minOrder");
       updateData.minOrder = Number(body.minOrder);
+    }
+  }
+
+  if (body.maxUsage !== undefined) {
+    if (body.maxUsage === null || body.maxUsage === "") {
+      updateData.maxUsage = null;
+    } else {
+      const mu = Number(body.maxUsage);
+      if (!Number.isInteger(mu) || mu < 1) {
+        throw new ApiError(400, "BAD_REQUEST", "maxUsage must be a positive integer");
+      }
+      updateData.maxUsage = mu;
     }
   }
 

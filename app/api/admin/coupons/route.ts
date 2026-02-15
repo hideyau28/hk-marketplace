@@ -9,6 +9,7 @@ type CouponPayload = {
   discountType?: unknown;
   discountValue?: unknown;
   minOrder?: unknown;
+  maxUsage?: unknown;
   active?: unknown;
   expiresAt?: unknown;
 };
@@ -75,6 +76,15 @@ export const POST = withApi(async (req) => {
     minOrder = Number(body.minOrder);
   }
 
+  let maxUsage: number | null = null;
+  if (body.maxUsage !== undefined && body.maxUsage !== null && body.maxUsage !== "") {
+    const mu = Number(body.maxUsage);
+    if (!Number.isInteger(mu) || mu < 1) {
+      throw new ApiError(400, "BAD_REQUEST", "maxUsage must be a positive integer");
+    }
+    maxUsage = mu;
+  }
+
   let active = true;
   if (body.active !== undefined) {
     if (typeof body.active !== "boolean") {
@@ -91,6 +101,7 @@ export const POST = withApi(async (req) => {
       discountType: body.discountType,
       discountValue: Number(body.discountValue),
       minOrder,
+      maxUsage,
       active,
       expiresAt,
       tenantId,
