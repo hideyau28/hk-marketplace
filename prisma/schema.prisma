@@ -232,6 +232,8 @@ model Coupon {
   discountType  CouponDiscountType
   discountValue Float
   minOrder      Float?
+  maxUsage      Int?               // null = unlimited
+  usageCount    Int                @default(0)
   active        Boolean            @default(true)
   expiresAt     DateTime?
   createdAt     DateTime           @default(now())

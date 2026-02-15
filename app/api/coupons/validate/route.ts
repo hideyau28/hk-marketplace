@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/tenant";
+import { hasFeature } from "@/lib/plan";
 
 type Body = {
   code?: string;
@@ -18,6 +19,13 @@ function assertPositiveNumber(value: unknown, field: string) {
 
 export const POST = withApi(async (req) => {
   const tenantId = await getTenantId(req);
+
+  // Plan gating: coupon feature requires lite+ plan
+  const allowed = await hasFeature(tenantId, "coupon");
+  if (!allowed) {
+    throw new ApiError(403, "FORBIDDEN", "Coupon feature is not available on your current plan");
+  }
+
   let body: Body;
   try {
     body = (await req.json()) as Body;
@@ -48,6 +56,11 @@ export const POST = withApi(async (req) => {
 
   if (coupon.expiresAt && coupon.expiresAt.getTime() < Date.now()) {
     throw new ApiError(400, "BAD_REQUEST", "Coupon expired");
+  }
+
+  // Check usage limit
+  if (coupon.maxUsage !== null && coupon.usageCount >= coupon.maxUsage) {
+    throw new ApiError(400, "BAD_REQUEST", "Coupon usage limit reached");
   }
 
   if (coupon.minOrder !== null && coupon.minOrder !== undefined) {

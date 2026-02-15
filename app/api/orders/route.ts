@@ -107,6 +107,7 @@ type CreateOrderPayload = {
         deliveryFee?: number;
         total: number;
         currency: string;
+        couponCode?: string;
     };
     fulfillment: {
         type: "pickup" | "delivery";
@@ -212,6 +213,11 @@ function parseCreatePayload(body: any): CreateOrderPayload {
         assertNonEmptyString(body.fulfillment.address.line1, "fulfillment.address.line1");
     }
 
+    // Parse coupon code from amounts
+    const couponCode = typeof body.amounts?.couponCode === "string" && body.amounts.couponCode.trim().length > 0
+        ? body.amounts.couponCode.trim().toUpperCase()
+        : undefined;
+
     return {
         customerName: body.customerName.trim(),
         phone: body.phone.trim(),
@@ -221,6 +227,7 @@ function parseCreatePayload(body: any): CreateOrderPayload {
         amounts: {
             ...body.amounts,
             currency,
+            couponCode,
         },
         fulfillment: body.fulfillment,
         note: typeof body.note === "string" && body.note.trim().length > 0 ? body.note.trim() : undefined,
@@ -281,13 +288,44 @@ async function repriceOrder(payload: CreateOrderPayload, tenantId: string): Prom
         };
     });
 
-    const discount = payload.amounts.discount ?? 0;
-
     // Calculate shipping fee server-side (don't trust client)
     let deliveryFee = 0;
     if (payload.fulfillment.type === "delivery") {
         const region = payload.fulfillment.address?.region;
         deliveryFee = calculateShippingFee(subtotal, region);
+    }
+
+    // Server-side coupon validation (don't trust client discount)
+    let discount = 0;
+    let validatedCouponCode: string | undefined;
+    if (payload.amounts.couponCode) {
+        const coupon = await prisma.coupon.findFirst({
+            where: { code: payload.amounts.couponCode, tenantId, active: true },
+        });
+        if (coupon) {
+            const notExpired = !coupon.expiresAt || coupon.expiresAt.getTime() >= Date.now();
+            const withinUsage = coupon.maxUsage === null || coupon.usageCount < coupon.maxUsage;
+            const meetsMinOrder = coupon.minOrder === null || subtotal >= coupon.minOrder;
+
+            if (notExpired && withinUsage && meetsMinOrder) {
+                if (coupon.discountType === "PERCENTAGE") {
+                    discount = subtotal * (coupon.discountValue / 100);
+                } else {
+                    if (coupon.code.toUpperCase() === "FREESHIP") {
+                        discount = Math.min(deliveryFee, coupon.discountValue);
+                    } else {
+                        discount = coupon.discountValue;
+                    }
+                }
+                const maxDiscount = subtotal + deliveryFee;
+                if (discount > maxDiscount) discount = maxDiscount;
+                validatedCouponCode = coupon.code;
+            }
+        }
+        // If coupon invalid, discount stays 0 — don't block order, just ignore bad coupon
+    } else if (payload.amounts.discount !== undefined) {
+        // No coupon code but client sent discount — ignore it (server controls discount)
+        discount = 0;
     }
 
     const total = subtotal + deliveryFee - discount;
@@ -298,8 +336,11 @@ async function repriceOrder(payload: CreateOrderPayload, tenantId: string): Prom
         currency: payload.amounts.currency,
     };
 
-    if (payload.amounts.discount !== undefined) {
+    if (discount > 0) {
         computedAmounts.discount = discount;
+    }
+    if (validatedCouponCode) {
+        computedAmounts.couponCode = validatedCouponCode;
     }
     if (deliveryFee > 0) {
         computedAmounts.deliveryFee = deliveryFee;
@@ -453,6 +494,17 @@ export const POST = withApi(async (req) => {
             paymentStatus,
         },
     });
+
+    // Increment coupon usageCount if a valid coupon was applied
+    const appliedCouponCode = (repriced.amounts as any)?.couponCode;
+    if (appliedCouponCode) {
+        await prisma.coupon.updateMany({
+            where: { code: appliedCouponCode, tenantId },
+            data: { usageCount: { increment: 1 } },
+        }).catch((error) => {
+            console.error("Failed to increment coupon usage:", error);
+        });
+    }
 
     await saveReceiptHtml({
         id: order.id,

@@ -2,21 +2,25 @@
 
 import { useState, useTransition } from "react";
 import type { Coupon } from "@prisma/client";
+import { getDict, type Locale } from "@/lib/i18n";
 
 type CouponModalProps = {
   coupon: Coupon | null;
+  locale: string;
   onClose: () => void;
   onSaved: () => void;
 };
 
-export default function CouponModal({ coupon, onClose, onSaved }: CouponModalProps) {
+export default function CouponModal({ coupon, locale, onClose, onSaved }: CouponModalProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const t = getDict(locale as Locale);
 
   const [code, setCode] = useState(coupon?.code || "");
   const [discountType, setDiscountType] = useState<Coupon["discountType"]>(coupon?.discountType || "PERCENTAGE");
   const [discountValue, setDiscountValue] = useState(String(coupon?.discountValue ?? ""));
   const [minOrder, setMinOrder] = useState(coupon?.minOrder?.toString() || "");
+  const [maxUsage, setMaxUsage] = useState(coupon?.maxUsage?.toString() || "");
   const [active, setActive] = useState(coupon?.active ?? true);
   const [expiresAt, setExpiresAt] = useState(
     coupon?.expiresAt ? new Date(coupon.expiresAt).toISOString().slice(0, 10) : ""
@@ -28,15 +32,19 @@ export default function CouponModal({ coupon, onClose, onSaved }: CouponModalPro
 
     const valueNum = Number(discountValue);
     if (!code.trim()) {
-      setError("Code is required.");
+      setError(t.admin.coupons.codeRequired);
       return;
     }
     if (!Number.isFinite(valueNum) || valueNum < 0) {
-      setError("Discount value must be a non-negative number.");
+      setError(t.admin.coupons.valueMustBePositive);
       return;
     }
     if (minOrder && (!Number.isFinite(Number(minOrder)) || Number(minOrder) < 0)) {
-      setError("Min order must be a non-negative number.");
+      setError(t.admin.coupons.minOrderMustBePositive);
+      return;
+    }
+    if (maxUsage && (!Number.isInteger(Number(maxUsage)) || Number(maxUsage) < 1)) {
+      setError(t.admin.coupons.maxUsageMustBePositive);
       return;
     }
 
@@ -46,6 +54,7 @@ export default function CouponModal({ coupon, onClose, onSaved }: CouponModalPro
         discountType,
         discountValue: valueNum,
         minOrder: minOrder ? Number(minOrder) : null,
+        maxUsage: maxUsage ? Number(maxUsage) : null,
         active,
         expiresAt: expiresAt || null,
       };
@@ -72,8 +81,10 @@ export default function CouponModal({ coupon, onClose, onSaved }: CouponModalPro
       <div className="w-full max-w-lg rounded-3xl border border-zinc-200 bg-white p-6">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-zinc-900">{coupon ? "Edit Coupon" : "Create Coupon"}</h2>
-            <p className="mt-1 text-zinc-500 text-sm">Configure discount rules for customers.</p>
+            <h2 className="text-xl font-semibold text-zinc-900">
+              {coupon ? t.admin.coupons.editCoupon : t.admin.coupons.createCoupon}
+            </h2>
+            <p className="mt-1 text-zinc-500 text-sm">{t.admin.coupons.configureDiscount}</p>
           </div>
           <button
             onClick={onClose}
@@ -92,7 +103,7 @@ export default function CouponModal({ coupon, onClose, onSaved }: CouponModalPro
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-zinc-700 text-sm font-medium mb-2">Code *</label>
+            <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.code} *</label>
             <input
               value={code}
               onChange={(e) => setCode(e.target.value)}
@@ -104,19 +115,19 @@ export default function CouponModal({ coupon, onClose, onSaved }: CouponModalPro
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">Type</label>
+              <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.type}</label>
               <select
                 value={discountType}
                 onChange={(e) => setDiscountType(e.target.value as Coupon["discountType"])}
                 disabled={isPending}
                 className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               >
-                <option value="PERCENTAGE">Percentage</option>
-                <option value="FIXED">Fixed</option>
+                <option value="PERCENTAGE">{t.admin.coupons.percentage}</option>
+                <option value="FIXED">{t.admin.coupons.fixed}</option>
               </select>
             </div>
             <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">Value</label>
+              <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.discountValue}</label>
               <input
                 type="number"
                 min="0"
@@ -132,7 +143,7 @@ export default function CouponModal({ coupon, onClose, onSaved }: CouponModalPro
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">Min Order (HKD)</label>
+              <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.minOrder} (HKD)</label>
               <input
                 type="number"
                 min="0"
@@ -145,15 +156,29 @@ export default function CouponModal({ coupon, onClose, onSaved }: CouponModalPro
               />
             </div>
             <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">Expires At</label>
+              <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.maxUsage}</label>
               <input
-                type="date"
-                value={expiresAt}
-                onChange={(e) => setExpiresAt(e.target.value)}
+                type="number"
+                min="1"
+                step="1"
+                value={maxUsage}
+                onChange={(e) => setMaxUsage(e.target.value)}
                 disabled={isPending}
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                placeholder={t.admin.coupons.unlimited}
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.expiresAt}</label>
+            <input
+              type="date"
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
+              disabled={isPending}
+              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+            />
           </div>
 
           <div className="flex items-center gap-3">
@@ -166,7 +191,7 @@ export default function CouponModal({ coupon, onClose, onSaved }: CouponModalPro
               className="h-4 w-4 accent-olive-600 disabled:opacity-50"
             />
             <label htmlFor="active" className="text-zinc-700 text-sm">
-              Active
+              {t.admin.coupons.active}
             </label>
           </div>
 
@@ -177,14 +202,14 @@ export default function CouponModal({ coupon, onClose, onSaved }: CouponModalPro
               disabled={isPending}
               className="flex-1 rounded-2xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
             >
-              Cancel
+              {t.admin.coupons.cancel}
             </button>
             <button
               type="submit"
               disabled={isPending}
               className="flex-1 rounded-2xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700 disabled:opacity-50"
             >
-              {isPending ? "Saving..." : "Save"}
+              {isPending ? t.admin.coupons.saving : t.admin.coupons.save}
             </button>
           </div>
         </form>
