@@ -160,7 +160,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     return <LandingPage locale={l} />;
   }
 
-  const [sectionsRaw, bannersRaw, allProductsRaw] = await Promise.all([
+  const PAID_STATUSES = ["PAID", "FULFILLING", "SHIPPED", "COMPLETED"] as const;
+  const hpNow = new Date();
+  const start30 = new Date(hpNow.getFullYear(), hpNow.getMonth(), hpNow.getDate() - 29);
+
+  const [sectionsRaw, bannersRaw, allProductsRaw, paidOrders] = await Promise.all([
     prisma.homepageSection.findMany({
       where: { active: true, tenantId },
       orderBy: { sortOrder: "asc" },
@@ -173,7 +177,28 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       where: { active: true, tenantId },
       orderBy: { createdAt: "desc" },
     }),
+    prisma.order.findMany({
+      where: { tenantId, createdAt: { gte: start30 }, status: { in: [...PAID_STATUSES] } },
+      select: { items: true },
+    }),
   ]);
+
+  // Compute top 3 seller IDs for 🔥 badge
+  const productSales = new Map<string, number>();
+  for (const order of paidOrders) {
+    const items = Array.isArray(order.items) ? (order.items as Record<string, unknown>[]) : [];
+    for (const item of items) {
+      const productId = typeof item?.productId === "string" ? item.productId : null;
+      if (!productId) continue;
+      const qty = Number(item?.quantity ?? item?.qty ?? 0);
+      if (!Number.isFinite(qty) || qty <= 0) continue;
+      productSales.set(productId, (productSales.get(productId) || 0) + qty);
+    }
+  }
+  const topSellerIds = Array.from(productSales.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([id]) => id);
 
   const allProducts = allProductsRaw.map((p) => ({
     id: p.id,
@@ -305,6 +330,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             title={section.title}
             viewAllText={t.home.viewAll}
             viewAllHref={viewAllHref}
+            topSellerIds={topSellerIds}
           />
         );
       })}

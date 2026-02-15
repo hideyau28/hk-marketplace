@@ -29,7 +29,7 @@ function CartIcon() {
   );
 }
 
-function KidsCardItem({ product, locale, isFirst, isLast }: { product: Product; locale: Locale; isFirst: boolean; isLast: boolean }) {
+function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { product: Product; locale: Locale; isFirst: boolean; isLast: boolean; isTopSeller?: boolean }) {
   const { format: formatPrice } = useCurrency();
   const { showToast } = useToast();
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -87,6 +87,11 @@ function KidsCardItem({ product, locale, isFirst, isLast }: { product: Product; 
               sizes="(max-width: 768px) 220px, 280px"
             />
             <WishlistHeart productId={product.id} size="sm" />
+            {isTopSeller && (
+              <span className="absolute top-2 left-2 px-2 py-0.5 text-xs font-semibold rounded text-white bg-red-500 z-10">
+                {locale.startsWith("zh") ? "\uD83D\uDD25 \u71B1\u8CE3" : "\uD83D\uDD25 Hot"}
+              </span>
+            )}
             {/* Cart icon - shows after size selection */}
             {showCartIcon && selectedSize && (
               <button
@@ -167,14 +172,18 @@ export default function KidsSection({
   title,
   viewAllText,
   viewAllHref,
+  topSellerIds,
 }: {
   locale: Locale;
   products: Product[];
   title: string;
   viewAllText: string;
   viewAllHref?: string;
+  topSellerIds?: string[];
 }) {
   if (products.length === 0) return null;
+
+  const topSet = useMemo(() => new Set(topSellerIds || []), [topSellerIds]);
 
   return (
     <section className="py-6">
@@ -192,6 +201,7 @@ export default function KidsSection({
               locale={locale}
               isFirst={idx === 0}
               isLast={idx === products.length - 1}
+              isTopSeller={topSet.has(product.id)}
             />
           ))}
         </div>
