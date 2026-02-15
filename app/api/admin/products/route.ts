@@ -4,6 +4,7 @@ import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { authenticateAdmin } from "@/lib/auth/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { parseBadges } from "@/lib/parse-badges";
+import { checkPlanLimit } from "@/lib/plan";
 import crypto from "node:crypto";
 
 const ROUTE = "/api/admin/products";
@@ -235,6 +236,16 @@ export const GET = withApi(
 export const POST = withApi(
   async (req) => {
     const { tenantId } = await authenticateAdmin(req);
+
+    // Plan gating: check SKU limit
+    const skuCheck = await checkPlanLimit(tenantId, "sku");
+    if (!skuCheck.allowed) {
+      throw new ApiError(
+        403,
+        "FORBIDDEN",
+        `Product limit reached (${skuCheck.current}/${skuCheck.limit}). Please upgrade your plan. | 已達產品上限（${skuCheck.current}/${skuCheck.limit}），請升級方案。`
+      );
+    }
 
     let body: any = null;
     try {

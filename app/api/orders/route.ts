@@ -5,6 +5,7 @@ import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { prisma } from "@/lib/prisma";
 import { saveReceiptHtml } from "@/lib/email";
 import { getTenantId } from "@/lib/tenant";
+import { checkPlanLimit } from "@/lib/plan";
 
 const ROUTE = "/api/orders";
 
@@ -385,6 +386,17 @@ export const GET = withApi(
 // POST /api/orders (customer create + idempotency)
 export const POST = withApi(async (req) => {
     const tenantId = await getTenantId(req);
+
+    // Plan gating: check monthly order limit
+    const orderCheck = await checkPlanLimit(tenantId, "orders");
+    if (!orderCheck.allowed) {
+        throw new ApiError(
+            403,
+            "FORBIDDEN",
+            "This store has reached its monthly order limit. Please try again later. | 店主本月訂單已滿，請稍後再試。"
+        );
+    }
+
     let body: any = null;
     try {
         body = await req.json();

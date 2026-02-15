@@ -312,6 +312,10 @@ model Tenant {
   templateId           String    @default("mochi")
   mode                 String    @default("biolink")
   status               String    @default("active")
+  // Plan & billing
+  plan                 String    @default("free")
+  planExpiresAt        DateTime?
+  trialEndsAt          DateTime?
   stripeCustomerId     String?
   stripeSubscriptionId String?
   subscriptionEndsAt   DateTime?
