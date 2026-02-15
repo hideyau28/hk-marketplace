@@ -11,6 +11,7 @@ type OrdersTableProps = {
   locale: Locale;
   currentStatus?: string;
   searchQuery?: string;
+  csvExportEnabled?: boolean;
 };
 
 // Tab filters for the new status flow
@@ -101,7 +102,7 @@ function getProductCount(items: any): number {
   return items.reduce((sum, item) => sum + (item.quantity || 1), 0);
 }
 
-export function OrdersTable({ orders, locale, currentStatus, searchQuery }: OrdersTableProps) {
+export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExportEnabled }: OrdersTableProps) {
   const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus || "");
   const [search, setSearch] = useState(searchQuery || "");
@@ -179,12 +180,27 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery }: Orde
           </div>
         </form>
         <div className="md:col-span-3">
-          <a
-            href="/api/admin/orders/export"
-            className="inline-flex w-full items-center justify-center rounded-2xl bg-olive-600 px-4 py-3 text-sm font-semibold text-white hover:bg-olive-700"
-          >
-            {locale === "zh-HK" ? "匯出 CSV" : "Export CSV"}
-          </a>
+          {csvExportEnabled ? (
+            <a
+              href={(() => {
+                const params = new URLSearchParams();
+                params.set("format", "csv");
+                if (selectedStatus) params.set("status", selectedStatus);
+                if (search) params.set("q", search);
+                return `/api/admin/orders/export?${params.toString()}`;
+              })()}
+              className="inline-flex w-full items-center justify-center rounded-2xl bg-olive-600 px-4 py-3 text-sm font-semibold text-white hover:bg-olive-700"
+            >
+              {locale === "zh-HK" ? "匯出 CSV" : "Export CSV"}
+            </a>
+          ) : (
+            <span
+              title={locale === "zh-HK" ? "需要 Lite 或以上計劃" : "Requires Lite plan or above"}
+              className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-2xl bg-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-500"
+            >
+              {locale === "zh-HK" ? "匯出 CSV" : "Export CSV"}
+            </span>
+          )}
         </div>
       </div>
 
