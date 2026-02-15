@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getAdminTenantId } from "@/lib/tenant";
+import { hasFeature } from "@/lib/plan";
 import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
 import { OrdersTable } from "./orders-table";
@@ -60,7 +61,10 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
   }
 
   // Full Store mode: existing orders table
-  const result = await fetchOrders(status, q);
+  const [result, csvExportEnabled] = await Promise.all([
+    fetchOrders(status, q),
+    hasFeature(tenantId, "csv_export"),
+  ]);
 
   return (
     <div className="p-4 pb-16">
@@ -74,7 +78,7 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
       </div>
 
       {result.ok ? (
-        <OrdersTable orders={result.data} locale={l} currentStatus={status} searchQuery={q} />
+        <OrdersTable orders={result.data} locale={l} currentStatus={status} searchQuery={q} csvExportEnabled={csvExportEnabled} />
       ) : (
         <div className="mt-6 rounded-3xl border border-red-500/20 bg-red-500/10 p-6">
           <div className="text-red-400 font-semibold">{t.common.error}</div>
