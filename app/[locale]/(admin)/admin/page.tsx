@@ -1,15 +1,14 @@
 import { Suspense } from "react";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getAdminTenantId } from "@/lib/tenant";
-import { verifyToken } from "@/lib/auth/jwt";
-import { Package, CheckCircle, ShoppingCart, DollarSign, ArrowRight } from "lucide-react";
+import { ShoppingCart, DollarSign, ArrowRight, Package, TrendingUp, Lock } from "lucide-react";
 import Link from "next/link";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import DashboardCharts from "@/components/admin/DashboardCharts";
 import WelcomeToast from "@/components/admin/WelcomeToast";
 import BioLinkDashboard from "@/components/admin/BioLinkDashboard";
 import { getDict, type Locale } from "@/lib/i18n";
+import { hasFeature } from "@/lib/plan";
 
 type StatCardProps = {
   label: string;
@@ -30,6 +29,8 @@ function StatCard({ label, value, icon }: StatCardProps) {
     </div>
   );
 }
+
+const PAID_STATUSES = new Set(["PAID", "FULFILLING", "SHIPPED", "COMPLETED"]);
 
 async function getTenantMode(tenantId: string) {
   const tenant = await prisma.tenant.findUnique({
@@ -81,25 +82,25 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
     );
   }
 
-  // Full Store mode: existing dashboard
+  // Full Store mode: analytics dashboard
   const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dayOfWeek = now.getDay();
+  const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diffToMonday);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const start30 = new Date(now);
   start30.setDate(now.getDate() - 29);
-  const start7 = new Date(now);
-  start7.setDate(now.getDate() - 6);
 
-  const [tenant, totalProducts, activeProducts, totalOrders, pendingOrders, ordersWithAmounts, recentOrders, recentOrdersForCharts] = await Promise.all([
+  // Fetch earliest date needed (whichever is earlier: monthStart or start30)
+  const fetchSince = monthStart < start30 ? monthStart : start30;
+
+  const analyticsEnabled = await hasFeature(tenantId, "analytics");
+
+  const [tenant, recentOrders, allRecentOrders] = await Promise.all([
     prisma.tenant.findUnique({
       where: { id: tenantId },
       select: { name: true },
-    }),
-    prisma.product.count({ where: { tenantId } }),
-    prisma.product.count({ where: { tenantId, active: true } }),
-    prisma.order.count({ where: { tenantId } }),
-    prisma.order.count({ where: { tenantId, status: "PENDING" } }),
-    prisma.order.findMany({
-      where: { tenantId, status: { in: ["PAID", "FULFILLING", "SHIPPED", "COMPLETED"] } },
-      select: { amounts: true },
     }),
     prisma.order.findMany({
       where: { tenantId },
@@ -114,7 +115,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       },
     }),
     prisma.order.findMany({
-      where: { tenantId, createdAt: { gte: start30 } },
+      where: { tenantId, createdAt: { gte: fetchSince } },
       orderBy: { createdAt: "asc" },
       select: {
         createdAt: true,
@@ -125,75 +126,92 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
     }),
   ]);
 
-  const totalRevenue = ordersWithAmounts.reduce((sum, order) => {
-    const amounts = order.amounts as any;
-    return sum + (amounts?.total || 0);
-  }, 0);
-
-  const formattedRevenue = `$${totalRevenue.toFixed(0)}`;
-  const paidStatuses = new Set(["PAID", "FULFILLING", "SHIPPED", "COMPLETED"]);
-
-  const ordersLast30Map = new Map<string, number>();
-  const revenueLast30Map = new Map<string, number>();
-  const productCounts = new Map<string, number>();
-
-  for (const order of recentOrdersForCharts) {
-    const dateKey = order.createdAt.toISOString().slice(0, 10);
-    // Count all orders in last 30 days
-    ordersLast30Map.set(dateKey, (ordersLast30Map.get(dateKey) || 0) + 1);
-
-    if (paidStatuses.has(order.status)) {
-      const amounts = order.amounts as any;
-      const total = amounts?.total || 0;
-      revenueLast30Map.set(dateKey, (revenueLast30Map.get(dateKey) || 0) + total);
-      const items = Array.isArray(order.items) ? (order.items as any[]) : [];
-      for (const item of items) {
-        const name = String(item?.name || item?.title || "Item");
-        const qty = Number(item?.quantity ?? item?.qty ?? 0);
-        if (!Number.isFinite(qty) || qty <= 0) continue;
-        productCounts.set(name, (productCounts.get(name) || 0) + qty);
+  // Compute today/week/month aggregates
+  function aggregate(since: Date) {
+    let orderCount = 0;
+    let revenue = 0;
+    for (const o of allRecentOrders) {
+      if (o.createdAt < since) continue;
+      orderCount++;
+      if (PAID_STATUSES.has(o.status)) {
+        const amounts = o.amounts as Record<string, unknown> | null;
+        revenue += Number(amounts?.total) || 0;
       }
     }
+    return { orderCount, revenue };
   }
 
-  const ordersLast30 = Array.from({ length: 30 }).map((_, idx) => {
-    const d = new Date(start30);
-    d.setDate(start30.getDate() + idx);
-    const key = d.toISOString().slice(0, 10);
-    return {
-      date: d.toLocaleDateString("en-HK", { month: "short", day: "numeric" }),
-      orders: ordersLast30Map.get(key) || 0,
-    };
-  });
+  const todayStats = aggregate(todayStart);
+  const weekStats = aggregate(weekStart);
+  const monthStats = aggregate(monthStart);
 
-  // Mock data for page views (API 未有，用 mock data)
-  const pageViewsLast7 = Array.from({ length: 7 }).map((_, idx) => {
-    const d = new Date(start7);
-    d.setDate(start7.getDate() + idx);
-    return {
-      date: d.toLocaleDateString("en-HK", { month: "short", day: "numeric" }),
-      views: Math.floor(Math.random() * 200) + 50, // Mock: 50-250 views per day
-    };
-  });
+  // Build chart data (only if analytics enabled)
+  let ordersLast30: { date: string; orders: number }[] = [];
+  let revenueLast30: { date: string; revenue: number }[] = [];
+  let topProducts: { name: string; quantity: number }[] = [];
+  let pageViewsLast7: { date: string; views: number }[] = [];
 
-  const revenueLast30 = Array.from({ length: 30 }).map((_, idx) => {
-    const d = new Date(start30);
-    d.setDate(start30.getDate() + idx);
-    const key = d.toISOString().slice(0, 10);
-    return {
-      date: d.toLocaleDateString("en-HK", { month: "short", day: "numeric" }),
-      revenue: revenueLast30Map.get(key) || 0,
-    };
-  });
+  if (analyticsEnabled) {
+    const ordersLast30Map = new Map<string, number>();
+    const revenueLast30Map = new Map<string, number>();
+    const productCounts = new Map<string, number>();
 
-  const topProducts = Array.from(productCounts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([name, quantity]) => ({ name, quantity }));
+    for (const order of allRecentOrders) {
+      if (order.createdAt < start30) continue;
+      const dateKey = order.createdAt.toISOString().slice(0, 10);
+      ordersLast30Map.set(dateKey, (ordersLast30Map.get(dateKey) || 0) + 1);
 
-  const paidOrdersCount = recentOrdersForCharts.filter((order) => paidStatuses.has(order.status)).length;
-  const revenueLast30Total = revenueLast30.reduce((sum, entry) => sum + entry.revenue, 0);
-  const avgOrderAmount = paidOrdersCount > 0 ? revenueLast30Total / paidOrdersCount : 0;
+      if (PAID_STATUSES.has(order.status)) {
+        const amounts = order.amounts as Record<string, unknown> | null;
+        const total = Number(amounts?.total) || 0;
+        revenueLast30Map.set(dateKey, (revenueLast30Map.get(dateKey) || 0) + total);
+        const items = Array.isArray(order.items) ? (order.items as Record<string, unknown>[]) : [];
+        for (const item of items) {
+          const name = String(item?.name || item?.title || "Item");
+          const qty = Number(item?.quantity ?? item?.qty ?? 0);
+          if (!Number.isFinite(qty) || qty <= 0) continue;
+          productCounts.set(name, (productCounts.get(name) || 0) + qty);
+        }
+      }
+    }
+
+    ordersLast30 = Array.from({ length: 30 }).map((_, idx) => {
+      const d = new Date(start30);
+      d.setDate(start30.getDate() + idx);
+      const key = d.toISOString().slice(0, 10);
+      return {
+        date: d.toLocaleDateString("en-HK", { month: "short", day: "numeric" }),
+        orders: ordersLast30Map.get(key) || 0,
+      };
+    });
+
+    revenueLast30 = Array.from({ length: 30 }).map((_, idx) => {
+      const d = new Date(start30);
+      d.setDate(start30.getDate() + idx);
+      const key = d.toISOString().slice(0, 10);
+      return {
+        date: d.toLocaleDateString("en-HK", { month: "short", day: "numeric" }),
+        revenue: revenueLast30Map.get(key) || 0,
+      };
+    });
+
+    topProducts = Array.from(productCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, quantity]) => ({ name, quantity }));
+
+    // Mock page views (API 未有)
+    const start7 = new Date(now);
+    start7.setDate(now.getDate() - 6);
+    pageViewsLast7 = Array.from({ length: 7 }).map((_, idx) => {
+      const d = new Date(start7);
+      d.setDate(start7.getDate() + idx);
+      return {
+        date: d.toLocaleDateString("en-HK", { month: "short", day: "numeric" }),
+        views: Math.floor(Math.random() * 200) + 50,
+      };
+    });
+  }
 
   return (
     <div className="p-4 pb-16 max-w-full overflow-hidden">
@@ -209,33 +227,76 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         </div>
       </div>
 
-      {/* Welcome message and quick stats */}
+      {/* Welcome banner */}
       <div className="bg-gradient-to-r from-olive-50 to-olive-100/50 rounded-2xl border border-olive-200 p-6 mb-6">
         <h2 className="text-xl font-semibold text-zinc-900 mb-4">
           👋 歡迎返嚟，{tenant?.name || "店主"}！
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="bg-white/80 rounded-xl p-4 border border-olive-100">
-            <div className="text-sm text-zinc-600 mb-1">總商品數</div>
-            <div className="text-2xl font-bold text-zinc-900">{totalProducts}</div>
+            <div className="text-sm text-zinc-600 mb-1">{t.admin.dashboard.todayOrders}</div>
+            <div className="text-2xl font-bold text-zinc-900">{todayStats.orderCount}</div>
           </div>
           <div className="bg-white/80 rounded-xl p-4 border border-olive-100">
-            <div className="text-sm text-zinc-600 mb-1">待處理訂單</div>
-            <div className="text-2xl font-bold text-zinc-900">{pendingOrders}</div>
+            <div className="text-sm text-zinc-600 mb-1">{t.admin.dashboard.monthOrders}</div>
+            <div className="text-2xl font-bold text-zinc-900">{monthStats.orderCount}</div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
-        <StatCard label={t.admin.dashboard.totalProducts} value={totalProducts} icon={<Package size={24} />} />
-        <StatCard label={t.admin.dashboard.activeProducts} value={activeProducts} icon={<CheckCircle size={24} />} />
-        <StatCard label={t.admin.dashboard.totalOrders} value={totalOrders} icon={<ShoppingCart size={24} />} />
-        <StatCard label={t.admin.dashboard.totalRevenue} value={formattedRevenue} icon={<DollarSign size={24} />} />
-        <StatCard label={t.admin.dashboard.averageOrder} value={`$${avgOrderAmount.toFixed(0)}`} icon={<DollarSign size={24} />} />
-      </div>
+      {/* Analytics stat cards */}
+      {analyticsEnabled ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            label={t.admin.dashboard.todayOrders}
+            value={todayStats.orderCount}
+            icon={<ShoppingCart size={24} />}
+          />
+          <StatCard
+            label={t.admin.dashboard.todayRevenue}
+            value={`$${Math.round(todayStats.revenue)}`}
+            icon={<DollarSign size={24} />}
+          />
+          <StatCard
+            label={t.admin.dashboard.monthOrders}
+            value={monthStats.orderCount}
+            icon={<TrendingUp size={24} />}
+          />
+          <StatCard
+            label={t.admin.dashboard.monthRevenue}
+            value={`$${Math.round(monthStats.revenue)}`}
+            icon={<DollarSign size={24} />}
+          />
+        </div>
+      ) : (
+        /* Free plan: only today's order count */
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <StatCard
+            label={t.admin.dashboard.todayOrders}
+            value={todayStats.orderCount}
+            icon={<ShoppingCart size={24} />}
+          />
+        </div>
+      )}
 
-      <DashboardCharts ordersLast30={ordersLast30} revenueLast30={revenueLast30} topProducts={topProducts} pageViewsLast7={pageViewsLast7} />
+      {/* Full analytics: charts + top products (Lite/Pro only) */}
+      {analyticsEnabled ? (
+        <DashboardCharts
+          ordersLast30={ordersLast30}
+          revenueLast30={revenueLast30}
+          topProducts={topProducts}
+          pageViewsLast7={pageViewsLast7}
+        />
+      ) : (
+        /* Upgrade CTA for free plan */
+        <div className="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-8 text-center">
+          <Lock size={32} className="mx-auto text-zinc-400 mb-3" />
+          <h3 className="text-lg font-semibold text-zinc-900 mb-2">{t.admin.dashboard.upgradeTitle}</h3>
+          <p className="text-sm text-zinc-500 max-w-md mx-auto">{t.admin.dashboard.upgradeDesc}</p>
+        </div>
+      )}
 
+      {/* Quick links */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
         <Link
           href={`/${locale}/admin/products`}
@@ -259,6 +320,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         </Link>
       </div>
 
+      {/* Recent orders table */}
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-zinc-900">Recent Orders</h2>
@@ -284,7 +346,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                 </thead>
                 <tbody>
                   {recentOrders.map((order) => {
-                    const amounts = order.amounts as any;
+                    const amounts = order.amounts as Record<string, unknown> | null;
                     return (
                       <tr key={order.id} className="border-t border-zinc-200 hover:bg-zinc-50">
                         <td className="px-4 py-3">
@@ -296,7 +358,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                             {order.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right text-zinc-900 font-medium">${Math.round(amounts?.total || 0)}</td>
+                        <td className="px-4 py-3 text-right text-zinc-900 font-medium">${Math.round(Number(amounts?.total) || 0)}</td>
                         <td className="px-4 py-3 text-zinc-600 text-xs">{new Date(order.createdAt).toLocaleDateString()}</td>
                         <td className="px-4 py-3 text-right">
                           <Link href={`/${locale}/admin/orders/${order.id}`} className="text-olive-600 hover:text-olive-700 text-xs font-medium">
