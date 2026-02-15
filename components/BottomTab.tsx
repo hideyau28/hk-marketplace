@@ -63,7 +63,7 @@ export default function BottomTab({ t }: { t: Translations }) {
             <Link
               key={tab.key}
               href={href}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 ${
+              className={`flex flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-2 min-h-[44px] ${
                 active ? "" : "text-zinc-500 dark:text-zinc-400"
               }`}
               style={active ? { color: "var(--tmpl-accent, #2D6A4F)" } : undefined}
