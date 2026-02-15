@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import { useParams } from "next/navigation";
 import {
   Loader2,
   CheckCircle2,
@@ -14,6 +15,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import SidebarToggle from "@/components/admin/SidebarToggle";
+import ImageUpload from "@/components/admin/ImageUpload";
+import { getDict, type Locale } from "@/lib/i18n";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -27,6 +30,7 @@ type ConfigField = {
   type: "text" | "url" | "image" | "select" | "boolean";
   required: boolean;
   placeholder?: string;
+  options?: { label: string; value: string }[];
 };
 
 type ProviderConfig = {
@@ -37,50 +41,61 @@ type ProviderConfig = {
   type: "online" | "manual";
   configFields: ConfigField[];
   enabled: boolean;
-  config: Record<string, any>;
-  displayName: string | null;
-  sortOrder: number;
+  config: Record<string, string>;
 };
 
-type SaveState = Record<string, "idle" | "saving" | "success" | "error">;
-type ErrorState = Record<string, string>;
+type LocalConfig = {
+  enabled: boolean;
+  config: Record<string, string>;
+};
 
 // --- Group labels ---
-const GROUP_LABELS: Record<string, { label: string; labelZh: string }> = {
-  online: { label: "Online Payment", labelZh: "線上支付" },
-  manual: { label: "Manual / Offline Payment", labelZh: "手動 / 線下支付" },
+const GROUP_LABELS: Record<string, { en: string; zh: string }> = {
+  manual: { en: "Manual / Offline Payment", zh: "手動 / 線下支付" },
+  online: { en: "Online Payment", zh: "線上支付" },
 };
 
 export default function PaymentSettingsPage() {
+  const params = useParams();
+  const locale = (params.locale as string) || "zh-HK";
+  const t = getDict(locale as Locale);
+  const isZh = locale === "zh-HK";
+
   const [providers, setProviders] = useState<ProviderConfig[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [saveStates, setSaveStates] = useState<SaveState>({});
-  const [errors, setErrors] = useState<ErrorState>({});
-  // 本地 form state（toggle 同 config 修改先改呢度，save 先 push 上 server）
-  const [localConfigs, setLocalConfigs] = useState<Record<string, { enabled: boolean; config: Record<string, any>; displayName: string | null; sortOrder: number }>>({});
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [saveState, setSaveState] = useState<
+    "idle" | "saving" | "success" | "error"
+  >("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [localConfigs, setLocalConfigs] = useState<
+    Record<string, LocalConfig>
+  >({});
 
-  // Load providers
+  // Load providers + tenant PaymentMethod records
   useEffect(() => {
     let mounted = true;
     async function load() {
       try {
-        const res = await fetch("/api/admin/payment-config");
+        const res = await fetch("/api/admin/payments");
         if (!res.ok) return;
         const json = await res.json();
         if (mounted && json.ok && Array.isArray(json.data)) {
           setProviders(json.data);
-          // Init local config state
-          const configs: typeof localConfigs = {};
+          const configs: Record<string, LocalConfig> = {};
+          const expanded = new Set<string>();
           for (const p of json.data) {
             configs[p.providerId] = {
               enabled: p.enabled,
               config: p.config ?? {},
-              displayName: p.displayName,
-              sortOrder: p.sortOrder,
             };
+            // 已啟用嘅 provider 自動展開
+            if (p.enabled && p.configFields.length > 0) {
+              expanded.add(p.providerId);
+            }
           }
           setLocalConfigs(configs);
+          setExpandedIds(expanded);
         }
       } catch {
         // ignore
@@ -89,7 +104,9 @@ export default function PaymentSettingsPage() {
       }
     }
     load();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Toggle enable/disable
@@ -98,78 +115,89 @@ export default function PaymentSettingsPage() {
       const current = prev[providerId];
       if (!current) return prev;
       const newEnabled = !current.enabled;
-      // 如果 enable 就展開 config，disable 就收起
-      if (newEnabled) {
-        setExpandedId(providerId);
-      }
       return { ...prev, [providerId]: { ...current, enabled: newEnabled } };
+    });
+    // Auto-expand when enabling (check previous state)
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      // We toggle: if it was disabled (about to be enabled), expand
+      // Reading from localConfigs may be stale, so just add it
+      next.add(providerId);
+      return next;
     });
   }, []);
 
   // Update config field
-  const handleConfigChange = useCallback((providerId: string, key: string, value: string) => {
-    setLocalConfigs((prev) => {
-      const current = prev[providerId];
-      if (!current) return prev;
-      return {
-        ...prev,
-        [providerId]: {
-          ...current,
-          config: { ...current.config, [key]: value },
-        },
-      };
+  const handleConfigChange = useCallback(
+    (providerId: string, key: string, value: string) => {
+      setLocalConfigs((prev) => {
+        const current = prev[providerId];
+        if (!current) return prev;
+        return {
+          ...prev,
+          [providerId]: {
+            ...current,
+            config: { ...current.config, [key]: value },
+          },
+        };
+      });
+    },
+    []
+  );
+
+  // Expand/collapse
+  const toggleExpand = useCallback((providerId: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(providerId)) {
+        next.delete(providerId);
+      } else {
+        next.add(providerId);
+      }
+      return next;
     });
   }, []);
 
-  // Save provider config
-  const handleSave = useCallback(async (providerId: string) => {
-    const local = localConfigs[providerId];
-    if (!local) return;
+  // Batch save all changes
+  const handleSaveAll = useCallback(async () => {
+    setSaveState("saving");
+    setErrorMsg("");
 
-    setSaveStates((prev) => ({ ...prev, [providerId]: "saving" }));
-    setErrors((prev) => ({ ...prev, [providerId]: "" }));
+    const methods = Object.entries(localConfigs).map(
+      ([providerId, local]) => ({
+        providerId,
+        enabled: local.enabled,
+        config: local.config,
+      })
+    );
 
     try {
-      const res = await fetch(`/api/admin/payment-config/${providerId}`, {
+      const res = await fetch("/api/admin/payments", {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          enabled: local.enabled,
-          config: local.config,
-          displayName: local.displayName,
-          sortOrder: local.sortOrder,
-        }),
+        body: JSON.stringify({ methods }),
       });
-
       const json = await res.json();
       if (!res.ok || !json.ok) {
-        setSaveStates((prev) => ({ ...prev, [providerId]: "error" }));
-        setErrors((prev) => ({
-          ...prev,
-          [providerId]: json?.error?.message || "Failed to save",
-        }));
+        setSaveState("error");
+        setErrorMsg(json?.error?.message || (isZh ? "儲存失敗" : "Failed to save"));
         return;
       }
-
-      setSaveStates((prev) => ({ ...prev, [providerId]: "success" }));
-      setTimeout(() => {
-        setSaveStates((prev) => ({ ...prev, [providerId]: "idle" }));
-      }, 2000);
+      setSaveState("success");
+      setTimeout(() => setSaveState("idle"), 2500);
     } catch (err) {
-      setSaveStates((prev) => ({ ...prev, [providerId]: "error" }));
-      setErrors((prev) => ({
-        ...prev,
-        [providerId]: err instanceof Error ? err.message : "Network error",
-      }));
+      setSaveState("error");
+      setErrorMsg(
+        err instanceof Error ? err.message : isZh ? "網絡錯誤" : "Network error"
+      );
     }
-  }, [localConfigs]);
+  }, [localConfigs, isZh]);
 
   // Group providers by type
   const grouped = providers.reduce<Record<string, ProviderConfig[]>>(
     (acc, p) => {
-      const key = p.type;
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(p);
+      if (!acc[p.type]) acc[p.type] = [];
+      acc[p.type].push(p);
       return acc;
     },
     {}
@@ -184,44 +212,44 @@ export default function PaymentSettingsPage() {
   }
 
   return (
-    <div className="bg-zinc-50 text-zinc-900 pb-20">
-      <div className="mx-auto max-w-4xl px-6 py-12">
+    <div className="bg-zinc-50 text-zinc-900 pb-24 min-h-screen">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 sm:py-12">
         <div className="mb-6">
           <SidebarToggle />
         </div>
 
         {/* Header */}
         <div className="space-y-1.5 mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-3">
-            <CreditCard className="h-8 w-8 text-zinc-600" />
-            Payment Methods
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-3">
+            <CreditCard className="h-7 w-7 sm:h-8 sm:w-8 text-zinc-600" />
+            {t.admin.payments.title}
           </h1>
-          <p className="text-zinc-600 text-base">
-            管理支付方式，啟用或停用 provider，填寫設定
+          <p className="text-zinc-600 text-sm sm:text-base">
+            {t.admin.payments.subtitle}
           </p>
         </div>
 
+        {/* Provider groups */}
         <div className="space-y-8">
-          {(["online", "manual"] as const).map((groupType) => {
+          {(["manual", "online"] as const).map((groupType) => {
             const items = grouped[groupType];
             if (!items || items.length === 0) return null;
-            const groupInfo = GROUP_LABELS[groupType];
+            const gl = GROUP_LABELS[groupType];
 
             return (
               <div key={groupType}>
                 <h2 className="text-lg font-semibold text-zinc-800 mb-4 flex items-center gap-2">
-                  {groupInfo.labelZh}
+                  {isZh ? gl.zh : gl.en}
                   <span className="text-sm font-normal text-zinc-500">
-                    ({groupInfo.label})
+                    ({isZh ? gl.en : gl.zh})
                   </span>
                 </h2>
 
                 <div className="space-y-3">
                   {items.map((provider) => {
                     const local = localConfigs[provider.providerId];
-                    const isExpanded = expandedId === provider.providerId;
-                    const saveState = saveStates[provider.providerId] || "idle";
-                    const error = errors[provider.providerId] || "";
+                    const isExpanded = expandedIds.has(provider.providerId);
+                    const hasConfigFields = provider.configFields.length > 0;
 
                     return (
                       <div
@@ -229,21 +257,25 @@ export default function PaymentSettingsPage() {
                         className="rounded-xl border border-zinc-200 bg-white overflow-hidden"
                       >
                         {/* Provider header row */}
-                        <div className="flex items-center gap-4 px-5 py-4">
-                          <span className="text-2xl" role="img" aria-label={provider.name}>
+                        <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4">
+                          <span
+                            className="text-2xl"
+                            role="img"
+                            aria-label={provider.name}
+                          >
                             {provider.icon}
                           </span>
 
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-zinc-900">
-                              {provider.nameZh}
+                              {isZh ? provider.nameZh : provider.name}
                             </div>
                             <div className="text-sm text-zinc-500">
-                              {provider.name}
+                              {isZh ? provider.name : provider.nameZh}
                             </div>
                           </div>
 
-                          {/* Toggle */}
+                          {/* Toggle switch */}
                           <button
                             type="button"
                             role="switch"
@@ -265,14 +297,10 @@ export default function PaymentSettingsPage() {
                           </button>
 
                           {/* Expand/collapse */}
-                          {provider.configFields.length > 0 && (
+                          {hasConfigFields && (
                             <button
                               type="button"
-                              onClick={() =>
-                                setExpandedId(
-                                  isExpanded ? null : provider.providerId
-                                )
-                              }
+                              onClick={() => toggleExpand(provider.providerId)}
                               className="text-zinc-400 hover:text-zinc-600 p-1"
                             >
                               {isExpanded ? (
@@ -286,7 +314,7 @@ export default function PaymentSettingsPage() {
 
                         {/* Config panel */}
                         <AnimatePresence initial={false}>
-                          {isExpanded && provider.configFields.length > 0 && (
+                          {isExpanded && hasConfigFields && (
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: "auto", opacity: 1 }}
@@ -294,126 +322,92 @@ export default function PaymentSettingsPage() {
                               transition={{ duration: 0.2 }}
                               className="overflow-hidden"
                             >
-                              <div className="border-t border-zinc-100 px-5 py-5 space-y-4 bg-zinc-50/50">
+                              <div className="border-t border-zinc-100 px-4 sm:px-5 py-4 sm:py-5 space-y-4 bg-zinc-50/50">
                                 {provider.configFields.map((field) => (
                                   <div key={field.key} className="space-y-1.5">
                                     <label className="text-sm font-medium text-zinc-700">
-                                      {field.labelZh}
+                                      {isZh ? field.labelZh : field.label}
                                       {field.required && (
                                         <span className="text-red-500 ml-0.5">
                                           *
                                         </span>
                                       )}
                                     </label>
-                                    <input
-                                      type={
-                                        field.type === "url" ? "url" : "text"
-                                      }
-                                      value={
-                                        local?.config?.[field.key] ?? ""
-                                      }
-                                      onChange={(e) =>
-                                        handleConfigChange(
-                                          provider.providerId,
-                                          field.key,
-                                          e.target.value
-                                        )
-                                      }
-                                      placeholder={
-                                        field.placeholder || field.label
-                                      }
-                                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
-                                    />
+
+                                    {/* Image field → ImageUpload component */}
+                                    {field.type === "image" ? (
+                                      <ImageUpload
+                                        currentUrl={
+                                          local?.config?.[field.key] ?? ""
+                                        }
+                                        onUpload={(url) =>
+                                          handleConfigChange(
+                                            provider.providerId,
+                                            field.key,
+                                            url
+                                          )
+                                        }
+                                      />
+                                    ) : /* Select field */
+                                    field.type === "select" && field.options ? (
+                                      <select
+                                        value={
+                                          local?.config?.[field.key] ?? ""
+                                        }
+                                        onChange={(e) =>
+                                          handleConfigChange(
+                                            provider.providerId,
+                                            field.key,
+                                            e.target.value
+                                          )
+                                        }
+                                        className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                                      >
+                                        <option value="">
+                                          {isZh ? "請選擇" : "Select..."}
+                                        </option>
+                                        {field.options.map((opt) => (
+                                          <option
+                                            key={opt.value}
+                                            value={opt.value}
+                                          >
+                                            {opt.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    ) : (
+                                      /* Text / URL field */
+                                      <input
+                                        type={
+                                          field.type === "url" ? "url" : "text"
+                                        }
+                                        value={
+                                          local?.config?.[field.key] ?? ""
+                                        }
+                                        onChange={(e) =>
+                                          handleConfigChange(
+                                            provider.providerId,
+                                            field.key,
+                                            e.target.value
+                                          )
+                                        }
+                                        placeholder={
+                                          field.placeholder || field.label
+                                        }
+                                        className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                                      />
+                                    )}
+
+                                    {/* Sub-label: show the other language */}
                                     <p className="text-xs text-zinc-500">
-                                      {field.label}
+                                      {isZh ? field.label : field.labelZh}
                                     </p>
                                   </div>
                                 ))}
-
-                                {/* Error */}
-                                {error && (
-                                  <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 flex items-center gap-2">
-                                    <AlertCircle className="h-4 w-4 shrink-0" />
-                                    {error}
-                                  </div>
-                                )}
-
-                                {/* Save button */}
-                                <div className="flex items-center gap-3 pt-2">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleSave(provider.providerId)
-                                    }
-                                    disabled={saveState === "saving"}
-                                    className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50"
-                                  >
-                                    {saveState === "saving" ? (
-                                      <>
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        Saving...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Save className="h-4 w-4" />
-                                        Save
-                                      </>
-                                    )}
-                                  </button>
-
-                                  <AnimatePresence>
-                                    {saveState === "success" && (
-                                      <motion.span
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0 }}
-                                        className="flex items-center gap-1 text-sm text-emerald-600"
-                                      >
-                                        <CheckCircle2 className="h-4 w-4" />
-                                        Saved
-                                      </motion.span>
-                                    )}
-                                  </AnimatePresence>
-                                </div>
                               </div>
                             </motion.div>
                           )}
                         </AnimatePresence>
-
-                        {/* Save row for providers with no config fields (just toggle) */}
-                        {provider.configFields.length === 0 && (
-                          <div className="border-t border-zinc-100 px-5 py-3 flex items-center gap-3 bg-zinc-50/50">
-                            <button
-                              type="button"
-                              onClick={() => handleSave(provider.providerId)}
-                              disabled={saveState === "saving"}
-                              className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50"
-                            >
-                              {saveState === "saving" ? (
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                              ) : (
-                                <Save className="h-3 w-3" />
-                              )}
-                              Save
-                            </button>
-                            <AnimatePresence>
-                              {saveState === "success" && (
-                                <motion.span
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                  className="flex items-center gap-1 text-xs text-emerald-600"
-                                >
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  Saved
-                                </motion.span>
-                              )}
-                            </AnimatePresence>
-                            {error && (
-                              <span className="text-xs text-red-600">{error}</span>
-                            )}
-                          </div>
-                        )}
                       </div>
                     );
                   })}
@@ -421,6 +415,51 @@ export default function PaymentSettingsPage() {
               </div>
             );
           })}
+        </div>
+
+        {/* Global save bar */}
+        <div className="sticky bottom-0 bg-zinc-50/95 backdrop-blur-sm border-t border-zinc-200 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mt-8">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSaveAll}
+              disabled={saveState === "saving"}
+              className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50"
+            >
+              {saveState === "saving" ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t.admin.payments.saving}
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  {t.admin.payments.save}
+                </>
+              )}
+            </button>
+
+            <AnimatePresence>
+              {saveState === "success" && (
+                <motion.span
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-1 text-sm text-emerald-600"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  {t.admin.payments.saved}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {saveState === "error" && errorMsg && (
+            <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {errorMsg}
+            </div>
+          )}
         </div>
       </div>
     </div>
