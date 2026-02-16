@@ -2,9 +2,19 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { TenantForBioLink } from "@/lib/biolink-helpers";
 import { getAvatarFallback } from "@/lib/biolink-helpers";
 import { useTemplate } from "@/lib/template-context";
+import type { Locale } from "@/lib/i18n";
+
+function swapLocale(pathname: string, nextLocale: Locale) {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts.length === 0) return `/${nextLocale}`;
+  parts[0] = nextLocale;
+  return "/" + parts.join("/");
+}
 
 type Props = {
   tenant: TenantForBioLink;
@@ -15,6 +25,8 @@ type Props = {
 export default function StickyHeader({ tenant, cartCount, onCartClick }: Props) {
   const [visible, setVisible] = useState(false);
   const tmpl = useTemplate();
+  const pathname = usePathname() || "/en";
+  const locale = (pathname.split("/").filter(Boolean)[0] || "en") as Locale;
 
   useEffect(() => {
     const handler = () => {
@@ -59,6 +71,13 @@ export default function StickyHeader({ tenant, cartCount, onCartClick }: Props) 
         </div>
 
         <div className="flex items-center gap-2">
+          <Link
+            href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
+            className="text-[11px] transition-colors"
+            style={{ color: tmpl.subtext }}
+          >
+            {locale === "zh-HK" ? "EN" : "繁"}
+          </Link>
           {tenant.whatsapp && (
             <a
               href={`https://wa.me/${tenant.whatsapp.replace(/[^0-9]/g, "")}`}
