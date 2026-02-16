@@ -169,24 +169,10 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
               {resolved === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <Link
-              href={swapLocale(pathname, "zh-HK")}
-              className={`rounded-lg px-2 py-1 text-xs font-medium transition-colors ${
-                locale === "zh-HK"
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
-              }`}
+              href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
+              className="text-xs text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
             >
-              中
-            </Link>
-            <Link
-              href={swapLocale(pathname, "en")}
-              className={`rounded-lg px-2 py-1 text-xs font-medium transition-colors ${
-                locale === "en"
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100"
-              }`}
-            >
-              EN
+              {locale === "zh-HK" ? "EN" : "繁"}
             </Link>
 
             {/* User menu */}

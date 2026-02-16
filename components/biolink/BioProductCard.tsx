@@ -21,10 +21,9 @@ type Props = {
   currency?: string;
   onAdd: (product: ProductForBioLink) => void;
   onTap?: (product: ProductForBioLink) => void;
-  onImageTap?: (images: string[], startIndex: number, videoUrl?: string | null) => void;
 };
 
-export default function BioProductCard({ product, currency = "HKD", onAdd, onTap, onImageTap }: Props) {
+export default function BioProductCard({ product, currency = "HKD", onAdd, onTap }: Props) {
   const tmpl = useTemplate();
   const images = getAllImages(product);
   const heroImage = images[0] || null;

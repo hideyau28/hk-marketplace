@@ -13,16 +13,30 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
   const error = searchParams.get("error");
+  const stateParam = searchParams.get("state");
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+  // Parse state to check if this is an onboarding flow
+  let isOnboarding = false;
+  if (stateParam) {
+    try {
+      const stateObj = JSON.parse(Buffer.from(stateParam, "base64url").toString());
+      isOnboarding = stateObj.onboarding === true;
+    } catch {
+      // Invalid state, ignore
+    }
+  }
+
+  const errorRedirect = isOnboarding ? `${baseUrl}/en/start` : `${baseUrl}/en/admin/login`;
 
   if (error) {
     console.error("[Google OAuth] Error from Google:", error);
-    return NextResponse.redirect(`${baseUrl}/en/admin/login?error=google_denied`);
+    return NextResponse.redirect(`${errorRedirect}?error=google_denied`);
   }
 
   if (!code) {
     console.error("[Google OAuth] No authorization code in callback");
-    return NextResponse.redirect(`${baseUrl}/en/admin/login?error=no_code`);
+    return NextResponse.redirect(`${errorRedirect}?error=no_code`);
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -31,7 +45,7 @@ export async function GET(request: NextRequest) {
 
   if (!clientId || !clientSecret) {
     console.error("[Google OAuth] Google OAuth credentials not configured");
-    return NextResponse.redirect(`${baseUrl}/en/admin/login?error=config`);
+    return NextResponse.redirect(`${errorRedirect}?error=config`);
   }
 
   try {
@@ -51,7 +65,7 @@ export async function GET(request: NextRequest) {
     if (!tokenRes.ok) {
       const tokenError = await tokenRes.text();
       console.error("[Google OAuth] Token exchange failed:", tokenError);
-      return NextResponse.redirect(`${baseUrl}/en/admin/login?error=token_exchange`);
+      return NextResponse.redirect(`${errorRedirect}?error=token_exchange`);
     }
 
     const tokens = await tokenRes.json();
@@ -63,10 +77,17 @@ export async function GET(request: NextRequest) {
 
     if (!userInfoRes.ok) {
       console.error("[Google OAuth] Failed to fetch user info");
-      return NextResponse.redirect(`${baseUrl}/en/admin/login?error=user_info`);
+      return NextResponse.redirect(`${errorRedirect}?error=user_info`);
     }
 
     const userInfo = await userInfoRes.json();
+
+    // Onboarding flow: redirect back to /start with email, no session needed yet
+    if (isOnboarding) {
+      const email = encodeURIComponent(userInfo.email || "");
+      const redirectUrl = `${baseUrl}/en/start?google_email=${email}`;
+      return NextResponse.redirect(redirectUrl);
+    }
 
     // Create admin session JWT
     const token = await createSession();
@@ -87,6 +108,6 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (err) {
     console.error("[Google OAuth] Callback error:", err);
-    return NextResponse.redirect(`${baseUrl}/en/admin/login?error=callback_failed`);
+    return NextResponse.redirect(`${errorRedirect}?error=callback_failed`);
   }
 }

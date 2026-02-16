@@ -9,11 +9,10 @@ type Props = {
   currency?: string;
   onAdd: (product: ProductForBioLink) => void;
   onTap?: (product: ProductForBioLink) => void;
-  onImageTap?: (images: string[], startIndex: number) => void;
   searchQuery?: string;
 };
 
-export default function ProductGrid({ products, currency, onAdd, onTap, onImageTap, searchQuery }: Props) {
+export default function ProductGrid({ products, currency, onAdd, onTap, searchQuery }: Props) {
   const tmpl = useTemplate();
 
   if (products.length === 0) {
@@ -46,7 +45,7 @@ export default function ProductGrid({ products, currency, onAdd, onTap, onImageT
       </h2>
       <div className="grid grid-cols-2 gap-3">
         {products.map((p) => (
-          <BioProductCard key={p.id} product={p} currency={currency} onAdd={onAdd} onTap={onTap} onImageTap={onImageTap} />
+          <BioProductCard key={p.id} product={p} currency={currency} onAdd={onAdd} onTap={onTap} />
         ))}
       </div>
     </section>
