@@ -109,6 +109,14 @@ export function middleware(request: NextRequest) {
   // rewrite to add /en prefix so Next.js matches app/[locale]/[slug]/page.tsx
   const pathSlug = resolveSlugFromPath(pathname);
   if (pathSlug && tenantSlug === DEFAULT_SLUG) {
+    // Check if the remaining path after slug is /admin/...
+    // /{slug}/admin/... → redirect to /en/admin/... so admin route group matches
+    const restPath = pathname.substring(pathSlug.length + 1); // e.g. "/admin/login"
+    if (restPath === "/admin" || restPath.startsWith("/admin/")) {
+      const adminUrl = new URL(`/en${restPath}`, request.url);
+      return NextResponse.redirect(adminUrl);
+    }
+
     // Path slug only takes effect when no subdomain tenant is set
     // Rewrite /{slug}/... → /en/{slug}/...
     const rewriteUrl = request.nextUrl.clone();
