@@ -3,15 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, Globe, Moon, Sun, Package, Heart, Search } from "lucide-react";
-import type { Locale } from "@/lib/i18n";
+import { type Locale, locales } from "@/lib/i18n";
 import type { Translations } from "@/lib/translations";
 import { useTheme } from "@/lib/theme-context";
 
 function swapLocale(pathname: string, nextLocale: Locale) {
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length === 0) return `/${nextLocale}`;
-  parts[0] = nextLocale;
-  return "/" + parts.join("/");
+  if ((locales as readonly string[]).includes(parts[0])) {
+    parts[0] = nextLocale;
+    return "/" + parts.join("/");
+  }
+  // Path-based route without locale prefix (e.g. /maysshop) — prepend locale
+  return "/" + nextLocale + "/" + parts.join("/");
 }
 
 export default function MobileMenu({
