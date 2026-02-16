@@ -1,15 +1,13 @@
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from "next";
+
+const BASE_URL = "https://wowlix.com";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_VERCEL_URL
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : 'https://hk-market.com'
-
   return {
     rules: {
-      userAgent: '*',
-      allow: '/',
+      userAgent: "*",
+      allow: "/",
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
-  }
+    sitemap: `${BASE_URL}/sitemap.xml`,
+  };
 }

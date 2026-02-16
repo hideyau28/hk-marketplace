@@ -1,46 +1,70 @@
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from "next";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_VERCEL_URL
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : 'https://hk-market.com'
+const BASE_URL = "https://wowlix.com";
 
-  return [
+export const dynamic = "force-dynamic";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Static pages
+  const staticPages: MetadataRoute.Sitemap = [
     {
-      url: baseUrl,
+      url: BASE_URL,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: "daily",
       priority: 1,
     },
     {
-      url: `${baseUrl}/en`,
+      url: `${BASE_URL}/en`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: "daily",
       priority: 1,
     },
     {
-      url: `${baseUrl}/zh-HK`,
+      url: `${BASE_URL}/zh-HK`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: "daily",
       priority: 1,
     },
     {
-      url: `${baseUrl}/en/collections`,
+      url: `${BASE_URL}/en/pricing`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
+      changeFrequency: "weekly",
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/en/cart`,
+      url: `${BASE_URL}/zh-HK/pricing`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
-    {
-      url: `${baseUrl}/en/orders`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
-  ]
+  ];
+
+  // Dynamic tenant store pages — lazy-import prisma to avoid build-time crash when DATABASE_URL is unset
+  let tenantPages: MetadataRoute.Sitemap = [];
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const tenants = await prisma.tenant.findMany({
+      where: { status: "active" },
+      select: { slug: true, updatedAt: true },
+    });
+
+    tenantPages = tenants.flatMap((t) => [
+      {
+        url: `${BASE_URL}/en/${t.slug}`,
+        lastModified: t.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      },
+      {
+        url: `${BASE_URL}/zh-HK/${t.slug}`,
+        lastModified: t.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      },
+    ]);
+  } catch (err) {
+    console.error("[sitemap] tenant query failed:", err);
+  }
+
+  return [...staticPages, ...tenantPages];
 }

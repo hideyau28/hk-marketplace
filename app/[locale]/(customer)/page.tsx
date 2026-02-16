@@ -28,8 +28,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
         url: "https://wowlix.com",
         siteName: "WoWlix",
+        images: ["https://wowlix.com/og-default.png"],
         locale: "zh_HK",
         type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "WoWlix — Turn Followers into Customers",
+        description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
+        images: ["https://wowlix.com/og-default.png"],
       },
     };
   }
@@ -46,8 +53,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
         url: "https://wowlix.com",
         siteName: "WoWlix",
+        images: ["https://wowlix.com/og-default.png"],
         locale: "zh_HK",
         type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: "WoWlix — Turn Followers into Customers",
+        description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
+        images: ["https://wowlix.com/og-default.png"],
       },
     };
   }
@@ -66,8 +80,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       title,
       description,
       siteName: storeName,
+      images: ["https://wowlix.com/og-default.png"],
       type: "website",
       locale: locale === "zh-HK" ? "zh_HK" : "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["https://wowlix.com/og-default.png"],
     },
   };
 }
