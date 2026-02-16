@@ -34,7 +34,7 @@ export default async function PrivacyPage({
           私隱政策
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">
-          最後更新日期：2025 年 1 月 1 日
+          最後更新日期：2026 年 2 月 16 日
         </p>
 
         <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none space-y-6">
@@ -144,8 +144,22 @@ export default async function PrivacyPage({
               9. 聯絡我們
             </h2>
             <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-              如對本私隱政策有任何疑問，請透過本平台嘅聯絡頁面與我們聯繫。
+              如對本私隱政策有任何疑問，請透過以下方式與我們聯繫：
             </p>
+            <ul className="list-disc pl-5 text-zinc-700 dark:text-zinc-300 space-y-1">
+              <li>電郵：wowlix@flowstudiohk.com</li>
+              <li>
+                網站：
+                <a
+                  href="https://wowlix.com"
+                  className="underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  https://wowlix.com
+                </a>
+              </li>
+            </ul>
           </section>
 
           <p className="text-xs text-zinc-400 dark:text-zinc-500 pt-4 border-t border-zinc-200 dark:border-zinc-800">
@@ -162,7 +176,7 @@ export default async function PrivacyPage({
         Privacy Policy
       </h1>
       <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">
-        Last updated: 1 January 2025
+        Last updated: 16 February 2026
       </p>
 
       <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none space-y-6">
@@ -279,8 +293,22 @@ export default async function PrivacyPage({
           </h2>
           <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
             If you have any questions about this Privacy Policy, please reach
-            out to us through the Platform&rsquo;s contact page.
+            out to us:
           </p>
+          <ul className="list-disc pl-5 text-zinc-700 dark:text-zinc-300 space-y-1">
+            <li>Email: wowlix@flowstudiohk.com</li>
+            <li>
+              Website:{" "}
+              <a
+                href="https://wowlix.com"
+                className="underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                https://wowlix.com
+              </a>
+            </li>
+          </ul>
         </section>
 
         <p className="text-xs text-zinc-400 dark:text-zinc-500 pt-4 border-t border-zinc-200 dark:border-zinc-800">
