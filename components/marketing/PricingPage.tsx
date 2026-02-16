@@ -502,13 +502,13 @@ function Calculator({ isZh }: { isZh: boolean }) {
           borderRadius: 16,
         }}
       >
-        <div style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>{isZh ? "每月最多慳" : "Save up to per month"}</div>
+        <div style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>{isZh ? "每月最多慳" : "Max monthly savings"}</div>
         <div style={{ fontSize: 40, fontWeight: 800, color: "#FF9500" }}>
           $
           <AnimatedNumber value={Math.max(0, Math.round(saving))} />
         </div>
         <div style={{ fontSize: 16, opacity: 0.6, marginTop: 4 }}>
-          {isZh ? "一年慳" : "Save per year"} <strong>${Math.max(0, Math.round(saving * 12)).toLocaleString()}</strong>
+          {isZh ? "一年慳" : "Annual savings"} <strong>${Math.max(0, Math.round(saving * 12)).toLocaleString()}</strong>
         </div>
       </div>
 
