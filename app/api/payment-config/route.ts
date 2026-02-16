@@ -53,80 +53,90 @@ export const GET = withApi(async (req) => {
     }),
   ]);
 
-  const providers = [];
+  const providers: Array<{
+    providerId: string;
+    displayName: string | null;
+    name: string;
+    nameZh?: string;
+    type: string;
+    icon?: string;
+    config: Record<string, unknown>;
+    instructions?: string;
+  }> = [];
+  // Track which provider IDs have been added to avoid duplicates.
+  // Tiers are additive: TenantPaymentConfig > PaymentMethod > Tenant flags.
+  // Previously tiers were exclusive, so an incomplete TenantPaymentConfig
+  // (e.g. only FPS) would suppress legacy PayMe / AlipayHK records.
+  const seen = new Set<string>();
 
   // 1. TenantPaymentConfig records (new system — full config JSON)
-  if (tenantConfigs.length > 0) {
-    for (const tc of tenantConfigs) {
-      const provider = getProvider(tc.providerId);
-      if (!provider) continue;
+  for (const tc of tenantConfigs) {
+    const provider = getProvider(tc.providerId);
+    if (!provider) continue;
 
-      const config = (tc.config as Record<string, unknown>) || {};
+    const config = (tc.config as Record<string, unknown>) || {};
 
-      let instructions: string | undefined;
-      if (provider.type === "manual") {
-        try {
-          const session = await provider.createSession({}, config);
-          instructions = session.instructions;
-        } catch {
-          // no instructions
-        }
+    let instructions: string | undefined;
+    if (provider.type === "manual") {
+      try {
+        const session = await provider.createSession({}, config);
+        instructions = session.instructions;
+      } catch {
+        // no instructions
       }
-
-      providers.push({
-        providerId: tc.providerId,
-        displayName: tc.displayName,
-        name: provider.name,
-        nameZh: provider.nameZh,
-        type: provider.type,
-        icon: provider.icon,
-        config,
-        instructions,
-      });
     }
 
-    return ok(req, { providers });
+    providers.push({
+      providerId: tc.providerId,
+      displayName: tc.displayName,
+      name: provider.name,
+      nameZh: provider.nameZh,
+      type: provider.type,
+      icon: provider.icon,
+      config,
+      instructions,
+    });
+    seen.add(tc.providerId);
   }
 
-  // 2. Legacy PaymentMethod records (limited fields)
-  if (legacyMethods.length > 0) {
-    for (const pm of legacyMethods) {
-      const providerId = LEGACY_TYPE_MAP[pm.type] || pm.type;
-      const provider = getProvider(providerId);
-      if (!provider) continue;
+  // 2. Legacy PaymentMethod records — fill in any providers not already in tier 1
+  for (const pm of legacyMethods) {
+    const providerId = LEGACY_TYPE_MAP[pm.type] || pm.type;
+    if (seen.has(providerId)) continue;
 
-      const safeConfig: Record<string, unknown> = {};
-      if (pm.qrImage) safeConfig.qrCodeUrl = pm.qrImage;
-      if (pm.accountInfo) safeConfig.accountId = pm.accountInfo;
+    const provider = getProvider(providerId);
+    if (!provider) continue;
 
-      let instructions: string | undefined;
-      if (provider.type === "manual") {
-        try {
-          const session = await provider.createSession({}, safeConfig);
-          instructions = session.instructions;
-        } catch {
-          // no instructions
-        }
+    const safeConfig: Record<string, unknown> = {};
+    if (pm.qrImage) safeConfig.qrCodeUrl = pm.qrImage;
+    if (pm.accountInfo) safeConfig.accountId = pm.accountInfo;
+
+    let instructions: string | undefined;
+    if (provider.type === "manual") {
+      try {
+        const session = await provider.createSession({}, safeConfig);
+        instructions = session.instructions;
+      } catch {
+        // no instructions
       }
-
-      providers.push({
-        providerId,
-        displayName: pm.name,
-        name: provider.name,
-        nameZh: provider.nameZh,
-        type: provider.type,
-        icon: provider.icon,
-        config: safeConfig,
-        instructions,
-      });
     }
 
-    return ok(req, { providers });
+    providers.push({
+      providerId,
+      displayName: pm.name,
+      name: provider.name,
+      nameZh: provider.nameZh,
+      type: provider.type,
+      icon: provider.icon,
+      config: safeConfig,
+      instructions,
+    });
+    seen.add(providerId);
   }
 
-  // 3. Tenant flags as last resort
+  // 3. Tenant flags — fill in any providers not already covered above
   if (tenant) {
-    if (tenant.fpsEnabled) {
+    if (tenant.fpsEnabled && !seen.has("fps")) {
       const fp = getProvider("fps");
       if (fp) {
         const cfg: Record<string, unknown> = {};
@@ -148,9 +158,10 @@ export const GET = withApi(async (req) => {
           config: cfg,
           instructions,
         });
+        seen.add("fps");
       }
     }
-    if (tenant.paymeEnabled) {
+    if (tenant.paymeEnabled && !seen.has("payme")) {
       const pm = getProvider("payme");
       if (pm) {
         const cfg: Record<string, unknown> = {};
@@ -171,9 +182,10 @@ export const GET = withApi(async (req) => {
           config: cfg,
           instructions,
         });
+        seen.add("payme");
       }
     }
-    if (tenant.stripeOnboarded && tenant.stripeAccountId) {
+    if (tenant.stripeOnboarded && tenant.stripeAccountId && !seen.has("stripe")) {
       const sp = getProvider("stripe");
       if (sp) {
         providers.push({
@@ -186,6 +198,7 @@ export const GET = withApi(async (req) => {
           config: {},
           instructions: undefined,
         });
+        seen.add("stripe");
       }
     }
   }

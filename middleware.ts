@@ -157,15 +157,10 @@ export function middleware(request: NextRequest) {
   }
 
   // --- Auto-redirect from login if already authenticated via JWT ---
-  if (isLoginRoute) {
-    const tenantAdminCookie = request.cookies.get("tenant-admin-token");
-    if (tenantAdminCookie?.value) {
-      const localeMatch = pathname.match(/^\/([^/]+)/);
-      const locale = localeMatch ? localeMatch[1] : "en";
-      const dashboardUrl = new URL(`/${locale}/admin`, request.url);
-      return NextResponse.redirect(dashboardUrl);
-    }
-  }
+  // Note: We do NOT redirect here because middleware cannot verify JWT validity
+  // (jsonwebtoken requires Node runtime, middleware runs in Edge).
+  // The login page handles auth-check client-side via /api/tenant-admin/me.
+  // Previously, redirecting with a stale/expired cookie caused 500 on the dashboard.
 
   // --- Forward tenant slug via request header ---
   const requestHeaders = new Headers(request.headers);
