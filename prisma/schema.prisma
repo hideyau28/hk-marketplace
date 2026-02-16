@@ -122,6 +122,8 @@ model Order {
   cancelReason            String?
   refundReason            String?
   statusHistory           String?          // JSON array of {timestamp, fromStatus, toStatus}
+  // Cart recovery
+  recoveryStatus          String?          // null=pending, "contacted", "recovered", "dismissed"
   // Member system
   userId                  String?
   user                    User?            @relation(fields: [userId], references: [id])
