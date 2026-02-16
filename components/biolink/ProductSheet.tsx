@@ -13,6 +13,7 @@ import {
 import { getColorHex } from "@/lib/color-map";
 import { getEmbedUrl } from "@/lib/video-embed";
 import { useTemplate } from "@/lib/template-context";
+import SizeChartModal from "@/components/SizeChartModal";
 
 type Props = {
   product: ProductForBioLink;
@@ -56,6 +57,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
   const [showError, setShowError] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [showDescription, setShowDescription] = useState(false);
+  const [showSizeChart, setShowSizeChart] = useState(false);
 
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -361,12 +363,24 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
 
           {/* 尺碼（用文字顯示） */}
           <div>
-            <p className="text-sm font-semibold mb-3 pb-2" style={{ color: tmpl.text, borderBottom: `1px solid ${sectionBorder}` }}>
-              {isDual && sizeDimIndex >= 0 ? dualVariant!.dimensions[sizeDimIndex] : variantLabel}
-              {showError && !selectedSize && (
-                <span className="text-red-500 ml-1 font-normal">請選擇</span>
-              )}
-            </p>
+            <div className="flex items-center justify-between mb-3 pb-2" style={{ borderBottom: `1px solid ${sectionBorder}` }}>
+              <p className="text-sm font-semibold" style={{ color: tmpl.text }}>
+                {isDual && sizeDimIndex >= 0 ? dualVariant!.dimensions[sizeDimIndex] : variantLabel}
+                {showError && !selectedSize && (
+                  <span className="text-red-500 ml-1 font-normal">請選擇</span>
+                )}
+              </p>
+              <button
+                onClick={() => setShowSizeChart(true)}
+                className="text-xs font-medium flex items-center gap-1"
+                style={{ color: tmpl.accent }}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                尺碼表
+              </button>
+            </div>
             <div
               className={`flex gap-2 ${
                 sizes.length > 8
@@ -389,6 +403,9 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                   }
                 >
                   {s.name}
+                  {!s.available && (
+                    <span className="text-[10px] ml-1">冇貨</span>
+                  )}
                   {s.available && s.stock > 0 && s.stock <= 3 && (
                     <span className="text-[10px] text-red-500 ml-1">
                       剩{s.stock}
@@ -480,6 +497,14 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
           </button>
         </div>
       </div>
+
+      {/* 尺碼表 modal */}
+      <SizeChartModal
+        isOpen={showSizeChart}
+        onClose={() => setShowSizeChart(false)}
+        isKids={sizes.some((s) => /\d+[CY]$/i.test(s.name))}
+        locale="zh-HK"
+      />
     </div>
   );
 }
