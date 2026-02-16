@@ -27,12 +27,8 @@ export const GET = withApi(async (req) => {
     tenantId = await getTenantId(req);
   }
 
-  // Query TenantPaymentConfig (new system), PaymentMethod (legacy), and Tenant flags
-  const [tenantConfigs, legacyMethods, tenant] = await Promise.all([
-    prisma.tenantPaymentConfig.findMany({
-      where: { tenantId, enabled: true },
-      orderBy: { sortOrder: "asc" },
-    }),
+  // Query PaymentMethod (primary) and Tenant flags (fallback)
+  const [methods, tenant] = await Promise.all([
     prisma.paymentMethod.findMany({
       where: { tenantId, active: true },
       orderBy: { sortOrder: "asc" },
@@ -55,42 +51,9 @@ export const GET = withApi(async (req) => {
 
   const providers = [];
 
-  // 1. TenantPaymentConfig records (new system — full config JSON)
-  if (tenantConfigs.length > 0) {
-    for (const tc of tenantConfigs) {
-      const provider = getProvider(tc.providerId);
-      if (!provider) continue;
-
-      const config = (tc.config as Record<string, unknown>) || {};
-
-      let instructions: string | undefined;
-      if (provider.type === "manual") {
-        try {
-          const session = await provider.createSession({}, config);
-          instructions = session.instructions;
-        } catch {
-          // no instructions
-        }
-      }
-
-      providers.push({
-        providerId: tc.providerId,
-        displayName: tc.displayName,
-        name: provider.name,
-        nameZh: provider.nameZh,
-        type: provider.type,
-        icon: provider.icon,
-        config,
-        instructions,
-      });
-    }
-
-    return ok(req, { providers });
-  }
-
-  // 2. Legacy PaymentMethod records (limited fields)
-  if (legacyMethods.length > 0) {
-    for (const pm of legacyMethods) {
+  // 1. PaymentMethod records (primary source)
+  if (methods.length > 0) {
+    for (const pm of methods) {
       const providerId = LEGACY_TYPE_MAP[pm.type] || pm.type;
       const provider = getProvider(providerId);
       if (!provider) continue;
@@ -124,7 +87,7 @@ export const GET = withApi(async (req) => {
     return ok(req, { providers });
   }
 
-  // 3. Tenant flags as last resort
+  // 2. Tenant flags as fallback
   if (tenant) {
     if (tenant.fpsEnabled) {
       const fp = getProvider("fps");
