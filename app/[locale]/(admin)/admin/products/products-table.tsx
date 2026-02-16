@@ -7,7 +7,7 @@ import { type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
-import { Star, Flame, Search, Check, X, Pencil, Eye, EyeOff } from "lucide-react";
+import { Star, Flame, Search, Check, X, Pencil, Eye, EyeOff, Package } from "lucide-react";
 import { toggleFeatured, toggleHotSelling, updatePrice, updateProduct } from "./actions";
 
 const ITEMS_PER_PAGE = 50;
@@ -116,6 +116,8 @@ function exportProductsToCsv(products: ProductWithBadges[]): void {
 }
 
 export function ProductsTable({ products, locale, showAddButton }: ProductsTableProps) {
+  const isZh = locale === "zh-HK";
+  const isEmpty = products.length === 0;
   const router = useRouter();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -481,6 +483,36 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     setSelectedIds(new Set());
     router.refresh();
   };
+
+  if (isEmpty) {
+    return (
+      <>
+        <div className="mt-12 flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-300 bg-white px-6 py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-olive-50">
+            <Package size={32} className="text-olive-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-zinc-900">
+            {isZh ? "未有商品" : "No products yet"}
+          </h3>
+          <p className="mt-2 max-w-sm text-sm text-zinc-500">
+            {isZh
+              ? "加入你第一件商品，開始喺網店銷售。"
+              : "Add your first product to start selling in your store."}
+          </p>
+          <button
+            onClick={handleCreateProduct}
+            className="mt-6 rounded-xl bg-olive-600 px-6 py-3 text-sm font-semibold text-white hover:bg-olive-700 transition-colors"
+          >
+            + {isZh ? "新增商品" : "Add Product"}
+          </button>
+        </div>
+
+        {(selectedProduct || isCreating) && (
+          <ProductModal product={selectedProduct} onClose={handleCloseModal} locale={locale} />
+        )}
+      </>
+    );
+  }
 
   return (
     <>

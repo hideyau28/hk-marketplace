@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ShoppingCart } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { OrderWithPayments } from "./actions";
 
@@ -206,8 +207,18 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
 
       {/* Orders cards */}
       {orders.length === 0 ? (
-        <div className="mt-6 rounded-3xl border border-zinc-200 bg-white px-4 py-12 text-center text-zinc-500">
-          {locale === "zh-HK" ? "沒有訂單" : "No orders found"}
+        <div className="mt-6 flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-300 bg-white px-6 py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-olive-50">
+            <ShoppingCart size={32} className="text-olive-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-zinc-900">
+            {locale === "zh-HK" ? "未有訂單" : "No orders yet"}
+          </h3>
+          <p className="mt-2 max-w-sm text-sm text-zinc-500">
+            {locale === "zh-HK"
+              ? "當客人落單後，訂單會喺呢度顯示。"
+              : "Orders will appear here once customers place them."}
+          </p>
         </div>
       ) : (
         <div className="mt-6 space-y-3">
