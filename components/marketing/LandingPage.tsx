@@ -426,6 +426,33 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         </div>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
           <Link href={`/${locale}/pricing`} style={{ fontSize: 14, fontWeight: 600, color: "#666", textDecoration: "none" }}>{t.navPricing}</Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
+            <Link
+              href="/zh-HK"
+              style={{
+                color: isZH ? "#1A1A1A" : "#AAA",
+                fontWeight: isZH ? 700 : 400,
+                textDecoration: "none",
+                padding: "4px 2px",
+                transition: "color 0.2s",
+              }}
+            >
+              繁
+            </Link>
+            <span style={{ color: "#CCC", userSelect: "none" }}>/</span>
+            <Link
+              href="/en"
+              style={{
+                color: !isZH ? "#1A1A1A" : "#AAA",
+                fontWeight: !isZH ? 700 : 400,
+                textDecoration: "none",
+                padding: "4px 2px",
+                transition: "color 0.2s",
+              }}
+            >
+              EN
+            </Link>
+          </div>
           <Link href={`/${locale}/start`} style={{
             background: "#FF9500", color: "#fff", border: "none",
             padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 700,
