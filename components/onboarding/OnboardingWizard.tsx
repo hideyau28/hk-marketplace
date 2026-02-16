@@ -604,10 +604,15 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
     if (data.plan !== "lite" && data.plan !== "pro") return;
     setBillingRedirecting(true);
     try {
+      const origin = window.location.origin;
       const res = await fetch("/api/admin/subscription/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: data.plan }),
+        body: JSON.stringify({
+          plan: data.plan,
+          successUrl: `${origin}/${locale}/admin/billing?session_id={CHECKOUT_SESSION_ID}&success=1`,
+          cancelUrl: `${origin}/${locale}/admin/billing?cancelled=1`,
+        }),
       });
       const json = await res.json();
       if (json.ok && json.data?.url) {
