@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/tenant";
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     const sale = saleParam === "true";
 
     // Build where clause
-    const where: any = { active: true, tenantId };
+    const where: Prisma.ProductWhereInput = { active: true, tenantId };
 
     // Text search filter
     if (query) {

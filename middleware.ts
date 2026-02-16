@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const DEFAULT_SLUG = "maysshop";
+const DEFAULT_SLUG = process.env.DEFAULT_TENANT_SLUG || "maysshop";
 const DEFAULT_HOSTS = new Set(["hk-marketplace", "www", "localhost", "127.0.0.1"]);
 
 /**
@@ -9,7 +9,7 @@ const DEFAULT_HOSTS = new Set(["hk-marketplace", "www", "localhost", "127.0.0.1"
  * wowlix.com / www.wowlix.com → true（show landing page）
  * maysshop.wowlix.com → false（tenant subdomain）
  */
-const PLATFORM_ROOT = "wowlix";
+const PLATFORM_ROOT = process.env.PLATFORM_ROOT || "wowlix";
 
 function isPlatformBare(hostname: string): boolean {
   const host = hostname.split(":")[0];

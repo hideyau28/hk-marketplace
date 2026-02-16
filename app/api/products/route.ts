@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/tenant";
 
@@ -52,7 +53,7 @@ export const GET = withApi(async (req) => {
     throw new ApiError(400, "BAD_REQUEST", "sort must be one of: new, price_asc, price_desc");
   }
 
-  const where: any = { active: true, tenantId };
+  const where: Prisma.ProductWhereInput = { active: true, tenantId };
 
   // Add search filter if q is provided
   if (q) {

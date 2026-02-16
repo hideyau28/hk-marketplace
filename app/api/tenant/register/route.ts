@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/admin/session";
 import { signToken } from "@/lib/auth/jwt";
@@ -174,14 +175,16 @@ export const POST = withApi(async (req: Request) => {
     });
 
     return ok(req, { ok: true, tenantId: tenant.id, slug: tenant.slug });
-  } catch (err: any) {
+  } catch (err: unknown) {
     // Handle unique constraint violations
-    if (err?.code === "P2002" || err?.message?.includes("Unique constraint")) {
-      const target = err?.meta?.target;
-      if (typeof target === "string" && target.includes("email")) {
+    const isPrismaUnique = err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002";
+    const hasUniqueMsg = err instanceof Error && err.message.includes("Unique constraint");
+    if (isPrismaUnique || hasUniqueMsg) {
+      const target = isPrismaUnique && typeof err.meta?.target === "string" ? err.meta.target : "";
+      if (target.includes("email")) {
         throw new ApiError(409, "CONFLICT", "呢個 email 已經註冊咗");
       }
-      if (typeof target === "string" && target.includes("slug")) {
+      if (target.includes("slug")) {
         throw new ApiError(409, "CONFLICT", "呢個名已經有人用咗");
       }
       // Fallback: check which field by trying lookups
@@ -197,8 +200,9 @@ export const POST = withApi(async (req: Request) => {
     }
     throw err;
   }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 });
