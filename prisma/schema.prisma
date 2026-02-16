@@ -341,6 +341,7 @@ model Tenant {
   orderConfirmMessage   Json?    @default("{\"thanks\":\"多謝你嘅訂單！\",\"whatsappTemplate\":\"你好！我落咗單 #{orderNumber}\"}")
   // Branding
   hideBranding         Boolean   @default(false)
+  pluginType               String   @default("mini-store")
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
