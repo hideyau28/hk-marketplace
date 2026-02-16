@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   type ProductForBioLink,
@@ -49,12 +49,6 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onTap
     };
   }, [hasMultipleImages, images.length]);
 
-  const handleImageTap = useCallback(() => {
-    if (images.length > 0 && onImageTap) {
-      onImageTap(images, current, product.videoUrl);
-    }
-  }, [images, current, onImageTap, product.videoUrl]);
-
   const isOnSale =
     product.originalPrice != null && product.originalPrice > product.price;
   const discountPct = isOnSale
@@ -71,11 +65,11 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onTap
         border: `1px solid ${tmpl.subtext}15`,
       }}
     >
-      {/* Image 1:1 with carousel */}
+      {/* Image 1:1 with carousel — tap opens product detail sheet */}
       <div
         className="relative aspect-square overflow-hidden cursor-pointer"
         style={{ borderRadius: `${tmpl.borderRadius.image}px ${tmpl.borderRadius.image}px 0 0` }}
-        onClick={handleImageTap}
+        onClick={() => onTap?.(product)}
       >
         {heroImage ? (
           <div className="relative w-full h-full">

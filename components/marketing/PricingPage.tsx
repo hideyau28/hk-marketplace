@@ -186,23 +186,25 @@ function getFeatureTable(isZh: boolean): FeatureRow[] {
 function AnimatedNumber({ value, duration = 600 }: { value: number; duration?: number }) {
   const [display, setDisplay] = useState(0);
   const rafRef = useRef<number | null>(null);
+  const displayRef = useRef(0);
 
   useEffect(() => {
-    const start = display;
+    const start = displayRef.current;
     let startTime: number | null = null;
     const animate = (ts: number) => {
       if (!startTime) startTime = ts;
       const progress = Math.min((ts - startTime) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(start + (value - start) * eased));
+      const val = Math.round(start + (value - start) * eased);
+      displayRef.current = val;
+      setDisplay(val);
       if (progress < 1) rafRef.current = requestAnimationFrame(animate);
     };
     rafRef.current = requestAnimationFrame(animate);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value, duration]);
 
   return <>{display.toLocaleString()}</>;
 }
@@ -567,7 +569,7 @@ function FAQ({ isZh }: { isZh: boolean }) {
       {FAQS.map((faq, i) => (
         <div key={i} style={{ borderBottom: "1px solid #E5E7EB" }}>
           <button
-            onClick={() => setOpen(open === i ? null : i)}
+            onClick={() => setOpen(prev => prev === i ? null : i)}
             style={{
               width: "100%",
               padding: "16px 0",
