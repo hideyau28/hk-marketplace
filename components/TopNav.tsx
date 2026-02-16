@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useTenantBranding } from "@/lib/tenant-branding";
 import MobileMenu from "./MobileMenu";
 import SearchOverlay from "./SearchOverlay";
+import CartDrawer from "./CartDrawer";
 
 function swapLocale(pathname: string, nextLocale: Locale) {
   const parts = pathname.split("/").filter(Boolean);
@@ -26,6 +27,7 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
   const [cartCount, setCartCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [cartBounce, setCartBounce] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [storeLogo, setStoreLogo] = useState<string | null>(null);
@@ -67,14 +69,18 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
 
     updateCartCount();
 
+    const openDrawerOnAdd = () => setCartDrawerOpen(true);
+
     window.addEventListener("storage", updateCartCount);
     window.addEventListener("cartUpdated", updateCartCount);
     window.addEventListener("cartBounce", handleCartBounce);
+    window.addEventListener("cartFlyStart", openDrawerOnAdd);
 
     return () => {
       window.removeEventListener("storage", updateCartCount);
       window.removeEventListener("cartUpdated", updateCartCount);
       window.removeEventListener("cartBounce", handleCartBounce);
+      window.removeEventListener("cartFlyStart", openDrawerOnAdd);
     };
   }, []);
 
@@ -236,14 +242,15 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
             )}
           </div>
 
-          {/* Cart - always visible */}
-          <Link
+          {/* Cart - always visible, opens drawer */}
+          <button
             data-cart-icon
             className={`relative flex items-center gap-1 transition-transform duration-150 ${
               cartBounce ? "scale-125" : "scale-100"
             }`}
             style={{ color: "var(--tmpl-accent, #2D6A4F)" }}
-            href={`/${locale}/cart`}
+            onClick={() => setCartDrawerOpen(true)}
+            aria-label="Cart"
           >
             <ShoppingCart size={20} />
             {cartCount > 0 && (
@@ -251,7 +258,7 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
                 {cartCount > 9 ? "9+" : cartCount}
               </span>
             )}
-          </Link>
+          </button>
 
           {/* Mobile menu button */}
           <button
@@ -273,6 +280,13 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
         t={t}
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
+      />
+
+      {/* Cart Drawer */}
+      <CartDrawer
+        locale={locale}
+        isOpen={cartDrawerOpen}
+        onClose={() => setCartDrawerOpen(false)}
       />
     </>
   );

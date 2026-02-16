@@ -93,7 +93,7 @@ export default async function CustomerLayout({
                 <TopNav locale={l} t={t} storeName={storeName} />
                 <CategoryNavWrapper locale={l} />
                 <main>{children}</main>
-                <Footer locale={l} t={t} storeName={storeName} hideBranding={effectiveHideBranding} />
+                <Footer locale={l} t={t} storeName={storeName} hideBranding={effectiveHideBranding} whatsappNumber={storeSettings?.whatsappNumber} instagramUrl={storeSettings?.instagramUrl} />
                 <BottomTab t={t} />
                 <WelcomePopup config={welcomePopupConfig} />
                 <SocialProofPopup products={socialProofProducts} />
