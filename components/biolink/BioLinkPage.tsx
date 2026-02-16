@@ -221,7 +221,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
       {featured.length > 0 && <div className="h-6" />}
 
       {/* Light zone — Product grid */}
-      <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onTap={handleProductTap} onImageTap={handleImageTap} searchQuery={searchQuery} />
+      <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onTap={handleProductTap} searchQuery={searchQuery} />
 
       {/* Cart bar or WhatsApp FAB */}
       {cartCount > 0 ? (

@@ -17,6 +17,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    if (!process.env.ADMIN_SECRET) {
+      return NextResponse.json({ ok: false, error: "Server misconfigured" }, { status: 500 });
+    }
+
     const body = await request.json();
     const { secret } = body;
 
