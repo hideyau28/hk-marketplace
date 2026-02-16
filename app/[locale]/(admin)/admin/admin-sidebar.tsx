@@ -30,7 +30,7 @@ export default function AdminSidebar() {
     { href: "/admin/products", label: t.admin.sidebar.products, icon: Package, biolink: true },
     { href: "/admin/homepage", label: "首頁管理", icon: LayoutGrid, biolink: false },
     { href: "/admin/orders", label: t.admin.sidebar.orders, icon: ShoppingCart, biolink: true },
-    { href: "/admin/customers", label: t.admin.sidebar.customers, icon: Users, biolink: false },
+    { href: "/admin/customers", label: t.admin.sidebar.customers, icon: Users, biolink: true },
     { href: "/admin/payments", label: "付款方式", icon: CreditCard, biolink: false },
     { href: "/admin/coupons", label: t.admin.sidebar.coupons, icon: Ticket, biolink: false },
     { href: "/admin/billing", label: t.admin.sidebar.billing, icon: Receipt, biolink: true },
