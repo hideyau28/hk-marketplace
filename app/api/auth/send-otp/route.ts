@@ -27,9 +27,6 @@ export async function POST(request: Request) {
     // Store OTP
     storeOTP(normalizedPhone, otp);
 
-    // Log OTP to console for testing (in production, this would send via Twilio)
-    console.log(`[OTP] Phone: ${normalizedPhone}, Code: ${otp}`);
-
     // In demo mode, return OTP in response for easy testing
     const isDemoMode = process.env.NODE_ENV !== "production";
 

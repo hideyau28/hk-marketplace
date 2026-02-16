@@ -329,7 +329,7 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     // ALS failed or timed out, will fall back to local
-    console.log("ALS API failed/timeout, using local fallback:", error instanceof Error ? error.message : "unknown");
+    // ALS failed or timed out — fall back to local silently
   }
 
   // If ALS returned no results or failed, use local database

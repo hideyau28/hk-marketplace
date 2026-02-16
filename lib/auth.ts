@@ -1,10 +1,15 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
-// JWT secret - in production, use a proper secret from env
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "hk-marketplace-secret-key-change-in-production"
-);
+// JWT secret — must be set via env var, no fallback (lazy to avoid build-time error)
+let _jwtSecret: Uint8Array | null = null;
+function getJwtSecret(): Uint8Array {
+  if (_jwtSecret) return _jwtSecret;
+  const raw = process.env.JWT_SECRET;
+  if (!raw) throw new Error("JWT_SECRET environment variable is not set");
+  _jwtSecret = new TextEncoder().encode(raw);
+  return _jwtSecret;
+}
 
 const COOKIE_NAME = "hk_session";
 const TOKEN_EXPIRY = "7d"; // 7 days
@@ -36,13 +41,8 @@ export function storeOTP(phone: string, otp: string): void {
   otpStore.set(phone, { otp, expiresAt });
 }
 
-// Verify OTP (also accepts "123456" in demo mode)
+// Verify OTP against stored value
 export function verifyOTP(phone: string, otp: string): boolean {
-  // Demo mode: always accept "123456"
-  if (otp === "123456") {
-    return true;
-  }
-
   const stored = otpStore.get(phone);
   if (!stored) {
     return false;
@@ -91,13 +91,13 @@ export async function createToken(payload: JWTPayload): Promise<string> {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(TOKEN_EXPIRY)
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 }
 
 // Verify JWT token
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJwtSecret());
     return payload as unknown as JWTPayload;
   } catch {
     return null;

@@ -12,8 +12,6 @@ export const runtime = "nodejs";
  * creates an admin session, and redirects to the admin dashboard.
  */
 export async function GET(request: NextRequest) {
-  console.log("[Facebook OAuth] Callback hit");
-
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
   const error = searchParams.get("error");
@@ -51,11 +49,9 @@ export async function GET(request: NextRequest) {
   try {
     // Exchange authorization code for access token
     const tokenData = await exchangeCodeForToken(code, callbackUrl);
-    console.log("[Facebook OAuth] Token exchange successful");
 
     // Fetch user info from Facebook
     const fbUser = await getFacebookUser(tokenData.access_token);
-    console.log("[Facebook OAuth] Facebook user email:", fbUser.email);
 
     if (!fbUser.email) {
       console.error("[Facebook OAuth] No email returned from Facebook");
@@ -77,7 +73,6 @@ export async function GET(request: NextRequest) {
 
     // Set cookie directly on the redirect response (same pattern as Google OAuth)
     const redirectUrl = `${baseUrl}/en/admin/products`;
-    console.log("[Facebook OAuth] Redirecting to:", redirectUrl);
     const response = NextResponse.redirect(redirectUrl);
     response.cookies.set("admin_session", token, {
       httpOnly: true,
@@ -90,7 +85,6 @@ export async function GET(request: NextRequest) {
     // Delete the CSRF state cookie
     response.cookies.delete("fb_oauth_state");
 
-    console.log("[Facebook OAuth] admin_session cookie set, redirect ready");
     return response;
   } catch (err) {
     console.error("[Facebook OAuth] Callback error:", err);
