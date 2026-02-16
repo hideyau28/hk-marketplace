@@ -353,13 +353,13 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
   const [billingRedirecting, setBillingRedirecting] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // --- Restore state from sessionStorage on mount ---
+  // --- Restore form data from sessionStorage on mount ---
+  // Always start from step 1 (plan selection); only restore form data
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.step) setStep(parsed.step);
         if (parsed.data) setData(parsed.data);
       }
     } catch (error) {
