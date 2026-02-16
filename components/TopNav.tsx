@@ -168,13 +168,6 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
             >
               {resolved === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            <Link
-              href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
-              className="text-xs text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
-            >
-              {locale === "zh-HK" ? "EN" : "繁"}
-            </Link>
-
             {/* User menu */}
             {!authLoading && (
               user ? (
@@ -227,6 +220,14 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
               )
             )}
           </div>
+
+          {/* Language toggle - always visible */}
+          <Link
+            href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
+            className="text-xs text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
+          >
+            {locale === "zh-HK" ? "EN" : "繁"}
+          </Link>
 
           {/* Cart - always visible, opens drawer */}
           <button
