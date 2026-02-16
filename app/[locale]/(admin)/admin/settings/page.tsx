@@ -119,7 +119,7 @@ const COVER_TEMPLATES = [
 ];
 
 const CURRENCIES = [
-  { code: "HKD", symbol: "HK$", label: "港幣" },
+  { code: "HKD", symbol: "$", label: "港幣 (HKD)" },
   { code: "TWD", symbol: "NT$", label: "新台幣" },
   { code: "SGD", symbol: "S$", label: "新加坡幣" },
   { code: "MYR", symbol: "RM", label: "令吉" },

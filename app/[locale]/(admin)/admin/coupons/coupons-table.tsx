@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Coupon } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import { Ticket } from "lucide-react";
 import CouponModal from "./coupon-modal";
 import { getDict, type Locale } from "@/lib/i18n";
 
@@ -16,6 +17,7 @@ export default function CouponsTable({ coupons, locale }: CouponsTableProps) {
   const [selected, setSelected] = useState<Coupon | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const t = getDict(locale as Locale);
+  const isZh = locale === "zh-HK";
 
   const handleDelete = async (couponId: string) => {
     if (!confirm(t.admin.coupons.deleteConfirm)) return;
@@ -27,6 +29,41 @@ export default function CouponsTable({ coupons, locale }: CouponsTableProps) {
     }
     router.refresh();
   };
+
+  if (coupons.length === 0) {
+    return (
+      <>
+        <div className="mt-12 flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-300 bg-white px-6 py-16 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-olive-50">
+            <Ticket size={32} className="text-olive-600" />
+          </div>
+          <h3 className="text-lg font-semibold text-zinc-900">
+            {isZh ? "未有優惠券" : "No coupons yet"}
+          </h3>
+          <p className="mt-2 max-w-sm text-sm text-zinc-500">
+            {isZh
+              ? "建立優惠券吸引客人消費，提升銷售額。"
+              : "Create coupons to attract customers and boost sales."}
+          </p>
+          <button
+            onClick={() => setIsCreating(true)}
+            className="mt-6 rounded-xl bg-olive-600 px-6 py-3 text-sm font-semibold text-white hover:bg-olive-700 transition-colors"
+          >
+            + {t.admin.coupons.createCoupon}
+          </button>
+        </div>
+
+        {isCreating && (
+          <CouponModal
+            coupon={null}
+            locale={locale}
+            onClose={() => setIsCreating(false)}
+            onSaved={() => router.refresh()}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <>
@@ -59,14 +96,7 @@ export default function CouponsTable({ coupons, locale }: CouponsTableProps) {
               </tr>
             </thead>
             <tbody>
-              {coupons.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-zinc-500">
-                    {t.admin.coupons.noCoupons}
-                  </td>
-                </tr>
-              ) : (
-                coupons.map((coupon) => {
+              {coupons.map((coupon) => {
                   const isExpired = coupon.expiresAt ? new Date(coupon.expiresAt).getTime() < Date.now() : false;
                   const isUsedUp = coupon.maxUsage !== null && coupon.usageCount >= coupon.maxUsage;
                   return (
@@ -133,8 +163,7 @@ export default function CouponsTable({ coupons, locale }: CouponsTableProps) {
                       </td>
                     </tr>
                   );
-                })
-              )}
+                })}
             </tbody>
           </table>
         </div>

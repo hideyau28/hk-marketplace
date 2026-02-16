@@ -10,8 +10,6 @@ export const runtime = "nodejs";
  * creates an admin session, and redirects to the admin dashboard.
  */
 export async function GET(request: NextRequest) {
-  console.log("[Google OAuth] Callback hit");
-
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
   const error = searchParams.get("error");
@@ -69,7 +67,6 @@ export async function GET(request: NextRequest) {
     }
 
     const userInfo = await userInfoRes.json();
-    console.log("[Google OAuth] Google user email:", userInfo.email);
 
     // Create admin session JWT
     const token = await createSession();
@@ -78,7 +75,6 @@ export async function GET(request: NextRequest) {
     // Previously used setSessionCookie() which calls cookies() from next/headers,
     // but cookies set that way are NOT carried over to NextResponse.redirect().
     const redirectUrl = `${baseUrl}/en/admin/products`;
-    console.log("[Google OAuth] Redirecting to:", redirectUrl);
     const response = NextResponse.redirect(redirectUrl);
     response.cookies.set("admin_session", token, {
       httpOnly: true,
@@ -88,7 +84,6 @@ export async function GET(request: NextRequest) {
       path: "/",
     });
 
-    console.log("[Google OAuth] admin_session cookie set, redirect ready");
     return response;
   } catch (err) {
     console.error("[Google OAuth] Callback error:", err);

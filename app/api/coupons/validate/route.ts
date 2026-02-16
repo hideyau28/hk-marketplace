@@ -65,7 +65,7 @@ export const POST = withApi(async (req) => {
 
   if (coupon.minOrder !== null && coupon.minOrder !== undefined) {
     if (subtotal < coupon.minOrder) {
-      throw new ApiError(400, "BAD_REQUEST", `Minimum order HK$${coupon.minOrder} required`);
+      throw new ApiError(400, "BAD_REQUEST", `Minimum order $${coupon.minOrder} required`);
     }
   }
 

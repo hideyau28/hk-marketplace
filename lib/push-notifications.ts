@@ -34,7 +34,6 @@ export function storePermission(status: PushPermissionStatus): void {
  */
 export async function requestPermission(): Promise<PushPermissionStatus> {
   if (!isPushSupported()) {
-    console.log("[Push] Not supported in this browser");
     return "denied";
   }
 
@@ -44,10 +43,7 @@ export async function requestPermission(): Promise<PushPermissionStatus> {
     storePermission(status);
 
     if (status === "granted") {
-      console.log("[Push] Permission granted");
       await subscribeUser();
-    } else {
-      console.log("[Push] Permission denied");
     }
 
     return status;
@@ -70,9 +66,6 @@ export async function subscribeUser(): Promise<void> {
     // Wait for the service worker to be ready
     await navigator.serviceWorker.ready;
 
-    console.log("[Push] Service worker registered");
-    console.log("[Push] User subscribed (simulated - no backend push endpoint)");
-
     // In a real app, you would:
     // 1. Get a push subscription from the browser
     // 2. Send it to your backend
@@ -94,7 +87,6 @@ export async function simulatePushNotification(title: string, body: string): Pro
 
   const permission = await Notification.requestPermission();
   if (permission !== "granted") {
-    console.log("[Push] Permission not granted, cannot show notification");
     return;
   }
 
@@ -109,7 +101,6 @@ export async function simulatePushNotification(title: string, body: string): Pro
       requireInteraction: false,
     });
 
-    console.log("[Push] Notification shown:", title);
   } catch (error) {
     console.error("[Push] Error showing notification:", error);
   }
