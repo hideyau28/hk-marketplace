@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import crypto from "node:crypto";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { saveReceiptHtml } from "@/lib/email";
 import { getTenantId } from "@/lib/tenant";
@@ -381,7 +382,7 @@ export const GET = withApi(
         }
 
         // Build where clause
-        const where: any = {};
+        const where: Prisma.OrderWhereInput = {};
         where.tenantId = tenantId;
         if (status) {
             where.status = status;
