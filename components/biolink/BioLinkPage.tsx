@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { Locale } from "@/lib/i18n";
 import type {
   ProductForBioLink,
   TenantForBioLink,
@@ -44,6 +47,13 @@ import OrderConfirmation from "./OrderConfirmation";
 import ProductSheet from "./ProductSheet";
 import ImageLightbox from "./ImageLightbox";
 
+function swapLocale(pathname: string, nextLocale: Locale) {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts.length === 0) return `/${nextLocale}`;
+  parts[0] = nextLocale;
+  return "/" + parts.join("/");
+}
+
 type Props = {
   tenant: TenantForBioLink;
   products: ProductForBioLink[];
@@ -52,6 +62,8 @@ type Props = {
 export default function BioLinkPage({ tenant, products }: Props) {
   const tmpl = useMemo(() => getCoverTemplate(tenant.coverTemplate), [tenant.coverTemplate]);
   const fontsUrl = useMemo(() => getGoogleFontsUrl(tmpl), [tmpl]);
+  const pathname = usePathname() || "/en";
+  const locale = (pathname.split("/").filter(Boolean)[0] || "en") as Locale;
 
   const [cart, setCart] = useState<BioCart>({ tenantId: tenant.id, items: [] });
   const [showCart, setShowCart] = useState(false);
@@ -206,6 +218,16 @@ export default function BioLinkPage({ tenant, products }: Props) {
       style={{ backgroundColor: tmpl.bg, fontFamily: `'${tmpl.bodyFont}', sans-serif` }}
     >
       <StickyHeader tenant={tenant} cartCount={cartCount} onCartClick={() => cartCount > 0 && setShowCart(true)} />
+
+      {/* Language toggle — always visible at top-right over cover */}
+      <Link
+        href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
+        className="absolute top-3 right-3 z-40 text-xs px-2 py-0.5 rounded-full backdrop-blur-sm transition-colors"
+        style={{ color: tmpl.subtext, backgroundColor: `${tmpl.bg}80` }}
+      >
+        {locale === "zh-HK" ? "EN" : "繁"}
+      </Link>
+
       <CoverPhoto url={tenant.coverPhoto} />
       <ProfileSection tenant={tenant} />
 
