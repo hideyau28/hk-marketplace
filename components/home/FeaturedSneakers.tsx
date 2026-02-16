@@ -83,6 +83,7 @@ function LargeCardItem({ product, locale, isFirst, isLast, isTopSeller }: { prod
               src={product.image}
               alt={product.title}
               fill
+              loading="lazy"
               className="object-contain group-hover:scale-105 transition-transform"
               sizes="(max-width: 768px) 220px, 280px"
             />

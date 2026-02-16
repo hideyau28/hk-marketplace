@@ -223,6 +223,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
                       src={item.imageUrl}
                       alt={item.title}
                       fill
+                      loading="lazy"
                       className="object-cover"
                       sizes="64px"
                     />

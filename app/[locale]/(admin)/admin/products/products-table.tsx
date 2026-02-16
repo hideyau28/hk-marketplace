@@ -727,7 +727,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       <div className="flex items-center gap-3">
                         {product.imageUrl ? (
                           <div className="relative h-[48px] w-[48px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
-                            <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="48px" />
+                            <Image src={product.imageUrl} alt={product.title} fill loading="lazy" className="object-cover" sizes="48px" />
                           </div>
                         ) : (
                           <div className="h-[48px] w-[48px] flex-shrink-0 rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />

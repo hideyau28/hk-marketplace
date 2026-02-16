@@ -83,6 +83,7 @@ function SmallCardItem({ product, locale, isFirst, isLast, isTopSeller }: { prod
               src={product.image}
               alt={product.title}
               fill
+              loading="lazy"
               className="object-cover group-hover:scale-105 transition-transform"
               sizes="(max-width: 768px) 160px, 180px"
             />

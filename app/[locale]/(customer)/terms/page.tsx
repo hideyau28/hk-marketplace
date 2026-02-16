@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n";
 import { getStoreName } from "@/lib/get-store-name";
 
+export const revalidate = 3600;
+
 export async function generateMetadata({
   params,
 }: {

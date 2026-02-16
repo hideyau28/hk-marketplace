@@ -195,6 +195,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
                     src={item.image}
                     alt={item.title}
                     fill
+                    loading="lazy"
                     className="object-cover group-hover:scale-105 transition-transform"
                     sizes="(max-width: 768px) 50vw, 25vw"
                   />

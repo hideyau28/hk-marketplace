@@ -106,5 +106,7 @@ export const GET = withApi(async (req) => {
     return { ...product, resolvedBadges };
   });
 
-  return ok(req, { products: productsWithBadges, query: q || null });
+  return ok(req, { products: productsWithBadges, query: q || null }, {
+    headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=30" },
+  });
 });

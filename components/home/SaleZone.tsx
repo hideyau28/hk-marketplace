@@ -77,6 +77,7 @@ function SaleCardItem({ product, locale, isFirst, isLast }: { product: Product; 
                 src={product.image}
                 alt={product.title}
                 fill
+                loading="lazy"
                 className="object-cover group-hover:scale-105 transition-transform"
                 sizes="(max-width: 768px) 200px, 240px"
               />

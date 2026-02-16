@@ -83,6 +83,7 @@ function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { produ
               src={product.image}
               alt={product.title}
               fill
+              loading="lazy"
               className="object-contain group-hover:scale-105 transition-transform"
               sizes="(max-width: 768px) 220px, 280px"
             />

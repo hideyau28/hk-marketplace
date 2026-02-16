@@ -154,6 +154,7 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
                             src={product.imageUrl}
                             alt={product.title}
                             fill
+                            loading="lazy"
                             className="object-cover"
                             sizes="144px"
                           />
@@ -275,6 +276,7 @@ export default function CartPage({ params }: { params: Promise<{ locale: string 
                         src={product.imageUrl}
                         alt={product.title}
                         fill
+                        loading="lazy"
                         className="object-cover"
                         sizes="160px"
                       />

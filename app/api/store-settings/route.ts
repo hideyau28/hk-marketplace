@@ -69,7 +69,9 @@ export const GET = withApi(async (req) => {
     where: { tenantId },
     select: SETTINGS_SELECT,
   }).catch(() => null);
-  return ok(req, row ?? null);
+  return ok(req, row ?? null, {
+    headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60" },
+  });
 }, { admin: true });
 
 // PUT /api/store-settings (admin + idempotency)
