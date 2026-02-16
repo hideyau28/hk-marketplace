@@ -28,41 +28,45 @@ export const GET = withApi(async (req) => {
   }
 
   // Query TenantPaymentConfig (primary), then PaymentMethod + Tenant flags (fallback)
-  const configs = await prisma.tenantPaymentConfig.findMany({
-    where: { tenantId, enabled: true },
-    orderBy: { sortOrder: "asc" },
-  });
+  try {
+    const configs = await prisma.tenantPaymentConfig.findMany({
+      where: { tenantId, enabled: true },
+      orderBy: { sortOrder: "asc" },
+    });
 
-  if (configs.length > 0) {
-    const providers = [];
-    for (const cfg of configs) {
-      const provider = getProvider(cfg.providerId);
-      if (!provider) continue;
+    if (configs.length > 0) {
+      const providers = [];
+      for (const cfg of configs) {
+        const provider = getProvider(cfg.providerId);
+        if (!provider) continue;
 
-      const safeConfig: Record<string, unknown> = cfg.config && typeof cfg.config === "object" ? { ...(cfg.config as Record<string, unknown>) } : {};
+        const safeConfig: Record<string, unknown> = cfg.config && typeof cfg.config === "object" ? { ...(cfg.config as Record<string, unknown>) } : {};
 
-      let instructions: string | undefined;
-      if (provider.type === "manual") {
-        try {
-          const session = await provider.createSession({}, safeConfig);
-          instructions = session.instructions;
-        } catch {
-          // no instructions
+        let instructions: string | undefined;
+        if (provider.type === "manual") {
+          try {
+            const session = await provider.createSession({}, safeConfig);
+            instructions = session.instructions;
+          } catch {
+            // no instructions
+          }
         }
-      }
 
-      providers.push({
-        providerId: cfg.providerId,
-        displayName: cfg.displayName,
-        name: provider.name,
-        nameZh: provider.nameZh,
-        type: provider.type,
-        icon: provider.icon,
-        config: safeConfig,
-        instructions,
-      });
+        providers.push({
+          providerId: cfg.providerId,
+          displayName: cfg.displayName,
+          name: provider.name,
+          nameZh: provider.nameZh,
+          type: provider.type,
+          icon: provider.icon,
+          config: safeConfig,
+          instructions,
+        });
+      }
+      return ok(req, { providers });
     }
-    return ok(req, { providers });
+  } catch (err) {
+    console.error("TenantPaymentConfig query failed, falling back to PaymentMethod:", err);
   }
 
   // Fallback: Query PaymentMethod (primary) and Tenant flags (fallback)
