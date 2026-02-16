@@ -92,6 +92,14 @@ const t = {
     setupBilling: "Set up billing",
     setupBillingDesc: "Activate your {plan} plan ($\u200B{price}/mo) via Stripe",
     setupBillingLater: "Set up later in admin",
+    // Upgrade CTA (free users)
+    upgradeCta: "Upgrade your plan",
+    upgradeCtaDesc: "Unlock more products, orders & features as your store grows",
+    liteTag: "Lite — $78/mo",
+    proTag: "Pro — $198/mo",
+    liteBenefitShort: "50 products, unlimited orders, coupons + WhatsApp",
+    proBenefitShort: "Unlimited everything, custom domain, CRM + analytics",
+    viewPlans: "View plans & upgrade",
   },
   "zh-HK": {
     // Step 1: Plan
@@ -177,6 +185,14 @@ const t = {
     setupBilling: "設定付款",
     setupBillingDesc: "透過 Stripe 啟用你嘅 {plan} 方案（${price}/月）",
     setupBillingLater: "之後喺後台設定",
+    // Upgrade CTA (free users)
+    upgradeCta: "升級你嘅方案",
+    upgradeCtaDesc: "解鎖更多產品、訂單同進階功能",
+    liteTag: "Lite — $78/月",
+    proTag: "Pro — $198/月",
+    liteBenefitShort: "50 件產品、無限訂單、優惠碼 + WhatsApp",
+    proBenefitShort: "無限全部、自訂域名、CRM + 數據分析",
+    viewPlans: "睇方案 & 升級",
   },
 } as const;
 
@@ -1269,6 +1285,36 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                     </button>
                   </div>
                 </div>
+
+                {/* Upgrade CTA for free users */}
+                {data.plan === "free" && (
+                  <div className="bg-gradient-to-b from-orange-50 to-amber-50 rounded-xl border border-orange-200 p-4 space-y-3">
+                    <div className="text-center">
+                      <p className="font-semibold text-zinc-900 text-sm">
+                        {labels.upgradeCta}
+                      </p>
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        {labels.upgradeCtaDesc}
+                      </p>
+                    </div>
+                    <div className="space-y-2 text-left">
+                      <div className="bg-white rounded-lg p-2.5 border border-orange-100">
+                        <p className="text-xs font-bold text-[#FF9500]">{labels.liteTag}</p>
+                        <p className="text-[11px] text-zinc-600 mt-0.5">{labels.liteBenefitShort}</p>
+                      </div>
+                      <div className="bg-white rounded-lg p-2.5 border border-orange-100">
+                        <p className="text-xs font-bold text-zinc-900">{labels.proTag}</p>
+                        <p className="text-[11px] text-zinc-600 mt-0.5">{labels.proBenefitShort}</p>
+                      </div>
+                    </div>
+                    <a
+                      href={`/${locale}/admin/billing`}
+                      className="block w-full py-2.5 rounded-xl bg-[#FF9500] text-white font-semibold text-sm text-center hover:bg-[#E68600] transition-colors"
+                    >
+                      {labels.viewPlans} &rarr;
+                    </a>
+                  </div>
+                )}
 
                 {/* Billing CTA for paid plans */}
                 {(data.plan === "lite" || data.plan === "pro") && (
