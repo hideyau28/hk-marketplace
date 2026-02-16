@@ -7,13 +7,17 @@ import { usePathname } from "next/navigation";
 import type { TenantForBioLink } from "@/lib/biolink-helpers";
 import { getAvatarFallback } from "@/lib/biolink-helpers";
 import { useTemplate } from "@/lib/template-context";
-import type { Locale } from "@/lib/i18n";
+import { type Locale, locales } from "@/lib/i18n";
 
 function swapLocale(pathname: string, nextLocale: Locale) {
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length === 0) return `/${nextLocale}`;
-  parts[0] = nextLocale;
-  return "/" + parts.join("/");
+  if ((locales as readonly string[]).includes(parts[0])) {
+    parts[0] = nextLocale;
+    return "/" + parts.join("/");
+  }
+  // Path-based route without locale prefix (e.g. /maysshop) — prepend locale
+  return "/" + nextLocale + "/" + parts.join("/");
 }
 
 type Props = {
