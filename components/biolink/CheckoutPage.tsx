@@ -58,15 +58,17 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
   // Fetch all active payment methods from API
   useEffect(() => {
-    fetch(`/api/payment-methods?tenant=${tenant.slug}`)
+    fetch(`/api/payment-config?tenant=${tenant.slug}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.ok && data.data?.methods?.length > 0) {
-          const methods = data.data.methods.map((p: { id: string; name: string; type: string }) => ({
-            id: p.type,
-            label: p.name,
-            sub: p.type === "stripe" ? "線上支付" : "手動確認",
-          }));
+        if (data.ok && data.data?.providers?.length > 0) {
+          const methods = data.data.providers.map(
+            (p: { providerId: string; displayName: string | null; nameZh: string; type: string }) => ({
+              id: p.providerId,
+              label: p.displayName || p.nameZh,
+              sub: p.type === "online" ? "線上支付" : "手動確認",
+            })
+          );
           setAvailablePayments(methods);
           setPayment(methods[0].id);
         } else {
