@@ -120,7 +120,7 @@ export const POST = withApi(async (req) => {
         }
 
         await updateByOrderId(orderId, {
-          status: "PAID",
+          status: "CONFIRMED",
           paidAt: new Date(),
           stripeCheckoutSessionId: session.id,
           stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : null,
@@ -157,7 +157,7 @@ export const POST = withApi(async (req) => {
         });
 
         await updateByPaymentIntent(pid, {
-          status: "PAID",
+          status: "CONFIRMED",
           paidAt: new Date(),
         });
 
