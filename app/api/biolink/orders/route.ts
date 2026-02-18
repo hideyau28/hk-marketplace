@@ -279,19 +279,43 @@ export const POST = withApi(async (req) => {
     status: "pending_payment",
   };
 
-  if (payload.payment.method === "fps" && tenant.fpsEnabled) {
-    response.fpsInfo = {
-      accountName: tenant.fpsAccountName,
-      id: tenant.fpsAccountId,
-      qrCode: tenant.fpsQrCodeUrl,
-    };
+  // Query PaymentMethod table for payment transfer info (new merchants)
+  const paymentMethodRecord =
+    payload.payment.method === "fps" || payload.payment.method === "payme"
+      ? await prisma.paymentMethod.findFirst({
+          where: { tenantId: tenant.id, type: payload.payment.method, active: true },
+          select: { qrImage: true, accountInfo: true },
+        })
+      : null;
+
+  if (payload.payment.method === "fps") {
+    if (paymentMethodRecord) {
+      response.fpsInfo = {
+        accountName: null,
+        id: paymentMethodRecord.accountInfo,
+        qrCode: paymentMethodRecord.qrImage,
+      };
+    } else if (tenant.fpsEnabled) {
+      response.fpsInfo = {
+        accountName: tenant.fpsAccountName,
+        id: tenant.fpsAccountId,
+        qrCode: tenant.fpsQrCodeUrl,
+      };
+    }
   }
 
-  if (payload.payment.method === "payme" && tenant.paymeEnabled) {
-    response.paymeInfo = {
-      link: tenant.paymeLink,
-      qrCode: tenant.paymeQrCodeUrl,
-    };
+  if (payload.payment.method === "payme") {
+    if (paymentMethodRecord) {
+      response.paymeInfo = {
+        link: paymentMethodRecord.accountInfo,
+        qrCode: paymentMethodRecord.qrImage,
+      };
+    } else if (tenant.paymeEnabled) {
+      response.paymeInfo = {
+        link: tenant.paymeLink,
+        qrCode: tenant.paymeQrCodeUrl,
+      };
+    }
   }
 
   response.whatsapp = tenant.whatsapp;
