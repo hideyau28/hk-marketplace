@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const DEFAULT_SLUG = process.env.DEFAULT_TENANT_SLUG || "maysshop";
-const DEFAULT_HOSTS = new Set(["hk-marketplace", "www", "localhost", "127.0.0.1"]);
+const DEFAULT_HOSTS = new Set(["wowlix", "www", "localhost", "127.0.0.1"]);
 
 /**
  * Bare platform domain 偵測。
@@ -43,7 +43,7 @@ const RESERVED_SLUGS = new Set([
 
 /**
  * Extract tenant slug from hostname.
- * Pattern: {slug}.hk-marketplace.vercel.app
+ * Pattern: {slug}.wowlix.com
  * Returns DEFAULT_SLUG for bare domain, www, or localhost.
  */
 function resolveSlugFromHostname(hostname: string): string {
