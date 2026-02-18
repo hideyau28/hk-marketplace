@@ -13,7 +13,7 @@ export default function Footer({ locale, t, storeName = "May's Shop", hideBrandi
         <h3 className="text-lg font-bold mb-3">{storeName}</h3>
 
         {/* Links - Single line with · separator */}
-        <div className="flex justify-center items-center gap-1 mb-4 text-[11px]">
+        <div className="flex justify-center items-center gap-1 mb-4 text-sm">
           <Link
             href={`/${locale}/about`}
             className="text-zinc-400 hover:text-zinc-200 transition-colors"
@@ -51,7 +51,7 @@ export default function Footer({ locale, t, storeName = "May's Shop", hideBrandi
                 href={instagramUrl.startsWith("http") ? instagramUrl : `https://instagram.com/${instagramUrl.replace(/^@/, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-zinc-600 transition-colors"
+                className="w-11 h-11 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-zinc-600 transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram size={20} className="text-white" />
@@ -62,7 +62,7 @@ export default function Footer({ locale, t, storeName = "May's Shop", hideBrandi
                 href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-[#25D366] transition-colors"
+                className="w-11 h-11 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-[#25D366] transition-colors"
                 aria-label="WhatsApp"
               >
                 <svg viewBox="0 0 32 32" className="h-5 w-5 text-white" fill="currentColor" aria-hidden="true">

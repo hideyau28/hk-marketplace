@@ -174,7 +174,7 @@ export default function CartDrawer({
                     <div className="flex items-center gap-2 mt-2">
                       <button
                         onClick={() => handleQty(item, -1)}
-                        className="flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition"
+                        className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition"
                       >
                         <Minus size={14} />
                       </button>
@@ -183,7 +183,7 @@ export default function CartDrawer({
                       </span>
                       <button
                         onClick={() => handleQty(item, 1)}
-                        className="flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition"
+                        className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition"
                       >
                         <Plus size={14} />
                       </button>
@@ -194,7 +194,7 @@ export default function CartDrawer({
                   <div className="flex flex-col items-end justify-between">
                     <button
                       onClick={() => handleRemove(item)}
-                      className="text-zinc-400 hover:text-red-500 transition"
+                      className="h-10 w-10 flex items-center justify-center text-zinc-400 hover:text-red-500 transition"
                       aria-label={isZh ? "移除" : "Remove"}
                     >
                       <Trash2 size={16} />

@@ -188,7 +188,7 @@ export default function BioLinkOrders({ orders, locale }: Props) {
                     <button
                       onClick={() => handleConfirmPayment(order.id)}
                       disabled={isUpdating}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-500 text-white text-sm font-medium hover:bg-green-600 disabled:opacity-50 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-green-500 text-white text-sm font-medium hover:bg-green-600 disabled:opacity-50 transition-colors"
                     >
                       {isUpdating ? (
                         <Loader2 size={14} className="animate-spin" />
@@ -202,7 +202,7 @@ export default function BioLinkOrders({ orders, locale }: Props) {
                     <button
                       onClick={() => handleUpdateStatus(order.id, "SHIPPED")}
                       disabled={isUpdating}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
                     >
                       {isUpdating ? (
                         <Loader2 size={14} className="animate-spin" />
@@ -214,7 +214,7 @@ export default function BioLinkOrders({ orders, locale }: Props) {
                   )}
                   <button
                     onClick={() => handleWhatsApp(order.phone, order.orderNumber)}
-                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366] text-white text-sm font-medium hover:bg-[#20bd5a] transition-colors"
+                    className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-[#25D366] text-white text-sm font-medium hover:bg-[#20bd5a] transition-colors"
                   >
                     <MessageCircle size={14} />
                     WhatsApp
