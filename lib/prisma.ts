@@ -82,6 +82,24 @@ function makeClient() {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? makeClient();
+let _client: ReturnType<typeof makeClient> | undefined;
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+export function getPrisma(): ReturnType<typeof makeClient> {
+  if (!_client) {
+    _client = globalForPrisma.prisma ?? makeClient();
+    if (process.env.NODE_ENV !== "production") {
+      globalForPrisma.prisma = _client;
+    }
+  }
+  return _client;
+}
+
+// Backward-compatible lazy proxy — 唔會喺 module load 時 throw，只係 query 時先初始化
+export const prisma: ReturnType<typeof makeClient> = new Proxy(
+  {} as ReturnType<typeof makeClient>,
+  {
+    get(_target, prop, receiver) {
+      return Reflect.get(getPrisma(), prop, receiver);
+    },
+  }
+);
