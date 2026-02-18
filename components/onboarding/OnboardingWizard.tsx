@@ -390,9 +390,12 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
   }, []);
 
   // --- Save state to sessionStorage whenever it changes ---
+  // 唔存密碼落 sessionStorage，避免明文洩露
   useEffect(() => {
     try {
-      const state = { step, data };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, confirmPassword, ...safeData } = data;
+      const state = { step, data: safeData };
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (error) {
       console.error("Failed to save onboarding state:", error);

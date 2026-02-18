@@ -376,7 +376,7 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
   ];
 
   return (
-    <div className="px-4 pb-4">
+    <div className={`px-4 ${isEditMode && selectedCount > 0 ? "pb-[70px]" : "pb-4"}`}>
       {/* Cover / Header */}
       <div className="relative rounded-2xl overflow-hidden mb-6 -mx-4 -mt-0">
         {/* Banner image */}
