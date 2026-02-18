@@ -14,9 +14,10 @@ type AddToCartButtonProps = {
   label: string;
   addedLabel: string;
   className?: string;
+  locale?: string;
 };
 
-export function AddToCartButton({ product, label, addedLabel, className }: AddToCartButtonProps) {
+export function AddToCartButton({ product, label, addedLabel, className, locale }: AddToCartButtonProps) {
   const [added, setAdded] = useState(false);
   const { showToast } = useToast();
   const buttonClass =
@@ -31,7 +32,7 @@ export function AddToCartButton({ product, label, addedLabel, className }: AddTo
       imageUrl: product.image,
     });
     setAdded(true);
-    showToast("Added to cart!");
+    showToast(locale === "zh-HK" ? "已加入購物車" : "Added to cart!");
     setTimeout(() => setAdded(false), 2000);
   };
 

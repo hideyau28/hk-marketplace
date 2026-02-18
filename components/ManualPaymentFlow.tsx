@@ -63,13 +63,19 @@ export default function ManualPaymentFlow({
           </h3>
 
           {qrCodeUrl && (
-            <div className="mx-auto h-48 w-48 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700">
+            <div className="mx-auto w-full max-w-xs overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700">
               <img
                 src={qrCodeUrl}
                 alt={displayName}
                 className="h-full w-full object-contain"
               />
             </div>
+          )}
+
+          {!qrCodeUrl && !hasAccountInfo && (
+            <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
+              {locale === "zh-HK" ? "付款資料準備中" : "Payment details loading"}
+            </p>
           )}
 
           {hasAccountInfo && (

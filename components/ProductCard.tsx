@@ -297,7 +297,7 @@ export default function ProductCard({ locale, p, fillWidth = false }: ProductCar
                 onMouseDown={(e) => e.stopPropagation()}
                 className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-1.5 py-1 pr-4 rounded-md cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus:outline-none focus:ring-1 focus:ring-olive-500"
               >
-                <option value="">尺碼 ▼</option>
+                <option value="">{locale === "zh-HK" ? "尺碼 ▼" : "Size ▼"}</option>
                 {availableSizes.map((size) => (
                   <option key={size} value={size}>
                     {size}
