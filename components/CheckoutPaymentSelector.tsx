@@ -92,13 +92,13 @@ export default function CheckoutPaymentSelector({ locale, onSelect }: Props) {
       <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
         {locale === "zh-HK" ? "付款方式" : "Payment"}
       </h2>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {providers.map((provider) => (
           <button
             key={provider.providerId}
             type="button"
             onClick={() => handleSelect(provider)}
-            className={`rounded-xl border-2 p-3 text-center transition-all ${
+            className={`rounded-xl border-2 p-4 text-center transition-all ${
               selected === provider.providerId
                 ? "border-olive-600 bg-olive-50 dark:bg-olive-900/20"
                 : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900"
