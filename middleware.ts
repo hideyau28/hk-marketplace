@@ -113,14 +113,14 @@ export function middleware(request: NextRequest) {
     // /{slug}/admin/... → redirect to /en/admin/... so admin route group matches
     const restPath = pathname.substring(pathSlug.length + 1); // e.g. "/admin/login"
     if (restPath === "/admin" || restPath.startsWith("/admin/")) {
-      const adminUrl = new URL(`/en${restPath}`, request.url);
+      const adminUrl = new URL(`/zh-HK${restPath}`, request.url);
       return NextResponse.redirect(adminUrl);
     }
 
     // Path slug only takes effect when no subdomain tenant is set
     // Rewrite /{slug}/... → /en/{slug}/...
     const rewriteUrl = request.nextUrl.clone();
-    rewriteUrl.pathname = `/en${pathname}`;
+    rewriteUrl.pathname = `/zh-HK${pathname}`;
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-tenant-slug", tenantSlug);
     requestHeaders.set("x-tenant-path-slug", pathSlug);
@@ -137,13 +137,13 @@ export function middleware(request: NextRequest) {
 
   // --- /start redirect: /start → /en/start ---
   if (!isApiRoute && pathname === "/start") {
-    const startUrl = new URL("/en/start", request.url);
+    const startUrl = new URL("/zh-HK/start", request.url);
     return NextResponse.redirect(startUrl);
   }
 
   // --- Admin redirect: /admin → /en/admin ---
   if (!isApiRoute && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
-    const adminUrl = new URL(`/en${pathname}`, request.url);
+    const adminUrl = new URL(`/zh-HK${pathname}`, request.url);
     return NextResponse.redirect(adminUrl);
   }
 
@@ -157,7 +157,7 @@ export function middleware(request: NextRequest) {
 
     if (!sessionCookie?.value && !tenantAdminCookie?.value) {
       const localeMatch = pathname.match(/^\/([^/]+)/);
-      const locale = localeMatch ? localeMatch[1] : "en";
+      const locale = localeMatch ? localeMatch[1] : "zh-HK";
 
       const loginUrl = new URL(`/${locale}/admin/login`, request.url);
       return NextResponse.redirect(loginUrl);
@@ -169,7 +169,7 @@ export function middleware(request: NextRequest) {
     const tenantAdminCookie = request.cookies.get("tenant-admin-token");
     if (tenantAdminCookie?.value) {
       const localeMatch = pathname.match(/^\/([^/]+)/);
-      const locale = localeMatch ? localeMatch[1] : "en";
+      const locale = localeMatch ? localeMatch[1] : "zh-HK";
       const dashboardUrl = new URL(`/${locale}/admin`, request.url);
       return NextResponse.redirect(dashboardUrl);
     }
