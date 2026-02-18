@@ -70,7 +70,7 @@ export default function BottomTab({ t }: { t: Translations }) {
               aria-current={active ? "page" : undefined}
             >
               <tab.Icon size={18} />
-              <span className="text-[9px] leading-tight font-medium">{label}</span>
+              <span className="text-xs leading-tight font-medium">{label}</span>
             </Link>
           );
         })}
