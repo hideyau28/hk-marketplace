@@ -43,9 +43,6 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
 
       const response = await fetch("/api/admin/upload", {
         method: "POST",
-        headers: {
-          "x-admin-secret": process.env.NEXT_PUBLIC_ADMIN_SECRET || "",
-        },
         body: formData,
       });
 
