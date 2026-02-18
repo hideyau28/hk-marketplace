@@ -925,7 +925,7 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
                   {!googleEmail && (
                     <>
                       <a
-                        href={`/api/tenant-admin/google?onboarding=true`}
+                        href={`/api/tenant-admin/google?onboarding=true&locale=${locale}`}
                         className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors min-h-[44px]"
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24">

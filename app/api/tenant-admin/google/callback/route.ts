@@ -16,18 +16,22 @@ export async function GET(request: NextRequest) {
   const stateParam = searchParams.get("state");
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-  // Parse state to check if this is an onboarding flow
+  // Parse state to check if this is an onboarding flow + locale
   let isOnboarding = false;
+  let locale = "en";
   if (stateParam) {
     try {
       const stateObj = JSON.parse(Buffer.from(stateParam, "base64url").toString());
       isOnboarding = stateObj.onboarding === true;
+      if (stateObj.locale && typeof stateObj.locale === "string") {
+        locale = stateObj.locale;
+      }
     } catch {
       // Invalid state, ignore
     }
   }
 
-  const errorRedirect = isOnboarding ? `${baseUrl}/en/start` : `${baseUrl}/en/admin/login`;
+  const errorRedirect = isOnboarding ? `${baseUrl}/${locale}/start` : `${baseUrl}/${locale}/admin/login`;
 
   if (error) {
     console.error("[Google OAuth] Error from Google:", error);
@@ -85,7 +89,7 @@ export async function GET(request: NextRequest) {
     // Onboarding flow: redirect back to /start with email, no session needed yet
     if (isOnboarding) {
       const email = encodeURIComponent(userInfo.email || "");
-      const redirectUrl = `${baseUrl}/en/start?google_email=${email}`;
+      const redirectUrl = `${baseUrl}/${locale}/start?google_email=${email}`;
       return NextResponse.redirect(redirectUrl);
     }
 
@@ -95,7 +99,7 @@ export async function GET(request: NextRequest) {
     // BUG FIX: Must set cookie directly on the redirect response.
     // Previously used setSessionCookie() which calls cookies() from next/headers,
     // but cookies set that way are NOT carried over to NextResponse.redirect().
-    const redirectUrl = `${baseUrl}/en/admin/products`;
+    const redirectUrl = `${baseUrl}/${locale}/admin/products`;
     const response = NextResponse.redirect(redirectUrl);
     response.cookies.set("admin_session", token, {
       httpOnly: true,
