@@ -223,7 +223,7 @@ export const POST = withApi(async (req) => {
         break;
       }
 
-      // ─── Subscription 取消/刪除 → 降級到 Free ───
+      // ─── Subscription 取消/刪除 → 即時降級到 Free ───
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
         const tenantId = sub.metadata?.tenantId;
@@ -234,22 +234,20 @@ export const POST = withApi(async (req) => {
           break;
         }
 
-        // 設 grace period，唔即時降級
-        const gracePeriodEnd = getGracePeriodEnd();
-
         await prisma.tenant.update({
           where: { id: tenantId },
           data: {
+            plan: "free",
             stripeSubscriptionId: null,
             subscriptionEndsAt: new Date(),
-            planGracePeriodEndsAt: gracePeriodEnd,
+            planExpiresAt: null,
+            planGracePeriodEndsAt: null,
           },
         });
 
-        log("info", "Subscription deleted, grace period set", {
+        log("info", "Subscription deleted, tenant downgraded to free", {
           tenantId,
           subscriptionId: sub.id,
-          gracePeriodEnd: gracePeriodEnd.toISOString(),
         });
         break;
       }
