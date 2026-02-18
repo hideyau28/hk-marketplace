@@ -82,6 +82,18 @@ function makeClient() {
   });
 }
 
-export const prisma = globalForPrisma.prisma ?? makeClient();
+function getLazy(): ReturnType<typeof makeClient> {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = makeClient();
+  }
+  return globalForPrisma.prisma;
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+export const prisma: ReturnType<typeof makeClient> = new Proxy(
+  {} as ReturnType<typeof makeClient>,
+  {
+    get(_target, prop) {
+      return Reflect.get(getLazy(), prop);
+    },
+  }
+);
