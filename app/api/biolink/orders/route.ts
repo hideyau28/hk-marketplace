@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
+import { getProvider } from "@/lib/payments/registry";
 import { prisma } from "@/lib/prisma";
 
 type DeliveryOption = {
@@ -96,7 +97,7 @@ function parsePayload(body: unknown): BioLinkOrderPayload {
   }
 
   const pay = b.payment as Record<string, unknown> | undefined;
-  if (!pay || typeof pay.method !== "string" || !["fps", "payme", "stripe"].includes(pay.method)) {
+  if (!pay || typeof pay.method !== "string" || !getProvider(pay.method)) {
     throw new ApiError(400, "BAD_REQUEST", "Invalid payment.method");
   }
 
