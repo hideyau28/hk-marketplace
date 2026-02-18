@@ -20,12 +20,12 @@ export async function GET(request: NextRequest) {
 
   const redirectUri = `${baseUrl}/api/tenant-admin/google/callback`;
 
-  // Pass onboarding flag through OAuth state param
+  // Pass onboarding flag + locale through OAuth state param
   const isOnboarding = request.nextUrl.searchParams.get("onboarding") === "true";
-  const stateObj = isOnboarding ? { onboarding: true } : {};
-  const stateStr = Object.keys(stateObj).length > 0
-    ? Buffer.from(JSON.stringify(stateObj)).toString("base64url")
-    : undefined;
+  const locale = request.nextUrl.searchParams.get("locale") || "en";
+  const stateObj: Record<string, unknown> = { locale };
+  if (isOnboarding) stateObj.onboarding = true;
+  const stateStr = Buffer.from(JSON.stringify(stateObj)).toString("base64url");
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -36,9 +36,7 @@ export async function GET(request: NextRequest) {
     prompt: "consent",
   });
 
-  if (stateStr) {
-    params.set("state", stateStr);
-  }
+  params.set("state", stateStr);
 
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 

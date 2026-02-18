@@ -23,14 +23,15 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST = withApi(async (req: Request) => {
   try {
-  let body: { name?: string; slug?: string; whatsapp?: string; instagram?: string; email?: string; password?: string; coverTemplate?: string; templateId?: string; tagline?: string; paymentMethods?: string[] };
+  let body: { name?: string; slug?: string; whatsapp?: string; instagram?: string; email?: string; password?: string; googleAuth?: boolean; coverTemplate?: string; templateId?: string; tagline?: string; paymentMethods?: string[] };
   try {
     body = await req.json();
   } catch {
     throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
   }
 
-  const { name, slug, whatsapp, instagram, email, password, coverTemplate, templateId, tagline, paymentMethods } = body;
+  const { name, slug, whatsapp, instagram, email, password, googleAuth, coverTemplate, templateId, tagline, paymentMethods } = body;
+  const isOAuth = googleAuth === true;
 
   // --- Validation ---
   if (!name || typeof name !== "string" || name.trim().length < 2 || name.trim().length > 50) {
@@ -58,8 +59,11 @@ export const POST = withApi(async (req: Request) => {
     throw new ApiError(400, "BAD_REQUEST", "請輸入有效嘅 email");
   }
 
-  if (!password || typeof password !== "string" || password.length < 8) {
-    throw new ApiError(400, "BAD_REQUEST", "密碼最少 8 個字");
+  // OAuth 用戶冇密碼，skip password validation
+  if (!isOAuth) {
+    if (!password || typeof password !== "string" || password.length < 8) {
+      throw new ApiError(400, "BAD_REQUEST", "密碼最少 8 個字");
+    }
   }
 
   const cleanName = name.trim();
@@ -68,7 +72,7 @@ export const POST = withApi(async (req: Request) => {
   const cleanEmail = email.trim().toLowerCase();
   const cleanTagline = tagline?.trim() || "";
   const cleanTemplate = resolveTemplateId(templateId?.trim() || coverTemplate?.trim());
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = (!isOAuth && password) ? await bcrypt.hash(password, 10) : null;
 
   // --- Create Tenant + TenantAdmin atomically ---
   try {

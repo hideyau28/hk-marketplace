@@ -88,6 +88,14 @@ export async function PATCH(req: Request) {
         );
       }
 
+      // OAuth 用戶冇密碼，唔可以用 password change flow
+      if (!admin.passwordHash) {
+        return NextResponse.json(
+          { ok: false, error: "此帳號使用 Google 登入，無法更改密碼" },
+          { status: 400 }
+        );
+      }
+
       const valid = await verifyPassword(currentPassword, admin.passwordHash);
       if (!valid) {
         return NextResponse.json(

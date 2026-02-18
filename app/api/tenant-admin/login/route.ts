@@ -31,6 +31,14 @@ export async function POST(req: Request) {
       );
     }
 
+    // OAuth 用戶冇密碼，唔可以用 email/password login
+    if (!admin.passwordHash) {
+      return NextResponse.json(
+        { ok: false, error: "此帳號使用 Google 登入，請使用 Google 登入" },
+        { status: 401 }
+      );
+    }
+
     // Verify password
     const valid = await verifyPassword(password, admin.passwordHash);
     if (!valid) {
