@@ -412,6 +412,10 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        @media (max-width: 640px) {
+          .steps-list { flex-direction: column !important; align-items: stretch !important; }
+          .trust-list { flex-direction: column !important; align-items: stretch !important; }
+        }
       `}</style>
 
       {/* ─── NAV ─── */}
@@ -513,13 +517,13 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" as const }}>
           <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>{t.howTitle}</h2>
           <p style={{ color: "#888", fontSize: 16, marginBottom: 48 }}>{t.howSub}</p>
-          <div style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" as const }}>
+          <div className="steps-list" style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" as const }}>
             {([
               { title: t.step1t, desc: t.step1d },
               { title: t.step2t, desc: t.step2d },
               { title: t.step3t, desc: t.step3d },
             ]).map((step, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, flex: 1, minWidth: 0, width: "100%" }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, flex: "1 1 200px", minWidth: 0, width: "100%" }}>
                 <div style={{
                   width: 64, height: 64, borderRadius: 16,
                   background: "#FFF3E0", display: "flex", alignItems: "center", justifyContent: "center",
@@ -717,7 +721,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           </div>
 
           {/* Trust */}
-          <div style={{
+          <div className="trust-list" style={{
             display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" as const,
             padding: "32px 24px",
             background: "#fff", borderRadius: 20, border: "1px solid #E5E7EB",
@@ -727,7 +731,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               { icon: IconShield, title: t.trust2t, desc: t.trust2d },
               { icon: IconKey, title: t.trust3t, desc: t.trust3d },
             ]).map((item, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0, width: "100%" }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, flex: "1 1 200px", minWidth: 0, width: "100%" }}>
                 <div style={{
                   width: 48, height: 48, borderRadius: 12,
                   background: "#FFF3E0", display: "flex", alignItems: "center", justifyContent: "center",
