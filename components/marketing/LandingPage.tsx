@@ -413,8 +413,11 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         @media (max-width: 640px) {
-          .steps-list { flex-direction: column !important; align-items: stretch !important; }
-          .trust-list { flex-direction: column !important; align-items: stretch !important; }
+          .lp-section { padding-top: 48px !important; padding-bottom: 48px !important; }
+          .steps-list { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; }
+          .steps-list > div { flex: 0 0 auto !important; }
+          .trust-list { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; }
+          .trust-list > div { flex: 0 0 auto !important; }
         }
       `}</style>
 
@@ -513,7 +516,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* ─── SECTION 2: HOW IT WORKS ─── */}
-      <section style={{ padding: "80px 24px", background: "#FAFAFA" }}>
+      <section className="lp-section" style={{ padding: "80px 24px", background: "#FAFAFA" }}>
         <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" as const }}>
           <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>{t.howTitle}</h2>
           <p style={{ color: "#888", fontSize: 16, marginBottom: 48 }}>{t.howSub}</p>
@@ -671,7 +674,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* ─── SECTION 6: TRUST + TEMPLATES ─── */}
-      <section style={{ padding: "80px 24px", background: "#FAFAFA" }}>
+      <section className="lp-section" style={{ padding: "80px 24px", background: "#FAFAFA" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ textAlign: "center" as const, marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
