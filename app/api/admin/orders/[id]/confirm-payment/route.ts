@@ -44,7 +44,7 @@ export const POST = withApi(
     history.push({
       timestamp: now.toISOString(),
       fromStatus: order.status,
-      toStatus: "PAID",
+      toStatus: "CONFIRMED",
       action: "confirm_payment",
       by: confirmedBy,
     });
@@ -52,7 +52,7 @@ export const POST = withApi(
     const updated = await prisma.order.update({
       where: { id },
       data: {
-        status: "PAID",
+        status: "CONFIRMED",
         paidAt: now,
         paymentStatus: "confirmed",
         paymentConfirmedAt: now,
