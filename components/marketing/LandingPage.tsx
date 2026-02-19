@@ -284,12 +284,14 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
       {/* ─── NAV (Dark) ─── */}
       <nav style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "16px 24px", maxWidth: 1200, margin: "0 auto",
         position: "sticky", top: 0, zIndex: 100,
         background: "rgba(13,13,13,0.92)", backdropFilter: "blur(16px)",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>
+       <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "16px 24px", maxWidth: 1200, margin: "0 auto",
+       }}>
         <div style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>
           <span style={{ color: "#FF9500" }}>&#10022;</span> WoWlix
         </div>
@@ -329,6 +331,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             boxShadow: "0 4px 16px rgba(255,149,0,0.3)",
           }}>{t.navCta}</Link>
         </div>
+       </div>
       </nav>
 
       {/* ─── HERO ─── */}
