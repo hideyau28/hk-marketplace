@@ -21,13 +21,8 @@ export const PUT = withApi(async (req: Request, ctx: RouteContext) => {
   const { id } = await ctx.params;
   const body = await req.json();
 
-  const existing = await prisma.homepageBanner.findFirst({ where: { id, tenantId } });
-  if (!existing) {
-    throw new ApiError(404, "NOT_FOUND", "Banner not found");
-  }
-
-  const banner = await prisma.homepageBanner.update({
-    where: { id },
+  const result = await prisma.homepageBanner.updateMany({
+    where: { id, tenantId },
     data: {
       imageUrl: body.imageUrl !== undefined ? body.imageUrl.trim() : undefined,
       title: body.title !== undefined ? (body.title?.trim() || null) : undefined,
@@ -39,6 +34,12 @@ export const PUT = withApi(async (req: Request, ctx: RouteContext) => {
       position: body.position !== undefined ? body.position : undefined,
     },
   });
+
+  if (result.count === 0) {
+    throw new ApiError(404, "NOT_FOUND", "Banner not found");
+  }
+
+  const banner = await prisma.homepageBanner.findUnique({ where: { id } });
 
   return ok(req, { banner });
 });
@@ -56,12 +57,11 @@ export const DELETE = withApi(async (req: Request, ctx: RouteContext) => {
   const tenantId = await getTenantId(req);
   const { id } = await ctx.params;
 
-  const existing = await prisma.homepageBanner.findFirst({ where: { id, tenantId } });
-  if (!existing) {
+  const result = await prisma.homepageBanner.deleteMany({ where: { id, tenantId } });
+
+  if (result.count === 0) {
     throw new ApiError(404, "NOT_FOUND", "Banner not found");
   }
-
-  await prisma.homepageBanner.delete({ where: { id } });
 
   return ok(req, { success: true });
 });
