@@ -1,7 +1,10 @@
 export const runtime = "nodejs";
 
+import crypto from "node:crypto";
+import { customAlphabet } from "nanoid";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { getProvider } from "@/lib/payments/registry";
+import { checkPlanLimit } from "@/lib/plan";
 import { prisma } from "@/lib/prisma";
 
 type DeliveryOption = {
@@ -23,24 +26,45 @@ function getFulfillmentType(methodId: string): "PICKUP" | "DELIVERY" {
   return "DELIVERY";
 }
 
-async function generateBioOrderNumber(tenantId: string): Promise<string> {
+const ROUTE = "/api/biolink/orders";
+
+// Order number: WX + YYMMDD + - + 6-char alphanumeric nanoid
+const nanoid = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6);
+
+function generateOrderNumber(): string {
   const now = new Date();
-  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "");
-  const prefix = `WX-${dateStr}-`;
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `WX${yy}${mm}${dd}-${nanoid()}`;
+}
 
-  const lastOrder = await prisma.order.findFirst({
-    where: { orderNumber: { startsWith: prefix }, tenantId },
-    orderBy: { orderNumber: "desc" },
-    select: { orderNumber: true },
-  });
+function stableStringify(input: unknown): string {
+  const seen = new WeakSet<object>();
 
-  let sequence = 1;
-  if (lastOrder?.orderNumber) {
-    const lastSeq = parseInt(lastOrder.orderNumber.slice(-3), 10);
-    if (!isNaN(lastSeq)) sequence = lastSeq + 1;
-  }
+  const norm = (v: any): any => {
+    if (v === null || v === undefined) return v;
+    if (typeof v !== "object") return v;
 
-  return `${prefix}${sequence.toString().padStart(3, "0")}`;
+    if (seen.has(v)) return "[Circular]";
+    seen.add(v);
+
+    if (Array.isArray(v)) return v.map(norm);
+
+    const out: Record<string, any> = {};
+    for (const k of Object.keys(v).sort()) out[k] = norm(v[k]);
+    return out;
+  };
+
+  return JSON.stringify(norm(input));
+}
+
+function sha256(s: string) {
+  return crypto.createHash("sha256").update(s).digest("hex");
+}
+
+function getIdempotencyKey(req: Request) {
+  return (req.headers.get("x-idempotency-key") ?? req.headers.get("idempotency-key") ?? "").trim();
 }
 
 type BioLinkOrderPayload = {
@@ -153,6 +177,37 @@ export const POST = withApi(async (req) => {
 
   if (!tenant) throw new ApiError(404, "NOT_FOUND", "Tenant not found");
 
+  // Plan gating: check monthly order limit
+  const orderCheck = await checkPlanLimit(tenant.id, "orders");
+  if (!orderCheck.allowed) {
+    throw new ApiError(
+      403,
+      "FORBIDDEN",
+      "This store has reached its monthly order limit. Please try again later. | 店主本月訂單已滿，請稍後再試。"
+    );
+  }
+
+  // Idempotency check (optional — only enforced when header present)
+  const idemKey = getIdempotencyKey(req);
+  let requestHash: string | null = null;
+
+  if (idemKey) {
+    requestHash = sha256(
+      stableStringify({ route: ROUTE, method: "POST", body: payload })
+    );
+
+    const existing = await prisma.idempotencyKey.findFirst({
+      where: { key: idemKey, route: ROUTE, method: "POST", tenantId: tenant.id },
+    });
+
+    if (existing) {
+      if (existing.requestHash !== requestHash) {
+        throw new ApiError(409, "CONFLICT", "Idempotency key already used with different payload");
+      }
+      return ok(req, existing.responseJson);
+    }
+  }
+
   // Get delivery options from tenant settings
   const deliveryOptions = (tenant.deliveryOptions as DeliveryOption[] | null) || DEFAULT_DELIVERY_OPTIONS;
   const enabledOptions = deliveryOptions.filter((o) => o.enabled);
@@ -198,79 +253,84 @@ export const POST = withApi(async (req) => {
     deliveryFee = 0;
   }
 
-  // Stock deduction for items with variantId (single-variant)
-  for (const item of payload.items) {
-    if (!item.variantId) continue;
-    const variant = await prisma.productVariant.findUnique({
-      where: { id: item.variantId },
-      select: { id: true, stock: true, name: true },
-    });
-    if (!variant) throw new ApiError(400, "BAD_REQUEST", `Variant not found: ${item.variantId}`);
-    if (variant.stock < item.qty) {
-      throw new ApiError(400, "BAD_REQUEST", `${variant.name} 庫存不足`);
-    }
-    await prisma.productVariant.update({
-      where: { id: item.variantId },
-      data: {
-        stock: { decrement: item.qty },
-        ...(variant.stock - item.qty <= 0 ? { active: false } : {}),
-      },
-    });
-  }
-
-  // Stock deduction for dual-variant items (sizes JSONB combinations)
-  for (const item of payload.items) {
-    if (item.variantId) continue;
-    if (!item.variant || !item.variant.includes("|")) continue;
-
-    const product = productMap.get(item.productId);
-    if (!product) continue;
-
-    const sizes = product.sizes as Record<string, unknown> | null;
-    if (!sizes || !("dimensions" in sizes) || !("combinations" in sizes)) continue;
-
-    const combinations = (sizes as { combinations: Record<string, { qty: number; status: string }> }).combinations;
-    const combo = combinations[item.variant];
-    if (!combo || combo.qty < item.qty) {
-      throw new ApiError(400, "BAD_REQUEST", `${item.variant.replace(/\|/g, " · ")} 庫存不足`);
-    }
-
-    combo.qty -= item.qty;
-    if (combo.qty === 0) combo.status = "hidden";
-
-    await prisma.product.update({
-      where: { id: item.productId },
-      data: { sizes: sizes as object },
-    });
-  }
-
-  const orderNumber = await generateBioOrderNumber(tenant.id);
+  const orderNumber = generateOrderNumber();
   const totalWithDelivery = serverTotal + deliveryFee;
 
-  const order = await prisma.order.create({
-    data: {
-      tenantId: tenant.id,
-      orderNumber,
-      customerName: payload.customer.name,
-      phone: payload.customer.phone,
-      email: payload.customer.email || null,
-      items: repricedItems,
-      amounts: {
-        subtotal: serverTotal,
-        deliveryFee,
-        total: totalWithDelivery,
-        currency: tenant.currency || "HKD",
+  // Atomic: stock deduction + order creation in a single transaction
+  const order = await (prisma as any).$transaction(async (tx: any) => {
+    // Single-variant stock deduction (updateMany with gte guard)
+    for (const item of payload.items) {
+      if (!item.variantId) continue;
+
+      const result = await tx.productVariant.updateMany({
+        where: { id: item.variantId, stock: { gte: item.qty } },
+        data: { stock: { decrement: item.qty } },
+      });
+      if (result.count === 0) {
+        throw new ApiError(400, "BAD_REQUEST", `INSUFFICIENT_STOCK: 庫存不足 — ${item.productName}`);
+      }
+
+      // Deactivate variant if stock hits zero
+      await tx.productVariant.updateMany({
+        where: { id: item.variantId, stock: { lte: 0 } },
+        data: { active: false },
+      });
+    }
+
+    // Dual-variant stock deduction (JSONB sizes, read-then-write inside tx)
+    for (const item of payload.items) {
+      if (item.variantId) continue;
+      if (!item.variant || !item.variant.includes("|")) continue;
+
+      const product = productMap.get(item.productId);
+      if (!product) continue;
+
+      const sizes = product.sizes as Record<string, unknown> | null;
+      if (!sizes || !("dimensions" in sizes) || !("combinations" in sizes)) continue;
+
+      const combinations = (sizes as { combinations: Record<string, { qty: number; status: string }> }).combinations;
+      const combo = combinations[item.variant];
+      if (!combo || combo.qty < item.qty) {
+        throw new ApiError(400, "BAD_REQUEST", `INSUFFICIENT_STOCK: ${item.variant.replace(/\|/g, " · ")} 庫存不足`);
+      }
+
+      combo.qty -= item.qty;
+      if (combo.qty === 0) combo.status = "hidden";
+
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { sizes: sizes as object },
+      });
+    }
+
+    // Create order
+    const created = await tx.order.create({
+      data: {
+        tenantId: tenant.id,
+        orderNumber,
+        customerName: payload.customer.name,
+        phone: payload.customer.phone,
+        email: payload.customer.email || null,
+        items: repricedItems,
+        amounts: {
+          subtotal: serverTotal,
+          deliveryFee,
+          total: totalWithDelivery,
+          currency: tenant.currency || "HKD",
+        },
+        fulfillmentType: getFulfillmentType(payload.delivery.method),
+        fulfillmentAddress:
+          getFulfillmentType(payload.delivery.method) === "DELIVERY"
+            ? { line1: selectedDelivery.label, notes: payload.delivery.method }
+            : undefined,
+        status: "PENDING",
+        paymentMethod: payload.payment.method,
+        paymentStatus: "pending",
+        note: payload.note || null,
       },
-      fulfillmentType: getFulfillmentType(payload.delivery.method),
-      fulfillmentAddress:
-        getFulfillmentType(payload.delivery.method) === "DELIVERY"
-          ? { line1: selectedDelivery.label, notes: payload.delivery.method }
-          : undefined,
-      status: "PENDING",
-      paymentMethod: payload.payment.method,
-      paymentStatus: "pending",
-      note: payload.note || null,
-    },
+    });
+
+    return created;
   });
 
   // Build response
@@ -322,6 +382,21 @@ export const POST = withApi(async (req) => {
   response.whatsapp = tenant.whatsapp;
   response.storeName = tenant.name;
   response.total = totalWithDelivery;
+
+  // Save idempotency record (only if header was provided)
+  if (idemKey && requestHash) {
+    await prisma.idempotencyKey.create({
+      data: {
+        tenantId: tenant.id,
+        key: idemKey,
+        route: ROUTE,
+        method: "POST",
+        requestHash,
+        status: 200,
+        responseJson: response as any,
+      },
+    });
+  }
 
   return ok(req, response);
 });
