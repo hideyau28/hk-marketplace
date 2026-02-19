@@ -324,12 +324,13 @@ const slideVariants = {
 
 interface OnboardingWizardProps {
   locale: Locale;
+  initialGoogleEmail?: string | null;
 }
 
 const STORAGE_KEY = "onboarding-wizard-state";
 const TOTAL_STEPS = 5;
 
-export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
+export default function OnboardingWizard({ locale, initialGoogleEmail }: OnboardingWizardProps) {
   const labels = locale === "zh-HK" ? t["zh-HK"] : t.en;
   const isZh = locale === "zh-HK";
   const plans = getOnboardingPlans(isZh);
@@ -375,19 +376,15 @@ export default function OnboardingWizard({ locale }: OnboardingWizardProps) {
       console.error("Failed to restore onboarding state:", error);
     }
 
-    // Check if returning from Google OAuth with email
-    const params = new URLSearchParams(window.location.search);
-    const gEmail = params.get("google_email");
-    if (gEmail) {
-      setGoogleEmail(gEmail);
-      setData((prev) => ({ ...prev, email: gEmail }));
+    // Check if returning from Google OAuth with email.
+    // Email is passed as a server-side prop (read from httpOnly cookie) to
+    // avoid exposing it in the redirect URL.
+    if (initialGoogleEmail) {
+      setGoogleEmail(initialGoogleEmail);
+      setData((prev) => ({ ...prev, email: initialGoogleEmail }));
       setStep(2);
-      // Clean up URL params
-      const url = new URL(window.location.href);
-      url.searchParams.delete("google_email");
-      window.history.replaceState({}, "", url.pathname);
     }
-  }, []);
+  }, [initialGoogleEmail]);
 
   // --- Save state to sessionStorage whenever it changes ---
   // 唔存密碼落 sessionStorage，避免明文洩露

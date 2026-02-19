@@ -35,8 +35,6 @@ export const POST = withApi(async (req) => {
     throw new ApiError(400, "BAD_REQUEST", `Invalid signature: ${msg || "unknown"}`);
   }
 
-  // Best-effort: never fail the webhook just because our DB update didn't apply.
-  // Stripe will retry; but we also want these logs to be actionable.
   const log = (level: "info" | "warn" | "error", msg: string, meta?: Record<string, unknown>) => {
     const base = {
       stripeEventId: event.id,
@@ -48,56 +46,33 @@ export const POST = withApi(async (req) => {
 
   type OrderUpdateData = Prisma.OrderUpdateInput | Prisma.OrderUncheckedUpdateInput;
   const updateByOrderId = async (orderId: string, data: OrderUpdateData) => {
-    try {
-      await prisma.order.update({ where: { id: orderId }, data: data as Prisma.OrderUpdateArgs["data"] });
-      return true;
-    } catch (e: unknown) {
-      const err = e instanceof Error ? e.message : String(e);
-      log("warn", "Order update failed", { orderId, err });
-      return false;
-    }
+    await prisma.order.update({ where: { id: orderId }, data: data as Prisma.OrderUpdateArgs["data"] });
   };
 
   type OrderUpdateManyData = Prisma.OrderUpdateManyMutationInput | Prisma.OrderUncheckedUpdateManyInput;
   const updateByPaymentIntent = async (paymentIntentId: string, data: OrderUpdateManyData) => {
-    try {
-      const res = await prisma.order.updateMany({
-        where: { stripePaymentIntentId: paymentIntentId },
-        data: data as Prisma.OrderUpdateManyArgs["data"],
-      });
-      return res.count;
-    } catch (e: unknown) {
-      const err = e instanceof Error ? e.message : String(e);
-      log("warn", "Order updateMany failed", { paymentIntentId, err });
-      return 0;
-    }
+    const res = await prisma.order.updateMany({
+      where: { stripePaymentIntentId: paymentIntentId },
+      data: data as Prisma.OrderUpdateManyArgs["data"],
+    });
+    return res.count;
   };
 
   const updateAttemptBySessionId = async (sessionId: string, data: Prisma.PaymentAttemptUpdateManyMutationInput) => {
-    try {
-      await prisma.paymentAttempt.updateMany({
-        where: { provider: "STRIPE", stripeCheckoutSessionId: sessionId },
-        data,
-      });
-    } catch (e: unknown) {
-      const err = e instanceof Error ? e.message : String(e);
-      log("warn", "PaymentAttempt updateMany failed", { sessionId, err });
-    }
+    await prisma.paymentAttempt.updateMany({
+      where: { provider: "STRIPE", stripeCheckoutSessionId: sessionId },
+      data,
+    });
   };
 
   const updateAttemptByPaymentIntentId = async (
     paymentIntentId: string,
     data: Prisma.PaymentAttemptUpdateManyMutationInput
   ) => {
-    try {
-      await prisma.paymentAttempt.updateMany({
-        where: { provider: "STRIPE", stripePaymentIntentId: paymentIntentId },
-        data,
-      });
-    } catch (e: unknown) {
-      const err = e instanceof Error ? e.message : String(e);
-      log("warn", "PaymentAttempt updateMany failed", { paymentIntentId, err });
-    }
+    await prisma.paymentAttempt.updateMany({
+      where: { provider: "STRIPE", stripePaymentIntentId: paymentIntentId },
+      data,
+    });
   };
 
   try {
@@ -229,28 +204,31 @@ export const POST = withApi(async (req) => {
         const chargeId = typeof dispute.charge === "string" ? dispute.charge : "";
         if (!chargeId) break;
 
-        // Try to resolve payment_intent via charge lookup.
+        // Resolve payment_intent via charge lookup. Only catch Stripe API errors here;
+        // DB errors must propagate so Stripe retries.
+        let ch: Stripe.Charge;
         try {
-          const ch = await stripe.charges.retrieve(chargeId);
-          const pid = typeof ch.payment_intent === "string" ? ch.payment_intent : "";
-
-          if (pid) {
-            await updateAttemptByPaymentIntentId(pid, {
-              status: "DISPUTED",
-              stripeChargeId: ch.id,
-              lastEventId: event.id,
-              lastEventType: event.type,
-              lastEvent: event as unknown as Prisma.InputJsonValue,
-            });
-
-            const updated = await updateByPaymentIntent(pid, { status: "DISPUTED" });
-            log("info", "dispute applied", { chargeId, paymentIntentId: pid, updated });
-          } else {
-            log("warn", "Dispute charge has no payment_intent", { chargeId });
-          }
+          ch = await stripe.charges.retrieve(chargeId);
         } catch (e: unknown) {
           const err = e instanceof Error ? e.message : String(e);
           log("warn", "Failed to retrieve charge for dispute", { chargeId, err });
+          break;
+        }
+
+        const pid = typeof ch.payment_intent === "string" ? ch.payment_intent : "";
+        if (pid) {
+          await updateAttemptByPaymentIntentId(pid, {
+            status: "DISPUTED",
+            stripeChargeId: ch.id,
+            lastEventId: event.id,
+            lastEventType: event.type,
+            lastEvent: event as unknown as Prisma.InputJsonValue,
+          });
+
+          const updated = await updateByPaymentIntent(pid, { status: "DISPUTED" });
+          log("info", "dispute applied", { chargeId, paymentIntentId: pid, updated });
+        } else {
+          log("warn", "Dispute charge has no payment_intent", { chargeId });
         }
 
         break;
@@ -263,6 +241,8 @@ export const POST = withApi(async (req) => {
   } catch (e: unknown) {
     const err = e instanceof Error ? e.message : String(e);
     log("error", "Unhandled webhook handler exception", { err });
+    // Re-throw so withApi returns 5xx and Stripe retries the event.
+    throw e;
   }
 
   return ok(req, { received: true });
