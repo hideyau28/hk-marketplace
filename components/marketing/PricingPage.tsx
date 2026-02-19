@@ -632,8 +632,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       }}
     >
       <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&family=Noto+Sans+TC:wght@400;500;700;900&display=swap");
-        @keyframes pulse {
+@keyframes pulse {
           0%,
           100% {
             opacity: 1;
@@ -1082,6 +1081,9 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 borderBottom: "1px solid #E5E7EB",
                 fontSize: 14,
                 fontWeight: 700,
+                position: "sticky",
+                top: 0,
+                zIndex: 10,
               }}
             >
               <div></div>
