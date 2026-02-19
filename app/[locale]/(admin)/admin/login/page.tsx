@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { getDict, type Locale } from "@/lib/i18n";
 
 type TenantOption = {
   id: string;
@@ -10,47 +11,6 @@ type TenantOption = {
   slug: string;
   mode: string;
 };
-
-const t = {
-  en: {
-    heading: "Log in to your store",
-    email: "Email",
-    emailPlaceholder: "you@example.com",
-    password: "Password",
-    passwordPlaceholder: "Your password",
-    submit: "Log in",
-    submitting: "Logging in...",
-    or: "or",
-    googleLogin: "Sign in with Google",
-    noAccount: "Don't have an account?",
-    createStore: "Create your store for free",
-    adminSecret: "Admin Secret",
-    adminSecretPlaceholder: "Enter admin secret",
-    adminLogin: "Admin Login",
-    oauthError: "Sign-in failed. Please try again.",
-    selectTenant: "Select a store to manage",
-    selectTenantBack: "Back to login",
-  },
-  "zh-HK": {
-    heading: "登入你嘅商店",
-    email: "電郵地址",
-    emailPlaceholder: "you@example.com",
-    password: "密碼",
-    passwordPlaceholder: "你嘅密碼",
-    submit: "登入",
-    submitting: "登入中...",
-    or: "或",
-    googleLogin: "Google 登入",
-    noAccount: "未有帳號？",
-    createStore: "免費開店",
-    adminSecret: "管理員密碼",
-    adminSecretPlaceholder: "請輸入管理員密碼",
-    adminLogin: "管理員登入",
-    oauthError: "登入失敗，請再試。",
-    selectTenant: "選擇要管理嘅商店",
-    selectTenantBack: "返回登入",
-  },
-} as const;
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -67,7 +27,8 @@ export default function AdminLoginPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const locale = (params.locale as string) || "en";
-  const labels = locale === "zh-HK" ? t["zh-HK"] : t.en;
+  const dict = getDict(locale as Locale);
+  const labels = dict.admin.login;
   const oauthError = searchParams.get("error");
 
   // Auto-redirect if already authenticated via JWT

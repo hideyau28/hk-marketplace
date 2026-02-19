@@ -75,13 +75,13 @@ export default async function OrderDetailPage({ params }: PageProps) {
           className="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-900 transition-colors"
         >
           <ArrowLeft size={20} />
-          <span>Back to Orders</span>
+          <span>{t.admin.orders.detail.backToOrders}</span>
         </Link>
       </div>
 
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <div className="text-zinc-500 text-sm">Order Details</div>
+          <div className="text-zinc-500 text-sm">{t.admin.orders.detail.title}</div>
           <h1 className="mt-1 text-2xl font-semibold text-zinc-900">{order.orderNumber || order.id}</h1>
           <div className="mt-2 text-zinc-500 text-sm">
             Created: {new Date(order.createdAt).toLocaleString()}
@@ -100,19 +100,19 @@ export default async function OrderDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Customer Info */}
         <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-          <h3 className="text-lg font-semibold text-zinc-900 mb-4">Customer Information</h3>
+          <h3 className="text-lg font-semibold text-zinc-900 mb-4">{t.admin.orders.detail.customerInfo}</h3>
           <div className="space-y-3">
             <div>
-              <div className="text-sm text-zinc-500">Name</div>
+              <div className="text-sm text-zinc-500">{t.admin.orders.detail.name}</div>
               <div className="text-zinc-900 font-medium">{order.customerName}</div>
             </div>
             <div>
-              <div className="text-sm text-zinc-500">Phone</div>
+              <div className="text-sm text-zinc-500">{t.admin.orders.detail.phone}</div>
               <div className="text-zinc-900 font-medium">{order.phone}</div>
             </div>
             {order.email && (
               <div>
-                <div className="text-sm text-zinc-500">Email</div>
+                <div className="text-sm text-zinc-500">{t.admin.orders.detail.email}</div>
                 <div className="text-zinc-900 font-medium">{order.email}</div>
               </div>
             )}
@@ -135,7 +135,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
 
         {/* Order Status */}
         <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-          <h3 className="text-lg font-semibold text-zinc-900 mb-4">Order Status</h3>
+          <h3 className="text-lg font-semibold text-zinc-900 mb-4">{t.admin.orders.detail.orderStatus}</h3>
           <OrderStatusUpdate
             order={{
               id: order.id,
@@ -178,22 +178,22 @@ export default async function OrderDetailPage({ params }: PageProps) {
 
         {/* Payment Info */}
         <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-          <h3 className="text-lg font-semibold text-zinc-900 mb-4">Payment Information</h3>
+          <h3 className="text-lg font-semibold text-zinc-900 mb-4">{t.admin.orders.detail.paymentInfo}</h3>
           <div className="space-y-3">
             <div>
-              <div className="text-sm text-zinc-500">Subtotal</div>
+              <div className="text-sm text-zinc-500">{t.admin.orders.detail.subtotal}</div>
               <div className="text-zinc-900 font-medium">
                 ${Math.round(amounts.subtotal || 0)}
               </div>
             </div>
             <div>
-              <div className="text-sm text-zinc-500">Delivery Fee</div>
+              <div className="text-sm text-zinc-500">{t.admin.orders.detail.deliveryFee}</div>
               <div className="text-zinc-900 font-medium">
                 ${Math.round(amounts.deliveryFee || 0)}
               </div>
             </div>
             <div className="pt-3 border-t border-zinc-200">
-              <div className="text-sm text-zinc-500">Total</div>
+              <div className="text-sm text-zinc-500">{t.admin.orders.detail.total}</div>
               <div className="text-xl font-bold text-zinc-900">
                 ${Math.round(amounts.total || 0)}
               </div>
@@ -212,7 +212,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
 
       {/* Order Items */}
       <div className="bg-white rounded-2xl border border-zinc-200 p-6 mt-6">
-        <h3 className="text-lg font-semibold text-zinc-900 mb-4">Order Items</h3>
+        <h3 className="text-lg font-semibold text-zinc-900 mb-4">{t.admin.orders.detail.orderItems}</h3>
         <div className="space-y-4">
           {items.map((item: any, index: number) => (
             <div key={index} className="flex items-center justify-between py-3 border-b border-zinc-100 last:border-0">
