@@ -602,9 +602,9 @@ function FAQ({ isZh }: { isZh: boolean }) {
           </button>
           <div
             style={{
-              maxHeight: open === i ? 300 : 0,
+              maxHeight: open === i ? 1000 : 0,
               overflow: "hidden",
-              transition: "max-height 0.3s ease",
+              transition: "max-height 0.4s ease",
             }}
           >
             <div style={{ paddingBottom: 20, fontSize: 15, lineHeight: 1.7, color: "#555" }}>{faq.a}</div>
