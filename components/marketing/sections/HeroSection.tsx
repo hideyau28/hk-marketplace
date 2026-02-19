@@ -9,8 +9,8 @@ const T = {
     heroBadge: "專為香港 IG 小店而設",
     heroH1a: "一條 Link",
     heroH1b: "將 Follower 變成生意",
-    heroSub1: "0% 平台抽成・$0 起・2 分鐘開店",
-    heroSub2: "落單、收款、庫存，一個 Link 搞掂晒",
+    heroSub1: "最快 2 分鐘開好網店",
+    heroSub2: "將你嘅 IG Bio Link 變成一間真正嘅網上商店",
     ctaPrimary: "免費開店 →",
     ctaSecondary: "睇定價",
     mockupStore: "Store Preview",
@@ -26,8 +26,8 @@ const T = {
     heroBadge: "Built for HK Instagram shops",
     heroH1a: "One Link",
     heroH1b: "Turn Followers into Sales",
-    heroSub1: "0% commission · From $0 · 2 min setup",
-    heroSub2: "Orders, payments, inventory — one link handles it all",
+    heroSub1: "Set up your shop in as fast as 2 minutes",
+    heroSub2: "Turn your IG Bio Link into a real online store",
     ctaPrimary: "Start Free →",
     ctaSecondary: "See Pricing",
     mockupStore: "Store Preview",
@@ -339,12 +339,12 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
 
         {/* CTAs */}
         <div className="hero-cta-row">
-          <Link href={`/${locale}/start`} className="hero-cta-primary">
+          <Link href="/admin/register" className="hero-cta-primary">
             {t.ctaPrimary}
           </Link>
-          <Link href={`/${locale}/pricing`} className="hero-cta-secondary">
+          <a href="#pricing" className="hero-cta-secondary">
             {t.ctaSecondary}
-          </Link>
+          </a>
         </div>
 
         {/* Phone Mockup */}
