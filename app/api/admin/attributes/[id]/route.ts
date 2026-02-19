@@ -120,7 +120,7 @@ export const DELETE = withApi(async (req: Request, { params }: RouteCtx) => {
     throw new ApiError(404, "NOT_FOUND", "Attribute not found");
   }
 
-  await prisma.attributeDefinition.delete({ where: { id } });
+  await prisma.attributeDefinition.deleteMany({ where: { id, tenantId } });
 
   return ok(req, { success: true });
 });

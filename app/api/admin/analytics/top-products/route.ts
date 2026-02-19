@@ -87,7 +87,7 @@ export const GET = withApi(async (req) => {
   let imageMap = new Map<string, string | null>();
   if (productIds.length > 0) {
     const products = await prisma.product.findMany({
-      where: { id: { in: productIds } },
+      where: { id: { in: productIds }, tenantId },
       select: { id: true, imageUrl: true },
     });
     imageMap = new Map(products.map((p) => [p.id, p.imageUrl]));

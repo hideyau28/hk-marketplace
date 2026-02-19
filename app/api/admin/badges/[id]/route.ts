@@ -84,7 +84,7 @@ export const DELETE = withApi(async (req: Request, { params }: { params: Promise
   const existing = await prisma.badge.findFirst({ where: { id, tenantId } });
   if (!existing) throw new ApiError(404, "NOT_FOUND", "Badge not found");
 
-  await prisma.badge.delete({ where: { id } });
+  await prisma.badge.deleteMany({ where: { id, tenantId } });
 
   return ok(req, { success: true });
 });

@@ -131,7 +131,7 @@ export const DELETE = withApi(async (req: Request, { params }: { params: Promise
   const existingCoupon = await prisma.coupon.findFirst({ where: { id, tenantId } });
   if (!existingCoupon) throw new ApiError(404, "NOT_FOUND", "Coupon not found");
 
-  await prisma.coupon.delete({ where: { id } });
+  await prisma.coupon.deleteMany({ where: { id, tenantId } });
 
   return ok(req, { success: true });
 });
