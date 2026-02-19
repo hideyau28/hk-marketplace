@@ -61,7 +61,7 @@ export const DELETE = withApi(async (req: Request, ctx: RouteContext) => {
     throw new ApiError(404, "NOT_FOUND", "Section not found");
   }
 
-  await prisma.homepageSection.delete({ where: { id } });
+  await prisma.homepageSection.deleteMany({ where: { id, tenantId } });
 
   return ok(req, { success: true });
 });

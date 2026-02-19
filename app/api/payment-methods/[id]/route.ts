@@ -40,10 +40,8 @@ export async function PUT(
     if (accountInfo !== undefined) updateData.accountInfo = accountInfo;
     if (active !== undefined) updateData.active = active;
 
-    const method = await prisma.paymentMethod.update({
-      where: { id },
-      data: updateData,
-    });
+    await prisma.paymentMethod.updateMany({ where: { id, tenantId }, data: updateData });
+    const method = await prisma.paymentMethod.findFirst({ where: { id, tenantId } });
 
     return NextResponse.json({
       ok: true,

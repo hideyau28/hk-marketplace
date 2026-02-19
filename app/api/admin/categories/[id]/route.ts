@@ -140,7 +140,7 @@ export const DELETE = withApi(
     });
 
     // Delete the category
-    await prisma.category.delete({ where: { id } });
+    await prisma.category.deleteMany({ where: { id, tenantId } });
 
     return ok(req, { success: true });
   }
