@@ -6,6 +6,7 @@ import Link from "next/link";
 import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
 import {
   getCart,
+  setCart,
   removeFromCart,
   updateCartItemQty,
   getCartTotal,
@@ -13,6 +14,7 @@ import {
   type CartItem,
 } from "@/lib/cart";
 import { useCurrency } from "@/lib/currency";
+import { useToast } from "@/components/Toast";
 import type { Locale } from "@/lib/i18n";
 
 export default function CartDrawer({
@@ -26,14 +28,52 @@ export default function CartDrawer({
 }) {
   const [cart, setCartState] = useState<CartItem[]>([]);
   const { format } = useCurrency();
+  const { showToast } = useToast();
+  const isZh = locale.startsWith("zh");
 
   const refreshCart = useCallback(() => {
     setCartState(getCart());
   }, []);
 
+  // 開啟時向 server 驗證最新價錢，如有變動更新 localStorage 並通知用戶
+  const refreshPrices = useCallback(async () => {
+    const cartItems = getCart();
+    if (cartItems.length === 0) return;
+    const ids = [...new Set(cartItems.map((item) => item.productId))].join(",");
+    try {
+      const res = await fetch(`/api/biolink/products?ids=${encodeURIComponent(ids)}`);
+      if (!res.ok) return;
+      const json = await res.json();
+      const products: Array<{ id: string; price: number; active: boolean }> =
+        json?.data?.products ?? [];
+      if (!products.length) return;
+      const priceMap = new Map(products.map((p) => [p.id, p.price]));
+      let changed = false;
+      const updated = cartItems.map((item) => {
+        const serverPrice = priceMap.get(item.productId);
+        if (serverPrice !== undefined && serverPrice !== item.unitPrice) {
+          changed = true;
+          return { ...item, unitPrice: serverPrice };
+        }
+        return item;
+      });
+      if (changed) {
+        setCart(updated);
+        setCartState(updated);
+        window.dispatchEvent(new Event("cartUpdated"));
+        showToast(isZh ? "部分商品價格已更新" : "Some prices have been updated");
+      }
+    } catch {
+      // silent fail — price refresh is best-effort
+    }
+  }, [isZh, showToast]);
+
   useEffect(() => {
-    if (isOpen) refreshCart();
-  }, [isOpen, refreshCart]);
+    if (isOpen) {
+      refreshCart();
+      refreshPrices();
+    }
+  }, [isOpen, refreshCart, refreshPrices]);
 
   // Listen for cart updates
   useEffect(() => {
@@ -74,7 +114,6 @@ export default function CartDrawer({
     window.dispatchEvent(new Event("cartUpdated"));
   };
 
-  const isZh = locale.startsWith("zh");
   const subtotal = getCartTotal(cart);
   const itemCount = getCartItemCount(cart);
 
