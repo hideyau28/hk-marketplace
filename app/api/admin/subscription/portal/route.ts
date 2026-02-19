@@ -22,8 +22,9 @@ export const POST = withApi(async (req) => {
     throw new ApiError(400, "BAD_REQUEST", "No Stripe customer found. Please subscribe first.");
   }
 
-  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3012";
-  const returnUrl = `${appUrl}/admin/billing`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is required");
+  const returnUrl = `${baseUrl}/admin/billing`;
 
   const portalUrl = await createCustomerPortalSession({
     customerId: tenant.stripeCustomerId,

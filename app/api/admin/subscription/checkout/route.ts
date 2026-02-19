@@ -69,9 +69,10 @@ export const POST = withApi(async (req) => {
   }
 
   // 建 Stripe Checkout Session
-  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3012";
-  const successUrl = body.successUrl || `${appUrl}/admin/billing?session_id={CHECKOUT_SESSION_ID}&success=1`;
-  const cancelUrl = body.cancelUrl || `${appUrl}/admin/billing?cancelled=1`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is required");
+  const successUrl = body.successUrl || `${baseUrl}/admin/billing?session_id={CHECKOUT_SESSION_ID}&success=1`;
+  const cancelUrl = body.cancelUrl || `${baseUrl}/admin/billing?cancelled=1`;
 
   const checkoutUrl = await createSubscriptionCheckout({
     customerId,

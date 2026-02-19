@@ -77,12 +77,10 @@ export const POST = withApi(async (req) => {
     });
   }
 
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "localhost:3012";
-  const proto = req.headers.get("x-forwarded-proto") || "http";
   const locale = (body.locale || "zh-HK").trim();
 
-  // Prefer explicit base URL for correctness behind proxies / local dev.
-  const baseUrl = (process.env.APP_URL || `${proto}://${host}`).replace(/\/$/, "");
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is required");
 
   const successUrl = `${baseUrl}/${locale}/orders/${orderId}?payment=success`;
   const cancelUrl = `${baseUrl}/${locale}/checkout?orderId=${orderId}&payment=cancel`;
