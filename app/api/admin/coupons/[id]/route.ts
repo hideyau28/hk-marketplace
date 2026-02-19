@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { authenticateAdmin } from "@/lib/auth/admin-auth";
+import { hasFeature } from "@/lib/plan";
 import { prisma } from "@/lib/prisma";
 
 type CouponUpdatePayload = {
@@ -41,6 +42,10 @@ function parseDate(value: unknown) {
 export const GET = withApi(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   const { tenantId } = await authenticateAdmin(req);
 
+  if (!(await hasFeature(tenantId, "coupon"))) {
+    throw new ApiError(403, "FORBIDDEN", "This feature requires Lite/Pro plan");
+  }
+
   const { id } = await params;
   const coupon = await prisma.coupon.findFirst({ where: { id, tenantId } });
   if (!coupon) throw new ApiError(404, "NOT_FOUND", "Coupon not found");
@@ -49,6 +54,10 @@ export const GET = withApi(async (req: Request, { params }: { params: Promise<{ 
 
 export const PATCH = withApi(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   const { tenantId } = await authenticateAdmin(req);
+
+  if (!(await hasFeature(tenantId, "coupon"))) {
+    throw new ApiError(403, "FORBIDDEN", "This feature requires Lite/Pro plan");
+  }
 
   const { id } = await params;
   let body: CouponUpdatePayload;
@@ -126,6 +135,10 @@ export const PATCH = withApi(async (req: Request, { params }: { params: Promise<
 
 export const DELETE = withApi(async (req: Request, { params }: { params: Promise<{ id: string }> }) => {
   const { tenantId } = await authenticateAdmin(req);
+
+  if (!(await hasFeature(tenantId, "coupon"))) {
+    throw new ApiError(403, "FORBIDDEN", "This feature requires Lite/Pro plan");
+  }
 
   const { id } = await params;
   const existingCoupon = await prisma.coupon.findFirst({ where: { id, tenantId } });
