@@ -1,64 +1,65 @@
 /**
- * Simple in-memory rate limiter using sliding window algorithm
+ * Database-backed rate limiter using sliding window algorithm.
+ * Each request hit is stored as a row in the RateLimitEntry table.
  */
+import { prisma } from "@/lib/prisma";
 
 type RateLimitConfig = {
   interval: number; // Time window in milliseconds
   maxRequests: number; // Maximum requests allowed in the window
 };
 
-type RequestLog = {
-  timestamps: number[];
-};
+export async function rateLimit(
+  key: string,
+  config: RateLimitConfig
+): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - config.interval);
 
-const requestLogs = new Map<string, RequestLog>();
+  // Count existing requests in the current window
+  const currentCount = await prisma.rateLimitEntry.count({
+    where: {
+      key,
+      timestamp: { gt: windowStart },
+    },
+  });
 
-// Clean up old entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  const fiveMinutesAgo = now - 5 * 60 * 1000;
-
-  for (const [key, log] of requestLogs.entries()) {
-    // Remove timestamps older than 5 minutes
-    log.timestamps = log.timestamps.filter(t => t > fiveMinutesAgo);
-
-    // Remove empty entries
-    if (log.timestamps.length === 0) {
-      requestLogs.delete(key);
-    }
-  }
-}, 5 * 60 * 1000);
-
-export function rateLimit(key: string, config: RateLimitConfig): { allowed: boolean; remaining: number; resetAt: number } {
-  const now = Date.now();
-  const windowStart = now - config.interval;
-
-  // Get or create request log for this key
-  let log = requestLogs.get(key);
-  if (!log) {
-    log = { timestamps: [] };
-    requestLogs.set(key, log);
-  }
-
-  // Remove timestamps outside the current window
-  log.timestamps = log.timestamps.filter(t => t > windowStart);
-
-  const currentCount = log.timestamps.length;
   const allowed = currentCount < config.maxRequests;
 
   if (allowed) {
-    log.timestamps.push(now);
+    // Record this request
+    await prisma.rateLimitEntry.create({
+      data: { key, timestamp: now },
+    });
+  }
+
+  // Opportunistic cleanup: ~5% of requests trigger deletion of old entries
+  if (Math.random() < 0.05) {
+    const cleanupCutoff = new Date(now.getTime() - 15 * 60 * 1000);
+    prisma.rateLimitEntry
+      .deleteMany({ where: { timestamp: { lt: cleanupCutoff } } })
+      .catch(() => {
+        // Fire-and-forget cleanup
+      });
   }
 
   const remaining = Math.max(0, config.maxRequests - currentCount - (allowed ? 1 : 0));
-  const oldestTimestamp = log.timestamps[0] || now;
-  const resetAt = oldestTimestamp + config.interval;
 
-  return {
-    allowed,
-    remaining,
-    resetAt,
-  };
+  // Calculate resetAt from the oldest entry in the window
+  const oldestEntry = await prisma.rateLimitEntry.findFirst({
+    where: {
+      key,
+      timestamp: { gt: windowStart },
+    },
+    orderBy: { timestamp: "asc" },
+    select: { timestamp: true },
+  });
+
+  const resetAt = oldestEntry
+    ? oldestEntry.timestamp.getTime() + config.interval
+    : now.getTime() + config.interval;
+
+  return { allowed, remaining, resetAt };
 }
 
 // Predefined rate limit configurations

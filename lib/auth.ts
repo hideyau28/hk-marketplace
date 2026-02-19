@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
+import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
 // JWT secret — must be set via env var, no fallback (lazy to avoid build-time error)
@@ -27,46 +28,67 @@ export interface SessionUser {
   email: string | null;
 }
 
-// OTP storage (in-memory for now, replace with Redis in production)
-const otpStore = new Map<string, { otp: string; expiresAt: number; attempts: number }>();
-
 // Generate a 6-digit OTP
 export function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 // Store OTP for a phone number (5 minute expiry)
-export function storeOTP(phone: string, otp: string): void {
-  const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
-  otpStore.set(phone, { otp, expiresAt, attempts: 0 });
+export async function storeOTP(phone: string, otp: string): Promise<void> {
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+  // Invalidate any existing OTP for this phone
+  await prisma.otpCode.deleteMany({ where: { phone } });
+
+  // Opportunistically clean up expired OTPs
+  await prisma.otpCode.deleteMany({
+    where: { expiresAt: { lt: new Date() } },
+  });
+
+  // Create new OTP entry
+  await prisma.otpCode.create({
+    data: { phone, code: otp, expiresAt },
+  });
 }
 
 // Verify OTP against stored value
-export function verifyOTP(phone: string, otp: string): boolean {
-  const stored = otpStore.get(phone);
-  if (!stored) {
-    return false;
-  }
+export async function verifyOTP(phone: string, otp: string): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (await (prisma as any).$transaction(async (tx: any) => {
+    // Find the latest non-expired OTP for this phone
+    const stored = await tx.otpCode.findFirst({
+      where: {
+        phone,
+        verified: false,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-  // Check expiry
-  if (Date.now() > stored.expiresAt) {
-    otpStore.delete(phone);
-    return false;
-  }
-
-  // Check OTP match
-  if (stored.otp !== otp) {
-    stored.attempts += 1;
-    // 5 consecutive wrong attempts → invalidate the OTP entry
-    if (stored.attempts >= 5) {
-      otpStore.delete(phone);
+    if (!stored) {
+      return false;
     }
-    return false;
-  }
 
-  // OTP is valid, remove it (one-time use)
-  otpStore.delete(phone);
-  return true;
+    // Check OTP match
+    if (stored.code !== otp) {
+      const newAttempts = stored.attempts + 1;
+      if (newAttempts >= 5) {
+        // Max attempts reached — delete the OTP
+        await tx.otpCode.delete({ where: { id: stored.id } });
+      } else {
+        // Increment attempts counter
+        await tx.otpCode.update({
+          where: { id: stored.id },
+          data: { attempts: newAttempts },
+        });
+      }
+      return false;
+    }
+
+    // OTP is valid, remove it (one-time use)
+    await tx.otpCode.delete({ where: { id: stored.id } });
+    return true;
+  })) as unknown as boolean;
 }
 
 // Validate HK phone number format (8 digits starting with 2/3/5/6/7/8/9)

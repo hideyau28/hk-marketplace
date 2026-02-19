@@ -14,7 +14,7 @@ const COOKIE_NAME = "hk_session";
 const rateLimiter = withRateLimit(RATE_LIMITS.AUTH, { keyPrefix: "verify-otp" });
 
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = rateLimiter(request);
+  const rateLimitResponse = await rateLimiter(request);
   if (rateLimitResponse) return rateLimitResponse;
 
   try {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const normalizedPhone = normalizePhone(phone);
 
     // Verify OTP
-    if (!verifyOTP(normalizedPhone, otp)) {
+    if (!(await verifyOTP(normalizedPhone, otp))) {
       return NextResponse.json(
         { ok: false, error: { code: "INVALID_OTP", message: "驗證碼不正確或已過期" } },
         { status: 400 }

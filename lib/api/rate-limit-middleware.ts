@@ -32,11 +32,11 @@ export function withRateLimit(
     getKey?: (req: NextRequest) => string;
   }
 ) {
-  return (req: NextRequest): NextResponse | null => {
+  return async (req: NextRequest): Promise<NextResponse | null> => {
     const identifier = options?.getKey ? options.getKey(req) : getIdentifier(req);
     const key = options?.keyPrefix ? `${options.keyPrefix}:${identifier}` : identifier;
 
-    const result = rateLimit(key, config);
+    const result = await rateLimit(key, config);
 
     if (!result.allowed) {
       return NextResponse.json(
