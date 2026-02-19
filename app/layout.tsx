@@ -26,6 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
       icons: {
         icon: "/favicon.svg",
       },
+      openGraph: {
+        images: ["https://wowlix.com/og-default.png"],
+      },
     };
   }
 
@@ -37,6 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
     manifest: "/manifest.json",
     icons: {
       icon: "/favicon.svg",
+    },
+    openGraph: {
+      images: ["https://wowlix.com/og-default.png"],
     },
   };
 }

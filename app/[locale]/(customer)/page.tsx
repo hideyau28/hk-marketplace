@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     return {
       title: "WoWlix — Turn Followers into Customers",
       description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
+      alternates: { canonical: "https://wowlix.com" },
       openGraph: {
         title: "WoWlix — Turn Followers into Customers",
         description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
@@ -41,6 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     return {
       title: "WoWlix — Turn Followers into Customers",
       description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
+      alternates: { canonical: "https://wowlix.com" },
       openGraph: {
         title: "WoWlix — Turn Followers into Customers",
         description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
@@ -52,16 +54,22 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     };
   }
 
+  const { headers } = await import("next/headers");
+  const headersList = await headers();
+  const tenantSlug = headersList.get("x-tenant-slug") || "maysshop";
+
   const storeName = await getStoreName();
 
   const title = `${storeName} - 香港波鞋專門店`;
   const description = locale === "zh-HK"
     ? "探索最新波鞋及運動裝備，正品保證！"
     : "Shop the latest sneakers and sports gear. 100% authentic!";
+  const canonicalUrl = `https://${tenantSlug}.wowlix.com/${locale}`;
 
   return {
     title,
     description,
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title,
       description,
