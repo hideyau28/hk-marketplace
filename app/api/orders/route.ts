@@ -347,6 +347,8 @@ async function repriceOrder(payload: CreateOrderPayload, tenantId: string): Prom
     };
 }
 
+const PAGE_SIZE = 20;
+
 // GET /api/orders (admin)
 export const GET = withApi(
     async (req) => {
@@ -354,12 +356,9 @@ export const GET = withApi(
         const { searchParams } = new URL(req.url);
         const status = normalizeStatus(searchParams.get("status"));
         const search = searchParams.get("q")?.trim() || null;
-        const limitParam = searchParams.get("limit");
-        const limit = limitParam ? Number(limitParam) : 50;
-
-        if (limitParam && (Number.isNaN(limit) || limit <= 0 || limit > 200)) {
-            throw new ApiError(400, "BAD_REQUEST", "limit must be between 1 and 200");
-        }
+        const pageParam = searchParams.get("page");
+        const page = pageParam ? Math.max(1, parseInt(pageParam, 10)) : 1;
+        const skip = (page - 1) * PAGE_SIZE;
 
         // Build where clause
         const where: Prisma.OrderWhereInput = {};
@@ -375,32 +374,38 @@ export const GET = withApi(
             ];
         }
 
-        const orders = await prisma.order.findMany({
-            where: Object.keys(where).length > 0 ? where : undefined,
-            orderBy: { createdAt: "desc" },
-            take: limit,
-            include: {
-                paymentAttempts: {
-                    select: {
-                        id: true,
-                        provider: true,
-                        status: true,
-                        amount: true,
-                        currency: true,
-                        stripeCheckoutSessionId: true,
-                        stripePaymentIntentId: true,
-                        stripeChargeId: true,
-                        failureCode: true,
-                        failureMessage: true,
-                        createdAt: true,
-                        updatedAt: true,
-                    },
-                    orderBy: { createdAt: "desc" },
-                },
-            },
-        });
+        const whereClause = Object.keys(where).length > 0 ? where : undefined;
 
-        return ok(req, { orders });
+        const [orders, total] = await Promise.all([
+            prisma.order.findMany({
+                where: whereClause,
+                orderBy: { createdAt: "desc" },
+                skip,
+                take: PAGE_SIZE,
+                include: {
+                    paymentAttempts: {
+                        select: {
+                            id: true,
+                            provider: true,
+                            status: true,
+                            amount: true,
+                            currency: true,
+                            stripeCheckoutSessionId: true,
+                            stripePaymentIntentId: true,
+                            stripeChargeId: true,
+                            failureCode: true,
+                            failureMessage: true,
+                            createdAt: true,
+                            updatedAt: true,
+                        },
+                        orderBy: { createdAt: "desc" },
+                    },
+                },
+            }),
+            prisma.order.count({ where: whereClause }),
+        ]);
+
+        return ok(req, { orders, total, page, pageSize: PAGE_SIZE });
     },
     { admin: true }
 );

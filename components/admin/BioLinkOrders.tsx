@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Check, Package, MessageCircle, Loader2 } from "lucide-react";
 
 type Order = {
@@ -19,6 +20,8 @@ type Order = {
 type Props = {
   orders: Order[];
   locale: string;
+  page: number;
+  totalPages: number;
 };
 
 type FilterTab = "all" | "pending" | "paid";
@@ -35,7 +38,7 @@ const statusConfig: Record<string, { label: string; labelZh: string; color: stri
   FULFILLING: { label: "Fulfilling", labelZh: "配送中", color: "bg-blue-100 text-blue-700" },
 };
 
-export default function BioLinkOrders({ orders, locale }: Props) {
+export default function BioLinkOrders({ orders, locale, page, totalPages }: Props) {
   const router = useRouter();
   const [filter, setFilter] = useState<FilterTab>("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -224,10 +227,40 @@ export default function BioLinkOrders({ orders, locale }: Props) {
             );
           })}
 
-          {/* End of list */}
-          <p className="text-center text-xs text-zinc-400 py-4">
-            {isZh ? "── 冇更多訂單 ──" : "── No more orders ──"}
-          </p>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between py-4 px-1">
+              <span className="text-xs text-zinc-400">
+                {isZh ? `第 ${page} / ${totalPages} 頁` : `Page ${page} of ${totalPages}`}
+              </span>
+              <div className="flex gap-2">
+                {page > 1 ? (
+                  <Link
+                    href={`?page=${page - 1}`}
+                    className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  >
+                    {isZh ? "上一頁" : "Prev"}
+                  </Link>
+                ) : (
+                  <span className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-300 cursor-not-allowed">
+                    {isZh ? "上一頁" : "Prev"}
+                  </span>
+                )}
+                {page < totalPages ? (
+                  <Link
+                    href={`?page=${page + 1}`}
+                    className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  >
+                    {isZh ? "下一頁" : "Next"}
+                  </Link>
+                ) : (
+                  <span className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-300 cursor-not-allowed">
+                    {isZh ? "下一頁" : "Next"}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

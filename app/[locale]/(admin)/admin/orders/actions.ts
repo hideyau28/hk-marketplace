@@ -57,7 +57,13 @@ type ApiSuccessResponse<T> = {
 
 type ActionFail = { ok: false; code: string; message: string };
 
-type FetchOrdersOk = { ok: true; data: OrderWithPayments[] };
+type FetchOrdersOk = {
+  ok: true;
+  data: OrderWithPayments[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
 
 type FetchOrdersResult = FetchOrdersOk | ActionFail;
 
@@ -107,7 +113,7 @@ async function getAdminAuthHeaders(): Promise<Record<string, string>> {
   return {};
 }
 
-export async function fetchOrders(status?: string, search?: string): Promise<FetchOrdersResult> {
+export async function fetchOrders(status?: string, search?: string, page?: number): Promise<FetchOrdersResult> {
   const authHeaders = await getAdminAuthHeaders();
   if (Object.keys(authHeaders).length === 0) {
     return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
@@ -121,6 +127,9 @@ export async function fetchOrders(status?: string, search?: string): Promise<Fet
     if (search) {
       url.searchParams.set("q", search);
     }
+    if (page && page > 1) {
+      url.searchParams.set("page", String(page));
+    }
 
     const response = await fetch(url.toString(), {
       method: "GET",
@@ -131,7 +140,7 @@ export async function fetchOrders(status?: string, search?: string): Promise<Fet
       cache: "no-store",
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<{ orders: OrderWithPayments[] }>;
+    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<{ orders: OrderWithPayments[]; total: number; page: number; pageSize: number }>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -142,8 +151,14 @@ export async function fetchOrders(status?: string, search?: string): Promise<Fet
       };
     }
 
-    const result = json as ApiSuccessResponse<{ orders: OrderWithPayments[] }>;
-    return { ok: true, data: result.data.orders };
+    const result = json as ApiSuccessResponse<{ orders: OrderWithPayments[]; total: number; page: number; pageSize: number }>;
+    return {
+      ok: true,
+      data: result.data.orders,
+      total: result.data.total,
+      page: result.data.page,
+      pageSize: result.data.pageSize,
+    };
   } catch (error) {
     console.error("Failed to fetch orders:", error);
     return { ok: false, code: "NETWORK_ERROR", message: "Failed to fetch orders" };

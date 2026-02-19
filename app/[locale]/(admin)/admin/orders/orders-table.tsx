@@ -13,6 +13,9 @@ type OrdersTableProps = {
   currentStatus?: string;
   searchQuery?: string;
   csvExportEnabled?: boolean;
+  page?: number;
+  pageSize?: number;
+  total?: number;
 };
 
 // Tab filters for the new status flow
@@ -103,10 +106,11 @@ function getProductCount(items: any): number {
   return items.reduce((sum, item) => sum + (item.quantity || 1), 0);
 }
 
-export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExportEnabled }: OrdersTableProps) {
+export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExportEnabled, page = 1, pageSize = 20, total = 0 }: OrdersTableProps) {
   const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus || "");
   const [search, setSearch] = useState(searchQuery || "");
+  const totalPages = Math.ceil(total / pageSize);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   const handleStatusChange = (status: string) => {
@@ -133,6 +137,17 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
 
   const toggleExpand = (orderId: string) => {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
+  };
+
+  const goToPage = (targetPage: number) => {
+    const params = new URLSearchParams();
+    if (selectedStatus) params.set("status", selectedStatus);
+    if (search) params.set("q", search);
+    if (targetPage > 1) params.set("page", String(targetPage));
+    const url = params.toString()
+      ? `/${locale}/admin/orders?${params.toString()}`
+      : `/${locale}/admin/orders`;
+    router.push(url);
   };
 
   return (
@@ -396,12 +411,28 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
             );
           })}
 
-          {/* Summary */}
+          {/* Pagination */}
           <div className="flex items-center justify-between px-4 py-3 text-zinc-600 text-sm">
             <div>
               {locale === "zh-HK"
-                ? `顯示 ${orders.length} 個訂單`
-                : `Showing ${orders.length} orders`}
+                ? `共 ${total} 個訂單，第 ${page} / ${totalPages || 1} 頁`
+                : `${total} orders · Page ${page} of ${totalPages || 1}`}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => goToPage(page - 1)}
+                disabled={page <= 1}
+                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {locale === "zh-HK" ? "上一頁" : "Prev"}
+              </button>
+              <button
+                onClick={() => goToPage(page + 1)}
+                disabled={page >= totalPages}
+                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {locale === "zh-HK" ? "下一頁" : "Next"}
+              </button>
             </div>
           </div>
         </div>
