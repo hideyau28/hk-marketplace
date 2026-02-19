@@ -68,15 +68,17 @@ export async function resolveTenant(req?: Request): Promise<TenantContext> {
         slug = resolveSlugFromHostname(host);
       }
 
-      // 3. Dev fallback: ?tenant= query param
-      try {
-        const url = new URL(req.url);
-        const tenantParam = url.searchParams.get("tenant");
-        if (tenantParam) {
-          slug = tenantParam;
+      // 3. Dev fallback: ?tenant= query param (non-production only)
+      if (process.env.NODE_ENV !== "production") {
+        try {
+          const url = new URL(req.url);
+          const tenantParam = url.searchParams.get("tenant");
+          if (tenantParam) {
+            slug = tenantParam;
+          }
+        } catch {
+          // Ignore URL parsing errors
         }
-      } catch {
-        // Ignore URL parsing errors
       }
     }
   }

@@ -87,11 +87,19 @@ export async function GET(request: NextRequest) {
 
     const userInfo = await userInfoRes.json();
 
-    // Onboarding flow: redirect back to /start with email, no session needed yet
+    // Onboarding flow: redirect back to /start with email via httpOnly cookie.
+    // Email must NOT appear in the redirect URL to prevent leakage via logs/history.
     if (isOnboarding) {
-      const email = encodeURIComponent(userInfo.email || "");
-      const redirectUrl = `${baseUrl}/${locale}/start?google_email=${email}`;
-      return NextResponse.redirect(redirectUrl);
+      const redirectUrl = `${baseUrl}/${locale}/start`;
+      const response = NextResponse.redirect(redirectUrl);
+      response.cookies.set("google_onboard_email", userInfo.email || "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax", // "lax" required for cross-site OAuth redirects
+        maxAge: 120, // 2-minute window — consumed by the next page render
+        path: "/",
+      });
+      return response;
     }
 
     // Create admin session JWT
