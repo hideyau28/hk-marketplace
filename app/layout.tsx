@@ -1,8 +1,21 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Outfit, Inter } from "next/font/google";
 import { getStoreName } from "@/lib/get-store-name";
 import { isPlatformMode } from "@/lib/tenant";
 import "./globals.css";
+
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff2",
@@ -49,7 +62,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-white text-zinc-900 antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${inter.variable} bg-white text-zinc-900 antialiased`}
       >
         {children}
       </body>
