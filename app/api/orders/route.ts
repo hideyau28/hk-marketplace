@@ -508,12 +508,20 @@ export const POST = withApi(async (req) => {
             },
         });
 
-        // Increment coupon usageCount inside transaction for atomicity
+        // Atomic coupon usage increment with guard against exceeding maxUsage / expiry
         if (appliedCouponCode) {
-            await tx.coupon.updateMany({
-                where: { code: appliedCouponCode, tenantId },
-                data: { usageCount: { increment: 1 } },
-            });
+            const updated = await tx.$executeRaw`
+                UPDATE "Coupon"
+                SET "usageCount" = "usageCount" + 1
+                WHERE "code" = ${appliedCouponCode}
+                  AND "tenantId" = ${tenantId}
+                  AND "active" = true
+                  AND ("maxUsage" IS NULL OR "usageCount" < "maxUsage")
+                  AND ("expiresAt" IS NULL OR "expiresAt" >= NOW())
+            `;
+            if (updated === 0) {
+                throw new ApiError(400, "BAD_REQUEST", "Coupon is no longer valid (expired or usage limit reached)");
+            }
         }
 
         return created;
