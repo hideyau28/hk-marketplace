@@ -74,6 +74,7 @@ const T = {
     pricingProFeat5: "優先客服支援",
     pricingProBtn: "選擇 Pro",
     pricingPeriod: "/月",
+    pricingFullLink: "查看完整定價 →",
 
     // Trust Signals
     trustTitle: "首批商戶招募中",
@@ -176,6 +177,7 @@ const T = {
     pricingProFeat5: "Priority support",
     pricingProBtn: "Choose Pro",
     pricingPeriod: "/mo",
+    pricingFullLink: "View full pricing →",
 
     trustTitle: "Early Merchants Wanted",
     trustStat1Value: "0%",
@@ -273,7 +275,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           .lp-plan-grid { grid-template-columns: 1fr !important; }
           .lp-testimonial-grid { grid-template-columns: 1fr !important; }
           .lp-stats-row { flex-direction: column !important; gap: 24px !important; }
-          .lp-footer-grid { grid-template-columns: 1fr !important; text-align: center !important; }
+          .lp-footer-grid { grid-template-columns: repeat(3, 1fr) !important; text-align: center !important; }
           .lp-section { padding-left: 20px !important; padding-right: 20px !important; }
         }
         @media (max-width: 768px) {
@@ -293,10 +295,10 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <span style={{ color: "#FF9500" }}>&#10022;</span> WoWlix
         </div>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <a href="#pricing" style={{
+          <Link href={`/${locale}/pricing`} style={{
             fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.6)",
             textDecoration: "none", transition: "color 0.2s",
-          }}>{t.navPricing}</a>
+          }}>{t.navPricing}</Link>
           <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
             <Link
               href="/zh-HK"
@@ -519,6 +521,15 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               </div>
             ))}
           </div>
+
+          <div style={{ textAlign: "center", marginTop: 32 }}>
+            <Link href={`/${locale}/pricing`} style={{
+              fontSize: 15, fontWeight: 700, color: "#FF9500",
+              textDecoration: "none", transition: "opacity 0.2s",
+            }}>
+              {t.pricingFullLink}
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -652,7 +663,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 {t.footerProduct}
               </div>
               <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerPricing}</a>
+                <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerPricing}</Link>
                 <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerFeatures}</Link>
               </div>
             </div>

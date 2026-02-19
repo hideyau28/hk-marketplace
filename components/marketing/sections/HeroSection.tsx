@@ -13,7 +13,7 @@ const T = {
     heroSub1: "最快 2 分鐘開好網店。",
     heroSub2: "將你嘅 IG Bio Link 變成一間真正嘅網上商店。",
     ctaPrimary: "免費開店 →",
-    ctaSecondary: "了解更多",
+    ctaSecondary: "睇定價",
     trustLine: "✦ 0% 佣金 · 免費開始 · 2 分鐘開店",
     mockupName: "maysshop",
     mockupDesc: "飾物・手作・代購",
@@ -35,7 +35,7 @@ const T = {
     heroSub1: "Set up your shop in as fast as 2 minutes.",
     heroSub2: "Turn your IG Bio Link into a real online store.",
     ctaPrimary: "Start Free →",
-    ctaSecondary: "Learn More",
+    ctaSecondary: "View Pricing",
     trustLine: "✦ 0% Commission · Free to Start · 2 Min Setup",
     mockupName: "maysshop",
     mockupDesc: "Jewelry · Handmade · Buying service",
@@ -452,9 +452,9 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
             <Link href="/admin/register" className="hero-cta-primary">
               {t.ctaPrimary}
             </Link>
-            <a href="#how-it-works" className="hero-cta-secondary">
+            <Link href={`/${locale}/pricing`} className="hero-cta-secondary">
               {t.ctaSecondary}
-            </a>
+            </Link>
           </div>
 
           <div className="hero-trust-line">
