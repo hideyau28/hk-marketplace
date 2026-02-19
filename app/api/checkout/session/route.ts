@@ -77,6 +77,23 @@ export const POST = withApi(async (req) => {
     });
   }
 
+  // Apply coupon discount from order amounts
+  const discount = Number(amounts?.discount ?? 0);
+  let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
+  if (discount > 0) {
+    const couponName = amounts?.couponCode
+      ? String(amounts.couponCode)
+      : "Discount";
+    const stripeCoupon = await stripe.coupons.create({
+      amount_off: Math.round(discount * 100),
+      currency,
+      duration: "once",
+      max_redemptions: 1,
+      name: couponName,
+    });
+    discounts = [{ coupon: stripeCoupon.id }];
+  }
+
   const locale = (body.locale || "zh-HK").trim();
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -88,6 +105,7 @@ export const POST = withApi(async (req) => {
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items,
+    ...(discounts ? { discounts } : {}),
     success_url: successUrl,
     cancel_url: cancelUrl,
     metadata: {
