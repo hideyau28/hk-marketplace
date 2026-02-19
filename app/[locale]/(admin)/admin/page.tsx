@@ -225,7 +225,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       <div className="flex items-center gap-4 mb-6">
         <SidebarToggle />
         <div>
-          <div className="text-zinc-500 text-sm">Admin</div>
+          <div className="text-zinc-500 text-sm">{t.admin.dashboard.adminLabel}</div>
           <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.dashboard.title}</h1>
           <div className="text-zinc-500 text-sm">{t.admin.dashboard.subtitle}</div>
         </div>
@@ -320,7 +320,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         >
           <div className="flex items-center gap-3">
             <Package size={20} className="text-zinc-400" />
-            <span className="font-medium text-zinc-900">View All Products</span>
+            <span className="font-medium text-zinc-900">{t.admin.dashboard.viewAllProducts}</span>
           </div>
           <ArrowRight size={20} className="text-zinc-400" />
         </Link>
@@ -330,7 +330,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         >
           <div className="flex items-center gap-3">
             <ShoppingCart size={20} className="text-zinc-400" />
-            <span className="font-medium text-zinc-900">View All Orders</span>
+            <span className="font-medium text-zinc-900">{t.admin.dashboard.viewAllOrders}</span>
           </div>
           <ArrowRight size={20} className="text-zinc-400" />
         </Link>
@@ -339,25 +339,25 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       {/* Recent orders table */}
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-zinc-900">Recent Orders</h2>
+          <h2 className="text-lg font-semibold text-zinc-900">{t.admin.dashboard.recentOrders}</h2>
           <Link href={`/${locale}/admin/orders`} className="text-sm text-olive-600 hover:text-olive-700 font-medium">
-            View All
+            {t.admin.dashboard.viewAll}
           </Link>
         </div>
         <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
           {recentOrders.length === 0 ? (
-            <div className="p-8 text-center text-zinc-500">No orders yet</div>
+            <div className="p-8 text-center text-zinc-500">{t.admin.dashboard.noOrders}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-[800px] w-full text-sm">
                 <thead>
                   <tr className="text-zinc-600 border-b border-zinc-200">
-                    <th className="px-4 py-3 text-left">Order ID</th>
-                    <th className="px-4 py-3 text-left">Customer</th>
-                    <th className="px-4 py-3 text-left">Status</th>
-                    <th className="px-4 py-3 text-right">Total</th>
-                    <th className="px-4 py-3 text-left">Date</th>
-                    <th className="px-4 py-3 text-right">Action</th>
+                    <th className="px-4 py-3 text-left">{t.admin.dashboard.tableOrderId}</th>
+                    <th className="px-4 py-3 text-left">{t.admin.dashboard.tableCustomer}</th>
+                    <th className="px-4 py-3 text-left">{t.admin.dashboard.tableStatus}</th>
+                    <th className="px-4 py-3 text-right">{t.admin.dashboard.tableTotal}</th>
+                    <th className="px-4 py-3 text-left">{t.admin.dashboard.tableDate}</th>
+                    <th className="px-4 py-3 text-right">{t.admin.dashboard.tableAction}</th>
                   </tr>
                 </thead>
                 <tbody>
