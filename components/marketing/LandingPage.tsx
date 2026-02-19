@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
+import HeroSection from "@/components/marketing/sections/HeroSection";
 
 /* ─── i18n ─── */
 const T = {
@@ -289,85 +290,6 @@ const PLANS = [
 
 /* ─── Sub-components ─── */
 
-function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
-  return (
-    <div style={{ position: "relative", width: 260, maxWidth: "100%", height: 490, margin: "0 auto" }}>
-      {/* Phone frame */}
-      <div style={{
-        width: "100%", height: "100%",
-        background: "#1A1A1A",
-        borderRadius: 40,
-        padding: "12px 10px",
-        boxShadow: "0 25px 80px rgba(0,0,0,0.25), 0 0 0 2px #333",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        {/* Notch */}
-        <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 120, height: 24, background: "#1A1A1A", borderRadius: "0 0 16px 16px", zIndex: 2 }} />
-        {/* Screen */}
-        <div style={{
-          width: "100%", height: "100%",
-          background: "linear-gradient(180deg, #1A1A1A, #222)",
-          borderRadius: 30,
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column" as const,
-        }}>
-          {/* Store header */}
-          <div style={{ padding: "32px 16px 12px", textAlign: "center" as const }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "#FF9500", margin: "0 auto 8px", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 14 }}>W</div>
-            <div style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>{t.miniStoreName}</div>
-            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, marginTop: 2 }}>{t.miniStoreDesc}</div>
-          </div>
-          {/* Products grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "8px 12px", flex: 1 }}>
-            {([
-              { color: "#FFE0EB", name: t.miniP1, price: t.miniP1Price },
-              { color: "#E8DDD3", name: t.miniP2, price: t.miniP2Price },
-              { color: "#FFF3E0", name: t.miniP3, price: t.miniP3Price },
-              { color: "#ECFDF5", name: t.miniP4, price: t.miniP4Price },
-            ]).map((p, i) => (
-              <div key={i} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 12, overflow: "hidden" }}>
-                <div style={{ height: 80, background: p.color, opacity: 0.3 }} />
-                <div style={{ padding: "6px 8px" }}>
-                  <div style={{ color: "#fff", fontSize: 10, fontWeight: 600 }}>{p.name}</div>
-                  <div style={{ color: "#FF9500", fontSize: 11, fontWeight: 700 }}>{p.price}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Bottom CTA */}
-          <div style={{ padding: "8px 12px 16px" }}>
-            <div style={{ background: "#FF9500", borderRadius: 10, padding: "10px", textAlign: "center" as const, color: "#fff", fontSize: 12, fontWeight: 700 }}>
-              {t.miniBtn}
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Floating notification — hidden on very small screens to avoid overflow */}
-      <div className="hidden sm:flex" style={{
-        position: "absolute", top: 60, right: -30,
-        background: "#fff", borderRadius: 12, padding: "8px 14px",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-        fontSize: 12, fontWeight: 600, color: "#1A1A1A",
-        animation: "float 3s ease-in-out infinite",
-        alignItems: "center", gap: 6,
-      }}>
-        <span style={{ color: "#FF9500" }}>$</span> {t.float1}
-      </div>
-      <div className="hidden sm:block" style={{
-        position: "absolute", bottom: 80, left: -24,
-        background: "#fff", borderRadius: 12, padding: "8px 14px",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-        fontSize: 11, color: "#666",
-        animation: "float 3s ease-in-out 1.5s infinite",
-      }}>
-        <span style={{ color: "#10B981", fontWeight: 700 }}>&#10003;</span> {t.float2}
-      </div>
-    </div>
-  );
-}
-
 function FeatureCard({ icon, title, desc, detail }: { icon: React.ReactNode; title: string; desc: string; detail: string }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -469,51 +391,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </nav>
 
       {/* ─── SECTION 1: HERO ─── */}
-      <section style={{
-        padding: "60px 24px 80px",
-        maxWidth: 1200, margin: "0 auto",
-        display: "flex", alignItems: "center", gap: 60,
-        flexWrap: "wrap" as const, justifyContent: "center",
-      }}>
-        <div style={{ flex: 1, minWidth: 0, maxWidth: 520, animation: "fadeInUp 0.8s ease" }}>
-          <div style={{
-            display: "inline-block", background: "#FFF3E0", color: "#E68600",
-            padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 700, marginBottom: 20,
-          }}>
-            {t.heroBadge}
-          </div>
-          <h1 style={{
-            fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 900,
-            lineHeight: 1.15, marginBottom: 16, letterSpacing: "-0.02em",
-          }}>
-            {t.heroH1a}
-            <br />
-            <span style={{ color: "#FF9500" }}>{t.heroH1b}</span>
-          </h1>
-          <p style={{ fontSize: 18, color: "#666", lineHeight: 1.7, marginBottom: 32, maxWidth: 440 }}>
-            {t.heroSub1}
-            <br />
-            {t.heroSub2}
-          </p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" as const }}>
-            <Link href={`/${locale}/start`} style={{
-              background: "#FF9500", color: "#fff", border: "none",
-              padding: "16px 36px", borderRadius: 14, fontSize: 17, fontWeight: 700,
-              textDecoration: "none", boxShadow: "0 8px 30px rgba(255,149,0,0.3)",
-              transition: "all 0.2s", display: "inline-block",
-            }}>{t.ctaPrimary}</Link>
-            <Link href={`/${locale}/pricing`} style={{
-              background: "transparent", color: "#FF9500",
-              border: "2px solid #FF9500",
-              padding: "14px 32px", borderRadius: 14, fontSize: 17, fontWeight: 700,
-              textDecoration: "none", transition: "all 0.2s", display: "inline-block",
-            }}>{t.ctaSecondary}</Link>
-          </div>
-        </div>
-        <div style={{ flex: 1, minWidth: 0, maxWidth: 400, animation: "fadeInUp 1s ease 0.2s both" }}>
-          <PhoneMockup t={t} />
-        </div>
-      </section>
+      <HeroSection locale={locale as Locale} />
 
       {/* ─── SECTION 2: HOW IT WORKS ─── */}
       <section className="lp-section" style={{ padding: "80px 24px", background: "#FAFAFA" }}>
