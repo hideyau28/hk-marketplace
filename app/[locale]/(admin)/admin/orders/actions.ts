@@ -67,7 +67,7 @@ type UpdateOrderResult = UpdateOrderOk | ActionFail;
 
 function getApiBaseUrl() {
   // Server-side calls back into this same app.
-  // Prefer an explicit base URL when deployed; fall back to local dev port 3012.
+  // Prefer an explicit base URL when deployed.
   const explicit = process.env.NEXT_PUBLIC_API_URL;
   if (explicit) return explicit;
 
@@ -77,7 +77,9 @@ function getApiBaseUrl() {
   const zeaburUrl = process.env.ZEABUR_URL || process.env.ZEABUR_DOMAIN;
   if (zeaburUrl) return zeaburUrl.startsWith("http") ? zeaburUrl : `https://${zeaburUrl}`;
 
-  return "http://localhost:3012";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is required");
+  return baseUrl;
 }
 
 /**

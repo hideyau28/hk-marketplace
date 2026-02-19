@@ -28,7 +28,7 @@ export interface SessionUser {
 }
 
 // OTP storage (in-memory for now, replace with Redis in production)
-const otpStore = new Map<string, { otp: string; expiresAt: number }>();
+const otpStore = new Map<string, { otp: string; expiresAt: number; attempts: number }>();
 
 // Generate a 6-digit OTP
 export function generateOTP(): string {
@@ -38,7 +38,7 @@ export function generateOTP(): string {
 // Store OTP for a phone number (5 minute expiry)
 export function storeOTP(phone: string, otp: string): void {
   const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
-  otpStore.set(phone, { otp, expiresAt });
+  otpStore.set(phone, { otp, expiresAt, attempts: 0 });
 }
 
 // Verify OTP against stored value
@@ -56,6 +56,11 @@ export function verifyOTP(phone: string, otp: string): boolean {
 
   // Check OTP match
   if (stored.otp !== otp) {
+    stored.attempts += 1;
+    // 5 consecutive wrong attempts → invalidate the OTP entry
+    if (stored.attempts >= 5) {
+      otpStore.delete(phone);
+    }
     return false;
   }
 

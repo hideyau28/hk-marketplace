@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   verifyOTP,
@@ -7,10 +7,16 @@ import {
   createToken,
 } from "@/lib/auth";
 import { getTenantId } from "@/lib/tenant";
+import { withRateLimit } from "@/lib/api/rate-limit-middleware";
+import { RATE_LIMITS } from "@/lib/rate-limit";
 
 const COOKIE_NAME = "hk_session";
+const rateLimiter = withRateLimit(RATE_LIMITS.AUTH, { keyPrefix: "verify-otp" });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const rateLimitResponse = rateLimiter(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await request.json();
     const { phone, otp } = body;

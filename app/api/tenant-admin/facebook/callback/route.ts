@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const error = searchParams.get("error");
   const state = searchParams.get("state");
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is required");
 
   // User cancelled the Facebook login
   if (error) {
