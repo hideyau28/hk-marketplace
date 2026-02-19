@@ -20,16 +20,16 @@ const T = {
     painSub2: "愈做愈辛苦",
     pain1Icon: "💬",
     pain1Title: "DM 覆到手軟",
-    pain1Desc: "每日覆幾百個 DM 問價、問碼數、問邊度取貨……一個人根本做唔晒",
+    pain1Desc: "一個人根本做唔晒",
     pain2Icon: "📋",
     pain2Title: "訂單亂晒龍",
-    pain2Desc: "Screenshot 對唔到邊張單，Excel 又亂，成日漏單、出錯單",
+    pain2Desc: "成日漏單出錯單",
     pain3Icon: "💸",
     pain3Title: "收錢好麻煩",
-    pain3Desc: "逐個入數查 FPS、對 PayMe 截圖……收齊錢先出到貨",
+    pain3Desc: "逐個對數好煩",
     pain4Icon: "📉",
     pain4Title: "生意做唔大",
-    pain4Desc: "冇系統、冇數據、冇辦法 scale，永遠困喺 DM 入面",
+    pain4Desc: "永遠困喺 DM",
 
     // How It Works
     howTitle: "三步開店，簡單到唔信",
@@ -125,16 +125,16 @@ const T = {
     painSub2: "gets harder every day",
     pain1Icon: "💬",
     pain1Title: "DM overload",
-    pain1Desc: "Hundreds of DMs daily about prices, sizes, pickup... impossible to handle alone",
+    pain1Desc: "Impossible to handle alone",
     pain2Icon: "📋",
     pain2Title: "Orders in chaos",
-    pain2Desc: "Can't match screenshots to orders, Excel is messy, missing orders constantly",
+    pain2Desc: "Missing orders constantly",
     pain3Icon: "💸",
     pain3Title: "Payment headaches",
-    pain3Desc: "Checking FPS one by one, matching PayMe screenshots... can't ship until all paid",
+    pain3Desc: "Checking payments one by one",
     pain4Icon: "📉",
     pain4Title: "Can't scale up",
-    pain4Desc: "No system, no data, no way to grow — forever stuck in DMs",
+    pain4Desc: "Forever stuck in DMs",
 
     howTitle: "3 Steps to Launch. It's That Simple.",
     howStep1Num: "01",
@@ -270,7 +270,6 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
         /* ─── Mobile responsive ─── */
         @media (max-width: 640px) {
-          .lp-pain-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .lp-how-grid { grid-template-columns: 1fr !important; }
           .lp-plan-grid { grid-template-columns: 1fr !important; }
           .lp-testimonial-grid { grid-template-columns: 1fr !important; }
@@ -351,8 +350,8 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           </p>
 
           <div className="lp-pain-grid" style={{
-            display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 12, textAlign: "left" as const,
+            display: "grid", gridTemplateColumns: "repeat(2, 1fr)",
+            gap: 12,
           }}>
             {painCards.map((card, i) => (
               <div
@@ -367,14 +366,13 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   transition: "all 0.3s",
                   transform: hoveredPain === i ? "translateY(-2px)" : "translateY(0)",
                   boxShadow: hoveredPain === i ? "0 8px 24px rgba(0,0,0,0.06)" : "none",
-                  display: "flex", alignItems: "flex-start", gap: 12,
+                  display: "flex", flexDirection: "column" as const, alignItems: "center",
+                  textAlign: "center" as const, minHeight: 120,
                 }}
               >
-                <div style={{ fontSize: 24, minWidth: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{card.icon}</div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: "#1A1A1A", marginBottom: 4 }}>{card.title}</div>
-                  <div style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>{card.desc}</div>
-                </div>
+                <div style={{ fontSize: 32, lineHeight: 1, marginBottom: 8 }}>{card.icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#1A1A1A", marginBottom: 4 }}>{card.title}</div>
+                <div style={{ fontSize: 13, color: "#888", lineHeight: 1.4 }}>{card.desc}</div>
               </div>
             ))}
           </div>
