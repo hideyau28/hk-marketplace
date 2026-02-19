@@ -262,8 +262,11 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
   return (
     <div style={{ fontFamily: "'Noto Sans TC', 'Plus Jakarta Sans', -apple-system, sans-serif", color: "#1A1A1A", overflowX: "hidden" }}>
+      {/* eslint-disable-next-line @next/next/no-css-tags */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@700&display=swap" />
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -284,12 +287,14 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
       {/* ─── NAV (Dark) ─── */}
       <nav style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "16px 24px", maxWidth: 1200, margin: "0 auto",
         position: "sticky", top: 0, zIndex: 100,
         background: "rgba(13,13,13,0.92)", backdropFilter: "blur(16px)",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>
+       <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "16px 24px", maxWidth: 1200, margin: "0 auto",
+       }}>
         <div style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>
           <span style={{ color: "#FF9500" }}>&#10022;</span> WoWlix
         </div>
@@ -329,6 +334,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             boxShadow: "0 4px 16px rgba(255,149,0,0.3)",
           }}>{t.navCta}</Link>
         </div>
+       </div>
       </nav>
 
       {/* ─── HERO ─── */}

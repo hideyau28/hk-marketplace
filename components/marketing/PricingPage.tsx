@@ -602,9 +602,9 @@ function FAQ({ isZh }: { isZh: boolean }) {
           </button>
           <div
             style={{
-              maxHeight: open === i ? 300 : 0,
+              maxHeight: open === i ? 1000 : 0,
               overflow: "hidden",
-              transition: "max-height 0.3s ease",
+              transition: "max-height 0.4s ease",
             }}
           >
             <div style={{ paddingBottom: 20, fontSize: 15, lineHeight: 1.7, color: "#555" }}>{faq.a}</div>
@@ -1197,6 +1197,25 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           </Link>
         </div>
       </section>
+
+      {/* ─── FOOTER ─── */}
+      <footer style={{
+        padding: "24px", textAlign: "center",
+        background: "#111", color: "rgba(255,255,255,0.3)", fontSize: 12,
+      }}>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 8 }}>
+          <Link href={`/${locale}`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>
+            {isZh ? "首頁" : "Home"}
+          </Link>
+          <Link href={`/${locale}/terms`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>
+            {isZh ? "條款" : "Terms"}
+          </Link>
+          <Link href={`/${locale}/privacy`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>
+            {isZh ? "私隱" : "Privacy"}
+          </Link>
+        </div>
+        © 2026 WoWlix by Flow Studio HK
+      </footer>
     </div>
   );
 }
