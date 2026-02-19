@@ -6,8 +6,8 @@ export const runtime = "nodejs";
 /**
  * GET /api/tenant-admin/google/callback
  * Handles the OAuth 2.0 callback from Google.
- * Exchanges the authorization code for tokens, verifies the user,
- * creates an admin session, and redirects to the admin dashboard.
+ * Verifies CSRF state cookie, exchanges the authorization code for tokens,
+ * verifies the user, creates an admin session, and redirects to the admin dashboard.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -17,9 +17,10 @@ export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is required");
 
-  // Parse state to check if this is an onboarding flow + locale
+  // Parse state to check if this is an onboarding flow + locale + CSRF
   let isOnboarding = false;
   let locale = "en";
+  let csrfFromState: string | undefined;
   if (stateParam) {
     try {
       const stateObj = JSON.parse(Buffer.from(stateParam, "base64url").toString());
@@ -27,12 +28,22 @@ export async function GET(request: NextRequest) {
       if (stateObj.locale && typeof stateObj.locale === "string") {
         locale = stateObj.locale;
       }
+      if (stateObj.csrf && typeof stateObj.csrf === "string") {
+        csrfFromState = stateObj.csrf;
+      }
     } catch {
       // Invalid state, ignore
     }
   }
 
   const errorRedirect = isOnboarding ? `${baseUrl}/${locale}/start` : `${baseUrl}/${locale}/admin/login`;
+
+  // CSRF state verification (same pattern as Facebook OAuth)
+  const storedState = request.cookies.get("google_oauth_state")?.value;
+  if (!csrfFromState || !storedState || csrfFromState !== storedState) {
+    console.error("[Google OAuth] State mismatch (CSRF check failed)");
+    return NextResponse.redirect(`${errorRedirect}?error=state_mismatch`);
+  }
 
   if (error) {
     console.error("[Google OAuth] Error from Google:", error);
@@ -91,7 +102,9 @@ export async function GET(request: NextRequest) {
     if (isOnboarding) {
       const email = encodeURIComponent(userInfo.email || "");
       const redirectUrl = `${baseUrl}/${locale}/start?google_email=${email}`;
-      return NextResponse.redirect(redirectUrl);
+      const response = NextResponse.redirect(redirectUrl);
+      response.cookies.delete("google_oauth_state");
+      return response;
     }
 
     // Create admin session JWT
@@ -109,6 +122,9 @@ export async function GET(request: NextRequest) {
       maxAge: 60 * 60 * 24,
       path: "/",
     });
+
+    // Delete the CSRF state cookie
+    response.cookies.delete("google_oauth_state");
 
     return response;
   } catch (err) {

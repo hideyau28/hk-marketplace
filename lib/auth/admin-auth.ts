@@ -1,6 +1,6 @@
 import { getTokenFromRequest, verifyToken } from "./jwt";
 import { getSessionFromCookie } from "@/lib/admin/session";
-import { ApiError } from "@/lib/api/route-helpers";
+import { ApiError, safeCompare } from "@/lib/api/route-helpers";
 
 export type AdminContext = {
   type: "super" | "tenant";
@@ -53,7 +53,7 @@ export async function authenticateAdmin(req: Request): Promise<AdminContext> {
   // 2) Check x-admin-secret header (external API callers must pass x-tenant-id)
   const headerSecret = req.headers.get("x-admin-secret");
   if (headerSecret) {
-    if (headerSecret === process.env.ADMIN_SECRET) {
+    if (process.env.ADMIN_SECRET && safeCompare(headerSecret, process.env.ADMIN_SECRET)) {
       const tenantId = getExplicitTenantId(req);
       return { type: "super", tenantId };
     }

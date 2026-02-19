@@ -1,6 +1,6 @@
 export const runtime = "nodejs";
 
-import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
+import { ApiError, ok, withApi, safeCompare } from "@/lib/api/route-helpers";
 import { getSessionFromCookie } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/tenant";
@@ -11,7 +11,7 @@ type RouteContext = { params: Promise<{ id: string }> };
 export const PUT = withApi(async (req: Request, ctx: RouteContext) => {
   const headerSecret = req.headers.get("x-admin-secret");
   const isAuthenticated = headerSecret
-    ? headerSecret === process.env.ADMIN_SECRET
+    ? !!(process.env.ADMIN_SECRET && safeCompare(headerSecret, process.env.ADMIN_SECRET))
     : await getSessionFromCookie();
   if (!isAuthenticated) {
     throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");
@@ -48,7 +48,7 @@ export const PUT = withApi(async (req: Request, ctx: RouteContext) => {
 export const DELETE = withApi(async (req: Request, ctx: RouteContext) => {
   const headerSecret = req.headers.get("x-admin-secret");
   const isAuthenticated = headerSecret
-    ? headerSecret === process.env.ADMIN_SECRET
+    ? !!(process.env.ADMIN_SECRET && safeCompare(headerSecret, process.env.ADMIN_SECRET))
     : await getSessionFromCookie();
   if (!isAuthenticated) {
     throw new ApiError(401, "UNAUTHORIZED", "Unauthorized");

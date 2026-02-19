@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { timingSafeEqual } from "crypto";
 
 const COOKIE_NAME = "admin_session";
 const EXPIRY = "24h";
@@ -60,5 +61,8 @@ export async function clearSessionCookie(): Promise<void> {
 export function validateAdminSecret(secret: string): boolean {
   const adminSecret = process.env.ADMIN_SECRET;
   if (!adminSecret) return false;
-  return secret === adminSecret;
+  const bufA = Buffer.from(secret);
+  const bufB = Buffer.from(adminSecret);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
 }

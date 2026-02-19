@@ -1,4 +1,12 @@
-import { randomUUID } from "crypto";
+import { randomUUID, timingSafeEqual } from "crypto";
+
+/** Timing-safe string comparison to prevent timing attacks on secrets */
+export function safeCompare(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
 
 export type ApiErrorCode =
   | "BAD_REQUEST"
@@ -123,7 +131,7 @@ function getRateLimitConfig() {
   return { windowMs, max, routes };
 }
 
-function getClientIp(req: Request) {
+export function getClientIp(req: Request) {
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {
     const first = forwarded.split(",")[0]?.trim();
@@ -178,14 +186,14 @@ function assertAdmin(req: Request) {
 
   // 1) x-admin-secret header
   if (headerSecret) {
-    if (headerSecret !== secret) throw new ApiError(403, "ADMIN_AUTH_INVALID", "Invalid admin credential");
+    if (!safeCompare(headerSecret, secret)) throw new ApiError(403, "ADMIN_AUTH_INVALID", "Invalid admin credential");
     return;
   }
 
   // 2) Bearer token — try ADMIN_SECRET first, then JWT
   if (auth.startsWith("Bearer ")) {
     const token = auth.slice("Bearer ".length);
-    if (token === secret) return;
+    if (safeCompare(token, secret)) return;
 
     // Try as JWT token
     try {
@@ -222,7 +230,7 @@ function assertAdmin(req: Request) {
     const expectedUser = process.env.ADMIN_BASIC_USER || "admin";
     const expectedPass = process.env.ADMIN_BASIC_PASS || secret;
 
-    if (user === expectedUser && pass === expectedPass) return;
+    if (safeCompare(user, expectedUser) && safeCompare(pass, expectedPass)) return;
 
     // Wrong basic auth -> 403
     throw new ApiError(403, "ADMIN_AUTH_INVALID", "Invalid admin credential");

@@ -1,8 +1,25 @@
 import { NextResponse } from "next/server";
 import { generateOTP, storeOTP, validateHKPhone, normalizePhone } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/api/route-helpers";
+
+const OTP_RATE_LIMIT = {
+  interval: 60 * 1000, // 1 minute
+  maxRequests: 3,
+};
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 3 requests per minute per IP
+    const ip = getClientIp(request);
+    const rl = rateLimit(`send-otp:${ip}`, OTP_RATE_LIMIT);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { ok: false, error: { code: "RATE_LIMITED", message: "請求太頻繁，請稍後再試" } },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     const body = await request.json();
     const { phone } = body;
 

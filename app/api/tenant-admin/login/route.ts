@@ -2,9 +2,26 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
 import { signToken } from "@/lib/auth/jwt";
+import { rateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/api/route-helpers";
+
+const LOGIN_RATE_LIMIT = {
+  interval: 60 * 1000, // 1 minute
+  maxRequests: 5,
+};
 
 export async function POST(req: Request) {
   try {
+    // Rate limit: 5 requests per minute per IP
+    const ip = getClientIp(req);
+    const rl = rateLimit(`tenant-admin-login:${ip}`, LOGIN_RATE_LIMIT);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { ok: false, error: "Too many login attempts, please try again later" },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     const body = await req.json();
     const { email, password } = body as {
       email?: string;
