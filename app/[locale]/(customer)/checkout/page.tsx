@@ -300,6 +300,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       userId: user?.id,
       items: cart.map((item) => ({
         productId: item.productId,
+        variantId: item.variantId,
         name: item.title,
         unitPrice: item.unitPrice,
         quantity: item.qty,

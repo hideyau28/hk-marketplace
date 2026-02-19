@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 
 import crypto from "node:crypto";
+import { customAlphabet } from "nanoid";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -15,36 +16,15 @@ const DEFAULT_SHIPPING_FEE = 40;
 const DEFAULT_FREE_SHIPPING_THRESHOLD = 600;
 const OUTLYING_ISLANDS_SURCHARGE = 20;
 
-async function generateOrderNumber(tenantId: string): Promise<string> {
+// Order number: WX + YYMMDD + - + 6-char alphanumeric nanoid
+const nanoid = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6);
+
+function generateOrderNumber(): string {
     const now = new Date();
-    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
-    const prefix = `HK-${dateStr}-`;
-
-    // Find the highest sequence number for today
-    const lastOrder = await prisma.order.findFirst({
-        where: {
-            orderNumber: {
-                startsWith: prefix,
-            },
-            tenantId,
-        },
-        orderBy: {
-            orderNumber: "desc",
-        },
-        select: {
-            orderNumber: true,
-        },
-    });
-
-    let sequence = 1;
-    if (lastOrder?.orderNumber) {
-        const lastSeq = parseInt(lastOrder.orderNumber.slice(-3), 10);
-        if (!isNaN(lastSeq)) {
-            sequence = lastSeq + 1;
-        }
-    }
-
-    return `${prefix}${sequence.toString().padStart(3, "0")}`;
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    return `WX${yy}${mm}${dd}-${nanoid()}`;
 }
 
 const ORDER_STATUSES = [
@@ -101,7 +81,7 @@ type CreateOrderPayload = {
     phone: string;
     email?: string | null;
     userId?: string | null; // Link to user account if logged in
-    items: Array<{ productId: string; name: string; unitPrice: number; quantity: number }>;
+    items: Array<{ productId: string; variantId?: string; name: string; unitPrice: number; quantity: number }>;
     amounts: {
         subtotal: number;
         discount?: number;
@@ -469,43 +449,70 @@ export const POST = withApi(async (req) => {
         return ok(req, existing.responseJson);
     }
 
-    const orderNumber = await generateOrderNumber(tenantId);
+    const orderNumber = generateOrderNumber();
 
     // Determine payment status based on whether proof is uploaded
     const hasPaymentProof = !!payload.paymentProof;
     const paymentStatus = hasPaymentProof ? "uploaded" : "pending";
 
-    const order = await prisma.order.create({
-        data: {
-            tenantId,
-            orderNumber,
-            customerName: payload.customerName,
-            phone: payload.phone,
-            email: payload.email ?? null,
-            userId: payload.userId ?? null,
-            items: repriced.items,
-            amounts: repriced.amounts,
-            fulfillmentType: payload.fulfillment.type === "pickup" ? "PICKUP" : "DELIVERY",
-            fulfillmentAddress:
-                payload.fulfillment.type === "delivery" ? (payload.fulfillment.address ?? undefined) : undefined,
-            status: "PENDING",
-            note: payload.note ?? null,
-            paymentMethod: payload.paymentMethod ?? null,
-            paymentProof: payload.paymentProof ?? null,
-            paymentStatus,
-        },
-    });
-
-    // Increment coupon usageCount if a valid coupon was applied
     const appliedCouponCode = (repriced.amounts as any)?.couponCode;
-    if (appliedCouponCode) {
-        await prisma.coupon.updateMany({
-            where: { code: appliedCouponCode, tenantId },
-            data: { usageCount: { increment: 1 } },
-        }).catch((error) => {
-            console.error("Failed to increment coupon usage:", error);
+
+    // Atomic transaction: stock deduction + order creation + coupon usage
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const order = await (prisma as any).$transaction(async (tx: any) => {
+        // Stock deduction — updateMany with gte guard prevents race conditions
+        for (const item of repriced.items) {
+            if (item.variantId) {
+                const result = await tx.productVariant.updateMany({
+                    where: { id: item.variantId, stock: { gte: item.quantity } },
+                    data: { stock: { decrement: item.quantity } },
+                });
+                if (result.count === 0) {
+                    throw new ApiError(400, "BAD_REQUEST", `INSUFFICIENT_STOCK: 庫存不足 — ${item.name}`);
+                }
+            } else {
+                const result = await tx.product.updateMany({
+                    where: { id: item.productId, stock: { gte: item.quantity } },
+                    data: { stock: { decrement: item.quantity } },
+                });
+                if (result.count === 0) {
+                    throw new ApiError(400, "BAD_REQUEST", `INSUFFICIENT_STOCK: 庫存不足 — ${item.name}`);
+                }
+            }
+        }
+
+        // Create order
+        const created = await tx.order.create({
+            data: {
+                tenantId,
+                orderNumber,
+                customerName: payload.customerName,
+                phone: payload.phone,
+                email: payload.email ?? null,
+                userId: payload.userId ?? null,
+                items: repriced.items,
+                amounts: repriced.amounts,
+                fulfillmentType: payload.fulfillment.type === "pickup" ? "PICKUP" : "DELIVERY",
+                fulfillmentAddress:
+                    payload.fulfillment.type === "delivery" ? (payload.fulfillment.address ?? undefined) : undefined,
+                status: "PENDING",
+                note: payload.note ?? null,
+                paymentMethod: payload.paymentMethod ?? null,
+                paymentProof: payload.paymentProof ?? null,
+                paymentStatus,
+            },
         });
-    }
+
+        // Increment coupon usageCount inside transaction for atomicity
+        if (appliedCouponCode) {
+            await tx.coupon.updateMany({
+                where: { code: appliedCouponCode, tenantId },
+                data: { usageCount: { increment: 1 } },
+            });
+        }
+
+        return created;
+    });
 
     await saveReceiptHtml({
         id: order.id,
