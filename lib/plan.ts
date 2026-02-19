@@ -138,7 +138,7 @@ export async function checkPlanLimit(
 
   if (resource === "sku") {
     const current = await prisma.product.count({
-      where: { tenantId, active: true },
+      where: { tenantId, deletedAt: null },
     });
     const limit = limits.maxSku;
     return { allowed: current < limit, current, limit };

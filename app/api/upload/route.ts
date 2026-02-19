@@ -9,7 +9,7 @@ cloudinary.config({
 });
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/heic", "image/heif", "image/webp"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
           ok: false,
           error: {
             code: "VALIDATION_ERROR",
-            message: "只接受圖片檔案 (JPG, PNG, HEIC, WebP)",
+            message: "只接受圖片檔案 (JPG, PNG, WebP, GIF)",
           },
         },
         { status: 400 }
