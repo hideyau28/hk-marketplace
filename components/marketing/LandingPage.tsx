@@ -34,11 +34,11 @@ const T = {
     // How It Works
     howTitle: "三步開店，簡單到唔信",
     howStep1Num: "01",
-    howStep1Title: "連結 Instagram",
-    howStep1Desc: "一鍵連結你嘅 IG 帳號，自動匯入頭像同簡介",
+    howStep1Title: "上架商品",
+    howStep1Desc: "影相上架，填好價錢同庫存，30 秒搞掂",
     howStep2Num: "02",
-    howStep2Title: "設定商品同價錢",
-    howStep2Desc: "影相上架，設定價錢、庫存、規格，30 秒搞掂",
+    howStep2Title: "設定收款",
+    howStep2Desc: "FPS、PayMe、AlipayHK，客人自助付款",
     howStep3Num: "03",
     howStep3Title: "分享 Link 開始收單",
     howStep3Desc: "將 Link 放入 IG Bio，客人即刻可以落單付款",
@@ -51,7 +51,8 @@ const T = {
     pricingFreeDesc: "試水溫",
     pricingFreeFeat1: "10 件商品",
     pricingFreeFeat2: "每月 50 張訂單",
-    pricingFreeFeat3: "基本分析數據",
+    pricingFreeFeat3: "WhatsApp 通知",
+    pricingFreeFeat4: "0% 交易佣金",
     pricingFreeBtn: "免費開始",
     pricingLiteName: "Lite",
     pricingLitePrice: "78",
@@ -59,6 +60,8 @@ const T = {
     pricingLiteFeat1: "50 件商品",
     pricingLiteFeat2: "無限訂單",
     pricingLiteFeat3: "自訂品牌主題",
+    pricingLiteFeat4: "折扣碼功能",
+    pricingLiteFeat5: "銷售數據分析",
     pricingLiteBtn: "選擇 Lite",
     pricingProName: "Pro",
     pricingProPrice: "198",
@@ -67,6 +70,8 @@ const T = {
     pricingProFeat1: "無限商品",
     pricingProFeat2: "無限訂單 + CRM",
     pricingProFeat3: "自訂域名 + 進階分析",
+    pricingProFeat4: "自動化促銷工具",
+    pricingProFeat5: "優先客服支援",
     pricingProBtn: "選擇 Pro",
     pricingPeriod: "/月",
 
@@ -82,11 +87,11 @@ const T = {
     testimonial1Name: "May",
     testimonial1Shop: "@maysshop · 飾物店",
     testimonial2Quote: "最鍾意佢嘅付款功能，客人自己揀 FPS 定 PayMe，我唔使再逐個 check 入數。",
-    testimonial2Name: "Karen",
-    testimonial2Shop: "@karenshop.hk · 手作店",
+    testimonial2Name: "K 小姐",
+    testimonial2Shop: "K 小姐 · 手作店",
     testimonial3Quote: "終於唔使再用 Excel 記庫存！規格管理好方便，唔怕再超賣。",
-    testimonial3Name: "Ling",
-    testimonial3Shop: "@lingcloset · 服裝店",
+    testimonial3Name: "陳先生",
+    testimonial3Shop: "陳先生 · 波鞋代購",
 
     // Final CTA
     ctaTitle: "準備好將你嘅 IG Shop 升級？",
@@ -132,11 +137,11 @@ const T = {
 
     howTitle: "3 Steps to Launch. It's That Simple.",
     howStep1Num: "01",
-    howStep1Title: "Connect Instagram",
-    howStep1Desc: "One click to link your IG account, auto-import avatar and bio",
+    howStep1Title: "List Products",
+    howStep1Desc: "Snap photos, set prices and inventory — done in 30 seconds",
     howStep2Num: "02",
-    howStep2Title: "Set Up Products & Prices",
-    howStep2Desc: "Snap photos, set prices, inventory & specs — done in 30 seconds",
+    howStep2Title: "Set Up Payments",
+    howStep2Desc: "FPS, PayMe, AlipayHK — customers pay on their own",
     howStep3Num: "03",
     howStep3Title: "Share Link & Start Selling",
     howStep3Desc: "Drop the link in your IG Bio, customers can order & pay instantly",
@@ -148,7 +153,8 @@ const T = {
     pricingFreeDesc: "Test the waters",
     pricingFreeFeat1: "10 products",
     pricingFreeFeat2: "50 orders/month",
-    pricingFreeFeat3: "Basic analytics",
+    pricingFreeFeat3: "WhatsApp notifications",
+    pricingFreeFeat4: "0% commission",
     pricingFreeBtn: "Start Free",
     pricingLiteName: "Lite",
     pricingLitePrice: "78",
@@ -156,6 +162,8 @@ const T = {
     pricingLiteFeat1: "50 products",
     pricingLiteFeat2: "Unlimited orders",
     pricingLiteFeat3: "Custom brand themes",
+    pricingLiteFeat4: "Discount codes",
+    pricingLiteFeat5: "Sales analytics",
     pricingLiteBtn: "Choose Lite",
     pricingProName: "Pro",
     pricingProPrice: "198",
@@ -164,6 +172,8 @@ const T = {
     pricingProFeat1: "Unlimited products",
     pricingProFeat2: "Unlimited orders + CRM",
     pricingProFeat3: "Custom domain + advanced analytics",
+    pricingProFeat4: "Automated promotions",
+    pricingProFeat5: "Priority support",
     pricingProBtn: "Choose Pro",
     pricingPeriod: "/mo",
 
@@ -178,11 +188,11 @@ const T = {
     testimonial1Name: "May",
     testimonial1Shop: "@maysshop · Jewelry",
     testimonial2Quote: "Love the payment feature — customers choose FPS or PayMe themselves. No more checking transfers one by one.",
-    testimonial2Name: "Karen",
-    testimonial2Shop: "@karenshop.hk · Handmade",
+    testimonial2Name: "K",
+    testimonial2Shop: "K · Handmade",
     testimonial3Quote: "Finally no more Excel for inventory! Variant management is so easy, no more overselling.",
-    testimonial3Name: "Ling",
-    testimonial3Shop: "@lingcloset · Fashion",
+    testimonial3Name: "Mr. Chan",
+    testimonial3Shop: "Mr. Chan · Sneaker Reseller",
 
     ctaTitle: "Ready to upgrade your IG Shop?",
     ctaSub: "2 min setup · 0% commission · From $0",
@@ -227,18 +237,18 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
   const plans = [
     {
       name: t.pricingFreeName, price: t.pricingFreePrice, desc: t.pricingFreeDesc,
-      btn: t.pricingFreeBtn, features: [t.pricingFreeFeat1, t.pricingFreeFeat2, t.pricingFreeFeat3],
-      href: "/admin/register?plan=free", highlighted: false,
+      btn: t.pricingFreeBtn, features: [t.pricingFreeFeat1, t.pricingFreeFeat2, t.pricingFreeFeat3, t.pricingFreeFeat4],
+      href: `/${locale}/start?plan=free`, highlighted: false,
     },
     {
       name: t.pricingLiteName, price: t.pricingLitePrice, desc: t.pricingLiteDesc,
-      btn: t.pricingLiteBtn, features: [t.pricingLiteFeat1, t.pricingLiteFeat2, t.pricingLiteFeat3],
-      href: "/admin/register?plan=lite", highlighted: false,
+      btn: t.pricingLiteBtn, features: [t.pricingLiteFeat1, t.pricingLiteFeat2, t.pricingLiteFeat3, t.pricingLiteFeat4, t.pricingLiteFeat5],
+      href: `/${locale}/start?plan=lite`, highlighted: false,
     },
     {
       name: t.pricingProName, price: t.pricingProPrice, desc: t.pricingProDesc,
-      btn: t.pricingProBtn, features: [t.pricingProFeat1, t.pricingProFeat2, t.pricingProFeat3],
-      href: "/admin/register?plan=pro", highlighted: true, badge: t.pricingProBadge,
+      btn: t.pricingProBtn, features: [t.pricingProFeat1, t.pricingProFeat2, t.pricingProFeat3, t.pricingProFeat4, t.pricingProFeat5],
+      href: `/${locale}/start?plan=pro`, highlighted: true, badge: t.pricingProBadge,
     },
   ];
 
@@ -258,7 +268,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
         /* ─── Mobile responsive ─── */
         @media (max-width: 640px) {
-          .lp-pain-grid { grid-template-columns: 1fr !important; }
+          .lp-pain-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .lp-how-grid { grid-template-columns: 1fr !important; }
           .lp-plan-grid { grid-template-columns: 1fr !important; }
           .lp-testimonial-grid { grid-template-columns: 1fr !important; }
@@ -310,7 +320,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               {t.navLangEn}
             </Link>
           </div>
-          <Link href="/admin/register" style={{
+          <Link href={`/${locale}/start`} style={{
             background: "#FF9500", color: "#fff", border: "none",
             padding: "10px 22px", borderRadius: 10, fontSize: 14, fontWeight: 700,
             textDecoration: "none", minHeight: 44, display: "inline-flex", alignItems: "center",
@@ -339,8 +349,8 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           </p>
 
           <div className="lp-pain-grid" style={{
-            display: "grid", gridTemplateColumns: "repeat(2, 1fr)",
-            gap: 16, textAlign: "left" as const,
+            display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 12, textAlign: "left" as const,
           }}>
             {painCards.map((card, i) => (
               <div
@@ -348,18 +358,21 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 onMouseEnter={() => setHoveredPain(i)}
                 onMouseLeave={() => setHoveredPain(null)}
                 style={{
-                  padding: "24px",
+                  padding: 16,
                   background: hoveredPain === i ? "#FFF8F0" : "#FAFAFA",
-                  borderRadius: 16,
+                  borderRadius: 14,
                   border: "1px solid #F0F0F0",
                   transition: "all 0.3s",
                   transform: hoveredPain === i ? "translateY(-2px)" : "translateY(0)",
                   boxShadow: hoveredPain === i ? "0 8px 24px rgba(0,0,0,0.06)" : "none",
+                  display: "flex", alignItems: "flex-start", gap: 12,
                 }}
               >
-                <div style={{ fontSize: 28, marginBottom: 12 }}>{card.icon}</div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: "#1A1A1A", marginBottom: 8 }}>{card.title}</div>
-                <div style={{ fontSize: 14, color: "#888", lineHeight: 1.6 }}>{card.desc}</div>
+                <div style={{ fontSize: 24, minWidth: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{card.icon}</div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: "#1A1A1A", marginBottom: 4 }}>{card.title}</div>
+                  <div style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>{card.desc}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -389,7 +402,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 transition: "all 0.3s",
               }}>
                 <div style={{
-                  fontSize: 40, fontWeight: 900, color: "rgba(255,149,0,0.2)",
+                  fontSize: 40, fontWeight: 900, color: "#FF9500",
                   fontFamily: "'JetBrains Mono', monospace",
                   marginBottom: 16, lineHeight: 1,
                 }}>
@@ -608,7 +621,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.45)", marginBottom: 36 }}>
             {t.ctaSub}
           </p>
-          <Link href="/admin/register" style={{
+          <Link href={`/${locale}/start`} style={{
             background: "#FF9500", color: "#fff", border: "none",
             padding: "18px 48px", borderRadius: 14, fontSize: 20, fontWeight: 700,
             textDecoration: "none", display: "inline-block",
@@ -640,7 +653,6 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               </div>
               <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
                 <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerPricing}</a>
-                <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerTemplates}</Link>
                 <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerFeatures}</Link>
               </div>
             </div>
@@ -652,7 +664,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
                 <a href="#" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerHelp}</a>
                 <a href="#" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerContact}</a>
-                <a href="#" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerWhatsApp}</a>
+                <a href="https://wa.me/85298765432" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerWhatsApp}</a>
               </div>
             </div>
             {/* Column 3: Legal */}
