@@ -839,7 +839,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           </Link>
 
           {/* 3-Step Mini Flow */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 40, marginTop: 56, flexWrap: "wrap" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginTop: 56 }}>
             {(isZh
               ? [
                   { icon: "package", label: "上貨", desc: "加商品、定價、上圖" },
@@ -852,8 +852,8 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   { icon: "shoppingBag", label: "Get Orders", desc: "Customers self-serve checkout" },
                 ]
             ).map((step, i) => (
-              <div key={i} style={{ textAlign: "center" }}>
-                <div style={{ marginBottom: 4 }}>{ICONS[step.icon]}</div>
+              <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+                <div style={{ marginBottom: 8 }}>{ICONS[step.icon]}</div>
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{step.label}</div>
                 <div style={{ fontSize: 12, color: "#999" }}>{step.desc}</div>
               </div>
