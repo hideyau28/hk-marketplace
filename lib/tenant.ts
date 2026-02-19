@@ -19,11 +19,11 @@ const DEFAULT_SLUG = "maysshop";
  * Known hostnames that should resolve to the default tenant
  * rather than being treated as a subdomain slug.
  */
-const DEFAULT_HOSTS = new Set(["hk-marketplace", "www", "localhost", "127.0.0.1"]);
+const DEFAULT_HOSTS = new Set(["wowlix", "www", "localhost", "127.0.0.1"]);
 
 /**
  * Extract tenant slug from a hostname string.
- * Pattern: {slug}.hk-marketplace.vercel.app
+ * Pattern: {slug}.wowlix.com
  * Returns DEFAULT_SLUG for bare domain, www, or localhost.
  */
 export function resolveSlugFromHostname(hostname: string): string {
@@ -51,7 +51,7 @@ export function resolveSlugFromHostname(hostname: string): string {
  * 1. x-tenant-slug header (set by middleware)
  * 2. Hostname-based subdomain parsing
  * 3. ?tenant= query param (dev fallback)
- * 4. Default slug "hk-marketplace"
+ * 4. Default slug "maysshop"
  */
 export async function resolveTenant(req?: Request): Promise<TenantContext> {
   let slug = DEFAULT_SLUG;
