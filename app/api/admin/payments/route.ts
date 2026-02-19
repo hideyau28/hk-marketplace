@@ -87,7 +87,7 @@ export const PUT = withApi(async (req: Request) => {
       const accountInfo = JSON.stringify(config || {});
 
       const result = await prisma.paymentMethod.upsert({
-        where: { type: providerId },
+        where: { tenantId_type: { tenantId, type: providerId } },
         update: {
           name: provider.nameZh,
           qrImage,
@@ -109,11 +109,11 @@ export const PUT = withApi(async (req: Request) => {
     } else {
       // 停用：如果 record 存在就 set active = false
       const existing = await prisma.paymentMethod.findUnique({
-        where: { type: providerId },
+        where: { tenantId_type: { tenantId, type: providerId } },
       });
       if (existing) {
         const result = await prisma.paymentMethod.update({
-          where: { type: providerId },
+          where: { tenantId_type: { tenantId, type: providerId } },
           data: { active: false },
         });
         results.push(result);

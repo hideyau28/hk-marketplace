@@ -466,7 +466,7 @@ model HomepageBanner {
 model PaymentMethod {
   id          String   @id @default(cuid())
   name        String   // "FPS 轉數快", "PayMe", "Alipay HK"
-  type        String   @unique // "fps", "payme", "alipay"
+  type        String   // "fps", "payme", "alipay"
   qrImage     String?  // URL to QR code image
   accountInfo String?  // e.g. FPS ID, phone number
   active      Boolean  @default(true)
@@ -477,6 +477,7 @@ model PaymentMethod {
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
 
+  @@unique([tenantId, type])
   @@index([active, sortOrder])
   @@index([tenantId])
 }
