@@ -4,6 +4,7 @@ import type { Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { resolveTenant } from "@/lib/tenant";
 import ProductCard from "@/components/ProductCard";
+import type { Metadata } from "next";
 
 type ResolvedBadge = {
   nameZh: string;
@@ -18,6 +19,40 @@ function isCuid(value: string) {
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const isZh = locale === "zh-HK";
+
+  try {
+    const tenant = await resolveTenant();
+    const category = await prisma.category.findUnique({
+      where: { tenantId_slug: { tenantId: tenant.id, slug } },
+      select: { name: true },
+    });
+
+    if (!category) {
+      return { title: "Category Not Found" };
+    }
+
+    const title = `${category.name} — ${tenant.name}`;
+    const description = isZh
+      ? `瀏覽 ${category.name} 系列產品`
+      : `Browse ${category.name} products`;
+
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "website",
+      },
+    };
+  } catch {
+    return { title: "Category" };
+  }
+}
 
 export default async function CategoryPage({ params }: Props) {
   const { locale, slug } = await params;
