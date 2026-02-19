@@ -38,7 +38,7 @@ function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
 
 export const POST = withApi(async (req) => {
   const stripe = getStripe();
-  const whsec = process.env.STRIPE_SUBSCRIPTION_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET;
+  const whsec = process.env.STRIPE_SUBSCRIPTION_WEBHOOK_SECRET;
   if (!whsec) {
     throw new ApiError(500, "INTERNAL", "STRIPE_SUBSCRIPTION_WEBHOOK_SECRET is not configured");
   }
@@ -88,7 +88,16 @@ export const POST = withApi(async (req) => {
         // 查 subscription 取得 plan 資訊
         const sub = await stripe.subscriptions.retrieve(subscriptionId);
         const priceId = sub.items.data[0]?.price?.id || "";
-        const plan = planFromPriceId(priceId) || "lite";
+        const plan = planFromPriceId(priceId);
+
+        if (!plan) {
+          log("error", "checkout.session.completed: unknown priceId, skipping plan update", {
+            priceId,
+            subscriptionId,
+            tenantId,
+          });
+          break;
+        }
 
         await prisma.tenant.update({
           where: { id: tenantId },
@@ -259,6 +268,8 @@ export const POST = withApi(async (req) => {
   } catch (e: unknown) {
     const err = e instanceof Error ? e.message : String(e);
     log("error", "Unhandled webhook exception", { err, eventType: event.type });
+    // Re-throw so Stripe receives 5xx and retries
+    throw e;
   }
 
   return ok(req, { received: true });
