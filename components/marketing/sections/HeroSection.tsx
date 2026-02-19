@@ -6,37 +6,47 @@ import type { Locale } from "@/lib/i18n";
 /* ─── i18n ─── */
 const T = {
   "zh-HK": {
-    heroBadge: "專為香港 IG 小店而設",
+    heroBadge: "\uD83D\uDD25 專為香港 IG 店主而設",
     heroH1a: "一條 Link",
-    heroH1b: "將 Follower 變成生意",
-    heroSub1: "最快 2 分鐘開好網店",
-    heroSub2: "將你嘅 IG Bio Link 變成一間真正嘅網上商店",
+    heroH1b: "將 Follower",
+    heroH1c: "變成生意",
+    heroSub1: "最快 2 分鐘開好網店。",
+    heroSub2: "將你嘅 IG Bio Link 變成一間真正嘅網上商店。",
     ctaPrimary: "免費開店 →",
-    ctaSecondary: "睇定價",
-    mockupStore: "Store Preview",
+    ctaSecondary: "了解更多",
+    trustLine: "✦ 0% 佣金 · 免費開始 · 2 分鐘開店",
     mockupName: "maysshop",
     mockupDesc: "飾物・手作・代購",
     mockupProduct1: "玫瑰金手鏈",
     mockupPrice1: "$168",
     mockupProduct2: "極簡耳環",
     mockupPrice2: "$88",
+    mockupProduct3: "珍珠頸鏈",
+    mockupPrice3: "$238",
+    mockupProduct4: "銀色戒指",
+    mockupPrice4: "$128",
     mockupCta: "立即選購",
   },
   en: {
-    heroBadge: "Built for HK Instagram shops",
+    heroBadge: "\uD83D\uDD25 Built for HK Instagram Sellers",
     heroH1a: "One Link",
-    heroH1b: "Turn Followers into Sales",
-    heroSub1: "Set up your shop in as fast as 2 minutes",
-    heroSub2: "Turn your IG Bio Link into a real online store",
+    heroH1b: "Turn Followers",
+    heroH1c: "into Sales",
+    heroSub1: "Set up your shop in as fast as 2 minutes.",
+    heroSub2: "Turn your IG Bio Link into a real online store.",
     ctaPrimary: "Start Free →",
-    ctaSecondary: "See Pricing",
-    mockupStore: "Store Preview",
+    ctaSecondary: "Learn More",
+    trustLine: "✦ 0% Commission · Free to Start · 2 Min Setup",
     mockupName: "maysshop",
     mockupDesc: "Jewelry · Handmade · Buying service",
     mockupProduct1: "Rose Gold Bracelet",
     mockupPrice1: "$168",
     mockupProduct2: "Minimal Earrings",
     mockupPrice2: "$88",
+    mockupProduct3: "Pearl Necklace",
+    mockupPrice3: "$238",
+    mockupProduct4: "Silver Ring",
+    mockupPrice4: "$128",
     mockupCta: "Shop Now",
   },
 };
@@ -45,14 +55,12 @@ const T = {
 function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
   return (
     <div className="hero-phone-wrap">
-      {/* iPhone frame */}
       <div className="hero-phone-frame">
         {/* Dynamic Island */}
         <div className="hero-dynamic-island" />
 
-        {/* Screen content — maysshop placeholder */}
+        {/* Screen content */}
         <div className="hero-phone-screen">
-          {/* Status bar area (behind Dynamic Island) */}
           <div style={{ height: 48 }} />
 
           {/* Store header */}
@@ -73,41 +81,47 @@ function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
             </div>
           </div>
 
-          {/* Product cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "4px 12px" }}>
+          {/* Product grid 2x2 */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, padding: "4px 10px" }}>
             {[
               { color: "#FFE0EB", name: t.mockupProduct1, price: t.mockupPrice1 },
               { color: "#E8DDD3", name: t.mockupProduct2, price: t.mockupPrice2 },
+              { color: "#D1E8FF", name: t.mockupProduct3, price: t.mockupPrice3 },
+              { color: "#E8E0FF", name: t.mockupProduct4, price: t.mockupPrice4 },
             ].map((p, i) => (
-              <div key={i} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 10, overflow: "hidden" }}>
-                <div style={{ height: 64, background: p.color, opacity: 0.25 }} />
-                <div style={{ padding: "5px 7px" }}>
-                  <div style={{ color: "#fff", fontSize: 9, fontWeight: 600, lineHeight: 1.3 }}>{p.name}</div>
-                  <div style={{ color: "#FF9500", fontSize: 10, fontWeight: 700, marginTop: 2, fontFamily: "'JetBrains Mono', monospace" }}>{p.price}</div>
+              <div key={i} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 8, overflow: "hidden" }}>
+                <div style={{ height: 48, background: p.color, opacity: 0.2 }} />
+                <div style={{ padding: "4px 6px" }}>
+                  <div style={{ color: "#fff", fontSize: 8, fontWeight: 600, lineHeight: 1.3 }}>{p.name}</div>
+                  <div style={{
+                    color: "#FF9500", fontSize: 9, fontWeight: 700, marginTop: 1,
+                    fontFamily: "'JetBrains Mono', monospace",
+                  }}>{p.price}</div>
                 </div>
               </div>
             ))}
           </div>
 
           {/* CTA button */}
-          <div style={{ padding: "10px 12px" }}>
+          <div style={{ padding: "8px 10px" }}>
             <div style={{
-              background: "#FF9500", borderRadius: 8, padding: "8px",
-              textAlign: "center" as const, color: "#fff", fontSize: 11, fontWeight: 700,
+              background: "#FF9500", borderRadius: 8, padding: "7px",
+              textAlign: "center" as const, color: "#fff", fontSize: 10, fontWeight: 700,
             }}>
               {t.mockupCta}
             </div>
           </div>
-
-          {/* Placeholder label */}
-          <div style={{
-            flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-            color: "rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 600,
-            letterSpacing: "0.05em", paddingBottom: 16,
-          }}>
-            {t.mockupStore}
-          </div>
         </div>
+      </div>
+
+      {/* Floating notifications */}
+      <div className="hero-float hero-float-1">
+        <span style={{ fontSize: 12 }}>🔔</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>新訂單！</span>
+      </div>
+      <div className="hero-float hero-float-2">
+        <span style={{ fontSize: 12 }}>💰</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>PayMe 已收款</span>
       </div>
     </div>
   );
@@ -126,60 +140,95 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes heroFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes heroPulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+        @keyframes floatIn1 {
+          from { opacity: 0; transform: translate(-20px, 10px) scale(0.8); }
+          to   { opacity: 1; transform: translate(0, 0) scale(1); }
+        }
+        @keyframes floatIn2 {
+          from { opacity: 0; transform: translate(20px, 10px) scale(0.8); }
+          to   { opacity: 1; transform: translate(0, 0) scale(1); }
+        }
 
         /* ─── Section ─── */
         .hero-section {
           position: relative;
           overflow: hidden;
-          padding: 48px 20px 64px;
-          text-align: center;
-          background: linear-gradient(180deg, #FFF8F0 0%, #FFFFFF 100%);
+          background: #0D0D0D;
+          padding: 64px 20px 80px;
         }
 
-        /* Subtle decorative glow */
+        /* Subtle radial glow */
         .hero-section::before {
           content: '';
           position: absolute;
-          top: -120px;
-          left: 50%;
-          transform: translateX(-50%);
+          top: -200px;
+          right: -100px;
           width: 600px;
           height: 600px;
-          background: radial-gradient(circle, rgba(255,149,0,0.08) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(255,149,0,0.06) 0%, transparent 70%);
+          border-radius: 50%;
+          pointer-events: none;
+        }
+        .hero-section::after {
+          content: '';
+          position: absolute;
+          bottom: -200px;
+          left: -100px;
+          width: 500px;
+          height: 500px;
+          background: radial-gradient(circle, rgba(255,149,0,0.04) 0%, transparent 70%);
           border-radius: 50%;
           pointer-events: none;
         }
 
-        /* ─── Content container ─── */
+        /* ─── Content layout ─── */
         .hero-inner {
           position: relative;
-          max-width: 640px;
+          max-width: 1200px;
           margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 48px;
+        }
+
+        .hero-text {
+          max-width: 560px;
         }
 
         /* ─── Badge ─── */
         .hero-badge {
           display: inline-block;
-          background: #FFF3E0;
-          color: #E68600;
-          padding: 6px 16px;
-          border-radius: 20px;
+          background: rgba(255,149,0,0.12);
+          color: #FF9500;
+          padding: 8px 18px;
+          border-radius: 24px;
           font-size: 13px;
           font-weight: 700;
-          margin-bottom: 20px;
+          margin-bottom: 24px;
           letter-spacing: 0.02em;
+          border: 1px solid rgba(255,149,0,0.2);
           animation: heroFadeInUp 0.6s ease-out both;
         }
 
         /* ─── Headline ─── */
         .hero-h1 {
           font-family: 'Noto Sans TC', 'Plus Jakarta Sans', sans-serif;
-          font-size: clamp(32px, 7vw, 56px);
+          font-size: clamp(36px, 8vw, 64px);
           font-weight: 900;
-          line-height: 1.15;
-          color: #1A1A1A;
+          line-height: 1.12;
+          color: #FFFFFF;
           letter-spacing: -0.02em;
-          margin-bottom: 16px;
+          margin-bottom: 20px;
           animation: heroFadeInUp 0.6s ease-out 0.08s both;
         }
         .hero-h1 .accent {
@@ -189,8 +238,8 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
         /* ─── Subtitle ─── */
         .hero-sub {
           font-family: 'Noto Sans TC', sans-serif;
-          font-size: 17px;
-          color: #6B7280;
+          font-size: 16px;
+          color: rgba(255,255,255,0.55);
           line-height: 1.7;
           margin-bottom: 32px;
           letter-spacing: 0.02em;
@@ -204,6 +253,7 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           justify-content: center;
           flex-wrap: wrap;
           animation: heroFadeInUp 0.6s ease-out 0.24s both;
+          margin-bottom: 24px;
         }
         .hero-cta-primary {
           display: inline-flex;
@@ -212,43 +262,52 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           color: #fff;
           border: none;
           padding: 16px 36px;
-          border-radius: 14px;
+          border-radius: 12px;
           font-size: 17px;
           font-weight: 700;
           text-decoration: none;
-          box-shadow: 0 8px 30px rgba(255,149,0,0.3);
+          box-shadow: 0 8px 32px rgba(255,149,0,0.35);
           transition: transform 0.2s, box-shadow 0.2s;
           min-height: 52px;
         }
         .hero-cta-primary:hover {
-          transform: scale(1.02);
-          box-shadow: 0 12px 36px rgba(255,149,0,0.35);
+          transform: scale(1.03);
+          box-shadow: 0 12px 40px rgba(255,149,0,0.45);
         }
         .hero-cta-secondary {
           display: inline-flex;
           align-items: center;
           background: transparent;
-          color: #FF9500;
-          border: 2px solid #FF9500;
-          padding: 14px 32px;
-          border-radius: 14px;
+          color: #fff;
+          border: 1.5px solid rgba(255,255,255,0.3);
+          padding: 15px 32px;
+          border-radius: 12px;
           font-size: 17px;
-          font-weight: 700;
+          font-weight: 600;
           text-decoration: none;
-          transition: background 0.2s, transform 0.2s;
+          transition: background 0.2s, transform 0.2s, border-color 0.2s;
           min-height: 52px;
         }
         .hero-cta-secondary:hover {
-          background: #FFF3E0;
+          background: rgba(255,255,255,0.06);
+          border-color: rgba(255,255,255,0.5);
           transform: scale(1.02);
+        }
+
+        /* ─── Trust line ─── */
+        .hero-trust-line {
+          font-size: 13px;
+          color: rgba(255,255,255,0.35);
+          letter-spacing: 0.04em;
+          animation: heroFadeInUp 0.6s ease-out 0.32s both;
         }
 
         /* ─── Phone mockup wrapper ─── */
         .hero-phone-wrap {
-          margin: 48px auto 0;
-          width: 260px;
+          position: relative;
+          width: 240px;
           animation: heroFadeInUp 0.7s ease-out 0.35s both;
-          transition: transform 0.3s;
+          transition: transform 0.4s ease;
         }
         .hero-phone-wrap:hover {
           transform: translateY(-8px);
@@ -259,24 +318,25 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           position: relative;
           width: 100%;
           aspect-ratio: 9 / 19.5;
-          border-radius: 44px;
-          border: 6px solid #1A1A1A;
+          border-radius: 40px;
+          border: 5px solid #2A2A2A;
           background: #000;
           overflow: hidden;
           box-shadow:
-            0 25px 60px rgba(0,0,0,0.15),
-            0 4px 12px rgba(0,0,0,0.08),
-            inset 0 0 0 2px rgba(255,255,255,0.1);
+            0 30px 80px rgba(0,0,0,0.5),
+            0 4px 16px rgba(0,0,0,0.3),
+            inset 0 0 0 1px rgba(255,255,255,0.08),
+            0 0 80px rgba(255,149,0,0.08);
         }
 
         /* ─── Dynamic Island ─── */
         .hero-dynamic-island {
           position: absolute;
-          top: 12px;
+          top: 10px;
           left: 50%;
           transform: translateX(-50%);
-          width: 100px;
-          height: 28px;
+          width: 90px;
+          height: 26px;
           background: #000;
           border-radius: 20px;
           z-index: 10;
@@ -286,65 +346,120 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
         .hero-phone-screen {
           width: 100%;
           height: 100%;
-          background: linear-gradient(180deg, #1A1A1A 0%, #222 100%);
+          background: linear-gradient(180deg, #1A1A1A 0%, #111 100%);
           display: flex;
           flex-direction: column;
         }
 
-        /* ─── Desktop ─── */
+        /* ─── Floating notifications ─── */
+        .hero-float {
+          position: absolute;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          background: rgba(30,30,30,0.9);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px;
+          backdrop-filter: blur(12px);
+          white-space: nowrap;
+        }
+        .hero-float-1 {
+          top: 25%;
+          left: -60px;
+          animation: floatIn1 0.6s ease-out 1s both, heroFloat 3s ease-in-out 1.6s infinite;
+        }
+        .hero-float-2 {
+          bottom: 30%;
+          right: -60px;
+          animation: floatIn2 0.6s ease-out 1.3s both, heroFloat 3s ease-in-out 2s infinite;
+        }
+
+        /* ─── Tablet ─── */
         @media (min-width: 768px) {
           .hero-section {
-            padding: 72px 40px 96px;
+            padding: 80px 40px 100px;
           }
           .hero-phone-wrap {
-            width: 300px;
-            margin-top: 56px;
+            width: 280px;
           }
           .hero-sub {
             font-size: 18px;
           }
+          .hero-float-1 {
+            left: -80px;
+          }
+          .hero-float-2 {
+            right: -80px;
+          }
         }
 
+        /* ─── Desktop: side-by-side layout ─── */
         @media (min-width: 1024px) {
           .hero-section {
-            padding: 80px 40px 120px;
+            padding: 100px 40px 120px;
           }
           .hero-inner {
-            max-width: 720px;
+            flex-direction: row;
+            text-align: left;
+            align-items: center;
+            justify-content: space-between;
+            gap: 60px;
+          }
+          .hero-text {
+            max-width: 520px;
+            flex: 1;
+          }
+          .hero-cta-row {
+            justify-content: flex-start;
+          }
+          .hero-trust-line {
+            text-align: left;
           }
           .hero-phone-wrap {
-            width: 320px;
-            margin-top: 64px;
+            width: 300px;
+            flex-shrink: 0;
+          }
+          .hero-float-1 {
+            left: -90px;
+          }
+          .hero-float-2 {
+            right: -90px;
           }
         }
       `}</style>
 
       <div className="hero-inner">
-        {/* Badge */}
-        <div className="hero-badge">{t.heroBadge}</div>
+        {/* Text block */}
+        <div className="hero-text">
+          <div className="hero-badge">{t.heroBadge}</div>
 
-        {/* Headline */}
-        <h1 className="hero-h1">
-          {t.heroH1a}
-          <br />
-          <span className="accent">{t.heroH1b}</span>
-        </h1>
+          <h1 className="hero-h1">
+            {t.heroH1a}
+            <br />
+            <span className="accent">{t.heroH1b}</span>
+            <br />
+            {t.heroH1c}
+          </h1>
 
-        {/* Subtitle */}
-        <p className="hero-sub">
-          {t.heroSub1}
-          <br />
-          {t.heroSub2}
-        </p>
+          <p className="hero-sub">
+            {t.heroSub1}
+            <br />
+            {t.heroSub2}
+          </p>
 
-        {/* CTAs */}
-        <div className="hero-cta-row">
-          <Link href="/admin/register" className="hero-cta-primary">
-            {t.ctaPrimary}
-          </Link>
-          <a href="#pricing" className="hero-cta-secondary">
-            {t.ctaSecondary}
-          </a>
+          <div className="hero-cta-row">
+            <Link href="/admin/register" className="hero-cta-primary">
+              {t.ctaPrimary}
+            </Link>
+            <a href="#how-it-works" className="hero-cta-secondary">
+              {t.ctaSecondary}
+            </a>
+          </div>
+
+          <div className="hero-trust-line">
+            {t.trustLine}
+          </div>
         </div>
 
         {/* Phone Mockup */}
