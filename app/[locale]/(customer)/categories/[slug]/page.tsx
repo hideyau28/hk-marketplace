@@ -53,6 +53,7 @@ export default async function CategoryPage({ params }: Props) {
       categoryId: { in: categoryIds },
       active: true,
       tenantId: tenant.id,
+      deletedAt: null,
     },
     orderBy: { createdAt: "desc" },
     include: {

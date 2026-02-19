@@ -56,7 +56,7 @@ export default async function SlugPage({ params }: PageProps) {
   if (!tenant) notFound();
 
   const products = await prisma.product.findMany({
-    where: { tenantId: tenant.id, active: true },
+    where: { tenantId: tenant.id, active: true, deletedAt: null },
     orderBy: { updatedAt: "desc" },
     select: {
       id: true,

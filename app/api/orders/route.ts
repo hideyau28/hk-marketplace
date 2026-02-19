@@ -261,7 +261,7 @@ function calculateShippingFee(subtotal: number, region?: string): number {
 async function repriceOrder(payload: CreateOrderPayload, tenantId: string): Promise<RepricedOrder> {
     const productIds = Array.from(new Set(payload.items.map((item) => item.productId)));
     const products = await prisma.product.findMany({
-        where: { id: { in: productIds }, tenantId },
+        where: { id: { in: productIds }, tenantId, deletedAt: null },
         select: { id: true, title: true, price: true, active: true },
     });
 

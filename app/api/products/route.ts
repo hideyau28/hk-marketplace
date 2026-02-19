@@ -53,7 +53,7 @@ export const GET = withApi(async (req) => {
     throw new ApiError(400, "BAD_REQUEST", "sort must be one of: new, price_asc, price_desc");
   }
 
-  const where: Prisma.ProductWhereInput = { active: true, tenantId };
+  const where: Prisma.ProductWhereInput = { active: true, tenantId, deletedAt: null };
 
   // Add search filter if q is provided
   if (q) {

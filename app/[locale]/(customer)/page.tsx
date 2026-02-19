@@ -174,7 +174,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       orderBy: { sortOrder: "asc" },
     }),
     prisma.product.findMany({
-      where: { active: true, tenantId },
+      where: { active: true, tenantId, deletedAt: null },
       orderBy: { createdAt: "desc" },
     }),
     prisma.order.findMany({

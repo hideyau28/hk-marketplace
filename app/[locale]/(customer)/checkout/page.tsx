@@ -96,6 +96,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
   const [uploadingProof, setUploadingProof] = useState(false);
+  const [invalidProductIds, setInvalidProductIds] = useState<string[]>([]);
 
   const t = getDict(locale);
 
@@ -134,6 +135,29 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
     if (user.email) setEmail(user.email);
   }, [user]);
 
+  // 驗證購物車商品是否仍在架
+  useEffect(() => {
+    if (cart.length === 0) return;
+    const items = cart.map((item) => ({ productId: item.productId, name: item.title }));
+    fetch("/api/biolink/validate-cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.ok && !json.data.valid) {
+          const ids = (json.data.invalidItems as Array<{ productId: string }>).map((i) => i.productId);
+          setInvalidProductIds(ids);
+          showToast(
+            locale === "zh-HK"
+              ? "部分商品已下架，請移除後再結帳"
+              : "Some items are unavailable. Please remove them before checkout."
+          );
+        }
+      })
+      .catch(() => {});
+  }, [cart]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const validateName = (value: string): string | null => {
     if (value.trim().length < 2) {
@@ -460,7 +484,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
 
       <div className="mt-4 space-y-4">
         {cart.map((item) => (
-          <div key={`${item.productId}-${item.size || "default"}`} className="flex gap-3">
+          <div
+            key={`${item.productId}-${item.size || "default"}`}
+            className={`flex gap-3 rounded-lg p-1 -mx-1 transition-colors ${
+              invalidProductIds.includes(item.productId)
+                ? "border border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/30"
+                : ""
+            }`}
+          >
             <div className="h-14 w-14 rounded-xl bg-zinc-50 dark:bg-zinc-800 overflow-hidden flex-shrink-0">
               {item.imageUrl ? (
                 <img src={item.imageUrl} alt="" className="h-full w-full object-contain" />
@@ -487,6 +518,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
                   {format(item.unitPrice * item.qty)}
                 </span>
               </div>
+              {invalidProductIds.includes(item.productId) && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {locale === "zh-HK" ? "此商品已下架" : "Item unavailable"}
+                </p>
+              )}
             </div>
           </div>
         ))}
@@ -550,7 +586,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
       <button
         type="button"
         onClick={handleSubmit}
-        disabled={processing || !isFormValid()}
+        disabled={processing || !isFormValid() || invalidProductIds.length > 0}
         className="mt-6 w-full rounded-xl bg-olive-600 py-3.5 text-center font-semibold text-white hover:bg-olive-700 disabled:cursor-not-allowed disabled:opacity-50 min-h-[48px]"
       >
         {uploadingProof
