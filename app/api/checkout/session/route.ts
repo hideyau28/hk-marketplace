@@ -64,13 +64,14 @@ export const POST = withApi(async (req) => {
     };
   });
 
-  // Delivery fee (v1 fixed HKD 30)
-  if (order.fulfillmentType === "DELIVERY") {
+  // Delivery fee from order amounts (skip if zero / free shipping)
+  const deliveryFee = Number(amounts?.deliveryFee ?? 0);
+  if (order.fulfillmentType === "DELIVERY" && deliveryFee > 0) {
     line_items.push({
       price_data: {
         currency,
         product_data: { name: "Delivery fee" },
-        unit_amount: 30 * 100,
+        unit_amount: Math.round(deliveryFee * 100),
       },
       quantity: 1,
     });
