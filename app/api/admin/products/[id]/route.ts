@@ -18,17 +18,12 @@ export const PATCH = withApi(
     }
 
     // Verify product belongs to tenant
-    const existing = await prisma.product.findUnique({
-      where: { id },
-      select: { tenantId: true },
+    const existing = await prisma.product.findFirst({
+      where: { id, tenantId },
     });
 
     if (!existing) {
       throw new ApiError(404, "NOT_FOUND", "Product not found");
-    }
-
-    if (existing.tenantId !== tenantId) {
-      throw new ApiError(403, "FORBIDDEN", "Product does not belong to this tenant");
     }
 
     // Prepare update data (only update fields that are present)
@@ -54,10 +49,11 @@ export const PATCH = withApi(
     if (body.sku !== undefined) updateData.sku = body.sku || null;
     if (body.shoeType !== undefined) updateData.shoeType = body.shoeType;
 
-    const updated = await prisma.product.update({
-      where: { id },
+    await prisma.product.updateMany({
+      where: { id, tenantId },
       data: updateData,
     });
+    const updated = await prisma.product.findFirst({ where: { id, tenantId } });
 
     return ok(req, updated);
   }
@@ -70,17 +66,12 @@ export const DELETE = withApi(
     const { id } = await context.params;
 
     // Verify product belongs to tenant
-    const existing = await prisma.product.findUnique({
-      where: { id },
-      select: { tenantId: true },
+    const existing = await prisma.product.findFirst({
+      where: { id, tenantId },
     });
 
     if (!existing) {
       throw new ApiError(404, "NOT_FOUND", "Product not found");
-    }
-
-    if (existing.tenantId !== tenantId) {
-      throw new ApiError(403, "FORBIDDEN", "Product does not belong to this tenant");
     }
 
     await prisma.product.updateMany({

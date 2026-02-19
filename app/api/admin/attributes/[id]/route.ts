@@ -100,10 +100,11 @@ export const PATCH = withApi(async (req: Request, { params }: RouteCtx) => {
     updateData.sortOrder = body.sortOrder;
   }
 
-  const attribute = await prisma.attributeDefinition.update({
-    where: { id },
+  await prisma.attributeDefinition.updateMany({
+    where: { id, tenantId },
     data: updateData,
   });
+  const attribute = await prisma.attributeDefinition.findFirst({ where: { id, tenantId } });
 
   return ok(req, attribute);
 });

@@ -53,12 +53,13 @@ export const POST = withApi(
             author,
         });
 
-        const order = await prisma.order.update({
-            where: { id },
+        await prisma.order.updateMany({
+            where: { id, tenantId },
             data: {
                 adminNotes: JSON.stringify(notes),
             },
         });
+        const order = await prisma.order.findFirst({ where: { id, tenantId } });
 
         return ok(req, { order, notes });
     },

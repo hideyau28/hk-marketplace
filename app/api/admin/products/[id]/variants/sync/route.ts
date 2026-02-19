@@ -76,8 +76,8 @@ export const PUT = withApi(
       .filter((v) => v.active)
       .reduce((sum, v) => sum + v.stock, 0);
 
-    await prisma.product.update({
-      where: { id },
+    await prisma.product.updateMany({
+      where: { id, tenantId },
       data: { stock: totalStock },
     });
 

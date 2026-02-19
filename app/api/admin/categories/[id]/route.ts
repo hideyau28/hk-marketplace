@@ -111,10 +111,11 @@ export const PATCH = withApi(
       throw new ApiError(400, "BAD_REQUEST", "No valid fields to update");
     }
 
-    const category = await prisma.category.update({
-      where: { id },
+    await prisma.category.updateMany({
+      where: { id, tenantId },
       data: updateData,
     });
+    const category = await prisma.category.findFirst({ where: { id, tenantId } });
 
     return ok(req, category);
   }

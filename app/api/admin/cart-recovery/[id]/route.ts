@@ -32,13 +32,10 @@ export const PATCH = withApi(async (req: Request, ctx: { params: Promise<{ id: s
     throw new ApiError(404, "NOT_FOUND", "Order not found");
   }
 
-  const updated = await prisma.order.update({
-    where: { id },
-    data: { recoveryStatus },
-    select: {
-      id: true,
-      recoveryStatus: true,
-    },
+  await prisma.order.updateMany({ where: { id, tenantId }, data: { recoveryStatus } });
+  const updated = await prisma.order.findFirst({
+    where: { id, tenantId },
+    select: { id: true, recoveryStatus: true },
   });
 
   return ok(req, updated);

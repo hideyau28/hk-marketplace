@@ -46,10 +46,19 @@ export const POST = withApi(async (req) => {
     console[level](`[stripe-webhook] ${msg}`, base);
   };
 
-  type OrderUpdateData = Prisma.OrderUpdateInput | Prisma.OrderUncheckedUpdateInput;
+  type OrderUpdateData = Prisma.OrderUpdateManyMutationInput | Prisma.OrderUncheckedUpdateManyInput;
   const updateByOrderId = async (orderId: string, data: OrderUpdateData) => {
     try {
-      await prisma.order.update({ where: { id: orderId }, data: data as Prisma.OrderUpdateArgs["data"] });
+      // 先取 tenantId，確保只更新屬於正確 tenant 的訂單
+      const existing = await prisma.order.findUnique({ where: { id: orderId }, select: { tenantId: true } });
+      if (!existing) {
+        log("warn", "Order not found for update", { orderId });
+        return false;
+      }
+      await prisma.order.updateMany({
+        where: { id: orderId, tenantId: existing.tenantId },
+        data: data as Prisma.OrderUpdateManyArgs["data"],
+      });
       return true;
     } catch (e: unknown) {
       const err = e instanceof Error ? e.message : String(e);

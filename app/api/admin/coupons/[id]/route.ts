@@ -116,10 +116,11 @@ export const PATCH = withApi(async (req: Request, { params }: { params: Promise<
   const existingCoupon = await prisma.coupon.findFirst({ where: { id, tenantId } });
   if (!existingCoupon) throw new ApiError(404, "NOT_FOUND", "Coupon not found");
 
-  const coupon = await prisma.coupon.update({
-    where: { id },
+  await prisma.coupon.updateMany({
+    where: { id, tenantId },
     data: updateData,
   });
+  const coupon = await prisma.coupon.findFirst({ where: { id, tenantId } });
 
   return ok(req, coupon);
 });

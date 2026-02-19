@@ -83,18 +83,13 @@ export default async function AdminCartRecovery({
     dateFilter = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   }
 
-  const where: Record<string, unknown> = {
-    tenantId,
-    status: "PENDING",
-    paymentStatus: "pending",
-  };
-
-  if (dateFilter) {
-    where.createdAt = { gte: dateFilter };
-  }
-
   const orders = await prisma.order.findMany({
-    where,
+    where: {
+      tenantId,
+      status: "PENDING",
+      paymentStatus: "pending",
+      ...(dateFilter ? { createdAt: { gte: dateFilter } } : {}),
+    },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -110,10 +105,11 @@ export default async function AdminCartRecovery({
 
   // 統計
   const totalAbandoned = orders.length;
-  const totalAmount = orders.reduce((sum, o) => {
+  let totalAmount = 0;
+  for (const o of orders) {
     const amounts = o.amounts as Record<string, unknown> | null;
-    return sum + (Number(amounts?.total) || 0);
-  }, 0);
+    totalAmount += Number(amounts?.total) || 0;
+  }
   const contactedCount = orders.filter(
     (o) => o.recoveryStatus === "contacted"
   ).length;

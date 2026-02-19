@@ -49,8 +49,8 @@ export const POST = withApi(
       by: confirmedBy,
     });
 
-    const updated = await prisma.order.update({
-      where: { id },
+    await prisma.order.updateMany({
+      where: { id, tenantId },
       data: {
         status: "CONFIRMED",
         paidAt: now,
@@ -60,6 +60,7 @@ export const POST = withApi(
         statusHistory: JSON.stringify(history),
       },
     });
+    const updated = await prisma.order.findFirst({ where: { id, tenantId } });
 
     return ok(req, updated);
   },

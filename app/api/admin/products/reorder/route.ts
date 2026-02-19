@@ -42,8 +42,8 @@ export const POST = withApi(
     // Update sortOrder for each product
     await Promise.all(
       productIds.map((id: string, index: number) =>
-        prisma.product.update({
-          where: { id },
+        prisma.product.updateMany({
+          where: { id, tenantId },
           data: { sortOrder: index },
         })
       )

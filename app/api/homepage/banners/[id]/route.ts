@@ -39,7 +39,7 @@ export const PUT = withApi(async (req: Request, ctx: RouteContext) => {
     throw new ApiError(404, "NOT_FOUND", "Banner not found");
   }
 
-  const banner = await prisma.homepageBanner.findUnique({ where: { id } });
+  const banner = await prisma.homepageBanner.findFirst({ where: { id, tenantId } });
 
   return ok(req, { banner });
 });

@@ -121,7 +121,7 @@ export const PATCH = withApi(
         // Fetch current order to validate transition
         const currentOrder = await prisma.order.findFirst({
             where: { id, tenantId },
-            select: { status: true, paymentStatus: true, statusHistory: true },
+            select: { status: true, paymentStatus: true, statusHistory: true, items: true },
         });
 
         if (!currentOrder) {
@@ -193,9 +193,30 @@ export const PATCH = withApi(
             updateData.refundReason = refundReason || null;
         }
 
-        const order = await prisma.order.update({
-            where: { id },
-            data: updateData,
+        // Restock 庫存（CANCELLED 或 REFUNDED 時 atomic 歸還庫存）
+        const shouldRestock = status === "CANCELLED" || status === "REFUNDED";
+        const orderItems = Array.isArray(currentOrder.items) ? (currentOrder.items as any[]) : [];
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const order = await (prisma as any).$transaction(async (tx: any) => {
+            if (shouldRestock && orderItems.length > 0) {
+                for (const item of orderItems) {
+                    const qty = typeof item.quantity === "number" ? item.quantity : 1;
+                    if (item.variantId) {
+                        await tx.productVariant.updateMany({
+                            where: { id: item.variantId, tenantId },
+                            data: { stock: { increment: qty } },
+                        });
+                    } else if (item.productId) {
+                        await tx.product.updateMany({
+                            where: { id: item.productId, tenantId },
+                            data: { stock: { increment: qty } },
+                        });
+                    }
+                }
+            }
+            await tx.order.updateMany({ where: { id, tenantId }, data: updateData });
+            return tx.order.findFirst({ where: { id, tenantId } });
         });
 
         return ok(req, order);

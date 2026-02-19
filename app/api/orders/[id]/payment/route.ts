@@ -84,10 +84,8 @@ export const PATCH = withApi(
             }
         }
 
-        const order = await prisma.order.update({
-            where: { id },
-            data: updateData,
-        });
+        await prisma.order.updateMany({ where: { id, tenantId }, data: updateData });
+        const order = await prisma.order.findFirst({ where: { id, tenantId } });
 
         return ok(req, order);
     },

@@ -69,10 +69,11 @@ export const PUT = withApi(async (req: Request, { params }: { params: Promise<{ 
   const existing = await prisma.badge.findFirst({ where: { id, tenantId } });
   if (!existing) throw new ApiError(404, "NOT_FOUND", "Badge not found");
 
-  const badge = await prisma.badge.update({
-    where: { id },
+  await prisma.badge.updateMany({
+    where: { id, tenantId },
     data: updateData,
   });
+  const badge = await prisma.badge.findFirst({ where: { id, tenantId } });
 
   return ok(req, badge);
 });

@@ -26,8 +26,8 @@ export const PUT = withApi(async (req: Request, ctx: RouteContext) => {
     throw new ApiError(404, "NOT_FOUND", "Section not found");
   }
 
-  const section = await prisma.homepageSection.update({
-    where: { id },
+  await prisma.homepageSection.updateMany({
+    where: { id, tenantId },
     data: {
       title: body.title !== undefined ? body.title.trim() : undefined,
       type: body.type !== undefined ? body.type : undefined,
@@ -39,6 +39,7 @@ export const PUT = withApi(async (req: Request, ctx: RouteContext) => {
       filterValue: body.filterValue !== undefined ? body.filterValue : undefined,
     },
   });
+  const section = await prisma.homepageSection.findFirst({ where: { id, tenantId } });
 
   return ok(req, { section });
 });

@@ -109,10 +109,11 @@ export const PATCH = withApi(
       throw new ApiError(400, "BAD_REQUEST", "No valid fields to update");
     }
 
-    const updated = await prisma.productVariant.update({
-      where: { id: variantId },
+    await prisma.productVariant.updateMany({
+      where: { id: variantId, tenantId },
       data: updateData,
     });
+    const updated = await prisma.productVariant.findFirst({ where: { id: variantId, tenantId } });
 
     return ok(req, updated);
   }
@@ -134,7 +135,7 @@ export const DELETE = withApi(
       throw new ApiError(404, "NOT_FOUND", "Variant not found");
     }
 
-    await prisma.productVariant.delete({ where: { id: variantId } });
+    await prisma.productVariant.deleteMany({ where: { id: variantId, tenantId } });
 
     return ok(req, { deleted: true });
   }
