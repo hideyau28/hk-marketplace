@@ -262,11 +262,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
   return (
     <div style={{ fontFamily: "'Noto Sans TC', 'Plus Jakarta Sans', -apple-system, sans-serif", color: "#1A1A1A", overflowX: "hidden" }}>
-      {/* eslint-disable-next-line @next/next/no-css-tags */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@700&display=swap" />
-      <style>{`
+<style>{`
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         * { box-sizing: border-box; margin: 0; padding: 0; }
