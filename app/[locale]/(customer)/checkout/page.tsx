@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
@@ -49,6 +49,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const { showToast } = useToast();
   const { format } = useCurrency();
   const { user } = useAuth();
+
+  // Session-level idempotency key — generated once on mount, prevents duplicate orders on double-click
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
 
   const [storeSettings, setStoreSettings] = useState<any>(null);
 
@@ -396,10 +399,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
         setUploadingProof(false);
 
         const payload = buildOrderPayload(uploadData.data.url);
-        const idempotencyKey = `order-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
         const response = await fetch("/api/orders", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-idempotency-key": idempotencyKey },
+          headers: { "Content-Type": "application/json", "x-idempotency-key": idempotencyKeyRef.current },
           body: JSON.stringify(payload),
         });
 
@@ -418,10 +420,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
 
       // Online flow: create order → redirect to Stripe checkout
       const payload = buildOrderPayload();
-      const idempotencyKey = `order-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
       const response = await fetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-idempotency-key": idempotencyKey },
+        headers: { "Content-Type": "application/json", "x-idempotency-key": idempotencyKeyRef.current },
         body: JSON.stringify(payload),
       });
 
