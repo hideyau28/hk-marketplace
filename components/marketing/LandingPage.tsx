@@ -29,7 +29,7 @@ const T = {
     heroBadge: "🇭🇰 專為香港 IG 店主而設",
     heroH1: "一條 Link\n將 Follower\n變成生意",
     heroSub:
-      "唔使識 Code，2 分鐘開好網店。\n將你嘅 IG Bio Link 變成一間真正嘅網上商店。",
+      "最快 2 分鐘開好網店。\n將你嘅 IG Bio Link 變成一間真正嘅網上商店。",
     ctaPrimary: "免費開始",
     ctaSecondary: "了解更多",
     trustLine: "✦ 0% 佣金  ·  免費開始  ·  2 分鐘開店",
@@ -72,44 +72,38 @@ const T = {
     liteName: "Lite",
     litePrice: "$78",
     liteDesc: "認真做生意嘅你，需要更多功能。",
-    liteFeats: ["無限商品數量", "自訂商店外觀", "折扣碼功能", "銷售數據分析"],
+    liteFeats: ["最多 50 件商品", "自訂商店外觀", "折扣碼功能", "銷售數據分析"],
     liteBtn: "選擇 Lite",
     proBadge: "最受歡迎",
     proName: "Pro",
     proPrice: "$198",
     proDesc: "全方位工具，助你成為真正嘅品牌。",
     proFeats: [
-      "Lite 所有功能",
+      "無限商品",
       "自訂網域名稱",
       "進階 SEO 工具",
-      "自動化營銷工具",
+      "自動化促銷工具",
       "優先客服支援",
     ],
     proBtn: "選擇 Pro",
     pricePeriod: "/月",
     // Trust Signals
     trustLabel: "值得信賴",
-    trustTitle: "已有 2,000+ 店主選擇 WoWlix",
-    stat1Num: "2,000+",
-    stat1Label: "活躍店主",
-    stat2Num: "$5M+",
-    stat2Label: "總交易額",
-    stat3Num: "0%",
-    stat3Label: "交易佣金",
-    stat4Num: "4.9★",
-    stat4Label: "平均評分",
+    trustTitle: "首批商戶招募中",
+    stat1Num: "0%",
+    stat1Label: "交易佣金",
     test1Quote:
-      "「之前用 DM 接單成日漏單，而家客人自己落單付款，我終於可以專心做產品！」",
-    test1Name: "Amy L.",
-    test1Role: "飾品 IG 店主",
+      "「終於唔使逐個 DM 回覆落單，客人自己揀自己買！」",
+    test1Name: "IG 服裝店主",
+    test1Role: "",
     test2Quote:
-      "「Setup 真係超快，我用咗唔夠 5 分鐘就開好晒，仲要免費！真心推薦。」",
-    test2Name: "Karen W.",
-    test2Role: "手作甜品 IG 店主",
+      "「以前用 Excel 記訂單，而家全部自動化，輕鬆好多。」",
+    test2Name: "手作飾品店主",
+    test2Role: "",
     test3Quote:
-      "「最鍾意佢 0% 佣金，賺幾多都係自己嘅。終於唔使再俾平台抽水！」",
-    test3Name: "Michelle C.",
-    test3Role: "時裝 IG 店主",
+      "「最鍾意係 0% 佣金，賺幾多都係自己嘅！」",
+    test3Name: "波鞋代購店主",
+    test3Role: "",
     // Final CTA
     ctaHeadline: "準備好將你嘅\nIG Shop 升級？",
     ctaSubline: "免費開始，無需信用卡。隨時升級，隨時取消。",
@@ -128,7 +122,7 @@ const T = {
     footerCol3: "法律",
     footerCol3L1: "私隱政策",
     footerCol3L2: "服務條款",
-    footerCopy: "© 2026 WoWlix. All rights reserved.",
+    footerCopy: "© 2026 WoWlix by Flow Studio HK",
   },
   en: {
     nav1: "Features",
@@ -138,7 +132,7 @@ const T = {
     heroBadge: "🇭🇰 Built for HK Instagram shops",
     heroH1: "One Link\nTurn Followers\ninto Sales",
     heroSub:
-      "No coding needed, set up your shop in 2 minutes.\nTurn your IG Bio Link into a real online store.",
+      "Set up your shop in as fast as 2 minutes.\nTurn your IG Bio Link into a real online store.",
     ctaPrimary: "Start Free",
     ctaSecondary: "Learn More",
     trustLine: "✦ 0% commission  ·  Start free  ·  2 min setup",
@@ -179,14 +173,14 @@ const T = {
     liteName: "Lite",
     litePrice: "$78",
     liteDesc: "For serious sellers who need more features.",
-    liteFeats: ["Unlimited products", "Custom store design", "Discount codes", "Sales analytics"],
+    liteFeats: ["Up to 50 products", "Custom store design", "Discount codes", "Sales analytics"],
     liteBtn: "Choose Lite",
     proBadge: "Most popular",
     proName: "Pro",
     proPrice: "$198",
     proDesc: "Full toolkit to build a real brand.",
     proFeats: [
-      "All Lite features",
+      "Unlimited products",
       "Custom domain",
       "Advanced SEO tools",
       "Marketing automation",
@@ -195,27 +189,21 @@ const T = {
     proBtn: "Choose Pro",
     pricePeriod: "/mo",
     trustLabel: "Trusted",
-    trustTitle: "2,000+ shop owners choose WoWlix",
-    stat1Num: "2,000+",
-    stat1Label: "Active shops",
-    stat2Num: "$5M+",
-    stat2Label: "Total GMV",
-    stat3Num: "0%",
-    stat3Label: "Commission",
-    stat4Num: "4.9★",
-    stat4Label: "Avg rating",
+    trustTitle: "Now Recruiting Early Merchants",
+    stat1Num: "0%",
+    stat1Label: "Commission",
     test1Quote:
-      '"Used to miss orders via DM — now customers order & pay themselves. I can finally focus on products!"',
-    test1Name: "Amy L.",
-    test1Role: "Accessories IG shop",
+      '"Finally no more replying to DMs one by one — customers browse and buy themselves!"',
+    test1Name: "IG Fashion Shop Owner",
+    test1Role: "",
     test2Quote:
-      '"Setup was super fast, took less than 5 minutes and it\'s free! Highly recommend."',
-    test2Name: "Karen W.",
-    test2Role: "Dessert IG shop",
+      '"Used to track orders in Excel, now everything is automated. So much easier."',
+    test2Name: "Handmade Accessories Shop Owner",
+    test2Role: "",
     test3Quote:
-      '"Love the 0% commission — what I earn is mine. Finally no more platform fees!"',
-    test3Name: "Michelle C.",
-    test3Role: "Fashion IG shop",
+      '"Love the 0% commission — everything I earn is mine!"',
+    test3Name: "Sneaker Reseller Shop Owner",
+    test3Role: "",
     ctaHeadline: "Ready to upgrade\nyour IG Shop?",
     ctaSubline: "Start free, no credit card needed. Upgrade or cancel anytime.",
     ctaFinalBtn: "Start Free",
@@ -233,7 +221,7 @@ const T = {
     footerCol3: "Legal",
     footerCol3L1: "Privacy Policy",
     footerCol3L2: "Terms of Service",
-    footerCopy: "© 2026 WoWlix. All rights reserved.",
+    footerCopy: "© 2026 WoWlix by Flow Studio HK",
   },
 };
 
@@ -267,17 +255,17 @@ export default function LandingPage({
           </span>
         </div>
         <div className="flex items-center gap-9 max-md:gap-4">
-          <span className="text-[15px] font-medium text-white/80 cursor-pointer hover:text-white transition-colors max-md:hidden">
+          <a href="#features" className="text-[15px] font-medium text-white/80 cursor-pointer hover:text-white transition-colors max-md:hidden">
             {t.nav1}
-          </span>
-          <span className="text-[15px] font-medium text-white/80 cursor-pointer hover:text-white transition-colors max-md:hidden">
+          </a>
+          <a href="#pricing" className="text-[15px] font-medium text-white/80 cursor-pointer hover:text-white transition-colors max-md:hidden">
             {t.nav2}
-          </span>
-          <span className="text-[15px] font-medium text-white/80 cursor-pointer hover:text-white transition-colors max-md:hidden">
+          </a>
+          <a href="#" className="text-[15px] font-medium text-white/80 cursor-pointer hover:text-white transition-colors max-md:hidden">
             {t.nav3}
-          </span>
+          </a>
           <Link
-            href={`/${locale}/start`}
+            href="/admin/register"
             className="font-body text-sm font-semibold text-white bg-[#FF9500] rounded-full px-6 py-2.5 hover:bg-[#E68600] transition-colors"
           >
             {t.navCta}
@@ -316,18 +304,18 @@ export default function LandingPage({
           {/* CTA Row */}
           <div className="flex items-center gap-4 max-lg:justify-center">
             <Link
-              href={`/${locale}/start`}
+              href="/admin/register"
               className="flex items-center gap-2 font-display text-[17px] font-bold text-white bg-[#FF9500] rounded-full px-8 py-4 hover:bg-[#E68600] transition-colors"
             >
               {t.ctaPrimary}
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <Link
-              href={`/${locale}/pricing`}
+            <a
+              href="#pricing"
               className="font-display text-[17px] font-semibold text-white/80 border-[1.5px] border-white/20 rounded-full px-8 py-4 hover:border-white/40 transition-colors"
             >
               {t.ctaSecondary}
-            </Link>
+            </a>
           </div>
 
           {/* Trust line */}
@@ -337,6 +325,7 @@ export default function LandingPage({
         </div>
 
         {/* Phone Mockup */}
+        {/* TODO: 換成 maysshop 真實截圖 */}
         <div className="flex items-center justify-center w-[340px] h-[480px] rounded-[32px] bg-[#1A1A1A] border-[1.5px] border-white/8 shadow-[0_8px_60px_rgba(255,149,0,0.19)] max-md:w-[280px] max-md:h-[400px]">
           <span className="font-body text-sm font-medium text-white/25">
             Screenshot placeholder
@@ -345,7 +334,7 @@ export default function LandingPage({
       </section>
 
       {/* ─── PAIN POINTS ─── */}
-      <section className="flex flex-col items-center gap-[60px] bg-[#F9FAFB] px-20 py-[100px] max-md:px-6 max-md:py-16">
+      <section id="features" className="flex flex-col items-center gap-[60px] bg-[#F9FAFB] px-20 py-[100px] max-md:px-6 max-md:py-16">
         {/* Header */}
         <div className="flex flex-col items-center gap-4 max-w-[700px]">
           <span className="font-display text-sm font-bold tracking-[1px] text-[#FF9500]">
@@ -450,7 +439,7 @@ export default function LandingPage({
       </section>
 
       {/* ─── PRICING ─── */}
-      <section className="flex flex-col items-center gap-16 bg-[#F9FAFB] px-20 py-[100px] max-md:px-6 max-md:py-16">
+      <section id="pricing" className="flex flex-col items-center gap-16 bg-[#F9FAFB] px-20 py-[100px] max-md:px-6 max-md:py-16">
         {/* Header */}
         <div className="flex flex-col items-center gap-4 max-w-[600px]">
           <span className="font-display text-sm font-bold tracking-[1px] text-[#FF9500]">
@@ -496,7 +485,7 @@ export default function LandingPage({
               ))}
             </div>
             <Link
-              href={`/${locale}/start`}
+              href="/admin/register"
               className="flex items-center justify-center font-display text-[15px] font-bold text-[#0D0D0D] bg-[#F3F4F6] rounded-full py-3.5 px-6 w-full hover:bg-[#E5E7EB] transition-colors"
             >
               {t.freeBtn}
@@ -504,6 +493,7 @@ export default function LandingPage({
           </div>
 
           {/* Lite */}
+
           <div className="flex-1 flex flex-col gap-7 bg-white rounded-3xl p-9 border border-[#E5E7EB]">
             <div className="flex flex-col gap-2">
               <span className="font-display text-lg font-bold text-[#6B7280]">
@@ -533,7 +523,7 @@ export default function LandingPage({
               ))}
             </div>
             <Link
-              href={`/${locale}/start`}
+              href="/admin/register?plan=lite"
               className="flex items-center justify-center font-display text-[15px] font-bold text-[#0D0D0D] bg-[#F3F4F6] rounded-full py-3.5 px-6 w-full hover:bg-[#E5E7EB] transition-colors"
             >
               {t.liteBtn}
@@ -573,7 +563,7 @@ export default function LandingPage({
               ))}
             </div>
             <Link
-              href={`/${locale}/start`}
+              href="/admin/register?plan=pro"
               className="flex items-center justify-center font-display text-[15px] font-bold text-white bg-[#FF9500] rounded-full py-3.5 px-6 w-full hover:bg-[#E68600] transition-colors"
             >
               {t.proBtn}
@@ -595,50 +585,23 @@ export default function LandingPage({
         </div>
 
         {/* Stats Row */}
-        <div className="flex items-center justify-around w-full max-w-[1280px] max-md:flex-col max-md:gap-8">
-          {([
-            { num: t.stat1Num, label: t.stat1Label },
-            { num: t.stat2Num, label: t.stat2Label },
-            { num: t.stat3Num, label: t.stat3Label },
-            { num: t.stat4Num, label: t.stat4Label },
-          ]).map((stat, i, arr) => (
-            <div key={i} className="contents">
-              <div className="flex flex-col items-center gap-1">
-                <span className="font-display text-5xl font-black tracking-[-2px] text-[#FF9500]">
-                  {stat.num}
-                </span>
-                <span className="font-body text-[15px] font-medium text-[#6B7280]">
-                  {stat.label}
-                </span>
-              </div>
-              {i < arr.length - 1 && (
-                <div className="w-px h-[60px] bg-[#E5E7EB] max-md:hidden" />
-              )}
-            </div>
-          ))}
+        <div className="flex items-center justify-center w-full max-w-[1280px]">
+          <div className="flex flex-col items-center gap-1">
+            <span className="font-display text-5xl font-black tracking-[-2px] text-[#FF9500]">
+              {t.stat1Num}
+            </span>
+            <span className="font-body text-[15px] font-medium text-[#6B7280]">
+              {t.stat1Label}
+            </span>
+          </div>
         </div>
 
         {/* Testimonials */}
         <div className="flex gap-6 w-full max-w-[1280px] max-lg:flex-col">
           {([
-            {
-              quote: t.test1Quote,
-              name: t.test1Name,
-              role: t.test1Role,
-              initial: "A",
-            },
-            {
-              quote: t.test2Quote,
-              name: t.test2Name,
-              role: t.test2Role,
-              initial: "K",
-            },
-            {
-              quote: t.test3Quote,
-              name: t.test3Name,
-              role: t.test3Role,
-              initial: "M",
-            },
+            { quote: t.test1Quote, name: t.test1Name },
+            { quote: t.test2Quote, name: t.test2Name },
+            { quote: t.test3Quote, name: t.test3Name },
           ]).map((item, i) => (
             <div
               key={i}
@@ -651,19 +614,9 @@ export default function LandingPage({
                 {item.quote}
               </p>
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#FFF3E0]">
-                  <span className="font-display text-base font-bold text-[#FF9500]">
-                    {item.initial}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-body text-sm font-semibold text-[#0D0D0D]">
-                    {item.name}
-                  </span>
-                  <span className="font-body text-[13px] font-normal text-[#9CA3AF]">
-                    {item.role}
-                  </span>
-                </div>
+                <span className="font-body text-sm font-semibold text-[#6B7280]">
+                  — {item.name}
+                </span>
               </div>
             </div>
           ))}
@@ -685,7 +638,7 @@ export default function LandingPage({
           {t.ctaSubline}
         </p>
         <Link
-          href={`/${locale}/start`}
+          href="/admin/register"
           className="flex items-center gap-2.5 font-display text-lg font-bold text-white bg-[#FF9500] rounded-full px-10 py-[18px] hover:bg-[#E68600] transition-colors"
         >
           {t.ctaFinalBtn}
@@ -770,9 +723,9 @@ export default function LandingPage({
             {t.footerCopy}
           </span>
           <div className="flex items-center gap-5">
-            <Instagram className="w-5 h-5 text-white/40 cursor-pointer hover:text-white/70 transition-colors" />
-            <Facebook className="w-5 h-5 text-white/40 cursor-pointer hover:text-white/70 transition-colors" />
-            <Mail className="w-5 h-5 text-white/40 cursor-pointer hover:text-white/70 transition-colors" />
+            <a href="#"><Instagram className="w-5 h-5 text-white/40 cursor-pointer hover:text-white/70 transition-colors" /></a>
+            <a href="#"><Facebook className="w-5 h-5 text-white/40 cursor-pointer hover:text-white/70 transition-colors" /></a>
+            <a href="#"><Mail className="w-5 h-5 text-white/40 cursor-pointer hover:text-white/70 transition-colors" /></a>
           </div>
         </div>
       </footer>

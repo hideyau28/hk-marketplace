@@ -265,7 +265,8 @@
                   "content": "唔使識 Code，2 分鐘開好網店。\n將你嘅 IG Bio Link 變成一間真正嘅網上商店。",
                   "lineHeight": 1.6,
                   "fontFamily": "Inter",
-                  "fontSize": 19
+                  "fontSize": 19,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "frame",
@@ -452,7 +453,8 @@
                   "lineHeight": 1.6,
                   "textAlign": "center",
                   "fontFamily": "Inter",
-                  "fontSize": 17
+                  "fontSize": 17,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -523,7 +525,8 @@
                       "content": "客人問價、問尺寸、問存貨⋯⋯同一個問題每日答十次。",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -587,7 +590,8 @@
                       "content": "用 Excel 記訂單、WhatsApp 對數，一忙就走漏眼。",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -651,7 +655,8 @@
                       "content": "銀行轉帳要逐個 Check，FPS 截圖成日對唔到。",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -715,7 +720,8 @@
                       "content": "得 IG 一個渠道，無法俾客人自助下單，錯過好多生意。",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -780,7 +786,8 @@
                   "content": "由註冊到開店，快過沖杯咖啡。",
                   "textAlign": "center",
                   "fontFamily": "Inter",
-                  "fontSize": 17
+                  "fontSize": 17,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -835,7 +842,8 @@
                       "content": "登入你嘅 IG 帳號，WoWlix 會自動同步你嘅商品相片同資料。",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "frame",
@@ -907,7 +915,8 @@
                       "content": "揀相、寫描述、定價錢——用手機就搞得掂，唔使識 Code。",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "frame",
@@ -979,7 +988,8 @@
                       "content": "將你嘅專屬商店 Link 放入 IG Bio，客人自己落單自己付款。",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "frame",
@@ -1071,7 +1081,8 @@
                   "lineHeight": 1.6,
                   "textAlign": "center",
                   "fontFamily": "Inter",
-                  "fontSize": 17
+                  "fontSize": 17,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -1140,7 +1151,8 @@
                               "fill": "$gray-500",
                               "content": "/月",
                               "fontFamily": "Inter",
-                              "fontSize": 16
+                              "fontSize": 16,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1154,7 +1166,8 @@
                           "content": "啱啱開始嘅你，零成本試水溫。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -1197,7 +1210,8 @@
                               "fill": "$dark-900",
                               "content": "最多 10 件商品",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1225,7 +1239,8 @@
                               "fill": "$dark-900",
                               "content": "基本商店頁面",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1253,7 +1268,8 @@
                               "fill": "$dark-900",
                               "content": "WhatsApp 通知",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1281,7 +1297,8 @@
                               "fill": "$dark-900",
                               "content": "0% 交易佣金",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -1373,7 +1390,8 @@
                               "fill": "$gray-500",
                               "content": "/月",
                               "fontFamily": "Inter",
-                              "fontSize": 16
+                              "fontSize": 16,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1387,7 +1405,8 @@
                           "content": "認真做生意嘅你，需要更多功能。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -1430,7 +1449,8 @@
                               "fill": "$dark-900",
                               "content": "無限商品數量",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1458,7 +1478,8 @@
                               "fill": "$dark-900",
                               "content": "自訂商店外觀",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1486,7 +1507,8 @@
                               "fill": "$dark-900",
                               "content": "折扣碼功能",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1514,7 +1536,8 @@
                               "fill": "$dark-900",
                               "content": "銷售數據分析",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -1629,7 +1652,8 @@
                               "fill": "#FFFFFF88",
                               "content": "/月",
                               "fontFamily": "Inter",
-                              "fontSize": 16
+                              "fontSize": 16,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1643,7 +1667,8 @@
                           "content": "全方位工具，助你成為真正嘅品牌。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -1686,7 +1711,8 @@
                               "fill": "$white",
                               "content": "Lite 所有功能",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1714,7 +1740,8 @@
                               "fill": "$white",
                               "content": "自訂網域名稱",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1742,7 +1769,8 @@
                               "fill": "$white",
                               "content": "進階 SEO 工具",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1770,7 +1798,8 @@
                               "fill": "$white",
                               "content": "自動化營銷工具",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1798,7 +1827,8 @@
                               "fill": "$white",
                               "content": "優先客服支援",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -2087,7 +2117,8 @@
                       "content": "「之前用 DM 接單成日漏單，而家客人自己落單付款，我終於可以專心做產品！」",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 15
+                      "fontSize": 15,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "frame",
@@ -2144,7 +2175,8 @@
                               "fill": "$gray-500",
                               "content": "飾品 IG 店主",
                               "fontFamily": "Inter",
-                              "fontSize": 13
+                              "fontSize": 13,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -2187,7 +2219,8 @@
                       "content": "「Setup 真係超快，我用咗唔夠 5 分鐘就開好晒，仲要免費！真心推薦。」",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 15
+                      "fontSize": 15,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "frame",
@@ -2244,7 +2277,8 @@
                               "fill": "$gray-500",
                               "content": "手作甜品 IG 店主",
                               "fontFamily": "Inter",
-                              "fontSize": 13
+                              "fontSize": 13,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -2287,7 +2321,8 @@
                       "content": "「最鍾意佢 0% 佣金，賺幾多都係自己嘅。終於唔使再俾平台抽水！」",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 15
+                      "fontSize": 15,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "frame",
@@ -2344,7 +2379,8 @@
                               "fill": "$gray-500",
                               "content": "時裝 IG 店主",
                               "fontFamily": "Inter",
-                              "fontSize": 13
+                              "fontSize": 13,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -2447,7 +2483,8 @@
               "content": "免費開始，無需信用卡。隨時升級，隨時取消。",
               "textAlign": "center",
               "fontFamily": "Inter",
-              "fontSize": 18
+              "fontSize": 18,
+              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -2589,7 +2626,8 @@
                       "content": "專為香港 Instagram 店主而設嘅\n一站式網上商店平台。",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2623,7 +2661,8 @@
                           "fill": "#FFFFFF88",
                           "content": "功能",
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2632,7 +2671,8 @@
                           "fill": "#FFFFFF88",
                           "content": "價錢",
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2641,7 +2681,8 @@
                           "fill": "#FFFFFF88",
                           "content": "範例商店",
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -2669,7 +2710,8 @@
                           "fill": "#FFFFFF88",
                           "content": "關於我們",
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2678,7 +2720,8 @@
                           "fill": "#FFFFFF88",
                           "content": "聯絡我們",
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2687,7 +2730,8 @@
                           "fill": "#FFFFFF88",
                           "content": "Blog",
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -2715,7 +2759,8 @@
                           "fill": "#FFFFFF88",
                           "content": "私隱政策",
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -2724,7 +2769,8 @@
                           "fill": "#FFFFFF88",
                           "content": "服務條款",
                           "fontFamily": "Inter",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -2755,7 +2801,8 @@
                   "fill": "#FFFFFF55",
                   "content": "© 2026 WoWlix. All rights reserved.",
                   "fontFamily": "Inter",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "frame",
@@ -3044,7 +3091,8 @@
               "lineHeight": 1.6,
               "textAlign": "center",
               "fontFamily": "Inter",
-              "fontSize": 15
+              "fontSize": 15,
+              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -3234,7 +3282,8 @@
                   "lineHeight": 1.6,
                   "textAlign": "center",
                   "fontFamily": "Inter",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3313,7 +3362,8 @@
                           "content": "同一個問題每日答十次。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 13
+                          "fontSize": 13,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -3377,7 +3427,8 @@
                           "content": "一忙就走漏眼。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 13
+                          "fontSize": 13,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -3450,7 +3501,8 @@
                           "content": "FPS 截圖成日對唔到。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 13
+                          "fontSize": 13,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -3514,7 +3566,8 @@
                           "content": "錯過好多生意。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 13
+                          "fontSize": 13,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -3581,7 +3634,8 @@
                   "content": "由註冊到開店，快過沖杯咖啡。",
                   "textAlign": "center",
                   "fontFamily": "Inter",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3645,7 +3699,8 @@
                           "content": "自動同步你嘅商品相片同資料。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 13
+                          "fontSize": 13,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -3703,7 +3758,8 @@
                           "content": "用手機就搞得掂，唔使識 Code。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 13
+                          "fontSize": 13,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -3761,7 +3817,8 @@
                           "content": "客人自己落單自己付款。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 13
+                          "fontSize": 13,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -3828,7 +3885,8 @@
                   "content": "你賺嘅，全部都係你嘅。",
                   "textAlign": "center",
                   "fontFamily": "Inter",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3921,7 +3979,8 @@
                               "fill": "#FFFFFF88",
                               "content": "/月",
                               "fontFamily": "Inter",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -3935,7 +3994,8 @@
                           "content": "全方位工具，助你成為真正嘅品牌。",
                           "lineHeight": 1.5,
                           "fontFamily": "Inter",
-                          "fontSize": 13
+                          "fontSize": 13,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -3978,7 +4038,8 @@
                               "fill": "$white",
                               "content": "Lite 所有功能",
                               "fontFamily": "Inter",
-                              "fontSize": 13
+                              "fontSize": 13,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -4006,7 +4067,8 @@
                               "fill": "$white",
                               "content": "自訂網域名稱",
                               "fontFamily": "Inter",
-                              "fontSize": 13
+                              "fontSize": 13,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -4034,7 +4096,8 @@
                               "fill": "$white",
                               "content": "進階 SEO 工具",
                               "fontFamily": "Inter",
-                              "fontSize": 13
+                              "fontSize": 13,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -4062,7 +4125,8 @@
                               "fill": "$white",
                               "content": "自動化營銷工具",
                               "fontFamily": "Inter",
-                              "fontSize": 13
+                              "fontSize": 13,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -4090,7 +4154,8 @@
                               "fill": "$white",
                               "content": "優先客服支援",
                               "fontFamily": "Inter",
-                              "fontSize": 13
+                              "fontSize": 13,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -4182,7 +4247,8 @@
                               "fill": "$gray-500",
                               "content": "/月",
                               "fontFamily": "Inter",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -4225,7 +4291,8 @@
                                   "fill": "$dark-900",
                                   "content": "10 件商品",
                                   "fontFamily": "Inter",
-                                  "fontSize": 12
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
@@ -4253,7 +4320,8 @@
                                   "fill": "$dark-900",
                                   "content": "基本商店",
                                   "fontFamily": "Inter",
-                                  "fontSize": 12
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
@@ -4281,7 +4349,8 @@
                                   "fill": "$dark-900",
                                   "content": "0% 佣金",
                                   "fontFamily": "Inter",
-                                  "fontSize": 12
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -4366,7 +4435,8 @@
                               "fill": "$gray-500",
                               "content": "/月",
                               "fontFamily": "Inter",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -4409,7 +4479,8 @@
                                   "fill": "$dark-900",
                                   "content": "無限商品",
                                   "fontFamily": "Inter",
-                                  "fontSize": 12
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
@@ -4437,7 +4508,8 @@
                                   "fill": "$dark-900",
                                   "content": "自訂外觀",
                                   "fontFamily": "Inter",
-                                  "fontSize": 12
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
                                 }
                               ]
                             },
@@ -4465,7 +4537,8 @@
                                   "fill": "$dark-900",
                                   "content": "折扣碼",
                                   "fontFamily": "Inter",
-                                  "fontSize": 12
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
                                 }
                               ]
                             }
@@ -4767,7 +4840,8 @@
                       "content": "「之前用 DM 接單成日漏單，而家客人自己落單付款，我終於可以專心做產品！」",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "frame",
@@ -4824,7 +4898,8 @@
                               "fill": "$gray-500",
                               "content": "飾品 IG 店主",
                               "fontFamily": "Inter",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -4867,7 +4942,8 @@
                       "content": "「最鍾意佢 0% 佣金，賺幾多都係自己嘅。終於唔使再俾平台抽水！」",
                       "lineHeight": 1.6,
                       "fontFamily": "Inter",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "frame",
@@ -4924,7 +5000,8 @@
                               "fill": "$gray-500",
                               "content": "時裝 IG 店主",
                               "fontFamily": "Inter",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -5030,7 +5107,8 @@
               "lineHeight": 1.5,
               "textAlign": "center",
               "fontFamily": "Inter",
-              "fontSize": 15
+              "fontSize": 15,
+              "fontWeight": "normal"
             },
             {
               "type": "frame",
@@ -5157,7 +5235,8 @@
                   "content": "專為香港 Instagram 店主而設嘅一站式網上商店平台。",
                   "lineHeight": 1.5,
                   "fontFamily": "Inter",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -5192,7 +5271,8 @@
                       "fill": "#FFFFFF77",
                       "content": "功能",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "text",
@@ -5201,7 +5281,8 @@
                       "fill": "#FFFFFF77",
                       "content": "價錢",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "text",
@@ -5210,7 +5291,8 @@
                       "fill": "#FFFFFF77",
                       "content": "範例商店",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -5238,7 +5320,8 @@
                       "fill": "#FFFFFF77",
                       "content": "關於我們",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "text",
@@ -5247,7 +5330,8 @@
                       "fill": "#FFFFFF77",
                       "content": "聯絡我們",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "text",
@@ -5256,7 +5340,8 @@
                       "fill": "#FFFFFF77",
                       "content": "Blog",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -5284,7 +5369,8 @@
                       "fill": "#FFFFFF77",
                       "content": "私隱政策",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     },
                     {
                       "type": "text",
@@ -5293,7 +5379,8 @@
                       "fill": "#FFFFFF77",
                       "content": "服務條款",
                       "fontFamily": "Inter",
-                      "fontSize": 13
+                      "fontSize": 13,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -5322,7 +5409,8 @@
                   "fill": "#FFFFFF44",
                   "content": "© 2026 WoWlix",
                   "fontFamily": "Inter",
-                  "fontSize": 12
+                  "fontSize": 12,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "frame",
