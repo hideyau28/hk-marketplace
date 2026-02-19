@@ -43,8 +43,7 @@ export default async function PrivacyPage({
               1. 簡介
             </h2>
             <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-              {storeName}（下稱「本平台」）重視您嘅私隱。本平台由 Wowlix
-              提供技術支援，由 Flow Studio HK
+              WoWlix（下稱「本平台」）重視您嘅私隱。本平台由 Flow Studio HK
               營運。本政策說明我們如何收集、使用及保護您嘅個人資料。
             </p>
           </section>
@@ -185,9 +184,9 @@ export default async function PrivacyPage({
             1. Introduction
           </h2>
           <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-            {storeName} (the &ldquo;Platform&rdquo;) values your privacy. This
-            Platform is powered by Wowlix and operated by Flow Studio HK. This
-            policy explains how we collect, use, and protect your personal data.
+            WoWlix (the &ldquo;Platform&rdquo;) values your privacy. This
+            Platform is operated by Flow Studio HK. This policy explains how we
+            collect, use, and protect your personal data.
           </p>
         </section>
 

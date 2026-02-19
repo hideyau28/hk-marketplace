@@ -43,8 +43,8 @@ export default async function TermsPage({
               1. 簡介
             </h2>
             <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-              歡迎使用 {storeName}（下稱「本平台」）。本平台由 Wowlix
-              提供技術支援，由 Flow Studio HK 營運。使用本平台即表示您同意遵守以下服務條款。
+              歡迎使用 WoWlix（下稱「本平台」）。本平台由 Flow Studio HK
+              營運。使用本平台即表示您同意遵守以下服務條款。
             </p>
           </section>
 
@@ -159,9 +159,9 @@ export default async function TermsPage({
             1. Introduction
           </h2>
           <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-            Welcome to {storeName} (the &ldquo;Platform&rdquo;). This Platform
-            is powered by Wowlix and operated by Flow Studio HK. By accessing or
-            using the Platform, you agree to be bound by these Terms of Service.
+            Welcome to WoWlix (the &ldquo;Platform&rdquo;). This Platform is
+            operated by Flow Studio HK. By accessing or using the Platform, you
+            agree to be bound by these Terms of Service.
           </p>
         </section>
 
