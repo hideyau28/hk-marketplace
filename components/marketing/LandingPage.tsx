@@ -15,8 +15,8 @@ const T = {
     heroBadge: "專為香港 IG 小店而設",
     heroH1a: "一條 Link",
     heroH1b: "將 Follower 變成生意",
-    heroSub1: "0% 平台抽成・$0 起・2 分鐘開店",
-    heroSub2: "落單、收款、庫存，一個 Link 搞掂晒",
+    heroSub1: "最快 2 分鐘開好網店",
+    heroSub2: "將你嘅 IG Bio Link 變成一間真正嘅網上商店",
     ctaPrimary: "免費開店 →",
     ctaSecondary: "睇定價",
     // Phone mockup
@@ -105,8 +105,8 @@ const T = {
     heroBadge: "Built for HK Instagram shops",
     heroH1a: "One Link",
     heroH1b: "Turn Followers into Sales",
-    heroSub1: "0% commission · From $0 · 2 min setup",
-    heroSub2: "Orders, payments, inventory — one link handles it all",
+    heroSub1: "Set up your shop in as fast as 2 minutes",
+    heroSub2: "Turn your IG Bio Link into a real online store",
     ctaPrimary: "Start Free →",
     ctaSecondary: "See Pricing",
     miniStoreName: "My IG Shop",
@@ -354,7 +354,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <span style={{ color: "#FF9500" }}>&#10022;</span> WoWlix
         </div>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <Link href={`/${locale}/pricing`} style={{ fontSize: 14, fontWeight: 600, color: "#666", textDecoration: "none" }}>{t.navPricing}</Link>
+          <a href="#pricing" style={{ fontSize: 14, fontWeight: 600, color: "#666", textDecoration: "none" }}>{t.navPricing}</a>
           <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
             <Link
               href="/zh-HK"
@@ -382,7 +382,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               EN
             </Link>
           </div>
-          <Link href={`/${locale}/start`} style={{
+          <Link href="/admin/register" style={{
             background: "#FF9500", color: "#fff", border: "none",
             padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 700,
             textDecoration: "none", minHeight: 44, display: "inline-flex", alignItems: "center",
@@ -496,7 +496,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* ─── SECTION 5: MINI PLAN PREVIEW ─── */}
-      <section style={{ padding: "80px 24px", background: "#fff" }}>
+      <section id="pricing" style={{ padding: "80px 24px", background: "#fff" }}>
         <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center" as const }}>
           <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
             {t.planTitle}
@@ -654,7 +654,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <p style={{ fontSize: 18, color: "rgba(255,255,255,0.5)", marginBottom: 32 }}>
             {t.ctaSub}
           </p>
-          <Link href={`/${locale}/start`} style={{
+          <Link href="/admin/register" style={{
             background: "#FF9500", color: "#fff", border: "none",
             padding: "18px 48px", borderRadius: 14, fontSize: 20, fontWeight: 700,
             textDecoration: "none", display: "inline-block",
