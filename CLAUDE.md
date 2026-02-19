@@ -147,3 +147,21 @@ npm run ci:build
 - Explicit types where helpful
 - Avoid adding dependencies unless necessary
 - 廣東話 comments OK for business logic, English for technical
+
+---
+
+## Landing Page 設計指引
+
+所有 landing page 改動必須參考 `docs/LANDING-DESIGN-SYSTEM.md`。
+
+<frontend_aesthetics>
+You tend to converge toward generic outputs. Avoid "AI slop" aesthetic. Focus on:
+
+Typography: Choose beautiful, unique fonts. NEVER use Inter, Roboto, Arial, system fonts.
+Color & Theme: Commit to cohesive aesthetic. Use CSS variables. Dominant colors with sharp accents.
+Motion: CSS animations for page load stagger reveals. High-impact moments over scattered micro-interactions.
+Backgrounds: Create atmosphere and depth. Layer gradients, geometric patterns, contextual effects.
+
+Avoid: purple gradients on white, predictable layouts, cookie-cutter components.
+Make unexpected choices that feel genuinely designed for the context.
+</frontend_aesthetics>
