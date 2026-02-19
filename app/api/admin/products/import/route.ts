@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { authenticateAdmin } from "@/lib/auth/admin-auth";
+import { checkPlanLimit } from "@/lib/plan";
 import { prisma } from "@/lib/prisma";
 
 type ImportPayload = {
@@ -63,6 +64,11 @@ type FailedRow = {
 
 export const POST = withApi(async (req: Request) => {
   const { tenantId } = await authenticateAdmin(req);
+
+  const skuCheck = await checkPlanLimit(tenantId, "sku");
+  if (!skuCheck.allowed) {
+    throw new ApiError(403, "FORBIDDEN", "SKU limit reached for your plan. Upgrade to import more products.");
+  }
 
   let body: unknown;
   try {

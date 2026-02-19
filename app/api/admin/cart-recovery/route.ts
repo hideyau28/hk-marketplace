@@ -1,12 +1,18 @@
 export const runtime = "nodejs";
 
-import { ok, withApi } from "@/lib/api/route-helpers";
+import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { authenticateAdmin } from "@/lib/auth/admin-auth";
+import { hasFeature } from "@/lib/plan";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/admin/cart-recovery?range=today|7d|30d|all
 export const GET = withApi(async (req) => {
   const { tenantId } = await authenticateAdmin(req);
+
+  if (!(await hasFeature(tenantId, "cart_recovery"))) {
+    throw new ApiError(403, "FORBIDDEN", "This feature requires Lite/Pro plan");
+  }
+
   const { searchParams } = new URL(req.url);
   const range = searchParams.get("range") || "all";
 

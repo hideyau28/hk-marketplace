@@ -1,7 +1,8 @@
 export const runtime = "nodejs";
 
-import { ok, withApi } from "@/lib/api/route-helpers";
+import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { authenticateAdmin } from "@/lib/auth/admin-auth";
+import { hasFeature } from "@/lib/plan";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -12,6 +13,10 @@ const PAID_STATUSES = ["PAID", "FULFILLING", "SHIPPED", "COMPLETED"] as const;
 // GET /api/admin/analytics/summary — today / this week / this month stats
 export const GET = withApi(async (req) => {
   const { tenantId } = await authenticateAdmin(req);
+
+  if (!(await hasFeature(tenantId, "analytics"))) {
+    throw new ApiError(403, "FORBIDDEN", "This feature requires Lite/Pro plan");
+  }
 
   const now = new Date();
 

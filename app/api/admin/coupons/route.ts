@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { authenticateAdmin } from "@/lib/auth/admin-auth";
+import { hasFeature } from "@/lib/plan";
 import { prisma } from "@/lib/prisma";
 
 type CouponPayload = {
@@ -42,6 +43,10 @@ function parseDate(value: unknown) {
 export const GET = withApi(async (req) => {
   const { tenantId } = await authenticateAdmin(req);
 
+  if (!(await hasFeature(tenantId, "coupon"))) {
+    throw new ApiError(403, "FORBIDDEN", "This feature requires Lite/Pro plan");
+  }
+
   const coupons = await prisma.coupon.findMany({
     where: { tenantId },
     orderBy: { createdAt: "desc" },
@@ -53,6 +58,10 @@ export const GET = withApi(async (req) => {
 // POST /api/admin/coupons
 export const POST = withApi(async (req) => {
   const { tenantId } = await authenticateAdmin(req);
+
+  if (!(await hasFeature(tenantId, "coupon"))) {
+    throw new ApiError(403, "FORBIDDEN", "This feature requires Lite/Pro plan");
+  }
 
   let body: CouponPayload;
   try {

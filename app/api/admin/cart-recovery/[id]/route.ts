@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { ok, withApi, ApiError } from "@/lib/api/route-helpers";
 import { authenticateAdmin } from "@/lib/auth/admin-auth";
+import { hasFeature } from "@/lib/plan";
 import { prisma } from "@/lib/prisma";
 
 const VALID_STATUSES = ["contacted", "recovered", "dismissed"] as const;
@@ -9,6 +10,11 @@ const VALID_STATUSES = ["contacted", "recovered", "dismissed"] as const;
 // PATCH /api/admin/cart-recovery/[id]
 export const PATCH = withApi(async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const { tenantId } = await authenticateAdmin(req);
+
+  if (!(await hasFeature(tenantId, "cart_recovery"))) {
+    throw new ApiError(403, "FORBIDDEN", "This feature requires Lite/Pro plan");
+  }
+
   const { id } = await ctx.params;
 
   const body = await req.json();
