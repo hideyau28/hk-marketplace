@@ -671,8 +671,8 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 {t.footerSupport}
               </div>
               <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                <a href="#" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerHelp}</a>
-                <a href="#" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerContact}</a>
+                <Link href={`/${locale}/contact`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerHelp}</Link>
+                <Link href={`/${locale}/contact`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerContact}</Link>
                 <a href="https://wa.me/85298765432" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerWhatsApp}</a>
               </div>
             </div>
