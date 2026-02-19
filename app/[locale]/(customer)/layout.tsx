@@ -61,7 +61,7 @@ export default async function CustomerLayout({
 
   // Fetch products for social proof popup
   const socialProofProducts = await prisma.product.findMany({
-    where: { active: true, stock: { gt: 0 } },
+    where: { active: true, stock: { gt: 0 }, deletedAt: null },
     select: { id: true, title: true },
     take: 50,
   }).catch(() => []);

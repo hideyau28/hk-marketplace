@@ -204,6 +204,8 @@ model Product {
   // Multi-tenant
   tenantId        String
   tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  // Soft delete
+  deletedAt       DateTime?
 
   @@index([active])
   @@index([brand])

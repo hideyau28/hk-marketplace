@@ -83,8 +83,12 @@ export const DELETE = withApi(
       throw new ApiError(403, "FORBIDDEN", "Product does not belong to this tenant");
     }
 
-    await prisma.product.delete({
+    await prisma.product.update({
       where: { id },
+      data: {
+        active: false,
+        deletedAt: new Date(),
+      },
     });
 
     return ok(req, { success: true });

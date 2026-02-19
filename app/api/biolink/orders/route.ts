@@ -165,7 +165,7 @@ export const POST = withApi(async (req) => {
   // Server-side repricing: verify prices match DB
   const productIds = Array.from(new Set(payload.items.map((i) => i.productId)));
   const products = await prisma.product.findMany({
-    where: { id: { in: productIds }, tenantId: tenant.id, active: true },
+    where: { id: { in: productIds }, tenantId: tenant.id, active: true, deletedAt: null },
     select: { id: true, title: true, price: true, sizes: true },
   });
   const productMap = new Map(products.map((p) => [p.id, p]));

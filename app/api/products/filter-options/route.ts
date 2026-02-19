@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const tenantId = await getTenantId(request);
     // Fetch all active products
     const products = await prisma.product.findMany({
-      where: { active: true, tenantId },
+      where: { active: true, tenantId, deletedAt: null },
       select: { brand: true, category: true },
     });
 
