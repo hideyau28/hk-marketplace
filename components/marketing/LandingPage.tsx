@@ -10,619 +10,400 @@ const T = {
   "zh-HK": {
     // Nav
     navPricing: "定價",
+    navLangZh: "繁",
+    navLangEn: "EN",
     navCta: "免費開店",
-    // Hero
-    heroBadge: "專為香港 IG 小店而設",
-    heroH1a: "一條 Link",
-    heroH1b: "將 Follower 變成生意",
-    heroSub1: "最快 2 分鐘開好網店",
-    heroSub2: "將你嘅 IG Bio Link 變成一間真正嘅網上商店",
-    ctaPrimary: "免費開店 →",
-    ctaSecondary: "睇定價",
-    // Phone mockup
-    miniStoreName: "My IG Shop",
-    miniStoreDesc: "手作飾物・觀塘",
-    miniP1: "玫瑰金手鏈",
-    miniP1Price: "$168",
-    miniP2: "極簡耳環",
-    miniP2Price: "$88",
-    miniP3: "珍珠頸鏈",
-    miniP3Price: "$238",
-    miniP4: "銀色戒指",
-    miniP4Price: "$128",
-    miniBtn: "Shop Now",
-    float1: "新訂單！",
-    float2: "PayMe 已收款",
-    // How it works
-    howTitle: "真係 2 分鐘",
-    howSub: "三步就開到店",
-    step1t: "影相上架",
-    step1d: "手機影相，填個價，30 秒搞掂",
-    step2t: "設定收款",
-    step2d: "FPS・PayMe・AlipayHK 即刻用",
-    step3t: "放入 IG Bio",
-    step3d: "一條 Link，客人即刻落單",
-    // Pain points
-    painTitle: "做生意，可以唔使咁辛苦",
-    pain1: "入數截圖對唔到單？",
-    pain1r: "漏單、錯單、客人嬲",
-    pain2: "DM 問價問到爆？",
-    pain2r: "回覆慢就走客",
-    pain3: "顏色尺碼一亂就超賣？",
-    pain3r: "退款道歉冇停過",
-    solutionTitle: "WoWlix 將落單、付款、庫存集中一個位",
-    solutionDesc: "你只需要專心賣嘢同出貨",
-    // Features
-    featTitle: "你需要嘅，全部有齊",
-    featSub: "唔多唔少，剛剛好",
-    feat1t: "靚舖面",
-    feat1d: "精選主題一鍵切換，你間鋪靚過 90% IG Shop",
-    feat1detail: "Noir・Linen・Mochi・Petal 四款設計師主題",
-    feat2t: "一鍵收錢",
-    feat2d: "FPS・PayMe・AlipayHK，客人揀佢想用嘅方式",
-    feat2detail: "後台即時睇到邊個付咗、邊個未付",
-    feat3t: "庫存唔亂",
-    feat3d: "顏色、尺碼一鍵管理，唔怕超賣",
-    feat3detail: "波鞋碼、衫碼、戒指碼、自訂規格全支援",
-    feat4t: "訂單一目了然",
-    feat4d: "新單、未付款、已出貨，後台清清楚楚",
-    feat4detail: "唔使再用 Excel 或者紙仔記",
-    // Mini plans
-    planTitle: "全部 0% 平台抽成",
-    planSub: "你賺幾多就係幾多",
-    planFreeName: "Free",
-    planFreeDesc: "試水溫",
-    planLiteName: "Lite",
-    planLiteDesc: "認真副業",
-    planLiteBadge: "最受歡迎",
-    planProName: "Pro",
-    planProDesc: "全職生意",
-    planLink: "睇完整定價同功能比較 →",
-    planPeriod: "/月",
-    // Templates + Trust
-    tmplTitle: "你嘅店，你話事",
-    tmplSub: "4 款設計師主題，揀你鍾意嘅風格",
-    trust1t: "WhatsApp 客服",
-    trust1d: "工作日 2 小時內回覆",
-    trust2t: "0% 平台抽成",
-    trust2d: "靠月費營運，唔抽成",
-    trust3t: "數據屬於你",
-    trust3d: "隨時匯出，唔鎖你",
+
+    // Pain Points
+    painTitle: "你係咪都遇到呢啲問題？",
+    painSub1: "用 IG DM 做生意",
+    painSub2: "愈做愈辛苦",
+    pain1Icon: "💬",
+    pain1Title: "DM 覆到手軟",
+    pain1Desc: "每日覆幾百個 DM 問價、問碼數、問邊度取貨……一個人根本做唔晒",
+    pain2Icon: "📋",
+    pain2Title: "訂單亂晒龍",
+    pain2Desc: "Screenshot 對唔到邊張單，Excel 又亂，成日漏單、出錯單",
+    pain3Icon: "💸",
+    pain3Title: "收錢好麻煩",
+    pain3Desc: "逐個入數查 FPS、對 PayMe 截圖……收齊錢先出到貨",
+    pain4Icon: "📉",
+    pain4Title: "生意做唔大",
+    pain4Desc: "冇系統、冇數據、冇辦法 scale，永遠困喺 DM 入面",
+
+    // How It Works
+    howTitle: "三步開店，簡單到唔信",
+    howStep1Num: "01",
+    howStep1Title: "連結 Instagram",
+    howStep1Desc: "一鍵連結你嘅 IG 帳號，自動匯入頭像同簡介",
+    howStep2Num: "02",
+    howStep2Title: "設定商品同價錢",
+    howStep2Desc: "影相上架，設定價錢、庫存、規格，30 秒搞掂",
+    howStep3Num: "03",
+    howStep3Title: "分享 Link 開始收單",
+    howStep3Desc: "將 Link 放入 IG Bio，客人即刻可以落單付款",
+
+    // Pricing
+    pricingTitle: "簡單透明，0% 佣金",
+    pricingSub: "你賺幾多就係幾多，我哋唔抽成",
+    pricingFreeName: "Free",
+    pricingFreePrice: "0",
+    pricingFreeDesc: "試水溫",
+    pricingFreeFeat1: "10 件商品",
+    pricingFreeFeat2: "每月 50 張訂單",
+    pricingFreeFeat3: "基本分析數據",
+    pricingFreeBtn: "免費開始",
+    pricingLiteName: "Lite",
+    pricingLitePrice: "78",
+    pricingLiteDesc: "認真副業",
+    pricingLiteFeat1: "50 件商品",
+    pricingLiteFeat2: "無限訂單",
+    pricingLiteFeat3: "自訂品牌主題",
+    pricingLiteBtn: "選擇 Lite",
+    pricingProName: "Pro",
+    pricingProPrice: "198",
+    pricingProDesc: "全職生意",
+    pricingProBadge: "最受歡迎",
+    pricingProFeat1: "無限商品",
+    pricingProFeat2: "無限訂單 + CRM",
+    pricingProFeat3: "自訂域名 + 進階分析",
+    pricingProBtn: "選擇 Pro",
+    pricingPeriod: "/月",
+
+    // Trust Signals
+    trustTitle: "首批商戶招募中",
+    trustStat1Value: "0%",
+    trustStat1Label: "交易佣金",
+    trustStat2Value: "2 分鐘",
+    trustStat2Label: "開店時間",
+    trustStat3Value: "$0",
+    trustStat3Label: "免費開始",
+    testimonial1Quote: "以前用 Google Form 接單，成日甩漏。用咗 WoWlix 之後，訂單自動入 system，收款狀態一目了然，慳返好多時間。",
+    testimonial1Name: "May",
+    testimonial1Shop: "@maysshop · 飾物店",
+    testimonial2Quote: "最鍾意佢嘅付款功能，客人自己揀 FPS 定 PayMe，我唔使再逐個 check 入數。",
+    testimonial2Name: "Karen",
+    testimonial2Shop: "@karenshop.hk · 手作店",
+    testimonial3Quote: "終於唔使再用 Excel 記庫存！規格管理好方便，唔怕再超賣。",
+    testimonial3Name: "Ling",
+    testimonial3Shop: "@lingcloset · 服裝店",
+
     // Final CTA
-    ctaTitle: "仲用 Google Form 接單？",
-    ctaSub: "2 分鐘開店・0% 平台抽成・$0 起步",
+    ctaTitle: "準備好將你嘅 IG Shop 升級？",
+    ctaSub: "2 分鐘開店 · 0% 佣金 · $0 起步",
     ctaBtn: "免費開店 →",
-    ctaNote: "唔使信用卡・隨時取消",
+    ctaNote: "唔使信用卡 · 隨時取消",
+
     // Footer
+    footerProduct: "產品",
     footerPricing: "定價",
-    footerTerms: "條款",
-    footerPrivacy: "私隱",
+    footerTemplates: "主題模板",
+    footerFeatures: "功能",
+    footerSupport: "支援",
+    footerHelp: "幫助中心",
+    footerContact: "聯絡我哋",
+    footerWhatsApp: "WhatsApp 客服",
+    footerLegal: "法律",
+    footerTerms: "服務條款",
+    footerPrivacy: "私隱政策",
     footerCopy: "© 2026 WoWlix by Flow Studio HK",
   },
   en: {
     navPricing: "Pricing",
+    navLangZh: "繁",
+    navLangEn: "EN",
     navCta: "Start Free",
-    heroBadge: "Built for HK Instagram shops",
-    heroH1a: "One Link",
-    heroH1b: "Turn Followers into Sales",
-    heroSub1: "Set up your shop in as fast as 2 minutes",
-    heroSub2: "Turn your IG Bio Link into a real online store",
-    ctaPrimary: "Start Free →",
-    ctaSecondary: "See Pricing",
-    miniStoreName: "My IG Shop",
-    miniStoreDesc: "Handmade jewelry · Kwun Tong",
-    miniP1: "Rose Gold Bracelet",
-    miniP1Price: "$168",
-    miniP2: "Minimal Earrings",
-    miniP2Price: "$88",
-    miniP3: "Pearl Necklace",
-    miniP3Price: "$238",
-    miniP4: "Silver Ring",
-    miniP4Price: "$128",
-    miniBtn: "Shop Now",
-    float1: "New order!",
-    float2: "PayMe received",
-    howTitle: "Really 2 minutes",
-    howSub: "3 steps to open your shop",
-    step1t: "Photo & list",
-    step1d: "Snap a photo, set a price, done in 30 seconds",
-    step2t: "Set up payments",
-    step2d: "FPS · PayMe · AlipayHK ready to go",
-    step3t: "Add to IG Bio",
-    step3d: "One link, customers order instantly",
-    painTitle: "Running a business doesn't have to be this hard",
-    pain1: "Can't match payment screenshots to orders?",
-    pain1r: "Missing orders, wrong orders, angry customers",
-    pain2: "DMs flooded with price inquiries?",
-    pain2r: "Slow replies lose customers",
-    pain3: "Colors & sizes mix up causing overselling?",
-    pain3r: "Non-stop refunds and apologies",
-    solutionTitle: "WoWlix centralizes orders, payments, and inventory",
-    solutionDesc: "You just focus on selling and shipping",
-    featTitle: "Everything you need",
-    featSub: "Nothing more, nothing less",
-    feat1t: "Beautiful Storefront",
-    feat1d: "One-click designer themes — your shop looks better than 90% of IG shops",
-    feat1detail: "4 designer themes: Noir · Linen · Mochi · Petal",
-    feat2t: "One-click Payments",
-    feat2d: "FPS · PayMe · AlipayHK — customers choose their method",
-    feat2detail: "Dashboard shows who paid and who hasn't",
-    feat3t: "Organized Inventory",
-    feat3d: "Colors, sizes managed easily — no overselling",
-    feat3detail: "Shoe sizes, clothing sizes, ring sizes, custom specs all supported",
-    feat4t: "Orders at a Glance",
-    feat4d: "New, unpaid, shipped — dashboard shows it all clearly",
-    feat4detail: "No more Excel or paper notes",
-    planTitle: "0% platform commission",
-    planSub: "What you earn is what you keep",
-    planFreeName: "Free",
-    planFreeDesc: "Test the waters",
-    planLiteName: "Lite",
-    planLiteDesc: "Serious side hustle",
-    planLiteBadge: "Most popular",
-    planProName: "Pro",
-    planProDesc: "Full-time business",
-    planLink: "See full pricing & feature comparison →",
-    planPeriod: "/mo",
-    tmplTitle: "Your shop, your rules",
-    tmplSub: "4 designer themes — pick your style",
-    trust1t: "WhatsApp Support",
-    trust1d: "Reply within 2 hours on workdays",
-    trust2t: "0% Commission",
-    trust2d: "Runs on subscription, no commission",
-    trust3t: "Your Data Is Yours",
-    trust3d: "Export anytime, never locked in",
-    ctaTitle: "Still using Google Forms?",
+
+    painTitle: "Sound familiar?",
+    painSub1: "Running a business on IG DMs",
+    painSub2: "gets harder every day",
+    pain1Icon: "💬",
+    pain1Title: "DM overload",
+    pain1Desc: "Hundreds of DMs daily about prices, sizes, pickup... impossible to handle alone",
+    pain2Icon: "📋",
+    pain2Title: "Orders in chaos",
+    pain2Desc: "Can't match screenshots to orders, Excel is messy, missing orders constantly",
+    pain3Icon: "💸",
+    pain3Title: "Payment headaches",
+    pain3Desc: "Checking FPS one by one, matching PayMe screenshots... can't ship until all paid",
+    pain4Icon: "📉",
+    pain4Title: "Can't scale up",
+    pain4Desc: "No system, no data, no way to grow — forever stuck in DMs",
+
+    howTitle: "3 Steps to Launch. It's That Simple.",
+    howStep1Num: "01",
+    howStep1Title: "Connect Instagram",
+    howStep1Desc: "One click to link your IG account, auto-import avatar and bio",
+    howStep2Num: "02",
+    howStep2Title: "Set Up Products & Prices",
+    howStep2Desc: "Snap photos, set prices, inventory & specs — done in 30 seconds",
+    howStep3Num: "03",
+    howStep3Title: "Share Link & Start Selling",
+    howStep3Desc: "Drop the link in your IG Bio, customers can order & pay instantly",
+
+    pricingTitle: "Simple & Transparent. 0% Commission.",
+    pricingSub: "What you earn is what you keep — we never take a cut",
+    pricingFreeName: "Free",
+    pricingFreePrice: "0",
+    pricingFreeDesc: "Test the waters",
+    pricingFreeFeat1: "10 products",
+    pricingFreeFeat2: "50 orders/month",
+    pricingFreeFeat3: "Basic analytics",
+    pricingFreeBtn: "Start Free",
+    pricingLiteName: "Lite",
+    pricingLitePrice: "78",
+    pricingLiteDesc: "Serious side hustle",
+    pricingLiteFeat1: "50 products",
+    pricingLiteFeat2: "Unlimited orders",
+    pricingLiteFeat3: "Custom brand themes",
+    pricingLiteBtn: "Choose Lite",
+    pricingProName: "Pro",
+    pricingProPrice: "198",
+    pricingProDesc: "Full-time business",
+    pricingProBadge: "Most Popular",
+    pricingProFeat1: "Unlimited products",
+    pricingProFeat2: "Unlimited orders + CRM",
+    pricingProFeat3: "Custom domain + advanced analytics",
+    pricingProBtn: "Choose Pro",
+    pricingPeriod: "/mo",
+
+    trustTitle: "Early Merchants Wanted",
+    trustStat1Value: "0%",
+    trustStat1Label: "Commission",
+    trustStat2Value: "2 Min",
+    trustStat2Label: "Setup Time",
+    trustStat3Value: "$0",
+    trustStat3Label: "Free to Start",
+    testimonial1Quote: "Used to take orders via Google Forms, always missed something. WoWlix auto-tracks everything — orders, payments, all in one place.",
+    testimonial1Name: "May",
+    testimonial1Shop: "@maysshop · Jewelry",
+    testimonial2Quote: "Love the payment feature — customers choose FPS or PayMe themselves. No more checking transfers one by one.",
+    testimonial2Name: "Karen",
+    testimonial2Shop: "@karenshop.hk · Handmade",
+    testimonial3Quote: "Finally no more Excel for inventory! Variant management is so easy, no more overselling.",
+    testimonial3Name: "Ling",
+    testimonial3Shop: "@lingcloset · Fashion",
+
+    ctaTitle: "Ready to upgrade your IG Shop?",
     ctaSub: "2 min setup · 0% commission · From $0",
     ctaBtn: "Start Free →",
     ctaNote: "No credit card · Cancel anytime",
+
+    footerProduct: "Product",
     footerPricing: "Pricing",
-    footerTerms: "Terms",
-    footerPrivacy: "Privacy",
+    footerTemplates: "Themes",
+    footerFeatures: "Features",
+    footerSupport: "Support",
+    footerHelp: "Help Center",
+    footerContact: "Contact Us",
+    footerWhatsApp: "WhatsApp Support",
+    footerLegal: "Legal",
+    footerTerms: "Terms of Service",
+    footerPrivacy: "Privacy Policy",
     footerCopy: "© 2026 WoWlix by Flow Studio HK",
   },
 };
 
-/* ─── SVG Icons ─── */
-
-// Steps icons
-const IconCamera = (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-    <circle cx="8.5" cy="8.5" r="1.5" />
-    <polyline points="21 15 16 10 5 21" />
-  </svg>
-);
-const IconCard = (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-    <line x1="1" y1="10" x2="23" y2="10" />
-  </svg>
-);
-const IconLink = (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-  </svg>
-);
-
-// Pain icons
-const IconX = (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="15" y1="9" x2="9" y2="15" />
-    <line x1="9" y1="9" x2="15" y2="15" />
-  </svg>
-);
-const IconDM = (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    <line x1="9" y1="10" x2="15" y2="10" />
-  </svg>
-);
-const IconWarning = (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-    <line x1="12" y1="9" x2="12" y2="13" />
-    <line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
-
-// Feature icons
-const IconGrid = (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-  </svg>
-);
-const IconDollar = (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-  </svg>
-);
-const IconCheck = (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-  </svg>
-);
-const IconDoc = (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
-  </svg>
-);
-
-// Trust icons
-const IconChat = (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-  </svg>
-);
-const IconShield = (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  </svg>
-);
-const IconKey = (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-  </svg>
-);
-
-/* ─── Data ─── */
-
-const STEP_ICONS = [IconCamera, IconCard, IconLink];
-
-const PAIN_ICONS = [IconX, IconDM, IconWarning];
-
-const FEATURE_ICONS = [IconGrid, IconDollar, IconCheck, IconDoc];
-
-const TEMPLATES = [
-  { name: "Noir", style_zhHK: "型格街頭風", style_en: "Urban street style", gradient: "linear-gradient(135deg, #1a1a1a, #2d2d2d)", text: "#fff", accent: "#FF9500" },
-  { name: "Linen", style_zhHK: "溫暖手感風", style_en: "Warm handmade feel", gradient: "linear-gradient(135deg, #F5F0EB, #E8DDD3)", text: "#3D2E1E", accent: "#8B7355" },
-  { name: "Mochi", style_zhHK: "清新甜美風", style_en: "Fresh & sweet", gradient: "linear-gradient(135deg, #FFF8F0, #FFE8CC)", text: "#5C3D00", accent: "#FF9500" },
-  { name: "Petal", style_zhHK: "柔美花漾風", style_en: "Soft floral", gradient: "linear-gradient(135deg, #FFF0F5, #FFE0EB)", text: "#8B2252", accent: "#D4447C" },
-];
-
-const PLANS = [
-  { price: 0, bg: "#fff", color: "#1A1A1A", border: "#E5E7EB" },
-  { price: 78, bg: "#FFF3E0", color: "#1A1A1A", border: "#FF9500", highlight: true },
-  { price: 198, bg: "#1A1A1A", color: "#fff", border: "#333" },
-];
-
-/* ─── Sub-components ─── */
-
-function FeatureCard({ icon, title, desc, detail }: { icon: React.ReactNode; title: string; desc: string; detail: string }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: hovered ? "#FFF8F0" : "#fff",
-        border: "1px solid #E5E7EB",
-        borderRadius: 20,
-        padding: "28px 24px",
-        transition: "all 0.3s",
-        transform: hovered ? "translateY(-4px)" : "translateY(0)",
-        boxShadow: hovered ? "0 12px 40px rgba(255,149,0,0.08)" : "0 2px 8px rgba(0,0,0,0.04)",
-        cursor: "default",
-      }}
-    >
-      <div style={{
-        width: 56, height: 56, borderRadius: 14,
-        background: "#FFF3E0", display: "flex", alignItems: "center", justifyContent: "center",
-        marginBottom: 16,
-      }}>
-        {icon}
-      </div>
-      <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>{title}</h3>
-      <p style={{ fontSize: 15, color: "#555", lineHeight: 1.6, marginBottom: 8 }}>{desc}</p>
-      <p style={{ fontSize: 13, color: "#999", lineHeight: 1.5 }}>{detail}</p>
-    </div>
-  );
-}
-
 /* ─── Main Component ─── */
-
 export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
   const t = T[locale] || T["en"];
   const isZH = locale === "zh-HK";
+  const [hoveredPain, setHoveredPain] = useState<number | null>(null);
+  const [hoveredPlan, setHoveredPlan] = useState<number | null>(null);
+
+  const painCards = [
+    { icon: t.pain1Icon, title: t.pain1Title, desc: t.pain1Desc },
+    { icon: t.pain2Icon, title: t.pain2Title, desc: t.pain2Desc },
+    { icon: t.pain3Icon, title: t.pain3Title, desc: t.pain3Desc },
+    { icon: t.pain4Icon, title: t.pain4Title, desc: t.pain4Desc },
+  ];
+
+  const howSteps = [
+    { num: t.howStep1Num, title: t.howStep1Title, desc: t.howStep1Desc },
+    { num: t.howStep2Num, title: t.howStep2Title, desc: t.howStep2Desc },
+    { num: t.howStep3Num, title: t.howStep3Title, desc: t.howStep3Desc },
+  ];
+
+  const plans = [
+    {
+      name: t.pricingFreeName, price: t.pricingFreePrice, desc: t.pricingFreeDesc,
+      btn: t.pricingFreeBtn, features: [t.pricingFreeFeat1, t.pricingFreeFeat2, t.pricingFreeFeat3],
+      href: "/admin/register?plan=free", highlighted: false,
+    },
+    {
+      name: t.pricingLiteName, price: t.pricingLitePrice, desc: t.pricingLiteDesc,
+      btn: t.pricingLiteBtn, features: [t.pricingLiteFeat1, t.pricingLiteFeat2, t.pricingLiteFeat3],
+      href: "/admin/register?plan=lite", highlighted: false,
+    },
+    {
+      name: t.pricingProName, price: t.pricingProPrice, desc: t.pricingProDesc,
+      btn: t.pricingProBtn, features: [t.pricingProFeat1, t.pricingProFeat2, t.pricingProFeat3],
+      href: "/admin/register?plan=pro", highlighted: true, badge: t.pricingProBadge,
+    },
+  ];
+
+  const testimonials = [
+    { quote: t.testimonial1Quote, name: t.testimonial1Name, shop: t.testimonial1Shop },
+    { quote: t.testimonial2Quote, name: t.testimonial2Name, shop: t.testimonial2Shop },
+    { quote: t.testimonial3Quote, name: t.testimonial3Name, shop: t.testimonial3Shop },
+  ];
 
   return (
-    <div style={{ fontFamily: "'DM Sans', 'Noto Sans TC', -apple-system, sans-serif", color: "#1A1A1A", overflowX: "hidden" }}>
+    <div style={{ fontFamily: "'Noto Sans TC', 'Plus Jakarta Sans', -apple-system, sans-serif", color: "#1A1A1A", overflowX: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,500;9..40,700;9..40,800;9..40,900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ─── Mobile responsive ─── */
         @media (max-width: 640px) {
-          .lp-section { padding-top: 48px !important; padding-bottom: 48px !important; }
-          .steps-list { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; }
-          .steps-list > div { flex: 0 0 auto !important; }
-          .trust-list { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; }
-          .trust-list > div { flex: 0 0 auto !important; }
+          .lp-pain-grid { grid-template-columns: 1fr !important; }
+          .lp-how-grid { grid-template-columns: 1fr !important; }
+          .lp-plan-grid { grid-template-columns: 1fr !important; }
+          .lp-testimonial-grid { grid-template-columns: 1fr !important; }
+          .lp-stats-row { flex-direction: column !important; gap: 24px !important; }
+          .lp-footer-grid { grid-template-columns: 1fr !important; text-align: center !important; }
+          .lp-section { padding-left: 20px !important; padding-right: 20px !important; }
+        }
+        @media (max-width: 768px) {
+          .lp-plan-grid { grid-template-columns: 1fr !important; max-width: 400px !important; margin-left: auto !important; margin-right: auto !important; }
         }
       `}</style>
 
-      {/* ─── NAV ─── */}
+      {/* ─── NAV (Dark) ─── */}
       <nav style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         padding: "16px 24px", maxWidth: 1200, margin: "0 auto",
         position: "sticky", top: 0, zIndex: 100,
-        background: "rgba(255,255,255,0.9)", backdropFilter: "blur(12px)",
+        background: "rgba(13,13,13,0.92)", backdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>
-        <div style={{ fontSize: 20, fontWeight: 800 }}>
+        <div style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>
           <span style={{ color: "#FF9500" }}>&#10022;</span> WoWlix
         </div>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <a href="#pricing" style={{ fontSize: 14, fontWeight: 600, color: "#666", textDecoration: "none" }}>{t.navPricing}</a>
+          <a href="#pricing" style={{
+            fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.6)",
+            textDecoration: "none", transition: "color 0.2s",
+          }}>{t.navPricing}</a>
           <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
             <Link
               href="/zh-HK"
               style={{
-                color: isZH ? "#1A1A1A" : "#AAA",
+                color: isZH ? "#fff" : "rgba(255,255,255,0.35)",
                 fontWeight: isZH ? 700 : 400,
-                textDecoration: "none",
-                padding: "4px 2px",
-                transition: "color 0.2s",
+                textDecoration: "none", padding: "4px 2px", transition: "color 0.2s",
               }}
             >
-              繁
+              {t.navLangZh}
             </Link>
-            <span style={{ color: "#CCC", userSelect: "none" }}>/</span>
+            <span style={{ color: "rgba(255,255,255,0.2)", userSelect: "none" }}>/</span>
             <Link
               href="/en"
               style={{
-                color: !isZH ? "#1A1A1A" : "#AAA",
+                color: !isZH ? "#fff" : "rgba(255,255,255,0.35)",
                 fontWeight: !isZH ? 700 : 400,
-                textDecoration: "none",
-                padding: "4px 2px",
-                transition: "color 0.2s",
+                textDecoration: "none", padding: "4px 2px", transition: "color 0.2s",
               }}
             >
-              EN
+              {t.navLangEn}
             </Link>
           </div>
           <Link href="/admin/register" style={{
             background: "#FF9500", color: "#fff", border: "none",
-            padding: "12px 24px", borderRadius: 10, fontSize: 14, fontWeight: 700,
+            padding: "10px 22px", borderRadius: 10, fontSize: 14, fontWeight: 700,
             textDecoration: "none", minHeight: 44, display: "inline-flex", alignItems: "center",
+            transition: "transform 0.2s, box-shadow 0.2s",
+            boxShadow: "0 4px 16px rgba(255,149,0,0.3)",
           }}>{t.navCta}</Link>
         </div>
       </nav>
 
-      {/* ─── SECTION 1: HERO ─── */}
+      {/* ─── HERO ─── */}
       <HeroSection locale={locale as Locale} />
 
-      {/* ─── SECTION 2: HOW IT WORKS ─── */}
-      <section className="lp-section" style={{ padding: "80px 24px", background: "#FAFAFA" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" as const }}>
-          <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>{t.howTitle}</h2>
-          <p style={{ color: "#888", fontSize: 16, marginBottom: 48 }}>{t.howSub}</p>
-          <div className="steps-list" style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" as const }}>
-            {([
-              { title: t.step1t, desc: t.step1d },
-              { title: t.step2t, desc: t.step2d },
-              { title: t.step3t, desc: t.step3d },
-            ]).map((step, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, flex: "1 1 200px", minWidth: 0, width: "100%" }}>
-                <div style={{
-                  width: 64, height: 64, borderRadius: 16,
-                  background: "#FFF3E0", display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
-                  position: "relative" as const,
-                }}>
-                  {STEP_ICONS[i]}
-                  <div style={{
-                    position: "absolute" as const, top: -6, left: -6,
-                    width: 22, height: 22, borderRadius: "50%",
-                    background: "#FF9500", color: "#fff",
-                    fontSize: 11, fontWeight: 800,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>{i + 1}</div>
-                </div>
-                <div style={{ textAlign: "left" as const }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 2 }}>{step.title}</div>
-                  <div style={{ fontSize: 13, color: "#888" }}>{step.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── SECTION 3: PAIN POINTS ─── */}
-      <section style={{ padding: "80px 24px", background: "#fff" }}>
-        <div style={{ maxWidth: 700, margin: "0 auto" }}>
-          <div style={{ textAlign: "center" as const, marginBottom: 48 }}>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
-              {t.painTitle}
-            </h2>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" as const, gap: 16 }}>
-            {([
-              { pain: t.pain1, result: t.pain1r },
-              { pain: t.pain2, result: t.pain2r },
-              { pain: t.pain3, result: t.pain3r },
-            ]).map((p, i) => (
-              <div key={i} style={{
-                display: "flex", alignItems: "flex-start", gap: 12,
-                padding: "16px",
-                background: "#FFF5F5", borderRadius: 16,
-                border: "1px solid #FFE5E5",
-              }}>
-                <div style={{ flexShrink: 0, paddingTop: 2 }}>{PAIN_ICONS[i]}</div>
-                <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: 15, fontWeight: 700 }}>{p.pain}</span>
-                  <br />
-                  <span style={{ fontSize: 14, color: "#888" }}>{p.result}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div style={{
-            marginTop: 32, textAlign: "center" as const, padding: "24px",
-            background: "#F0FFF4", borderRadius: 16, border: "1px solid #C6F6D5",
+      {/* ─── PAIN POINTS (White bg) ─── */}
+      <section className="lp-section" style={{ padding: "80px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" as const }}>
+          <h2 style={{
+            fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 900,
+            color: "#1A1A1A", marginBottom: 12,
           }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#22543D" }}>
-              {t.solutionTitle}
-            </div>
-            <div style={{ fontSize: 14, color: "#48BB78", marginTop: 4 }}>
-              {t.solutionDesc}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── SECTION 4: FEATURES ─── */}
-      <section style={{ padding: "80px 24px", background: "#FAFAFA" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <div style={{ textAlign: "center" as const, marginBottom: 48 }}>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
-              {t.featTitle}
-            </h2>
-            <p style={{ color: "#888", fontSize: 16 }}>{t.featSub}</p>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))", gap: 20 }}>
-            {([
-              { title: t.feat1t, desc: t.feat1d, detail: t.feat1detail },
-              { title: t.feat2t, desc: t.feat2d, detail: t.feat2detail },
-              { title: t.feat3t, desc: t.feat3d, detail: t.feat3detail },
-              { title: t.feat4t, desc: t.feat4d, detail: t.feat4detail },
-            ]).map((f, i) => (
-              <FeatureCard key={i} icon={FEATURE_ICONS[i]} title={f.title} desc={f.desc} detail={f.detail} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── SECTION 5: MINI PLAN PREVIEW ─── */}
-      <section id="pricing" style={{ padding: "80px 24px", background: "#fff" }}>
-        <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center" as const }}>
-          <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
-            {t.planTitle}
+            {t.painTitle}
           </h2>
-          <p style={{ color: "#888", fontSize: 16, marginBottom: 40 }}>{t.planSub}</p>
-          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" as const, marginBottom: 32 }}>
-            {([
-              { name: t.planFreeName, desc: t.planFreeDesc },
-              { name: t.planLiteName, desc: t.planLiteDesc },
-              { name: t.planProName, desc: t.planProDesc },
-            ]).map((plan, i) => {
-              const p = PLANS[i];
-              return (
-                <div key={i} style={{
-                  padding: "24px 20px",
-                  background: p.bg,
-                  color: p.color,
-                  border: `2px solid ${p.border}`,
-                  borderRadius: 20,
-                  minWidth: 0,
-                  flex: "1 1 100px",
-                  maxWidth: 200,
-                  transform: p.highlight ? "scale(1.05)" : "scale(1)",
-                  boxShadow: p.highlight ? "0 8px 30px rgba(255,149,0,0.15)" : "none",
-                  transition: "all 0.3s",
-                  position: "relative" as const,
-                }}>
-                  {p.highlight && (
-                    <div style={{
-                      position: "absolute" as const, top: -10, left: "50%", transform: "translateX(-50%)",
-                      background: "#FF9500", color: "#fff", padding: "2px 12px",
-                      borderRadius: 10, fontSize: 11, fontWeight: 700,
-                    }}>{t.planLiteBadge}</div>
-                  )}
-                  <div style={{ fontSize: 13, fontWeight: 600, opacity: 0.6, marginBottom: 4 }}>{plan.name}</div>
-                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 2 }}>
-                    <span style={{ fontSize: 14, opacity: 0.5 }}>$</span>
-                    <span style={{ fontSize: 40, fontWeight: 900, lineHeight: 1 }}>{p.price}</span>
-                    <span style={{ fontSize: 13, opacity: 0.5 }}>{t.planPeriod}</span>
-                  </div>
-                  <div style={{ fontSize: 13, opacity: 0.5, marginTop: 4 }}>{plan.desc}</div>
-                </div>
-              );
-            })}
-          </div>
-          <Link href={`/${locale}/pricing`} style={{
-            color: "#FF9500", fontSize: 16, fontWeight: 700,
-            textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6,
+          <p style={{
+            fontSize: 18, color: "#6B7280", lineHeight: 1.6, marginBottom: 48,
           }}>
-            {t.planLink}
-          </Link>
+            {t.painSub1}<br />{t.painSub2}
+          </p>
+
+          <div className="lp-pain-grid" style={{
+            display: "grid", gridTemplateColumns: "repeat(2, 1fr)",
+            gap: 16, textAlign: "left" as const,
+          }}>
+            {painCards.map((card, i) => (
+              <div
+                key={i}
+                onMouseEnter={() => setHoveredPain(i)}
+                onMouseLeave={() => setHoveredPain(null)}
+                style={{
+                  padding: "24px",
+                  background: hoveredPain === i ? "#FFF8F0" : "#FAFAFA",
+                  borderRadius: 16,
+                  border: "1px solid #F0F0F0",
+                  transition: "all 0.3s",
+                  transform: hoveredPain === i ? "translateY(-2px)" : "translateY(0)",
+                  boxShadow: hoveredPain === i ? "0 8px 24px rgba(0,0,0,0.06)" : "none",
+                }}
+              >
+                <div style={{ fontSize: 28, marginBottom: 12 }}>{card.icon}</div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: "#1A1A1A", marginBottom: 8 }}>{card.title}</div>
+                <div style={{ fontSize: 14, color: "#888", lineHeight: 1.6 }}>{card.desc}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ─── SECTION 6: TRUST + TEMPLATES ─── */}
-      <section className="lp-section" style={{ padding: "80px 24px", background: "#FAFAFA" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ textAlign: "center" as const, marginBottom: 48 }}>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
-              {t.tmplTitle}
-            </h2>
-            <p style={{ color: "#888", fontSize: 16 }}>{t.tmplSub}</p>
-          </div>
-          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" as const, marginBottom: 48 }}>
-            {TEMPLATES.map((tmpl, i) => (
+      {/* ─── HOW IT WORKS (Dark bg) ─── */}
+      <section id="how-it-works" className="lp-section" style={{ padding: "80px 24px", background: "#0D0D0D" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" as const }}>
+          <h2 style={{
+            fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 900,
+            color: "#fff", marginBottom: 48,
+          }}>
+            {t.howTitle}
+          </h2>
+
+          <div className="lp-how-grid" style={{
+            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20,
+          }}>
+            {howSteps.map((step, i) => (
               <div key={i} style={{
-                flex: "1 1 140px", maxWidth: 200, minWidth: 140, borderRadius: 20, overflow: "hidden",
-                border: "1px solid #E5E7EB", background: "#fff",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+                padding: "32px 24px",
+                background: "#161616",
+                borderRadius: 20,
+                border: "1px solid rgba(255,255,255,0.06)",
+                textAlign: "left" as const,
                 transition: "all 0.3s",
               }}>
                 <div style={{
-                  height: 200, background: tmpl.gradient,
-                  display: "flex", flexDirection: "column" as const,
-                  alignItems: "center", justifyContent: "center", padding: 16,
+                  fontSize: 40, fontWeight: 900, color: "rgba(255,149,0,0.2)",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  marginBottom: 16, lineHeight: 1,
                 }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: 8,
-                    background: tmpl.accent, opacity: 0.3, marginBottom: 8,
-                  }} />
-                  <div style={{ fontSize: 16, fontWeight: 800, color: tmpl.text }}>{tmpl.name}</div>
-                  <div style={{ fontSize: 10, color: tmpl.text, opacity: 0.5, marginTop: 2 }}>@{tmpl.name.toLowerCase()}shop</div>
-                  <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
-                    {[1, 2].map(n => (
-                      <div key={n} style={{
-                        width: 44, height: 44, borderRadius: 6,
-                        background: tmpl.text === "#fff" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)",
-                      }} />
-                    ))}
-                  </div>
-                  <div style={{
-                    marginTop: 10, width: "80%", height: 24, borderRadius: 6,
-                    background: tmpl.accent, opacity: 0.8,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 9, color: "#fff", fontWeight: 700,
-                  }}>Shop Now</div>
+                  {step.num}
                 </div>
-                <div style={{ padding: "12px 14px", textAlign: "center" as const }}>
-                  <div style={{ fontSize: 12, fontWeight: 700 }}>{isZH ? tmpl.style_zhHK : tmpl.style_en}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Trust */}
-          <div className="trust-list" style={{
-            display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" as const,
-            padding: "32px 24px",
-            background: "#fff", borderRadius: 20, border: "1px solid #E5E7EB",
-          }}>
-            {([
-              { icon: IconChat, title: t.trust1t, desc: t.trust1d },
-              { icon: IconShield, title: t.trust2t, desc: t.trust2d },
-              { icon: IconKey, title: t.trust3t, desc: t.trust3d },
-            ]).map((item, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, flex: "1 1 200px", minWidth: 0, width: "100%" }}>
                 <div style={{
-                  width: 48, height: 48, borderRadius: 12,
-                  background: "#FFF3E0", display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
+                  fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8,
                 }}>
-                  {item.icon}
+                  {step.title}
                 </div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700 }}>{item.title}</div>
-                  <div style={{ fontSize: 12, color: "#888" }}>{item.desc}</div>
+                <div style={{
+                  fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6,
+                }}>
+                  {step.desc}
                 </div>
               </div>
             ))}
@@ -630,35 +411,209 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         </div>
       </section>
 
-      {/* ─── SECTION 7: FINAL CTA ─── */}
-      <section style={{
+      {/* ─── PRICING (White bg) ─── */}
+      <section id="pricing" className="lp-section" style={{ padding: "80px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto", textAlign: "center" as const }}>
+          <h2 style={{
+            fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 900,
+            color: "#1A1A1A", marginBottom: 12,
+          }}>
+            {t.pricingTitle}
+          </h2>
+          <p style={{
+            fontSize: 16, color: "#6B7280", marginBottom: 48,
+          }}>
+            {t.pricingSub}
+          </p>
+
+          <div className="lp-plan-grid" style={{
+            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20,
+            alignItems: "start",
+          }}>
+            {plans.map((plan, i) => (
+              <div
+                key={i}
+                onMouseEnter={() => setHoveredPlan(i)}
+                onMouseLeave={() => setHoveredPlan(null)}
+                style={{
+                  padding: "32px 24px",
+                  background: "#fff",
+                  borderRadius: 20,
+                  border: plan.highlighted ? "2px solid #FF9500" : "1px solid #E5E7EB",
+                  textAlign: "left" as const,
+                  position: "relative" as const,
+                  transition: "all 0.3s",
+                  transform: hoveredPlan === i ? "translateY(-4px)" : "translateY(0)",
+                  boxShadow: plan.highlighted
+                    ? "0 12px 40px rgba(255,149,0,0.12)"
+                    : hoveredPlan === i ? "0 8px 24px rgba(0,0,0,0.06)" : "none",
+                }}
+              >
+                {plan.highlighted && plan.badge && (
+                  <div style={{
+                    position: "absolute" as const, top: -12, left: "50%", transform: "translateX(-50%)",
+                    background: "#FF9500", color: "#fff", padding: "4px 16px",
+                    borderRadius: 12, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" as const,
+                  }}>
+                    {plan.badge}
+                  </div>
+                )}
+
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#6B7280", marginBottom: 4 }}>
+                  {plan.name}
+                </div>
+                <div style={{ fontSize: 13, color: "#9CA3AF", marginBottom: 16 }}>
+                  {plan.desc}
+                </div>
+
+                <div style={{ display: "flex", alignItems: "baseline", gap: 2, marginBottom: 24 }}>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: "#9CA3AF" }}>$</span>
+                  <span style={{
+                    fontSize: 48, fontWeight: 900, lineHeight: 1, color: "#1A1A1A",
+                    fontFamily: "'JetBrains Mono', monospace",
+                  }}>
+                    {plan.price}
+                  </span>
+                  <span style={{ fontSize: 14, color: "#9CA3AF", marginLeft: 2 }}>
+                    {t.pricingPeriod}
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column" as const, gap: 10, marginBottom: 24 }}>
+                  {plan.features.map((feat, j) => (
+                    <div key={j} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "#555" }}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M13.3 4.3L6.3 11.3L2.7 7.7" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      {feat}
+                    </div>
+                  ))}
+                </div>
+
+                <Link href={plan.href} style={{
+                  display: "block", textAlign: "center" as const,
+                  padding: "14px 24px", borderRadius: 12,
+                  fontSize: 15, fontWeight: 700,
+                  textDecoration: "none",
+                  background: plan.highlighted ? "#FF9500" : "transparent",
+                  color: plan.highlighted ? "#fff" : "#FF9500",
+                  border: plan.highlighted ? "none" : "1.5px solid #FF9500",
+                  transition: "all 0.2s",
+                  boxShadow: plan.highlighted ? "0 4px 16px rgba(255,149,0,0.3)" : "none",
+                }}>
+                  {plan.btn}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── TRUST SIGNALS (Dark bg) ─── */}
+      <section className="lp-section" style={{ padding: "80px 24px", background: "#0D0D0D" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" as const }}>
+          <h2 style={{
+            fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 900,
+            color: "#fff", marginBottom: 48,
+          }}>
+            {t.trustTitle}
+          </h2>
+
+          {/* Stats row */}
+          <div className="lp-stats-row" style={{
+            display: "flex", justifyContent: "center", gap: 48, marginBottom: 56,
+            flexWrap: "wrap" as const,
+          }}>
+            {[
+              { value: t.trustStat1Value, label: t.trustStat1Label },
+              { value: t.trustStat2Value, label: t.trustStat2Label },
+              { value: t.trustStat3Value, label: t.trustStat3Label },
+            ].map((stat, i) => (
+              <div key={i} style={{ textAlign: "center" as const }}>
+                <div style={{
+                  fontSize: "clamp(36px, 6vw, 56px)", fontWeight: 900,
+                  color: "#FF9500", lineHeight: 1,
+                  fontFamily: "'JetBrains Mono', monospace",
+                  marginBottom: 8,
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Testimonials */}
+          <div className="lp-testimonial-grid" style={{
+            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16,
+          }}>
+            {testimonials.map((item, i) => (
+              <div key={i} style={{
+                padding: "24px",
+                background: "#161616",
+                borderRadius: 16,
+                border: "1px solid rgba(255,255,255,0.06)",
+                textAlign: "left" as const,
+              }}>
+                <div style={{
+                  fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.7,
+                  marginBottom: 16, fontStyle: "italic" as const,
+                }}>
+                  &ldquo;{item.quote}&rdquo;
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: "rgba(255,149,0,0.15)", display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    color: "#FF9500", fontWeight: 800, fontSize: 14,
+                  }}>
+                    {item.name[0]}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{item.name}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{item.shop}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FINAL CTA (Dark bg) ─── */}
+      <section className="lp-section" style={{
         padding: "80px 24px",
-        background: "linear-gradient(180deg, #1A1A1A, #111)",
+        background: "#111",
         textAlign: "center" as const,
         position: "relative" as const, overflow: "hidden",
       }}>
+        {/* Glow */}
         <div style={{
           position: "absolute" as const, top: "50%", left: "50%",
           transform: "translate(-50%, -50%)",
           width: 600, height: 600,
-          background: "radial-gradient(circle, rgba(255,149,0,0.08) 0%, transparent 70%)",
-          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(255,149,0,0.06) 0%, transparent 70%)",
+          borderRadius: "50%", pointerEvents: "none" as const,
         }} />
-        <div style={{ position: "relative" as const }}>
+        <div style={{ position: "relative" as const, maxWidth: 600, margin: "0 auto" }}>
           <h2 style={{
             fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 900,
             color: "#fff", marginBottom: 12,
           }}>
             {t.ctaTitle}
           </h2>
-          <p style={{ fontSize: 18, color: "rgba(255,255,255,0.5)", marginBottom: 32 }}>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.45)", marginBottom: 36 }}>
             {t.ctaSub}
           </p>
           <Link href="/admin/register" style={{
             background: "#FF9500", color: "#fff", border: "none",
             padding: "18px 48px", borderRadius: 14, fontSize: 20, fontWeight: 700,
             textDecoration: "none", display: "inline-block",
-            boxShadow: "0 8px 30px rgba(255,149,0,0.4)",
+            boxShadow: "0 8px 32px rgba(255,149,0,0.4)",
+            transition: "transform 0.2s, box-shadow 0.2s",
           }}>
             {t.ctaBtn}
           </Link>
@@ -668,17 +623,63 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         </div>
       </section>
 
-      {/* ─── FOOTER ─── */}
+      {/* ─── FOOTER (Dark bg) ─── */}
       <footer style={{
-        padding: "24px", textAlign: "center" as const,
-        background: "#111", color: "rgba(255,255,255,0.3)", fontSize: 12,
+        padding: "56px 24px 32px", background: "#0A0A0A",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
       }}>
-        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 8 }}>
-          <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>{t.footerPricing}</Link>
-          <Link href={`/${locale}/terms`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>{t.footerTerms}</Link>
-          <Link href={`/${locale}/privacy`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>{t.footerPrivacy}</Link>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div className="lp-footer-grid" style={{
+            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32,
+            marginBottom: 40,
+          }}>
+            {/* Column 1: Product */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+                {t.footerProduct}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerPricing}</a>
+                <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerTemplates}</Link>
+                <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerFeatures}</Link>
+              </div>
+            </div>
+            {/* Column 2: Support */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+                {t.footerSupport}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                <a href="#" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerHelp}</a>
+                <a href="#" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerContact}</a>
+                <a href="#" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerWhatsApp}</a>
+              </div>
+            </div>
+            {/* Column 3: Legal */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+                {t.footerLegal}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                <Link href={`/${locale}/terms`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerTerms}</Link>
+                <Link href={`/${locale}/privacy`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerPrivacy}</Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div style={{
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            paddingTop: 24, textAlign: "center" as const,
+          }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 8 }}>
+              <span style={{ color: "#FF9500" }}>&#10022;</span> WoWlix
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>
+              {t.footerCopy}
+            </div>
+          </div>
         </div>
-        {t.footerCopy}
       </footer>
     </div>
   );
