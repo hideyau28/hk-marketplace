@@ -559,3 +559,25 @@ model TenantPaymentConfig {
   @@unique([tenantId, providerId])
   @@index([tenantId])
 }
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  attempts  Int      @default(0)
+  verified  Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+  @@index([expiresAt])
+}
+
+model RateLimitEntry {
+  id        String   @id @default(cuid())
+  key       String
+  timestamp DateTime @default(now())
+
+  @@index([key, timestamp])
+  @@index([timestamp])
+}

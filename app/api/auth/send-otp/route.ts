@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const otp = generateOTP();
 
     // Store OTP
-    storeOTP(normalizedPhone, otp);
+    await storeOTP(normalizedPhone, otp);
 
     // In demo mode, return OTP in response for easy testing
     const isDemoMode = process.env.NODE_ENV !== "production";

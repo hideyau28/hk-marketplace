@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   // Apply rate limiting for auth endpoints
-  const rateLimitResponse = withRateLimit(RATE_LIMITS.AUTH, {
+  const rateLimitResponse = await withRateLimit(RATE_LIMITS.AUTH, {
     keyPrefix: "admin-login",
   })(request);
 
