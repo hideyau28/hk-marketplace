@@ -22,7 +22,7 @@ type OrdersTableProps = {
 const STATUS_TABS = [
   { value: "", label: { en: "All", zh: "全部" } },
   { value: "PENDING", label: { en: "Pending", zh: "待處理" } },
-  { value: "PENDING_CONFIRMATION", label: { en: "Awaiting Confirmation", zh: "待確認收款" } },
+  { value: "PENDING_CONFIRMATION", label: { en: "Awaiting Confirmation", zh: "待確認" } },
   { value: "CONFIRMED", label: { en: "Confirmed", zh: "已確認" } },
   { value: "PROCESSING", label: { en: "Processing", zh: "處理中" } },
   { value: "SHIPPED", label: { en: "Shipped", zh: "已發貨" } },
@@ -34,7 +34,7 @@ const STATUS_TABS = [
 const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
   // New statuses
   PENDING: { en: "Pending", zh: "待處理" },
-  PENDING_CONFIRMATION: { en: "Awaiting Confirmation", zh: "待確認收款" },
+  PENDING_CONFIRMATION: { en: "Awaiting Confirmation", zh: "待確認" },
   CONFIRMED: { en: "Confirmed", zh: "已確認" },
   PROCESSING: { en: "Processing", zh: "處理中" },
   SHIPPED: { en: "Shipped", zh: "已發貨" },
@@ -42,6 +42,7 @@ const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
   COMPLETED: { en: "Completed", zh: "已完成" },
   CANCELLED: { en: "Cancelled", zh: "已取消" },
   REFUNDED: { en: "Refunded", zh: "已退款" },
+  PAYMENT_REJECTED: { en: "Payment Rejected", zh: "已拒絕" },
   // Legacy statuses
   PAID: { en: "Paid", zh: "已付款" },
   FULFILLING: { en: "Fulfilling", zh: "配送中" },
@@ -65,11 +66,14 @@ function translateFulfillment(type: string, locale: Locale): string {
   return t ? (locale === "zh-HK" ? t.zh : t.en) : type;
 }
 
-// 按規格：PENDING=黃, PAID=綠, SHIPPED=藍, COMPLETED=灰, CANCELLED=紅
+// 按規格：PENDING=黃, PENDING_CONFIRMATION=橙, PAID=綠, SHIPPED=藍, COMPLETED=灰, CANCELLED=紅
 function orderStatusBadgeClass(status: string) {
   const s = status.toUpperCase();
-  if (s === "PENDING" || s === "PENDING_CONFIRMATION") {
+  if (s === "PENDING") {
     return "bg-yellow-100 text-yellow-700 border border-yellow-200";
+  }
+  if (s === "PENDING_CONFIRMATION") {
+    return "bg-orange-100 text-orange-700 border border-orange-300 font-semibold";
   }
   if (s === "PAID" || s === "CONFIRMED") {
     return "bg-green-100 text-green-700 border border-green-200";
@@ -85,6 +89,9 @@ function orderStatusBadgeClass(status: string) {
   }
   if (s === "REFUNDED") {
     return "bg-amber-100 text-amber-700 border border-amber-200";
+  }
+  if (s === "PAYMENT_REJECTED") {
+    return "bg-rose-100 text-rose-700 border border-rose-200";
   }
   if (s === "DISPUTED") {
     return "bg-rose-100 text-rose-700 border border-rose-200";
@@ -108,12 +115,27 @@ function getProductCount(items: any): number {
   return items.reduce((sum, item) => sum + (item.quantity || 1), 0);
 }
 
+// Sort PENDING_CONFIRMATION orders to appear first (within current page)
+function sortOrdersWithPendingFirst(orders: OrderWithPayments[]): OrderWithPayments[] {
+  return [...orders].sort((a, b) => {
+    const aIsPending = a.status === "PENDING_CONFIRMATION";
+    const bIsPending = b.status === "PENDING_CONFIRMATION";
+    if (aIsPending && !bIsPending) return -1;
+    if (!aIsPending && bIsPending) return 1;
+    return 0;
+  });
+}
+
 export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExportEnabled, page = 1, pageSize = 20, total = 0 }: OrdersTableProps) {
   const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState(currentStatus || "");
   const [search, setSearch] = useState(searchQuery || "");
   const totalPages = Math.ceil(total / pageSize);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  // When viewing all orders, put PENDING_CONFIRMATION first
+  const sortedOrders = !selectedStatus ? sortOrdersWithPendingFirst(orders) : orders;
+  const pendingConfirmationCount = orders.filter(o => o.status === "PENDING_CONFIRMATION").length;
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status);
@@ -156,19 +178,30 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
     <>
       {/* Tab filters */}
       <div className="mt-4 flex flex-wrap gap-2">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => handleStatusChange(tab.value)}
-            className={`rounded-full px-4 py-2.5 text-sm font-medium transition-colors min-h-[44px] ${
-              selectedStatus === tab.value
-                ? "bg-olive-600 text-white"
-                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-            }`}
-          >
-            {locale === "zh-HK" ? tab.label.zh : tab.label.en}
-          </button>
-        ))}
+        {STATUS_TABS.map((tab) => {
+          const isPendingTab = tab.value === "PENDING_CONFIRMATION";
+          const showBadge = isPendingTab && pendingConfirmationCount > 0 && !selectedStatus;
+          return (
+            <button
+              key={tab.value}
+              onClick={() => handleStatusChange(tab.value)}
+              className={`relative rounded-full px-4 py-2.5 text-sm font-medium transition-colors min-h-[44px] ${
+                selectedStatus === tab.value
+                  ? "bg-olive-600 text-white"
+                  : isPendingTab && pendingConfirmationCount > 0
+                  ? "bg-orange-100 text-orange-700 border border-orange-300 hover:bg-orange-200"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              }`}
+            >
+              {locale === "zh-HK" ? tab.label.zh : tab.label.en}
+              {showBadge && (
+                <span className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-orange-600 text-white text-xs font-bold">
+                  {pendingConfirmationCount}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Search and export */}
@@ -239,17 +272,22 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
         </div>
       ) : (
         <div className="mt-6 space-y-3">
-          {orders.map((order) => {
+          {sortedOrders.map((order) => {
             const amounts = order.amounts as any;
             const items = order.items as any[];
             const fulfillmentAddress = order.fulfillmentAddress as any;
             const isExpanded = expandedOrderId === order.id;
             const productCount = getProductCount(items);
+            const isPendingConfirmation = order.status === "PENDING_CONFIRMATION";
 
             return (
               <div
                 key={order.id}
-                className="rounded-2xl border border-zinc-200 bg-white overflow-hidden transition-shadow hover:shadow-md"
+                className={`rounded-2xl border bg-white overflow-hidden transition-shadow hover:shadow-md ${
+                  isPendingConfirmation
+                    ? "border-orange-300 border-l-4 border-l-orange-500 shadow-sm"
+                    : "border-zinc-200"
+                }`}
               >
                 {/* Card header - clickable */}
                 <div

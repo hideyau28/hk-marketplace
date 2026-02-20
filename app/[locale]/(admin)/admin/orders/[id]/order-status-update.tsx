@@ -10,7 +10,7 @@ import { useToast } from "@/components/Toast";
 const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   // New status flow
   PENDING: ["PENDING_CONFIRMATION", "CONFIRMED", "CANCELLED"],
-  PENDING_CONFIRMATION: ["CONFIRMED", "CANCELLED"],
+  PENDING_CONFIRMATION: ["PAID", "PAYMENT_REJECTED", "CONFIRMED", "CANCELLED"],
   CONFIRMED: ["PROCESSING", "CANCELLED"],
   PROCESSING: ["SHIPPED", "CANCELLED"],
   SHIPPED: ["DELIVERED"],
@@ -18,6 +18,7 @@ const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   COMPLETED: ["REFUNDED"],
   CANCELLED: [],
   REFUNDED: [],
+  PAYMENT_REJECTED: [],
   // Legacy statuses
   PAID: ["FULFILLING", "CONFIRMED", "CANCELLED", "REFUNDED", "DISPUTED"],
   FULFILLING: ["SHIPPED", "PROCESSING", "CANCELLED"],
@@ -26,7 +27,7 @@ const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 const STATUS_DISPLAY: Record<OrderStatus, { en: string; zh: string }> = {
   PENDING: { en: "Pending", zh: "待處理" },
-  PENDING_CONFIRMATION: { en: "Awaiting Confirmation", zh: "待確認收款" },
+  PENDING_CONFIRMATION: { en: "Awaiting Confirmation", zh: "待確認" },
   CONFIRMED: { en: "Confirmed", zh: "已確認" },
   PROCESSING: { en: "Processing", zh: "處理中" },
   SHIPPED: { en: "Shipped", zh: "已發貨" },
@@ -34,6 +35,7 @@ const STATUS_DISPLAY: Record<OrderStatus, { en: string; zh: string }> = {
   COMPLETED: { en: "Completed", zh: "已完成" },
   CANCELLED: { en: "Cancelled", zh: "已取消" },
   REFUNDED: { en: "Refunded", zh: "已退款" },
+  PAYMENT_REJECTED: { en: "Payment Rejected", zh: "已拒絕" },
   PAID: { en: "Paid", zh: "已付款" },
   FULFILLING: { en: "Fulfilling", zh: "配送中" },
   DISPUTED: { en: "Disputed", zh: "爭議中" },
@@ -129,8 +131,9 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
         </label>
         <div className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium ${
           order.status === "COMPLETED" || order.status === "DELIVERED" ? "bg-olive-100 text-olive-700" :
-          order.status === "PENDING" || order.status === "PENDING_CONFIRMATION" ? "bg-yellow-100 text-yellow-700" :
-          order.status === "CANCELLED" || order.status === "DISPUTED" ? "bg-red-100 text-red-700" :
+          order.status === "PENDING" ? "bg-yellow-100 text-yellow-700" :
+          order.status === "PENDING_CONFIRMATION" ? "bg-orange-100 text-orange-700 border border-orange-300" :
+          order.status === "CANCELLED" || order.status === "DISPUTED" || order.status === "PAYMENT_REJECTED" ? "bg-red-100 text-red-700" :
           order.status === "REFUNDED" ? "bg-amber-100 text-amber-700" :
           "bg-blue-100 text-blue-700"
         }`}>

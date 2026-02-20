@@ -1,0 +1,2 @@
+-- AlterEnum: add PAYMENT_REJECTED to OrderStatus
+ALTER TYPE "OrderStatus" ADD VALUE 'PAYMENT_REJECTED';

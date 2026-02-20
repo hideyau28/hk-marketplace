@@ -15,6 +15,7 @@ const ORDER_STATUSES: OrderStatus[] = [
   "PENDING",
   "PENDING_CONFIRMATION",
   "PAID",
+  "PAYMENT_REJECTED",
   "FULFILLING",
   "SHIPPED",
   "COMPLETED",
@@ -22,6 +23,14 @@ const ORDER_STATUSES: OrderStatus[] = [
   "REFUNDED",
   "DISPUTED",
 ];
+
+const PAYMENT_METHOD_LABEL: Record<string, string> = {
+  fps: "FPS 轉數快",
+  payme: "PayMe",
+  alipay: "Alipay HK",
+  bank_transfer: "銀行轉帳",
+  crypto: "加密貨幣",
+};
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -55,15 +64,72 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+function PaymentProofImage({ url }: { url: string }) {
+  const [enlarged, setEnlarged] = useState(false);
+
+  return (
+    <>
+      <div
+        className="relative cursor-zoom-in rounded-xl overflow-hidden border border-zinc-200 bg-zinc-50"
+        onClick={() => setEnlarged(true)}
+        title="點擊放大檢視"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt="付款截圖"
+          className="w-full max-h-48 object-contain"
+        />
+        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-lg">
+          點擊放大
+        </div>
+      </div>
+
+      {/* Lightbox */}
+      {enlarged && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setEnlarged(false)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={url}
+              alt="付款截圖"
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+            />
+            <button
+              onClick={() => setEnlarged(false)}
+              className="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white text-zinc-700 shadow-lg hover:bg-zinc-100 text-sm font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalProps) {
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(order.status);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
 
   const amounts = order.amounts as any;
   const items = order.items as any[];
   const fulfillmentAddress = order.fulfillmentAddress as any;
+
+  const currency = amounts?.currency || "HKD";
+  const total = amounts?.total || 0;
+
+  const isPendingConfirmation = order.status === "PENDING_CONFIRMATION";
+  const hasPaymentProof = !!(order as any).paymentProof;
+  const paymentMethod = (order as any).paymentMethod as string | null | undefined;
 
   const handleUpdateStatus = async () => {
     if (selectedStatus === order.status) {
@@ -77,6 +143,43 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
     const result = await updateOrderStatus(order.id, selectedStatus, locale);
 
     setIsUpdating(false);
+
+    if (result.ok) {
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } else {
+      setError(`${result.code}: ${result.message}`);
+    }
+  };
+
+  const handleConfirmPayment = async () => {
+    setShowConfirmDialog(false);
+    setIsConfirming(true);
+    setError("");
+
+    const result = await updateOrderStatus(order.id, "PAID", locale);
+
+    setIsConfirming(false);
+
+    if (result.ok) {
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } else {
+      setError(`${result.code}: ${result.message}`);
+    }
+  };
+
+  const handleRejectPayment = async () => {
+    setIsRejecting(true);
+    setError("");
+
+    const result = await updateOrderStatus(order.id, "PAYMENT_REJECTED", locale);
+
+    setIsRejecting(false);
 
     if (result.ok) {
       setSuccess(true);
@@ -105,6 +208,73 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
         </div>
 
         <div className="space-y-6">
+
+          {/* Payment Confirmation Section — shown when PENDING_CONFIRMATION */}
+          {isPendingConfirmation && (
+            <div className="rounded-2xl border-2 border-orange-300 bg-orange-50 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">⚠️</span>
+                <h3 className="text-zinc-900 font-semibold">待確認收款</h3>
+                <span className="ml-auto text-xl font-bold text-zinc-900">
+                  {currency} {total}
+                </span>
+              </div>
+
+              {/* Payment method */}
+              {paymentMethod && (
+                <div className="mb-3 text-sm text-zinc-700">
+                  收款方式：<span className="font-semibold text-zinc-900">
+                    {PAYMENT_METHOD_LABEL[paymentMethod] ?? paymentMethod}
+                  </span>
+                </div>
+              )}
+
+              {/* Payment proof image */}
+              {hasPaymentProof && (
+                <div className="mb-4">
+                  <div className="text-sm text-zinc-600 mb-2">付款截圖：</div>
+                  <PaymentProofImage url={(order as any).paymentProof} />
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowConfirmDialog(true)}
+                  disabled={isConfirming || isRejecting}
+                  className="flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                >
+                  {isConfirming ? "確認中..." : "✓ 確認收款"}
+                </button>
+                <button
+                  onClick={handleRejectPayment}
+                  disabled={isConfirming || isRejecting}
+                  className="flex-1 rounded-xl border border-red-300 bg-white px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isRejecting ? "處理中..." : "✕ 拒絕"}
+                </button>
+              </div>
+
+              {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
+              {success && <div className="mt-2 text-emerald-600 text-sm">已更新！</div>}
+            </div>
+          )}
+
+          {/* Payment proof display for non-PENDING_CONFIRMATION orders with proof */}
+          {!isPendingConfirmation && hasPaymentProof && (
+            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+              <h3 className="text-zinc-900 font-semibold mb-3">付款截圖</h3>
+              {paymentMethod && (
+                <div className="mb-2 text-sm text-zinc-700">
+                  收款方式：<span className="font-semibold">
+                    {PAYMENT_METHOD_LABEL[paymentMethod] ?? paymentMethod}
+                  </span>
+                </div>
+              )}
+              <PaymentProofImage url={(order as any).paymentProof} />
+            </div>
+          )}
+
           {/* Customer Info */}
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
             <h3 className="text-zinc-900 font-semibold mb-3">Customer Information</h3>
@@ -135,11 +305,11 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                   <div>
                     <div className="text-zinc-900">{item.name}</div>
                     <div className="text-zinc-600 text-xs">
-                      {item.quantity} × {amounts?.currency || "HKD"} {item.unitPrice}
+                      {item.quantity} × {currency} {item.unitPrice}
                     </div>
                   </div>
                   <div className="text-zinc-900 font-medium">
-                    {amounts?.currency || "HKD"} {item.quantity * item.unitPrice}
+                    {currency} {item.quantity * item.unitPrice}
                   </div>
                 </div>
               ))}
@@ -153,14 +323,14 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
               <div className="flex justify-between">
                 <span className="text-zinc-600">Subtotal:</span>
                 <span className="text-zinc-900">
-                  {amounts?.currency || "HKD"} {amounts?.subtotal || 0}
+                  {currency} {amounts?.subtotal || 0}
                 </span>
               </div>
               {amounts?.discount && (
                 <div className="flex justify-between">
                   <span className="text-zinc-600">Discount:</span>
                   <span className="text-zinc-900">
-                    -{amounts?.currency || "HKD"} {amounts.discount}
+                    -{currency} {amounts.discount}
                   </span>
                 </div>
               )}
@@ -168,14 +338,14 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                 <div className="flex justify-between">
                   <span className="text-zinc-600">Delivery Fee:</span>
                   <span className="text-zinc-900">
-                    {amounts?.currency || "HKD"} {amounts.deliveryFee}
+                    {currency} {amounts.deliveryFee}
                   </span>
                 </div>
               )}
               <div className="flex justify-between border-t border-zinc-200 pt-2 font-semibold">
                 <span className="text-zinc-900">Total:</span>
                 <span className="text-zinc-900">
-                  {amounts?.currency || "HKD"} {amounts?.total || 0}
+                  {currency} {total}
                 </span>
               </div>
             </div>
@@ -227,8 +397,8 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                 {isUpdating ? "Updating..." : "Update"}
               </button>
             </div>
-            {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
-            {success && <div className="mt-2 text-emerald-600 text-sm">Status updated successfully!</div>}
+            {!isPendingConfirmation && error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
+            {!isPendingConfirmation && success && <div className="mt-2 text-emerald-600 text-sm">Status updated successfully!</div>}
           </div>
 
           {/* Note */}
@@ -421,6 +591,36 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
           </div>
         </div>
       </div>
+
+      {/* Confirm Payment Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-zinc-900 mb-2">確認收款</h3>
+            <p className="text-zinc-600 text-sm mb-6">
+              確認已收到{" "}
+              <span className="font-bold text-zinc-900">
+                {currency} {total}
+              </span>
+              ？
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmDialog(false)}
+                className="flex-1 rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleConfirmPayment}
+                className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+              >
+                確認收款
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

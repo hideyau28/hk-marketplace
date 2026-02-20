@@ -26,6 +26,7 @@ export type OrderWithPayments = Order & {
 const ORDER_STATUSES = [
   // New status flow
   "PENDING",
+  "PENDING_CONFIRMATION",
   "CONFIRMED",
   "PROCESSING",
   "SHIPPED",
@@ -33,6 +34,7 @@ const ORDER_STATUSES = [
   "COMPLETED",
   "CANCELLED",
   "REFUNDED",
+  "PAYMENT_REJECTED",
   // Legacy statuses
   "PAID",
   "FULFILLING",

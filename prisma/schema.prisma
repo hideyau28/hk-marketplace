@@ -393,6 +393,7 @@ enum OrderStatus {
   COMPLETED
   CANCELLED
   REFUNDED
+  PAYMENT_REJECTED  // Admin rejected the payment proof
   // Legacy statuses (backward compatibility)
   PAID
   FULFILLING
