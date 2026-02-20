@@ -591,11 +591,16 @@ function FAQ({ isZh }: { isZh: boolean }) {
             <span>{faq.q}</span>
             <span
               style={{
-                fontSize: 20,
+                fontSize: 26,
                 color: "#FF9500",
                 flexShrink: 0,
                 transition: "transform 0.2s",
                 transform: open === i ? "rotate(45deg)" : "rotate(0)",
+                width: 32,
+                height: 32,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               +
@@ -1168,7 +1173,6 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             style={{
               background: "#fff",
               borderRadius: 20,
-              overflow: "hidden",
               border: "1px solid #E5E7EB",
               minWidth: 480,
             }}
@@ -1191,7 +1195,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               <div></div>
               <div style={{ textAlign: "center" }}>Free</div>
               <div style={{ textAlign: "center", color: "#FF9500" }}>Lite $78</div>
-              <div style={{ textAlign: "center" }}>Pro $198</div>
+              <div style={{ textAlign: "center", background: "rgba(255,149,0,0.06)", borderRadius: "0 12px 0 0", padding: "0 4px" }}>Pro $198</div>
             </div>
             {/* Rows */}
             {FEATURE_TABLE.map((row, i) => (
@@ -1209,12 +1213,12 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               >
                 <div style={{ fontWeight: row.highlight ? 700 : 500 }}>{row.name}</div>
                 {(["free", "lite", "pro"] as const).map((plan) => (
-                  <div key={plan} style={{ textAlign: "center" }}>
+                  <div key={plan} style={{ textAlign: "center", background: plan === "pro" ? "rgba(255,149,0,0.05)" : "transparent" }}>
                     {typeof row[plan] === "boolean" ? (
                       row[plan] ? (
-                        <span style={{ color: "#FF9500", fontSize: 18 }}>✓</span>
+                        <span style={{ color: "#22C55E", fontSize: 18 }}>✓</span>
                       ) : (
-                        <span style={{ color: "#D1D5DB", fontSize: 18 }}>✗</span>
+                        <span style={{ color: "#D1D5DB", fontSize: 16 }}>—</span>
                       )
                     ) : (
                       <span
@@ -1236,7 +1240,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* FAQ */}
-      <section style={{ padding: "80px 24px", background: "#fff" }}>
+      <section style={{ padding: "120px 24px 80px", background: "#fff" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>{isZh ? "常見問題" : "FAQ"}</h2>
@@ -1304,21 +1308,91 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
       {/* ─── FOOTER ─── */}
       <footer style={{
-        padding: "24px", textAlign: "center",
-        background: "#111", color: "rgba(255,255,255,0.3)", fontSize: 12,
+        padding: "56px 24px 32px",
+        background: "#0A0A0A",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
       }}>
-        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 8 }}>
-          <Link href={`/${locale}`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>
-            {isZh ? "首頁" : "Home"}
-          </Link>
-          <Link href={`/${locale}/terms`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>
-            {isZh ? "條款" : "Terms"}
-          </Link>
-          <Link href={`/${locale}/privacy`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>
-            {isZh ? "私隱" : "Privacy"}
-          </Link>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 32,
+            marginBottom: 40,
+          }}>
+            {/* Column 1: Product */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+                {isZh ? "產品" : "Product"}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                <Link href={`/${locale}`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  {isZh ? "首頁" : "Home"}
+                </Link>
+                <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  {isZh ? "定價" : "Pricing"}
+                </Link>
+              </div>
+            </div>
+            {/* Column 2: Support */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+                {isZh ? "支援" : "Support"}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                <Link href={`/${locale}/contact`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  {isZh ? "聯絡我們" : "Contact"}
+                </Link>
+                <a href="https://wa.me/85298765432" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  WhatsApp
+                </a>
+              </div>
+            </div>
+            {/* Column 3: Legal */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+                {isZh ? "法律" : "Legal"}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                <Link href={`/${locale}/terms`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  {isZh ? "條款" : "Terms"}
+                </Link>
+                <Link href={`/${locale}/privacy`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  {isZh ? "私隱" : "Privacy"}
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div style={{
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            paddingTop: 24,
+            textAlign: "center" as const,
+          }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 12 }}>
+              <span style={{ color: "#FF9500" }}>W</span>o<span style={{ color: "#FF9500" }}>W</span>lix
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 12 }}>
+              {/* Instagram */}
+              <a href="https://www.instagram.com/wowlix.hk" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.35)", transition: "color 0.2s", padding: 8, minHeight: 44, display: "inline-flex", alignItems: "center" }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" />
+                  <circle cx="12" cy="12" r="5" />
+                  <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
+                </svg>
+              </a>
+              {/* WhatsApp */}
+              <a href="https://wa.me/85298765432" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.35)", transition: "color 0.2s", padding: 8, minHeight: 44, display: "inline-flex", alignItems: "center" }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+              </a>
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>
+              © 2026 WoWlix by Flow Studio HK
+            </div>
+          </div>
         </div>
-        © 2026 WoWlix by Flow Studio HK
       </footer>
     </div>
   );
