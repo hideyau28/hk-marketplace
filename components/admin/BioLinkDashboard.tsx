@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { Camera, Plus, Eye, Copy, Check, Star, Edit, GripVertical } from "lucide-react";
 import {
@@ -189,6 +190,11 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
   const [isEditMode, setIsEditMode] = useState(false);
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // 當 router.refresh() 觸發 server re-render 後，同步更新本地 products state
+  useEffect(() => {
+    setProducts(initialProducts);
+  }, [initialProducts]);
   const [quickSort, setQuickSort] = useState<QuickSort>("manual");
   const [confirmBatchDelete, setConfirmBatchDelete] = useState(false);
 
@@ -463,20 +469,35 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
 
       {/* Empty state */}
       {isEmpty && (
-        <button
-          onClick={handleNewProduct}
-          className="w-full border-2 border-dashed border-zinc-300 rounded-2xl p-8 text-center hover:border-[#FF9500] hover:bg-orange-50/50 transition-colors group"
-        >
-          <div className="w-16 h-16 rounded-full bg-zinc-100 group-hover:bg-[#FF9500]/10 flex items-center justify-center mx-auto mb-4 transition-colors">
-            <Camera size={28} className="text-zinc-400 group-hover:text-[#FF9500] transition-colors" />
-          </div>
-          <p className="text-lg font-semibold text-zinc-700 group-hover:text-[#FF9500] transition-colors">
-            {isZh ? "加你第一件商品" : "Add your first product"}
-          </p>
-          <p className="text-sm text-zinc-400 mt-1">
-            {isZh ? "影相或上傳就搞掂" : "Take a photo or upload an image"}
-          </p>
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleNewProduct}
+            className="w-full border-2 border-dashed border-zinc-300 rounded-2xl p-8 text-center hover:border-[#FF9500] hover:bg-orange-50/50 transition-colors group"
+          >
+            <div className="w-16 h-16 rounded-full bg-zinc-100 group-hover:bg-[#FF9500]/10 flex items-center justify-center mx-auto mb-4 transition-colors">
+              <Camera size={28} className="text-zinc-400 group-hover:text-[#FF9500] transition-colors" />
+            </div>
+            <p className="text-lg font-semibold text-zinc-700 group-hover:text-[#FF9500] transition-colors">
+              {isZh ? "加你第一件商品" : "Add your first product"}
+            </p>
+            <p className="text-sm text-zinc-400 mt-1">
+              {isZh ? "影相或上傳就搞掂" : "Take a photo or upload an image"}
+            </p>
+          </button>
+
+          {/* 店舖設定提示 — 未設定 Banner 或頭像時顯示 */}
+          {(!tenant.coverPhoto || !tenant.logoUrl) && (
+            <Link
+              href={`/${locale}/admin/settings`}
+              className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-5 py-4 hover:bg-zinc-100 transition-colors"
+            >
+              <p className="text-sm text-zinc-600">
+                {isZh ? "去設定換你嘅店舖 Banner 同頭像" : "Set up your store banner and avatar"}
+              </p>
+              <span className="text-zinc-400 text-sm">→</span>
+            </Link>
+          )}
+        </div>
       )}
 
       {/* Product grid */}
@@ -501,15 +522,19 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
 
               {/* Add new product card — normal mode only */}
               {!isEditMode && (
-                <button
-                  onClick={handleNewProduct}
-                  className="aspect-square rounded-xl border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] hover:bg-orange-50/50 transition-colors group"
-                >
-                  <Plus size={24} className="text-zinc-400 group-hover:text-[#FF9500] transition-colors" />
-                  <span className="text-xs text-zinc-400 group-hover:text-[#FF9500] mt-1 transition-colors">
-                    {isZh ? "新增" : "Add"}
-                  </span>
-                </button>
+                <div>
+                  <button
+                    onClick={handleNewProduct}
+                    className="aspect-square w-full rounded-xl border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] hover:bg-orange-50/50 transition-colors group"
+                  >
+                    <Plus size={24} className="text-zinc-400 group-hover:text-[#FF9500] transition-colors" />
+                  </button>
+                  <div className="mt-1.5">
+                    <p className="text-xs text-zinc-400 text-center group-hover:text-[#FF9500] transition-colors">
+                      {isZh ? "新增" : "Add"}
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
           </SortableContext>

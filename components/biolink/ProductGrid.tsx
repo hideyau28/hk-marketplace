@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ProductForBioLink } from "@/lib/biolink-helpers";
 import BioProductCard from "./BioProductCard";
 import { useTemplate } from "@/lib/template-context";
@@ -10,9 +11,10 @@ type Props = {
   onAdd: (product: ProductForBioLink) => void;
   onTap?: (product: ProductForBioLink) => void;
   searchQuery?: string;
+  locale?: string;
 };
 
-export default function ProductGrid({ products, currency, onAdd, onTap, searchQuery }: Props) {
+export default function ProductGrid({ products, currency, onAdd, onTap, searchQuery, locale }: Props) {
   const tmpl = useTemplate();
 
   if (products.length === 0) {
@@ -30,6 +32,15 @@ export default function ProductGrid({ products, currency, onAdd, onTap, searchQu
           <p className="text-sm font-medium" style={{ color: tmpl.subtext }}>
             {emptyMessage}
           </p>
+          {/* 空店舖 CTA — 搜尋為空唔顯示，方便店主去後台加商品 */}
+          {!searchQuery && (
+            <Link
+              href={`/${locale ?? "zh-HK"}/admin/products`}
+              className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-zinc-500 hover:text-zinc-700 underline underline-offset-2 transition-colors"
+            >
+              去管理後台加商品 →
+            </Link>
+          )}
         </div>
       </section>
     );

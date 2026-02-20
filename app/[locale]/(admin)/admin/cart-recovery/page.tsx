@@ -110,10 +110,11 @@ export default async function AdminCartRecovery({
 
   // 統計
   const totalAbandoned = orders.length;
-  const totalAmount = orders.reduce((sum, o) => {
+  let totalAmount = 0;
+  for (const o of orders) {
     const amounts = o.amounts as Record<string, unknown> | null;
-    return sum + (Number(amounts?.total) || 0);
-  }, 0);
+    totalAmount += Number(amounts?.total) || 0;
+  }
   const contactedCount = orders.filter(
     (o) => o.recoveryStatus === "contacted"
   ).length;

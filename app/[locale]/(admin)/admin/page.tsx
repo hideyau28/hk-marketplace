@@ -104,7 +104,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
   const [tenant, recentOrders, allRecentOrders] = await Promise.all([
     prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { name: true },
+      select: { name: true, coverPhoto: true, logoUrl: true },
     }),
     prisma.order.findMany({
       where: { tenantId },
@@ -246,6 +246,17 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
             <div className="text-2xl font-bold text-zinc-900">{monthStats.orderCount}</div>
           </div>
         </div>
+
+        {/* 店舖設定提示 — 未設定 Banner 或頭像時顯示 */}
+        {(!tenant?.coverPhoto || !tenant?.logoUrl) && (
+          <Link
+            href={`/${locale}/admin/settings`}
+            className="mt-4 flex items-center justify-between rounded-xl border border-olive-200 bg-white/60 px-4 py-3 hover:bg-white/80 transition-colors"
+          >
+            <p className="text-sm text-zinc-600">去設定換你嘅店舖 Banner 同頭像</p>
+            <span className="text-zinc-400 text-sm">→</span>
+          </Link>
+        )}
       </div>
 
       {/* Analytics stat cards */}
