@@ -39,7 +39,7 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { resolved, cycleMode } = useTheme();
   const { user, loading: authLoading, logout } = useAuth();
-  const tenantBranding = useTenantBranding();
+  const { branding: tenantBranding } = useTenantBranding();
 
   // Close user menu when clicking outside
   useEffect(() => {

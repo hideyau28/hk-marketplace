@@ -15,7 +15,7 @@ export default function AdminSidebar() {
   const router = useRouter();
   const locale = (params.locale as string) || "en";
   const t = getDict(locale as Locale);
-  const tenantBranding = useTenantBranding();
+  const { branding: tenantBranding, loading: brandingLoading } = useTenantBranding();
 
   // Guard: don't render if not in SidebarProvider context
   if (!sidebar) {
@@ -67,7 +67,11 @@ export default function AdminSidebar() {
       >
         {/* Logo */}
         <div className="p-4 pt-4 border-b border-zinc-800">
-          <h1 className="text-lg font-bold">{tenantBranding.name}</h1>
+          {brandingLoading ? (
+            <div className="h-6 w-32 bg-zinc-700 rounded animate-pulse" />
+          ) : (
+            <h1 className="text-lg font-bold">{tenantBranding.name}</h1>
+          )}
           <p className="text-zinc-400 text-sm mt-1">Admin Panel</p>
         </div>
 
