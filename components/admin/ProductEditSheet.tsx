@@ -1060,7 +1060,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-zinc-300 text-zinc-600 hover:border-[#FF9500] hover:text-[#FF9500] transition-colors text-sm font-medium w-full justify-center"
       >
         <Plus size={16} />
-        {isZh ? "加選項" : "Add options"}
+        {isZh ? "加尺碼 / 顏色選項" : "Add size / color options"}
       </button>
     </div>
   );

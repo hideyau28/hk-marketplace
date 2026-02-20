@@ -63,18 +63,6 @@ const t = {
     taglineOptional: "Tagline (optional)",
     taglinePlaceholder: "e.g. Artisan Oolong Tea Shop",
     taglineSkipHint: "You can skip this",
-    // Step 4: Payment
-    setupPayment: "Payment methods",
-    setupPaymentSub: "How will customers pay you?",
-    fpsName: "FPS 轉數快",
-    fpsDesc: "Most popular in HK",
-    paymeName: "PayMe",
-    paymeDesc: "Great for young customers",
-    alipayHkName: "AlipayHK",
-    alipayHkDesc: "For mainland customers",
-    bankTransferName: "Bank Transfer",
-    bankTransferDesc: "Traditional & reliable",
-    skipPayment: "Set up later",
     createStore: "Create my store",
     creating: "Creating your store...",
     // Step 5: Done
@@ -84,6 +72,7 @@ const t = {
     copyLink: "Copy",
     openMyStore: "Open my store",
     goToAdmin: "Go to admin dashboard",
+    paymentReminder: "Remember to add your payment details in Settings → Payment Methods",
     // Google signup
     signUpWithGoogle: "Sign up with Google",
     orDivider: "or",
@@ -101,8 +90,8 @@ const t = {
     upgradeCtaDesc: "Unlock more products, orders & features as your store grows",
     liteTag: "Lite — $78/mo",
     proTag: "Pro — $198/mo",
-    liteBenefitShort: "50 products, unlimited orders, coupons + WhatsApp",
-    proBenefitShort: "Unlimited everything, custom domain, CRM + analytics",
+    liteBenefitShort: "50 products, unlimited orders, all 7 payment methods, coupons + WhatsApp",
+    proBenefitShort: "Unlimited everything, custom domain (add-on), abandoned cart recovery, CRM + analytics",
     viewPlans: "View plans & upgrade",
   },
   "zh-HK": {
@@ -160,18 +149,6 @@ const t = {
     taglineOptional: "簡介（選填）",
     taglinePlaceholder: "例如：手工烏龍茶專門店",
     taglineSkipHint: "可以跳過",
-    // Step 4: Payment
-    setupPayment: "收款方式",
-    setupPaymentSub: "客人點樣畀錢你？",
-    fpsName: "FPS 轉數快",
-    fpsDesc: "香港最常用",
-    paymeName: "PayMe",
-    paymeDesc: "年輕客群必備",
-    alipayHkName: "AlipayHK",
-    alipayHkDesc: "內地客人適用",
-    bankTransferName: "銀行過數",
-    bankTransferDesc: "傳統可靠",
-    skipPayment: "之後再設定",
     createStore: "開店",
     creating: "建立緊你嘅小店...",
     // Step 5: Done
@@ -181,6 +158,7 @@ const t = {
     copyLink: "複製",
     openMyStore: "開啟我的店",
     goToAdmin: "去管理後台",
+    paymentReminder: "記得去「設定 → 收款方式」加入你嘅收款資料",
     // Google signup
     signUpWithGoogle: "以 Google 註冊",
     orDivider: "或",
@@ -198,8 +176,8 @@ const t = {
     upgradeCtaDesc: "解鎖更多產品、訂單同進階功能",
     liteTag: "Lite — $78/月",
     proTag: "Pro — $198/月",
-    liteBenefitShort: "50 件產品、無限訂單、優惠碼 + WhatsApp",
-    proBenefitShort: "無限全部、自訂域名、CRM + 數據分析",
+    liteBenefitShort: "50 件產品、無限訂單、全部 7 款收款方式、優惠碼 + WhatsApp",
+    proBenefitShort: "無限全部、自訂域名（加購）、棄單挽回、CRM + 數據分析",
     viewPlans: "睇方案 & 升級",
   },
 } as const;
@@ -212,8 +190,8 @@ function getOnboardingPlans(isZh: boolean) {
       name: "Free",
       price: 0,
       features: isZh
-        ? ["10 件商品", "每月 50 單", "FPS + PayMe + AlipayHK", "Mochi 主題"]
-        : ["10 products", "50 orders/mo", "FPS + PayMe + AlipayHK", "Mochi theme"],
+        ? ["10 件商品", "每月 50 單", "3 款收款方式", "1 款店鋪主題"]
+        : ["10 products", "50 orders/mo", "3 payment methods", "1 store theme"],
       badge: null,
       footnote: isZh ? "永久免費" : "Free forever",
       bg: "bg-white border-zinc-200",
@@ -224,8 +202,8 @@ function getOnboardingPlans(isZh: boolean) {
       name: "Lite",
       price: 78,
       features: isZh
-        ? ["50 件商品", "無限訂單", "全部主題", "優惠碼 + WhatsApp"]
-        : ["50 products", "Unlimited orders", "All themes", "Coupons + WhatsApp"],
+        ? ["50 件商品", "無限訂單", "全部 7 款收款方式", "全部主題", "優惠碼 + WhatsApp"]
+        : ["50 products", "Unlimited orders", "All 7 payment methods", "All themes", "Coupons + WhatsApp"],
       badge: isZh ? "最受歡迎" : "Most popular",
       footnote: isZh ? "開店後設定付款" : "Set up billing after opening",
       bg: "bg-gradient-to-b from-orange-50 to-amber-50 border-[#FF9500]",
@@ -236,42 +214,12 @@ function getOnboardingPlans(isZh: boolean) {
       name: "Pro",
       price: 198,
       features: isZh
-        ? ["無限商品/訂單", "自訂域名", "CRM + 數據分析", "移除 branding"]
-        : ["Unlimited everything", "Custom domain", "CRM + Analytics", "Remove branding"],
+        ? ["無限商品/訂單", "自訂域名（加購・即將推出）", "棄單挽回", "熱賣排行", "CRM + 數據分析", "移除 branding"]
+        : ["Unlimited everything", "Custom domain (add-on, coming soon)", "Abandoned cart recovery", "Bestseller ranking", "CRM + Analytics", "Remove branding"],
       badge: null,
       footnote: isZh ? "開店後設定付款" : "Set up billing after opening",
       bg: "bg-zinc-900 border-zinc-700",
       accent: "#FFFFFF",
-    },
-  ];
-}
-
-// --- Payment method options ---
-function getPaymentOptions(isZh: boolean) {
-  return [
-    {
-      id: "fps",
-      icon: "🏦",
-      name: isZh ? "FPS 轉數快" : "FPS 轉數快",
-      desc: isZh ? "香港最常用" : "Most popular in HK",
-    },
-    {
-      id: "payme",
-      icon: "📱",
-      name: "PayMe",
-      desc: isZh ? "年輕客群必備" : "Great for young customers",
-    },
-    {
-      id: "alipay_hk",
-      icon: "🅰️",
-      name: "AlipayHK",
-      desc: isZh ? "內地客人適用" : "For mainland customers",
-    },
-    {
-      id: "bank_transfer",
-      icon: "🏧",
-      name: isZh ? "銀行過數" : "Bank Transfer",
-      desc: isZh ? "傳統可靠" : "Traditional & reliable",
     },
   ];
 }
@@ -293,7 +241,7 @@ function nameToSlug(name: string): string {
 
 type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
-type OnboardingStep = 1 | 2 | 3 | 4 | 5;
+type OnboardingStep = 1 | 2 | 3 | 4;
 
 interface OnboardingData {
   plan: string;
@@ -307,7 +255,6 @@ interface OnboardingData {
   instagram: string;
   templateId: string;
   tagline: string;
-  paymentMethods: string[];
 }
 
 const slideVariants = {
@@ -328,13 +275,12 @@ interface OnboardingWizardProps {
 }
 
 const STORAGE_KEY = "onboarding-wizard-state";
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 export default function OnboardingWizard({ locale, initialGoogleEmail }: OnboardingWizardProps) {
   const labels = locale === "zh-HK" ? t["zh-HK"] : t.en;
   const isZh = locale === "zh-HK";
   const plans = getOnboardingPlans(isZh);
-  const paymentOptions = getPaymentOptions(isZh);
 
   const [step, setStep] = useState<OnboardingStep>(1);
   const [direction, setDirection] = useState(1);
@@ -350,7 +296,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     instagram: "",
     templateId: "mochi",
     tagline: "",
-    paymentMethods: [],
   });
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
   const [slugReason, setSlugReason] = useState("");
@@ -482,15 +427,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     });
   };
 
-  const togglePaymentMethod = (methodId: string) => {
-    setData((prev) => {
-      const methods = prev.paymentMethods.includes(methodId)
-        ? prev.paymentMethods.filter((m) => m !== methodId)
-        : [...prev.paymentMethods, methodId];
-      return { ...prev, paymentMethods: methods };
-    });
-  };
-
   // --- Step navigation ---
   const goNext = () => {
     setDirection(1);
@@ -543,11 +479,15 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
   const handleNext = () => {
     if (step === 2 && !validateStep2()) return;
     if (step === 2 && slugStatus === "checking") return;
+    if (step === 3) {
+      handleRegister();
+      return;
+    }
     goNext();
   };
 
-  // --- Submit registration at end of Step 4 ---
-  const handleRegister = async (skipPayment = false) => {
+  // --- Submit registration at end of Step 3 ---
+  const handleRegister = async () => {
     if (!validateStep2()) {
       setDirection(-1);
       setStep(2);
@@ -556,8 +496,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
 
     setSubmitting(true);
     setGlobalError("");
-
-    const selectedPayments = skipPayment ? [] : data.paymentMethods;
 
     try {
       const res = await fetch("/api/tenant/register", {
@@ -573,7 +511,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
           instagram: data.instagram.trim().replace(/^@/, "") || undefined,
           templateId: data.templateId,
           tagline: data.tagline.trim() || undefined,
-          paymentMethods: selectedPayments.length > 0 ? selectedPayments : undefined,
         }),
       });
 
@@ -1199,112 +1136,24 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   <button
                     onClick={goBack}
                     type="button"
-                    className="flex-1 py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px]"
+                    disabled={submitting}
+                    className="flex-1 py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px] disabled:opacity-50"
                   >
                     &larr; {labels.back}
                   </button>
                   <button
                     onClick={handleNext}
-                    className="flex-1 py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px]"
-                  >
-                    {labels.next} &rarr;
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* ======== STEP 4: Payment Methods ======== */}
-            {step === 4 && (
-              <div className="space-y-5">
-                <div className="text-center">
-                  <h2 className="text-xl font-bold text-zinc-900">
-                    {labels.setupPayment}
-                  </h2>
-                  <p className="text-zinc-500 text-sm mt-1">
-                    {labels.setupPaymentSub}
-                  </p>
-                </div>
-
-                {/* Payment method cards — 2x2 grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  {paymentOptions.map((method) => {
-                    const isSelected = data.paymentMethods.includes(method.id);
-                    return (
-                      <button
-                        key={method.id}
-                        type="button"
-                        onClick={() => togglePaymentMethod(method.id)}
-                        className={`rounded-xl border-2 p-3 text-left transition-all duration-200 ${
-                          isSelected
-                            ? "border-[#FF9500] bg-orange-50 ring-1 ring-[#FF9500]/20"
-                            : "border-zinc-200 bg-white hover:border-zinc-300"
-                        }`}
-                      >
-                        <div className="flex items-start justify-between">
-                          <span className="text-2xl">{method.icon}</span>
-                          <div
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                              isSelected
-                                ? "border-[#FF9500] bg-[#FF9500]"
-                                : "border-zinc-300"
-                            }`}
-                          >
-                            {isSelected && (
-                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            )}
-                          </div>
-                        </div>
-                        <p className="font-semibold text-sm text-zinc-900 mt-2">
-                          {method.name}
-                        </p>
-                        <p className="text-[11px] text-zinc-500 mt-0.5">
-                          {method.desc}
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Nav buttons */}
-                <div className="space-y-2">
-                  <button
-                    onClick={() => handleRegister(false)}
-                    disabled={submitting || data.paymentMethods.length === 0}
-                    className="w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
+                    disabled={submitting}
+                    className="flex-1 py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] disabled:opacity-50"
                   >
                     {submitting ? labels.creating : `${labels.createStore} →`}
                   </button>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={goBack}
-                      type="button"
-                      disabled={submitting}
-                      className="flex-1 py-2.5 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-sm hover:bg-zinc-50 transition-colors disabled:opacity-50"
-                    >
-                      &larr; {labels.back}
-                    </button>
-                    <button
-                      onClick={() => handleRegister(true)}
-                      type="button"
-                      disabled={submitting}
-                      className="flex-1 py-2.5 rounded-xl border border-zinc-200 text-zinc-500 font-medium text-sm hover:bg-zinc-50 transition-colors disabled:opacity-50"
-                    >
-                      {labels.skipPayment} &rarr;
-                    </button>
-                  </div>
                 </div>
               </div>
             )}
 
-            {/* ======== STEP 5: Done ======== */}
-            {step === 5 && (
+            {/* ======== STEP 4: Done ======== */}
+            {step === 4 && (
               <div className="space-y-5 text-center">
                 <div className="text-4xl">🎉</div>
                 <h2 className="text-xl font-bold text-zinc-900">
@@ -1351,6 +1200,51 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   </div>
                 </div>
 
+                {/* Payment setup reminder */}
+                <div className="bg-amber-50 rounded-xl px-4 py-3 border border-amber-200 text-left">
+                  <p className="text-sm text-amber-800 font-medium">
+                    {labels.paymentReminder}
+                  </p>
+                </div>
+
+                {/* Primary CTA: Go to admin */}
+                <a
+                  href={`/${locale}/admin`}
+                  className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] leading-[48px]"
+                >
+                  {labels.goToAdmin} &rarr;
+                </a>
+
+                {/* Secondary CTA: Open my store */}
+                <a
+                  href={`https://wowlix.com/${createdSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-3 rounded-xl border-2 border-[#FF9500] text-[#FF9500] font-semibold text-base hover:bg-[#FF9500]/5 transition-colors min-h-[48px] leading-[48px]"
+                >
+                  {labels.openMyStore} &rarr;
+                </a>
+
+                {/* Billing CTA for paid plans */}
+                {(data.plan === "lite" || data.plan === "pro") && (
+                  <div className="space-y-2">
+                    <button
+                      onClick={handleSetupBilling}
+                      disabled={billingRedirecting}
+                      className="block w-full py-2.5 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-sm hover:bg-zinc-50 transition-colors disabled:opacity-70"
+                    >
+                      {billingRedirecting
+                        ? "..."
+                        : `${labels.setupBilling} →`}
+                    </button>
+                    <p className="text-[11px] text-zinc-400">
+                      {labels.setupBillingDesc
+                        .replace("{plan}", data.plan === "pro" ? "Pro" : "Lite")
+                        .replace("{price}", data.plan === "pro" ? "198" : "78")}
+                    </p>
+                  </div>
+                )}
+
                 {/* Upgrade CTA for free users */}
                 {data.plan === "free" && (
                   <div className="bg-gradient-to-b from-orange-50 to-amber-50 rounded-xl border border-orange-200 p-4 space-y-3">
@@ -1380,48 +1274,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     </a>
                   </div>
                 )}
-
-                {/* Billing CTA for paid plans */}
-                {(data.plan === "lite" || data.plan === "pro") && (
-                  <div className="space-y-2">
-                    <button
-                      onClick={handleSetupBilling}
-                      disabled={billingRedirecting}
-                      className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] disabled:opacity-70"
-                    >
-                      {billingRedirecting
-                        ? "..."
-                        : `${labels.setupBilling} →`}
-                    </button>
-                    <p className="text-[11px] text-zinc-400">
-                      {labels.setupBillingDesc
-                        .replace("{plan}", data.plan === "pro" ? "Pro" : "Lite")
-                        .replace("{price}", data.plan === "pro" ? "198" : "78")}
-                    </p>
-                  </div>
-                )}
-
-                {/* Main CTA: Open my store */}
-                <a
-                  href={`https://wowlix.com/${createdSlug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`block w-full py-3 rounded-xl font-semibold text-base transition-colors min-h-[48px] leading-[48px] ${
-                    data.plan === "lite" || data.plan === "pro"
-                      ? "border-2 border-[#FF9500] text-[#FF9500] hover:bg-[#FF9500]/5"
-                      : "bg-[#FF9500] text-white hover:bg-[#E68600]"
-                  }`}
-                >
-                  {labels.openMyStore} &rarr;
-                </a>
-
-                {/* Secondary CTA: Go to admin */}
-                <a
-                  href={`/${locale}/admin`}
-                  className="block w-full py-3 rounded-xl border-2 border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px] leading-[48px]"
-                >
-                  {labels.goToAdmin} &rarr;
-                </a>
               </div>
             )}
           </motion.div>
