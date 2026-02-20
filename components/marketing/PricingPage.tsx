@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ShoppingBag, Smartphone, RefreshCw, Award } from "lucide-react";
+import { ShoppingBag, Smartphone, RefreshCw, Award, Shield, DollarSign, Zap } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 
 /* ─── Inline SVG Icons (monoline, stroke #FF9500) ─── */
@@ -54,7 +54,7 @@ function getPlans(isZh: boolean) {
       price: 78,
       period: isZh ? "/月" : "/mo",
       subtitle: isZh ? "認真副業首選" : "For growing side hustles",
-      cta: isZh ? "立即訂閱" : "Subscribe",
+      cta: isZh ? "免費試用 Lite" : "Try Lite Free",
       ctaStyle: "outline" as const,
       features: isZh
         ? ["50 件商品", "無限訂單", "FPS + PayMe + AlipayHK + 銀行過數", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "基本數據分析", "2 員工帳號"]
@@ -69,7 +69,7 @@ function getPlans(isZh: boolean) {
       price: 198,
       period: isZh ? "/月" : "/mo",
       subtitle: isZh ? "全職生意必備" : "For full-time businesses",
-      cta: isZh ? "免費試 14 日" : "Try 14 days free",
+      cta: isZh ? "免費試用 Pro" : "Try Pro Free",
       ctaStyle: "primary" as const,
       badge: isZh ? "最受歡迎" : "Most popular",
       features: isZh
@@ -217,7 +217,7 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
   const bgStyles: Record<string, React.CSSProperties> = {
     white: { background: "#fff", color: "#1A1A1A", border: "1px solid #E5E7EB" },
     highlight: {
-      background: "rgba(255,149,0,0.05)",
+      background: "#FFF9F2",
       color: "#1A1A1A",
       border: "2px solid #FF9500",
     },
@@ -249,7 +249,7 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
           : "scale(1)",
         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         boxShadow: plan.highlight
-          ? "0 8px 32px rgba(255,149,0,0.15)"
+          ? "0 12px 40px rgba(255,149,0,0.25), 0 4px 12px rgba(0,0,0,0.06)"
           : hovered
           ? "0 12px 40px rgba(0,0,0,0.1)"
           : "0 4px 20px rgba(0,0,0,0.06)",
@@ -280,22 +280,7 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
           {plan.badge}
         </div>
       )}
-      <div
-        style={{
-          position: "absolute",
-          top: 16,
-          left: 20,
-          background: "#FFF3E0",
-          borderRadius: 20,
-          padding: "3px 10px",
-          fontSize: 11,
-          fontWeight: 600,
-          color: "#FF9500",
-        }}
-      >
-        {isZh ? "0% 平台抽成" : "0% platform fee"}
-      </div>
-      <div style={{ marginTop: 28 }}>
+      <div style={{ marginTop: plan.badge ? 20 : 0 }}>
         <div style={{ fontSize: 16, fontWeight: 600, opacity: 0.7, marginBottom: 4 }}>{plan.name}</div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
           <span style={{ fontSize: 14, opacity: 0.5 }}>$</span>
@@ -308,12 +293,6 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
         {plan.features.map((f, i) => (
           <div key={i} style={{ display: "flex", gap: 10, fontSize: 14, lineHeight: 1.5 }}>
             <span style={{ color: "#FF9500", flexShrink: 0, fontSize: 16 }}>✓</span>
-            <span>{f}</span>
-          </div>
-        ))}
-        {plan.noFeatures.map((f, i) => (
-          <div key={i} style={{ display: "flex", gap: 10, fontSize: 14, lineHeight: 1.5, opacity: 0.35 }}>
-            <span style={{ flexShrink: 0, fontSize: 16 }}>✗</span>
             <span>{f}</span>
           </div>
         ))}
@@ -334,7 +313,25 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
       >
         {plan.cta}
       </button>
-      <div style={{ textAlign: "center", fontSize: 12, opacity: 0.5 }}>{plan.footnote}</div>
+      {plan.highlight ? (
+        <div style={{ textAlign: "center" }}>
+          <span
+            style={{
+              display: "inline-block",
+              background: "#FFF3E0",
+              color: "#E68600",
+              padding: "6px 16px",
+              borderRadius: 20,
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            {isZh ? "14 日免費試用" : "14-day free trial"}
+          </span>
+        </div>
+      ) : (
+        <div style={{ textAlign: "center", fontSize: 12, opacity: 0.5 }}>{plan.footnote}</div>
+      )}
     </div>
   );
 }
@@ -380,7 +377,12 @@ function Calculator({ isZh }: { isZh: boolean }) {
             step={1000}
             value={gmv}
             onChange={(e) => setGmv(+e.target.value)}
-            style={{ width: "100%", accentColor: "#FF9500", height: 8, cursor: "pointer" }}
+            style={{
+              width: "100%",
+              cursor: "pointer",
+              height: 12,
+              background: `linear-gradient(to right, #FF9500 0%, #FFB347 ${((gmv - 5000) / 45000) * 100}%, #e5e7eb ${((gmv - 5000) / 45000) * 100}%, #e5e7eb 100%)`,
+            }}
           />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, opacity: 0.5 }}>
@@ -677,35 +679,33 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         .pricing-page input[type="range"] {
           -webkit-appearance: none;
           appearance: none;
-          background: #e5e7eb;
           border-radius: 999px;
           outline: none;
-          height: 8px;
+          height: 12px;
           cursor: pointer;
         }
         .pricing-page input[type="range"]::-webkit-slider-thumb {
           -webkit-appearance: none;
-          width: 28px;
-          height: 28px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           background: #ff9500;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(255, 149, 0, 0.4);
-          border: 3px solid #fff;
+          box-shadow: 0 4px 14px rgba(255, 149, 0, 0.5), 0 2px 6px rgba(0,0,0,0.1);
+          border: 4px solid #fff;
         }
         .pricing-page input[type="range"]::-moz-range-thumb {
-          width: 22px;
-          height: 22px;
+          width: 30px;
+          height: 30px;
           border-radius: 50%;
           background: #ff9500;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(255, 149, 0, 0.4);
-          border: 3px solid #fff;
+          box-shadow: 0 4px 14px rgba(255, 149, 0, 0.5), 0 2px 6px rgba(0,0,0,0.1);
+          border: 4px solid #fff;
         }
         .pricing-page input[type="range"]::-moz-range-track {
-          background: #e5e7eb;
           border-radius: 999px;
-          height: 8px;
+          height: 12px;
         }
       `}</style>
 
@@ -795,25 +795,40 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <div
             style={{
               display: "inline-flex",
-              gap: 12,
-              marginBottom: 24,
+              gap: 16,
+              marginBottom: 28,
               flexWrap: "wrap",
               justifyContent: "center",
             }}
           >
-            {(isZh ? ["0% 平台抽成", "$0 起", "2 分鐘開店"] : ["0% platform fee", "$0 start", "2-min setup"]).map((badge, i) => (
+            {(isZh
+              ? [
+                  { text: "0% 平台抽成", icon: <Shield size={18} strokeWidth={2.5} /> },
+                  { text: "$0 起", icon: <DollarSign size={18} strokeWidth={2.5} /> },
+                  { text: "2 分鐘開店", icon: <Zap size={18} strokeWidth={2.5} /> },
+                ]
+              : [
+                  { text: "0% platform fee", icon: <Shield size={18} strokeWidth={2.5} /> },
+                  { text: "$0 start", icon: <DollarSign size={18} strokeWidth={2.5} /> },
+                  { text: "2-min setup", icon: <Zap size={18} strokeWidth={2.5} /> },
+                ]
+            ).map((badge, i) => (
               <span
                 key={i}
                 style={{
                   background: i === 0 ? "#FF9500" : "#FFF3E0",
                   color: i === 0 ? "#fff" : "#E68600",
-                  padding: "6px 16px",
-                  borderRadius: 20,
-                  fontSize: 14,
+                  padding: "8px 20px",
+                  borderRadius: 24,
+                  fontSize: 16,
                   fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
                 }}
               >
-                {badge}
+                {badge.icon}
+                {badge.text}
               </span>
             ))}
           </div>
@@ -870,7 +885,19 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 ]
             ).map((step, i) => (
               <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-                <div style={{ marginBottom: 8 }}>{ICONS[step.icon]}</div>
+                <div
+                  style={{
+                    background: "#F3F4F6",
+                    borderRadius: 28,
+                    padding: "14px 28px",
+                    marginBottom: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div style={{ transform: "scale(1.4)" }}>{ICONS[step.icon]}</div>
+                </div>
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{step.label}</div>
                 <div style={{ fontSize: 12, color: "#999" }}>{step.desc}</div>
               </div>
@@ -886,7 +913,23 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, marginBottom: 8 }}>
               {isZh ? "揀個啱你嘅 Plan" : "Pick the right plan"}
             </h2>
-            <p style={{ color: "#888", fontSize: 16 }}>{isZh ? "全部 plan 0% 平台抽成・月繳無綁約" : "All plans 0% platform fee · monthly, no lock-in"}</p>
+            <p style={{ color: "#888", fontSize: 16, marginBottom: 16 }}>{isZh ? "全部 plan 月繳無綁約" : "All plans monthly, no lock-in"}</p>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "linear-gradient(90deg, #FFF3E0, #FFEDD5)",
+                padding: "10px 24px",
+                borderRadius: 24,
+                fontSize: 15,
+                fontWeight: 700,
+                color: "#E68600",
+              }}
+            >
+              <Shield size={18} color="#FF9500" strokeWidth={2.5} />
+              {isZh ? "所有 Plan 均 0% 平台抽成" : "0% platform fee on all plans"}
+            </div>
           </div>
           <div
             style={{
