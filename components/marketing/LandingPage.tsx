@@ -231,9 +231,9 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
   ];
 
   const howSteps = [
-    { num: t.howStep1Num, title: t.howStep1Title, desc: t.howStep1Desc },
-    { num: t.howStep2Num, title: t.howStep2Title, desc: t.howStep2Desc },
-    { num: t.howStep3Num, title: t.howStep3Title, desc: t.howStep3Desc },
+    { num: t.howStep1Num, title: t.howStep1Title, desc: t.howStep1Desc, icon: "📦" },
+    { num: t.howStep2Num, title: t.howStep2Title, desc: t.howStep2Desc, icon: "💳" },
+    { num: t.howStep3Num, title: t.howStep3Title, desc: t.howStep3Desc, icon: "🔗" },
   ];
 
   const plans = [
@@ -271,6 +271,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         @media (max-width: 640px) {
           .lp-how-grid { grid-template-columns: 1fr !important; }
           .lp-plan-grid { grid-template-columns: 1fr !important; }
+          .lp-pain-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .lp-testimonial-grid { grid-template-columns: 1fr !important; }
           .lp-stats-row { flex-direction: column !important; gap: 24px !important; }
           .lp-footer-grid { grid-template-columns: repeat(3, 1fr) !important; text-align: center !important; }
@@ -283,7 +284,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
       {/* ─── NAV (Dark) ─── */}
       <nav style={{
-        position: "sticky", top: 0, zIndex: 100,
+        position: "sticky", top: 0, zIndex: 100, width: "100%",
         background: "rgba(13,13,13,0.92)", backdropFilter: "blur(16px)",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}>
@@ -346,13 +347,13 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             {t.painTitle}
           </h2>
           <p style={{
-            fontSize: 18, color: "#6B7280", lineHeight: 1.6, marginBottom: 48,
+            fontSize: 20, fontWeight: 600, color: "#6B7280", lineHeight: 1.6, marginBottom: 48,
           }}>
             {t.painSub1}<br />{t.painSub2}
           </p>
 
           <div className="lp-pain-grid" style={{
-            display: "grid", gridTemplateColumns: "repeat(2, 1fr)",
+            display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
             gap: 12,
           }}>
             {painCards.map((card, i) => (
@@ -366,13 +367,13 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   borderRadius: 14,
                   border: "1px solid #F0F0F0",
                   transition: "all 0.3s",
-                  transform: hoveredPain === i ? "translateY(-2px)" : "translateY(0)",
-                  boxShadow: hoveredPain === i ? "0 8px 24px rgba(0,0,0,0.06)" : "none",
+                  transform: hoveredPain === i ? "translateY(-4px)" : "translateY(0)",
+                  boxShadow: hoveredPain === i ? "0 12px 32px rgba(0,0,0,0.10)" : "none",
                   display: "flex", flexDirection: "column" as const, alignItems: "center",
                   textAlign: "center" as const, minHeight: 120,
                 }}
               >
-                <div style={{ fontSize: 32, lineHeight: 1, marginBottom: 8 }}>{card.icon}</div>
+                <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 8 }}>{card.icon}</div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: "#1A1A1A", marginBottom: 4 }}>{card.title}</div>
                 <div style={{ fontSize: 13, color: "#888", lineHeight: 1.4 }}>{card.desc}</div>
               </div>
@@ -404,11 +405,17 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 transition: "all 0.3s",
               }}>
                 <div style={{
-                  fontSize: 40, fontWeight: 900, color: "#FF9500",
-                  fontFamily: "'JetBrains Mono', monospace",
-                  marginBottom: 16, lineHeight: 1,
+                  display: "flex", alignItems: "center", gap: 12,
+                  marginBottom: 16,
                 }}>
-                  {step.num}
+                  <span style={{
+                    fontSize: 40, fontWeight: 900, color: "#FF9500",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    lineHeight: 1,
+                  }}>
+                    {step.num}
+                  </span>
+                  <span style={{ fontSize: 32, lineHeight: 1 }}>{step.icon}</span>
                 </div>
                 <div style={{
                   fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8,
