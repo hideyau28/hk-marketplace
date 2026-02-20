@@ -17,9 +17,12 @@ const t = {
     product: "Add your first product",
     preview: "Preview your store",
     goSettings: "Go to settings",
+    goPayments: "Set up payments",
     goProducts: "Add product",
     goPreview: "Preview",
     complete: "completed",
+    congrats: "Your store is ready",
+    congratsDesc: "You've completed all setup steps. Time to share your store!",
   },
   "zh-HK": {
     title: "設定你嘅店",
@@ -32,9 +35,12 @@ const t = {
     product: "加入第一件商品",
     preview: "預覽店舖",
     goSettings: "去設定",
+    goPayments: "設定收款",
     goProducts: "加商品",
     goPreview: "預覽",
     complete: "已完成",
+    congrats: "恭喜！你嘅店已準備好 🎉",
+    congratsDesc: "你已完成所有設定步驟，立即分享你嘅店！",
   },
 } as const;
 
@@ -55,14 +61,14 @@ interface SetupChecklistProps {
 const DISMISS_KEY = "setup-checklist-dismissed";
 
 export default function SetupChecklist({ locale, status, storeSlug }: SetupChecklistProps) {
-  const [dismissed, setDismissed] = useState(true); // default hidden to avoid flash
+  // Start hidden to avoid SSR flash; useEffect sets real value
+  const [dismissed, setDismissed] = useState(true);
   const isZh = locale === "zh-HK";
   const labels = isZh ? t["zh-HK"] : t.en;
 
   useEffect(() => {
     try {
-      const val = localStorage.getItem(DISMISS_KEY);
-      setDismissed(val === "1");
+      setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
     } catch {
       setDismissed(false);
     }
@@ -75,23 +81,62 @@ export default function SetupChecklist({ locale, status, storeSlug }: SetupCheck
     } catch {}
   };
 
-  // Build checklist items
-  const items = [
+  // Steps 1-5 are auto-detected; step 6 (preview) is always a CTA link
+  const checkableItems = [
     { key: "storeName", label: labels.storeName, done: status.hasStoreName, href: null },
     { key: "whatsapp", label: labels.whatsapp, done: status.hasWhatsapp, href: `/${locale}/admin/settings` },
     { key: "fps", label: labels.fps, done: status.hasFps, href: `/${locale}/admin/settings/payment-methods` },
     { key: "avatar", label: labels.avatar, done: status.hasAvatar, href: `/${locale}/admin/settings` },
     { key: "product", label: labels.product, done: status.hasProduct, href: `/${locale}/admin/products/new` },
-    { key: "preview", label: labels.preview, done: false, href: `https://wowlix.com/${storeSlug}` },
   ];
+  const previewItem = { key: "preview", label: labels.preview, done: false, href: `/${locale}/${storeSlug}` };
+  const allItems = [...checkableItems, previewItem];
 
-  const completedCount = items.filter((i) => i.done).length;
-  const totalCount = items.length;
-  const progressPct = Math.round((completedCount / totalCount) * 100);
-  const allDone = completedCount === totalCount;
+  const completedCount = checkableItems.filter((i) => i.done).length;
+  const totalCheckable = checkableItems.length; // 5
+  const progressPct = Math.round((completedCount / totalCheckable) * 100);
+  const allDone = completedCount === totalCheckable;
 
-  if (dismissed) return null;
+  // When all done and congrats dismissed: hide everything
+  if (allDone && dismissed) return null;
 
+  // When all done (and not dismissed): show congrats banner
+  if (allDone) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3 }}
+          className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 mb-6"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-base font-bold text-emerald-900">{labels.congrats}</h3>
+              <p className="text-sm text-emerald-700 mt-0.5">{labels.congratsDesc}</p>
+              <a
+                href={`/${locale}/${storeSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-3 text-sm font-semibold text-emerald-700 hover:text-emerald-900 underline underline-offset-2 transition-colors"
+              >
+                {labels.goPreview} &rarr;
+              </a>
+            </div>
+            <button
+              onClick={handleDismiss}
+              className="flex-shrink-0 text-xs text-emerald-600 hover:text-emerald-800 transition-colors px-2 py-1 rounded-lg hover:bg-emerald-100"
+            >
+              {labels.dismiss}
+            </button>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  // Not all done: show checklist at top (no dismiss — always visible until complete)
   return (
     <AnimatePresence>
       <motion.div
@@ -102,31 +147,22 @@ export default function SetupChecklist({ locale, status, storeSlug }: SetupCheck
         className="bg-white rounded-2xl border border-zinc-200 p-5 mb-6"
       >
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="text-base font-bold text-zinc-900">{labels.title}</h3>
-            <p className="text-sm text-zinc-500 mt-0.5">{labels.subtitle}</p>
-          </div>
-          <button
-            onClick={handleDismiss}
-            className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors px-2 py-1 rounded-lg hover:bg-zinc-100"
-          >
-            {labels.dismiss}
-          </button>
+        <div className="mb-4">
+          <h3 className="text-base font-bold text-zinc-900">{labels.title}</h3>
+          <p className="text-sm text-zinc-500 mt-0.5">{labels.subtitle}</p>
         </div>
 
         {/* Progress bar */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-medium text-zinc-600">
-              {completedCount}/{totalCount} {labels.complete}
+              {completedCount}/{totalCheckable} {labels.complete}
             </span>
             <span className="text-xs font-bold text-[#FF9500]">{progressPct}%</span>
           </div>
           <div className="h-2 bg-zinc-100 rounded-full overflow-hidden">
             <motion.div
-              className="h-full rounded-full"
-              style={{ backgroundColor: allDone ? "#10B981" : "#FF9500" }}
+              className="h-full rounded-full bg-[#FF9500]"
               initial={{ width: 0 }}
               animate={{ width: `${progressPct}%` }}
               transition={{ duration: 0.6, ease: "easeOut" }}
@@ -134,15 +170,14 @@ export default function SetupChecklist({ locale, status, storeSlug }: SetupCheck
           </div>
         </div>
 
-        {/* Checklist items */}
+        {/* Checklist items (all 6) */}
         <div className="space-y-1">
-          {items.map((item) => (
+          {allItems.map((item) => (
             <ChecklistItem
               key={item.key}
               label={item.label}
               done={item.done}
               href={item.href}
-              locale={locale}
               labels={labels}
               isPreview={item.key === "preview"}
             />
@@ -157,19 +192,19 @@ function ChecklistItem({
   label,
   done,
   href,
-  locale,
   labels,
   isPreview,
 }: {
   label: string;
   done: boolean;
   href: string | null;
-  locale: string;
   labels: (typeof t)["en"] | (typeof t)["zh-HK"];
   isPreview: boolean;
 }) {
   const actionLabel = isPreview
     ? labels.goPreview
+    : href?.includes("payment")
+    ? labels.goPayments
     : href?.includes("product")
     ? labels.goProducts
     : href
@@ -178,7 +213,7 @@ function ChecklistItem({
 
   return (
     <div className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-zinc-50 transition-colors">
-      {/* Checkbox */}
+      {/* Circle indicator */}
       <div
         className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center border-2 transition-colors ${
           done
@@ -198,7 +233,7 @@ function ChecklistItem({
         {label}
       </span>
 
-      {/* Action */}
+      {/* CTA — shown when not done and href exists */}
       {!done && href && (
         isPreview ? (
           <a
