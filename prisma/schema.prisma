@@ -466,18 +466,25 @@ model HomepageBanner {
 }
 
 model PaymentMethod {
-  id          String   @id @default(cuid())
-  name        String   // "FPS 轉數快", "PayMe", "Alipay HK"
-  type        String   // "fps", "payme", "alipay"
-  qrImage     String?  // URL to QR code image
-  accountInfo String?  // e.g. FPS ID, phone number
-  active      Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  name          String   // "FPS 轉數快", "PayMe", "Alipay HK"
+  type          String   // "fps", "payme", "alipay_hk", "bank_transfer"
+  qrImage       String?  // legacy: URL to QR code image (keep for backward compat)
+  accountInfo   String?  // legacy: JSON config string (keep for backward compat)
+  active        Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  // Structured fields (新增)
+  accountName   String?  // 收款人名
+  accountNumber String?  // 帳號 / 電話 / FPS ID
+  bankName      String?  // 銀行名（銀行過數用）
+  paymentLink   String?  // PayMe Link 等
+  qrCodeUrl     String?  // QR Code 圖片 URL（新欄位，取代 qrImage）
+  instructions  String?  // 商戶自訂轉帳指引
   // Multi-tenant
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, type])
   @@index([active, sortOrder])

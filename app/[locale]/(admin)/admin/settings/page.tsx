@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Save, Loader2, CheckCircle2, AlertCircle, Store, Phone, Palette, User, Truck, DollarSign, MessageSquare, Plus, Pencil, Trash2, Crown, Lock } from "lucide-react";
+import Link from "next/link";
+import { Save, Loader2, CheckCircle2, AlertCircle, Store, Phone, Palette, User, Truck, DollarSign, MessageSquare, Plus, Pencil, Trash2, Crown, Lock, Wallet, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -721,6 +722,25 @@ export default function TenantSettings({ params }: { params: { locale: string } 
               ))}
             </div>
           </div>
+
+          {/* Payment Methods (link card) */}
+          <Link
+            href={`/${locale}/admin/settings/payment-methods`}
+            className="block rounded-xl border border-zinc-200 bg-white p-6 md:p-8 hover:border-zinc-300 hover:bg-zinc-50/50 transition-colors group"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-zinc-600" />
+                  收款方式
+                </h3>
+                <p className="text-sm text-zinc-600 mt-1">
+                  設定 FPS、PayMe、AlipayHK、銀行過數等收款方式
+                </p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 transition-colors flex-shrink-0" />
+            </div>
+          </Link>
 
           {/* Delivery Options */}
           <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
