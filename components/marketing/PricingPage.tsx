@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ShoppingBag, Smartphone, RefreshCw, Award } from "lucide-react";
+import { ShoppingBag, Smartphone, RefreshCw, Award, Shield, DollarSign, Zap } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 
 /* ─── Inline SVG Icons (monoline, stroke #FF9500) ─── */
@@ -54,7 +54,7 @@ function getPlans(isZh: boolean) {
       price: 78,
       period: isZh ? "/月" : "/mo",
       subtitle: isZh ? "認真副業首選" : "For growing side hustles",
-      cta: isZh ? "立即訂閱" : "Subscribe",
+      cta: isZh ? "免費試用 Lite" : "Try Lite Free",
       ctaStyle: "outline" as const,
       features: isZh
         ? ["50 件商品", "無限訂單", "FPS + PayMe + AlipayHK + 銀行過數", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "基本數據分析", "2 員工帳號"]
@@ -69,7 +69,7 @@ function getPlans(isZh: boolean) {
       price: 198,
       period: isZh ? "/月" : "/mo",
       subtitle: isZh ? "全職生意必備" : "For full-time businesses",
-      cta: isZh ? "免費試 14 日" : "Try 14 days free",
+      cta: isZh ? "免費試用 Pro" : "Try Pro Free",
       ctaStyle: "primary" as const,
       badge: isZh ? "最受歡迎" : "Most popular",
       features: isZh
@@ -85,9 +85,9 @@ function getPlans(isZh: boolean) {
 
 function getCompetitors(isZh: boolean) {
   return [
-    { name: isZh ? "本地網店平台 A" : "Local Platform A", base: 499, rate: 0.008, color: "#94A3B8" },
+    { name: isZh ? "本地網店平台 A" : "Local Platform A", base: 499, rate: 0.008, color: "#64748B" },
     { name: isZh ? "海外網店平台" : "Global Platform", base: 195, rate: 0.02, color: "#94A3B8" },
-    { name: isZh ? "本地網店平台 B" : "Local Platform B", base: 374, rate: 0.005, color: "#94A3B8" },
+    { name: isZh ? "本地網店平台 B" : "Local Platform B", base: 374, rate: 0.005, color: "#B0BEC5" },
   ];
 }
 
@@ -217,7 +217,7 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
   const bgStyles: Record<string, React.CSSProperties> = {
     white: { background: "#fff", color: "#1A1A1A", border: "1px solid #E5E7EB" },
     highlight: {
-      background: "rgba(255,149,0,0.05)",
+      background: "#FFF9F2",
       color: "#1A1A1A",
       border: "2px solid #FF9500",
     },
@@ -249,7 +249,7 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
           : "scale(1)",
         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         boxShadow: plan.highlight
-          ? "0 8px 32px rgba(255,149,0,0.15)"
+          ? "0 12px 40px rgba(255,149,0,0.25), 0 4px 12px rgba(0,0,0,0.06)"
           : hovered
           ? "0 12px 40px rgba(0,0,0,0.1)"
           : "0 4px 20px rgba(0,0,0,0.06)",
@@ -280,22 +280,7 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
           {plan.badge}
         </div>
       )}
-      <div
-        style={{
-          position: "absolute",
-          top: 16,
-          left: 20,
-          background: "#FFF3E0",
-          borderRadius: 20,
-          padding: "3px 10px",
-          fontSize: 11,
-          fontWeight: 600,
-          color: "#FF9500",
-        }}
-      >
-        {isZh ? "0% 平台抽成" : "0% platform fee"}
-      </div>
-      <div style={{ marginTop: 28 }}>
+      <div style={{ marginTop: plan.badge ? 20 : 0 }}>
         <div style={{ fontSize: 16, fontWeight: 600, opacity: 0.7, marginBottom: 4 }}>{plan.name}</div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
           <span style={{ fontSize: 14, opacity: 0.5 }}>$</span>
@@ -308,12 +293,6 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
         {plan.features.map((f, i) => (
           <div key={i} style={{ display: "flex", gap: 10, fontSize: 14, lineHeight: 1.5 }}>
             <span style={{ color: "#FF9500", flexShrink: 0, fontSize: 16 }}>✓</span>
-            <span>{f}</span>
-          </div>
-        ))}
-        {plan.noFeatures.map((f, i) => (
-          <div key={i} style={{ display: "flex", gap: 10, fontSize: 14, lineHeight: 1.5, opacity: 0.35 }}>
-            <span style={{ flexShrink: 0, fontSize: 16 }}>✗</span>
             <span>{f}</span>
           </div>
         ))}
@@ -334,7 +313,25 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
       >
         {plan.cta}
       </button>
-      <div style={{ textAlign: "center", fontSize: 12, opacity: 0.5 }}>{plan.footnote}</div>
+      {plan.highlight ? (
+        <div style={{ textAlign: "center" }}>
+          <span
+            style={{
+              display: "inline-block",
+              background: "#FFF3E0",
+              color: "#E68600",
+              padding: "6px 16px",
+              borderRadius: 20,
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            {isZh ? "14 日免費試用" : "14-day free trial"}
+          </span>
+        </div>
+      ) : (
+        <div style={{ textAlign: "center", fontSize: 12, opacity: 0.5 }}>{plan.footnote}</div>
+      )}
     </div>
   );
 }
@@ -380,7 +377,12 @@ function Calculator({ isZh }: { isZh: boolean }) {
             step={1000}
             value={gmv}
             onChange={(e) => setGmv(+e.target.value)}
-            style={{ width: "100%", accentColor: "#FF9500", height: 8, cursor: "pointer" }}
+            style={{
+              width: "100%",
+              cursor: "pointer",
+              height: 12,
+              background: `linear-gradient(to right, #FF9500 0%, #FFB347 ${((gmv - 5000) / 45000) * 100}%, #e5e7eb ${((gmv - 5000) / 45000) * 100}%, #e5e7eb 100%)`,
+            }}
           />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, opacity: 0.5 }}>
@@ -400,12 +402,13 @@ function Calculator({ isZh }: { isZh: boolean }) {
         {[false, true].map((v) => (
           <button
             key={String(v)}
+            className="calc-toggle"
             onClick={() => setUsePro(v)}
             style={{
               padding: "10px 20px",
               borderRadius: 20,
-              border: "none",
-              background: usePro === v ? "#FF9500" : "#F3F4F6",
+              border: usePro === v ? "2px solid #FF9500" : "2px solid #E5E7EB",
+              background: usePro === v ? "#FF9500" : "transparent",
               color: usePro === v ? "#fff" : "#666",
               fontWeight: 600,
               fontSize: 14,
@@ -440,7 +443,7 @@ function Calculator({ isZh }: { isZh: boolean }) {
                 position: "relative",
                 height: 36,
                 background: "#F3F4F6",
-                borderRadius: 8,
+                borderRadius: 10,
                 overflow: "hidden",
               }}
             >
@@ -449,7 +452,7 @@ function Calculator({ isZh }: { isZh: boolean }) {
                   height: "100%",
                   width: `${(c.total / maxCost) * 100}%`,
                   background: c.isWowlix ? "linear-gradient(90deg, #FF9500, #FFB347)" : c.color,
-                  borderRadius: 8,
+                  borderRadius: 10,
                   transition: "width 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
                   display: "flex",
                   alignItems: "center",
@@ -499,6 +502,7 @@ function Calculator({ isZh }: { isZh: boolean }) {
           padding: 24,
           background: "#FFF3E0",
           borderRadius: 16,
+          boxShadow: "0 4px 20px rgba(255,149,0,0.12)",
         }}
       >
         <div style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>{isZh ? "每月最多慳" : "Max monthly savings"}</div>
@@ -506,8 +510,8 @@ function Calculator({ isZh }: { isZh: boolean }) {
           $
           <AnimatedNumber value={Math.max(0, Math.round(saving))} />
         </div>
-        <div style={{ fontSize: 16, opacity: 0.6, marginTop: 4 }}>
-          {isZh ? "一年慳" : "Annual savings"} <strong>${Math.max(0, Math.round(saving * 12)).toLocaleString()}</strong>
+        <div style={{ fontSize: 18, fontWeight: 500, color: "#1A1A1A", opacity: 0.8, marginTop: 4 }}>
+          {isZh ? "一年慳" : "Annual savings"} <strong style={{ fontSize: 20, fontWeight: 800, color: "#FF9500" }}>${Math.max(0, Math.round(saving * 12)).toLocaleString()}</strong>
         </div>
       </div>
 
@@ -587,11 +591,16 @@ function FAQ({ isZh }: { isZh: boolean }) {
             <span>{faq.q}</span>
             <span
               style={{
-                fontSize: 20,
+                fontSize: 26,
                 color: "#FF9500",
                 flexShrink: 0,
                 transition: "transform 0.2s",
                 transform: open === i ? "rotate(45deg)" : "rotate(0)",
+                width: 32,
+                height: 32,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               +
@@ -677,35 +686,45 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         .pricing-page input[type="range"] {
           -webkit-appearance: none;
           appearance: none;
-          background: #e5e7eb;
           border-radius: 999px;
           outline: none;
-          height: 8px;
+          height: 12px;
           cursor: pointer;
         }
         .pricing-page input[type="range"]::-webkit-slider-thumb {
           -webkit-appearance: none;
-          width: 28px;
-          height: 28px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           background: #ff9500;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(255, 149, 0, 0.4);
-          border: 3px solid #fff;
+          box-shadow: 0 4px 14px rgba(255, 149, 0, 0.5), 0 2px 6px rgba(0,0,0,0.1);
+          border: 4px solid #fff;
         }
         .pricing-page input[type="range"]::-moz-range-thumb {
-          width: 22px;
-          height: 22px;
+          width: 30px;
+          height: 30px;
           border-radius: 50%;
           background: #ff9500;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(255, 149, 0, 0.4);
-          border: 3px solid #fff;
+          box-shadow: 0 4px 14px rgba(255, 149, 0, 0.5), 0 2px 6px rgba(0,0,0,0.1);
+          border: 4px solid #fff;
         }
         .pricing-page input[type="range"]::-moz-range-track {
-          background: #e5e7eb;
           border-radius: 999px;
-          height: 8px;
+          height: 12px;
+        }
+        .calc-toggle:hover {
+          box-shadow: 0 2px 8px rgba(255,149,0,0.2);
+          border-color: #FF9500 !important;
+        }
+        .scenario-card:hover {
+          transform: translateY(-4px) !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+        }
+        .theme-card:hover {
+          transform: scale(1.02) !important;
+          box-shadow: 0 8px 28px rgba(0,0,0,0.14) !important;
         }
       `}</style>
 
@@ -795,25 +814,40 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <div
             style={{
               display: "inline-flex",
-              gap: 12,
-              marginBottom: 24,
+              gap: 16,
+              marginBottom: 28,
               flexWrap: "wrap",
               justifyContent: "center",
             }}
           >
-            {(isZh ? ["0% 平台抽成", "$0 起", "2 分鐘開店"] : ["0% platform fee", "$0 start", "2-min setup"]).map((badge, i) => (
+            {(isZh
+              ? [
+                  { text: "0% 平台抽成", icon: <Shield size={18} strokeWidth={2.5} /> },
+                  { text: "$0 起", icon: <DollarSign size={18} strokeWidth={2.5} /> },
+                  { text: "2 分鐘開店", icon: <Zap size={18} strokeWidth={2.5} /> },
+                ]
+              : [
+                  { text: "0% platform fee", icon: <Shield size={18} strokeWidth={2.5} /> },
+                  { text: "$0 start", icon: <DollarSign size={18} strokeWidth={2.5} /> },
+                  { text: "2-min setup", icon: <Zap size={18} strokeWidth={2.5} /> },
+                ]
+            ).map((badge, i) => (
               <span
                 key={i}
                 style={{
                   background: i === 0 ? "#FF9500" : "#FFF3E0",
                   color: i === 0 ? "#fff" : "#E68600",
-                  padding: "6px 16px",
-                  borderRadius: 20,
-                  fontSize: 14,
+                  padding: "8px 20px",
+                  borderRadius: 24,
+                  fontSize: 16,
                   fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
                 }}
               >
-                {badge}
+                {badge.icon}
+                {badge.text}
               </span>
             ))}
           </div>
@@ -870,7 +904,19 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 ]
             ).map((step, i) => (
               <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-                <div style={{ marginBottom: 8 }}>{ICONS[step.icon]}</div>
+                <div
+                  style={{
+                    background: "#F3F4F6",
+                    borderRadius: 28,
+                    padding: "14px 28px",
+                    marginBottom: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div style={{ transform: "scale(1.4)" }}>{ICONS[step.icon]}</div>
+                </div>
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{step.label}</div>
                 <div style={{ fontSize: 12, color: "#999" }}>{step.desc}</div>
               </div>
@@ -886,7 +932,23 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             <h2 style={{ fontSize: "clamp(24px, 4vw, 40px)", fontWeight: 800, marginBottom: 8 }}>
               {isZh ? "揀個啱你嘅 Plan" : "Pick the right plan"}
             </h2>
-            <p style={{ color: "#888", fontSize: 16 }}>{isZh ? "全部 plan 0% 平台抽成・月繳無綁約" : "All plans 0% platform fee · monthly, no lock-in"}</p>
+            <p style={{ color: "#888", fontSize: 16, marginBottom: 16 }}>{isZh ? "全部 plan 月繳無綁約" : "All plans monthly, no lock-in"}</p>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "linear-gradient(90deg, #FFF3E0, #FFEDD5)",
+                padding: "10px 24px",
+                borderRadius: 24,
+                fontSize: 15,
+                fontWeight: 700,
+                color: "#E68600",
+              }}
+            >
+              <Shield size={18} color="#FF9500" strokeWidth={2.5} />
+              {isZh ? "所有 Plan 均 0% 平台抽成" : "0% platform fee on all plans"}
+            </div>
           </div>
           <div
             style={{
@@ -915,7 +977,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* SAVINGS CALCULATOR */}
-      <section className="pricing-page" style={{ padding: "80px 24px", background: "#fff" }}>
+      <section className="pricing-page" style={{ padding: "120px 24px 80px", background: "#fff" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
@@ -940,6 +1002,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             {SCENARIOS.map((s, i) => (
               <div
                 key={i}
+                className="scenario-card"
                 style={{
                   flex: "1 1 260px",
                   maxWidth: 320,
@@ -951,26 +1014,43 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   cursor: "default",
                 }}
               >
-                <div style={{ marginBottom: 12 }}>{ICONS[s.icon]}</div>
+                <div
+                  style={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: "50%",
+                    background: "#FFF3E0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  <div style={{ transform: "scale(1.5)" }}>{ICONS[s.icon]}</div>
+                </div>
                 <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>{s.title}</h3>
-                <div style={{ fontSize: 14, color: "#888", marginBottom: 16 }}>{s.range}</div>
+                <div style={{ fontSize: 15, color: "#666", fontWeight: 600, marginBottom: 16 }}>{s.range}</div>
                 <div
                   style={{
                     display: "inline-block",
                     padding: "6px 14px",
                     borderRadius: 20,
+                    border:
+                      s.planColor === "#1A1A1A"
+                        ? "none"
+                        : s.planColor === "#FF9500"
+                        ? "2px solid #FF9500"
+                        : "2px solid #10B981",
                     background:
                       s.planColor === "#1A1A1A"
                         ? "#1A1A1A"
-                        : s.planColor === "#FF9500"
-                        ? "#FFF3E0"
-                        : "#ECFDF5",
+                        : "transparent",
                     color:
                       s.planColor === "#1A1A1A"
                         ? "#fff"
                         : s.planColor === "#FF9500"
-                        ? "#E68600"
-                        : "#059669",
+                        ? "#FF9500"
+                        : "#10B981",
                     fontSize: 14,
                     fontWeight: 700,
                     marginBottom: 16,
@@ -994,19 +1074,22 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             </h2>
             <p style={{ color: "#888", fontSize: 16 }}>{isZh ? "每間店都有自己嘅風格" : "Every shop has its own style"}</p>
           </div>
+          <div style={{ background: "#F9FAFB", borderRadius: 24, padding: "32px 24px" }}>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
             {DEMOS.map((d, i) => (
               <div
                 key={i}
+                className="theme-card"
                 style={{
                   flex: "1 1 150px",
                   maxWidth: 220,
                   minWidth: 150,
                   borderRadius: 20,
                   overflow: "hidden",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                  boxShadow: "0 6px 24px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.04)",
                   transition: "all 0.3s",
                   border: "1px solid #E5E7EB",
+                  background: "#fff",
                 }}
               >
                 <div
@@ -1068,12 +1151,13 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                     Shop Now
                   </div>
                 </div>
-                <div style={{ padding: "16px 16px 20px", textAlign: "center" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{d.name}</div>
-                  <div style={{ fontSize: 11, color: "#999" }}>{d.desc}</div>
+                <div style={{ padding: "12px 16px 16px", textAlign: "center" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{d.name}</div>
+                  <div style={{ fontSize: 13, color: "#777" }}>{d.desc}</div>
                 </div>
               </div>
             ))}
+          </div>
           </div>
         </div>
       </section>
@@ -1089,7 +1173,6 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             style={{
               background: "#fff",
               borderRadius: 20,
-              overflow: "hidden",
               border: "1px solid #E5E7EB",
               minWidth: 480,
             }}
@@ -1112,7 +1195,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               <div></div>
               <div style={{ textAlign: "center" }}>Free</div>
               <div style={{ textAlign: "center", color: "#FF9500" }}>Lite $78</div>
-              <div style={{ textAlign: "center" }}>Pro $198</div>
+              <div style={{ textAlign: "center", background: "rgba(255,149,0,0.06)", borderRadius: "0 12px 0 0", padding: "0 4px" }}>Pro $198</div>
             </div>
             {/* Rows */}
             {FEATURE_TABLE.map((row, i) => (
@@ -1130,12 +1213,12 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               >
                 <div style={{ fontWeight: row.highlight ? 700 : 500 }}>{row.name}</div>
                 {(["free", "lite", "pro"] as const).map((plan) => (
-                  <div key={plan} style={{ textAlign: "center" }}>
+                  <div key={plan} style={{ textAlign: "center", background: plan === "pro" ? "rgba(255,149,0,0.05)" : "transparent" }}>
                     {typeof row[plan] === "boolean" ? (
                       row[plan] ? (
-                        <span style={{ color: "#FF9500", fontSize: 18 }}>✓</span>
+                        <span style={{ color: "#22C55E", fontSize: 18 }}>✓</span>
                       ) : (
-                        <span style={{ color: "#D1D5DB", fontSize: 18 }}>✗</span>
+                        <span style={{ color: "#D1D5DB", fontSize: 16 }}>—</span>
                       )
                     ) : (
                       <span
@@ -1157,7 +1240,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* FAQ */}
-      <section style={{ padding: "80px 24px", background: "#fff" }}>
+      <section style={{ padding: "120px 24px 80px", background: "#fff" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>{isZh ? "常見問題" : "FAQ"}</h2>
@@ -1225,21 +1308,91 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
       {/* ─── FOOTER ─── */}
       <footer style={{
-        padding: "24px", textAlign: "center",
-        background: "#111", color: "rgba(255,255,255,0.3)", fontSize: 12,
+        padding: "56px 24px 32px",
+        background: "#0A0A0A",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
       }}>
-        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 8 }}>
-          <Link href={`/${locale}`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>
-            {isZh ? "首頁" : "Home"}
-          </Link>
-          <Link href={`/${locale}/terms`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>
-            {isZh ? "條款" : "Terms"}
-          </Link>
-          <Link href={`/${locale}/privacy`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center" }}>
-            {isZh ? "私隱" : "Privacy"}
-          </Link>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 32,
+            marginBottom: 40,
+          }}>
+            {/* Column 1: Product */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+                {isZh ? "產品" : "Product"}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                <Link href={`/${locale}`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  {isZh ? "首頁" : "Home"}
+                </Link>
+                <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  {isZh ? "定價" : "Pricing"}
+                </Link>
+              </div>
+            </div>
+            {/* Column 2: Support */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+                {isZh ? "支援" : "Support"}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                <Link href={`/${locale}/contact`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  {isZh ? "聯絡我們" : "Contact"}
+                </Link>
+                <a href="https://wa.me/85298765432" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  WhatsApp
+                </a>
+              </div>
+            </div>
+            {/* Column 3: Legal */}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+                {isZh ? "法律" : "Legal"}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
+                <Link href={`/${locale}/terms`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  {isZh ? "條款" : "Terms"}
+                </Link>
+                <Link href={`/${locale}/privacy`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>
+                  {isZh ? "私隱" : "Privacy"}
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div style={{
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            paddingTop: 24,
+            textAlign: "center" as const,
+          }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 12 }}>
+              <span style={{ color: "#FF9500" }}>W</span>o<span style={{ color: "#FF9500" }}>W</span>lix
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 12 }}>
+              {/* Instagram */}
+              <a href="https://www.instagram.com/wowlix.hk" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.35)", transition: "color 0.2s", padding: 8, minHeight: 44, display: "inline-flex", alignItems: "center" }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" />
+                  <circle cx="12" cy="12" r="5" />
+                  <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
+                </svg>
+              </a>
+              {/* WhatsApp */}
+              <a href="https://wa.me/85298765432" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.35)", transition: "color 0.2s", padding: 8, minHeight: 44, display: "inline-flex", alignItems: "center" }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+              </a>
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>
+              © 2026 WoWlix by Flow Studio HK
+            </div>
+          </div>
         </div>
-        © 2026 WoWlix by Flow Studio HK
       </footer>
     </div>
   );
