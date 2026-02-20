@@ -14,7 +14,9 @@ const T = {
     heroSub2: "將你嘅 IG Bio Link 變成一間真正嘅網上商店。",
     ctaPrimary: "免費開店 →",
     ctaSecondary: "睇定價",
-    trustLine: "✦ 0% 佣金 · 免費開始 · 2 分鐘開店",
+    trustBadge1: "0% 佣金",
+    trustBadge2: "免費開始",
+    trustBadge3: "2 分鐘開店",
     mockupName: "maysshop",
     mockupDesc: "飾物・手作・代購",
     mockupProduct1: "玫瑰金手鏈",
@@ -36,7 +38,9 @@ const T = {
     heroSub2: "Turn your IG Bio Link into a real online store.",
     ctaPrimary: "Start Free →",
     ctaSecondary: "View Pricing",
-    trustLine: "✦ 0% Commission · Free to Start · 2 Min Setup",
+    trustBadge1: "0% Commission",
+    trustBadge2: "Free to Start",
+    trustBadge3: "2 Min Setup",
     mockupName: "maysshop",
     mockupDesc: "Jewelry · Handmade · Buying service",
     mockupProduct1: "Rose Gold Bracelet",
@@ -120,8 +124,12 @@ function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
         <span style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>新訂單！</span>
       </div>
       <div className="hero-float hero-float-2">
-        <span style={{ fontSize: 12 }}>💰</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>PayMe 已收款</span>
+        <span style={{ fontSize: 14 }}>💰</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>PayMe 已收款</span>
+      </div>
+      <div className="hero-float hero-float-3">
+        <span style={{ fontSize: 12 }}>📦</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#FF9500" }}>新訂單 +1</span>
       </div>
     </div>
   );
@@ -153,6 +161,14 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
         @keyframes floatIn2 {
           from { opacity: 0; transform: translate(20px, 10px) scale(0.8); }
           to   { opacity: 1; transform: translate(0, 0) scale(1); }
+        }
+        @keyframes floatIn3 {
+          from { opacity: 0; transform: translate(-16px, 8px) scale(0.8); }
+          to   { opacity: 1; transform: translate(0, 0) scale(1); }
+        }
+        @keyframes subtleFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
         }
 
         /* ─── Section ─── */
@@ -259,14 +275,14 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           background: #FF9500;
           color: #fff;
           border: none;
-          padding: 16px 36px;
-          border-radius: 12px;
-          font-size: 17px;
-          font-weight: 700;
+          padding: 18px 44px;
+          border-radius: 14px;
+          font-size: 19px;
+          font-weight: 800;
           text-decoration: none;
           box-shadow: 0 8px 32px rgba(255,149,0,0.35);
           transition: transform 0.2s, box-shadow 0.2s;
-          min-height: 52px;
+          min-height: 56px;
         }
         .hero-cta-primary:hover {
           transform: scale(1.03);
@@ -276,34 +292,50 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           display: inline-flex;
           align-items: center;
           background: transparent;
-          color: #fff;
-          border: 1.5px solid rgba(255,255,255,0.3);
-          padding: 15px 32px;
-          border-radius: 12px;
+          color: #FF9500;
+          border: 2px solid #FF9500;
+          padding: 17px 36px;
+          border-radius: 14px;
           font-size: 17px;
           font-weight: 600;
           text-decoration: none;
           transition: background 0.2s, transform 0.2s, border-color 0.2s;
-          min-height: 52px;
+          min-height: 56px;
         }
         .hero-cta-secondary:hover {
-          background: rgba(255,255,255,0.06);
-          border-color: rgba(255,255,255,0.5);
+          background: rgba(255,149,0,0.08);
+          border-color: #E68600;
           transform: scale(1.02);
         }
 
-        /* ─── Trust line ─── */
-        .hero-trust-line {
-          font-size: 13px;
-          color: rgba(255,255,255,0.35);
-          letter-spacing: 0.04em;
-          animation: heroFadeInUp 0.6s ease-out 0.32s both;
+        /* ─── Trust badges ─── */
+        .hero-trust-badges {
+          display: flex;
+          gap: 16px;
+          justify-content: center;
+          flex-wrap: wrap;
+          margin-bottom: 16px;
+          animation: heroFadeInUp 0.6s ease-out 0.2s both;
+        }
+        .hero-trust-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 14px;
+          font-weight: 700;
+          color: rgba(255,255,255,0.7);
+          letter-spacing: 0.02em;
+        }
+        .hero-trust-check {
+          color: #FF9500;
+          font-size: 15px;
+          flex-shrink: 0;
         }
 
         /* ─── Phone mockup wrapper ─── */
         .hero-phone-wrap {
           position: relative;
-          width: 240px;
+          width: 260px;
           animation: heroFadeInUp 0.7s ease-out 0.35s both;
           transition: transform 0.4s ease;
         }
@@ -324,7 +356,7 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
             0 30px 80px rgba(0,0,0,0.5),
             0 4px 16px rgba(0,0,0,0.3),
             inset 0 0 0 1px rgba(255,255,255,0.08),
-            0 0 80px rgba(255,149,0,0.08);
+            0 0 80px rgba(255,149,0,0.3);
         }
 
         /* ─── Dynamic Island ─── */
@@ -363,14 +395,24 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           white-space: nowrap;
         }
         .hero-float-1 {
-          top: 25%;
+          top: 22%;
           left: -60px;
-          animation: floatIn1 0.6s ease-out 1s both, heroFloat 3s ease-in-out 1.6s infinite;
+          animation: floatIn1 0.6s ease-out 1s both, subtleFloat 3s ease-in-out 1.6s infinite;
         }
         .hero-float-2 {
-          bottom: 30%;
+          bottom: 32%;
           right: -60px;
-          animation: floatIn2 0.6s ease-out 1.3s both, heroFloat 3s ease-in-out 2s infinite;
+          padding: 10px 18px;
+          animation: floatIn2 0.6s ease-out 1.3s both, subtleFloat 3s ease-in-out 2.2s infinite;
+        }
+        .hero-float-2 span:last-child {
+          font-size: 13px;
+          font-weight: 700;
+        }
+        .hero-float-3 {
+          bottom: 14%;
+          left: -50px;
+          animation: floatIn3 0.6s ease-out 1.6s both, subtleFloat 3s ease-in-out 2.6s infinite;
         }
 
         /* ─── Tablet ─── */
@@ -379,7 +421,7 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
             padding: 80px 40px 100px;
           }
           .hero-phone-wrap {
-            width: 280px;
+            width: 300px;
           }
           .hero-sub {
             font-size: 18px;
@@ -389,6 +431,9 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           }
           .hero-float-2 {
             right: -80px;
+          }
+          .hero-float-3 {
+            left: -70px;
           }
         }
 
@@ -402,7 +447,7 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
             text-align: left;
             align-items: center;
             justify-content: space-between;
-            gap: 60px;
+            gap: 40px;
           }
           .hero-text {
             max-width: 520px;
@@ -411,11 +456,11 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           .hero-cta-row {
             justify-content: flex-start;
           }
-          .hero-trust-line {
-            text-align: left;
+          .hero-trust-badges {
+            justify-content: flex-start;
           }
           .hero-phone-wrap {
-            width: 300px;
+            width: 340px;
             flex-shrink: 0;
           }
           .hero-float-1 {
@@ -423,6 +468,9 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           }
           .hero-float-2 {
             right: -90px;
+          }
+          .hero-float-3 {
+            left: -80px;
           }
         }
       `}</style>
@@ -446,6 +494,18 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
             {t.heroSub2}
           </p>
 
+          <div className="hero-trust-badges">
+            <span className="hero-trust-badge">
+              <span className="hero-trust-check">✓</span> {t.trustBadge1}
+            </span>
+            <span className="hero-trust-badge">
+              <span className="hero-trust-check">✓</span> {t.trustBadge2}
+            </span>
+            <span className="hero-trust-badge">
+              <span className="hero-trust-check">✓</span> {t.trustBadge3}
+            </span>
+          </div>
+
           <div className="hero-cta-row">
             <Link href="/admin/register" className="hero-cta-primary">
               {t.ctaPrimary}
@@ -453,10 +513,6 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
             <Link href={`/${locale}/pricing`} className="hero-cta-secondary">
               {t.ctaSecondary}
             </Link>
-          </div>
-
-          <div className="hero-trust-line">
-            {t.trustLine}
           </div>
         </div>
 
