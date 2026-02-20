@@ -8,9 +8,21 @@ type ImageUploadProps = {
   currentUrl?: string;
   onUpload: (url: string) => void;
   disabled?: boolean;
+  label?: string;
+  hint?: string;
+  aspectClass?: string;
+  previewRounded?: boolean;
 };
 
-export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUploadProps) {
+export default function ImageUpload({
+  currentUrl,
+  onUpload,
+  disabled,
+  label = "Upload Product Image",
+  hint = "JPG, PNG, WebP — auto-compressed",
+  aspectClass = "aspect-square",
+  previewRounded = false,
+}: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState(currentUrl || "");
   const [error, setError] = useState("");
@@ -71,8 +83,8 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
   return (
     <div className="space-y-3">
       {preview ? (
-        <div className="relative rounded-lg border border-zinc-200 bg-zinc-50 overflow-hidden">
-          <img src={preview} alt="Preview" className="w-full aspect-square object-cover" />
+        <div className={`relative border border-zinc-200 bg-zinc-50 overflow-hidden ${previewRounded ? "rounded-full w-32 h-32" : "rounded-lg"}`}>
+          <img src={preview} alt="Preview" className={`object-cover ${previewRounded ? "w-32 h-32" : `w-full ${aspectClass}`}`} />
           <button
             type="button"
             onClick={handleClear}
@@ -84,7 +96,7 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
         </div>
       ) : (
         <label
-          className={`flex flex-col items-center justify-center w-full aspect-square rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer ${
+          className={`flex flex-col items-center justify-center w-full ${aspectClass} rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer ${
             disabled || isUploading ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
@@ -96,8 +108,8 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
           ) : (
             <>
               <ImageIcon className="h-10 w-10 text-zinc-400 mb-2" />
-              <span className="text-sm text-zinc-600 font-medium">Upload Product Image</span>
-              <span className="text-xs text-zinc-400 mt-1">JPG, PNG, WebP — auto-compressed</span>
+              <span className="text-sm text-zinc-600 font-medium">{label}</span>
+              <span className="text-xs text-zinc-400 mt-1">{hint}</span>
             </>
           )}
           <input
@@ -116,11 +128,6 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
         </div>
       )}
 
-      {!preview && !isUploading && (
-        <p className="text-xs text-zinc-400">
-          Or paste an image URL in the field above
-        </p>
-      )}
     </div>
   );
 }

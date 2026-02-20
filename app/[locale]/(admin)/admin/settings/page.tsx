@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import SidebarToggle from "@/components/admin/SidebarToggle";
+import ImageUpload from "@/components/admin/ImageUpload";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -1019,33 +1020,25 @@ export default function TenantSettings({ params }: { params: { locale: string } 
 
               <div className="space-y-3">
                 <Label>封面圖</Label>
-                <SettingsInput
-                  id="coverPhoto"
-                  value={formData.coverPhoto || ""}
-                  onChange={handleChange}
-                  placeholder="https://example.com/cover.jpg"
+                <ImageUpload
+                  currentUrl={formData.coverPhoto || undefined}
+                  onUpload={(url) => setFormData((prev) => ({ ...prev, coverPhoto: url || null }))}
+                  label="上傳封面圖"
+                  hint="建議尺寸：1200×400，JPG / PNG，最大 5MB"
+                  aspectClass="aspect-[3/1]"
                 />
-                {formData.coverPhoto && (
-                  <img src={formData.coverPhoto} alt="Cover preview" className="h-32 w-full object-cover rounded-md mt-2" />
-                )}
                 <Description>商店頂部嘅封面相片</Description>
               </div>
 
               <div className="space-y-3">
                 <Label>頭像</Label>
-                <div className="flex items-center gap-4">
-                  {formData.logo && (
-                    <img src={formData.logo} alt="Logo" className="h-16 w-16 rounded-full object-cover border-2 border-zinc-200" />
-                  )}
-                  <div className="flex-1">
-                    <SettingsInput
-                      id="logo"
-                      value={formData.logo || ""}
-                      onChange={handleChange}
-                      placeholder="https://example.com/logo.jpg"
-                    />
-                  </div>
-                </div>
+                <ImageUpload
+                  currentUrl={formData.logo || undefined}
+                  onUpload={(url) => setFormData((prev) => ({ ...prev, logo: url || null }))}
+                  label="上傳頭像"
+                  hint="建議尺寸：200×200，JPG / PNG，最大 5MB"
+                  previewRounded
+                />
                 <Description>商店嘅 logo 或頭像</Description>
               </div>
 
