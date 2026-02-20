@@ -22,6 +22,7 @@ type OrdersTableProps = {
 const STATUS_TABS = [
   { value: "", label: { en: "All", zh: "全部" } },
   { value: "PENDING", label: { en: "Pending", zh: "待處理" } },
+  { value: "PENDING_CONFIRMATION", label: { en: "Awaiting Confirmation", zh: "待確認收款" } },
   { value: "CONFIRMED", label: { en: "Confirmed", zh: "已確認" } },
   { value: "PROCESSING", label: { en: "Processing", zh: "處理中" } },
   { value: "SHIPPED", label: { en: "Shipped", zh: "已發貨" } },
@@ -33,6 +34,7 @@ const STATUS_TABS = [
 const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
   // New statuses
   PENDING: { en: "Pending", zh: "待處理" },
+  PENDING_CONFIRMATION: { en: "Awaiting Confirmation", zh: "待確認收款" },
   CONFIRMED: { en: "Confirmed", zh: "已確認" },
   PROCESSING: { en: "Processing", zh: "處理中" },
   SHIPPED: { en: "Shipped", zh: "已發貨" },
@@ -66,7 +68,7 @@ function translateFulfillment(type: string, locale: Locale): string {
 // 按規格：PENDING=黃, PAID=綠, SHIPPED=藍, COMPLETED=灰, CANCELLED=紅
 function orderStatusBadgeClass(status: string) {
   const s = status.toUpperCase();
-  if (s === "PENDING") {
+  if (s === "PENDING" || s === "PENDING_CONFIRMATION") {
     return "bg-yellow-100 text-yellow-700 border border-yellow-200";
   }
   if (s === "PAID" || s === "CONFIRMED") {

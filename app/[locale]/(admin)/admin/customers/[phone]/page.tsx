@@ -31,7 +31,7 @@ function translateStatus(status: string, locale: Locale): string {
 
 function orderStatusBadgeClass(status: string) {
   const s = status.toUpperCase();
-  if (s === "PENDING")
+  if (s === "PENDING" || s === "PENDING_CONFIRMATION")
     return "bg-yellow-100 text-yellow-700 border border-yellow-200";
   if (s === "PAID" || s === "CONFIRMED")
     return "bg-green-100 text-green-700 border border-green-200";

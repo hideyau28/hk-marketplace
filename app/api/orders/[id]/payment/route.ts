@@ -57,9 +57,12 @@ export const PATCH = withApi(
             updateData.paymentStatus = "confirmed";
             updateData.paidAt = new Date();
 
-            // Transition order status from PENDING to CONFIRMED if valid
-            if (currentOrder.status === "PENDING") {
-                if (!isValidTransition("PENDING", "CONFIRMED")) {
+            // Transition order status from PENDING/PENDING_CONFIRMATION to CONFIRMED if valid
+            if (currentOrder.status === "PENDING" || currentOrder.status === "PENDING_CONFIRMATION") {
+                const fromStatus = currentOrder.status;
+                // PENDING_CONFIRMATION is a manual payment status; treat it like PENDING for transitions
+                const canTransition = fromStatus === "PENDING_CONFIRMATION" || isValidTransition("PENDING", "CONFIRMED");
+                if (!canTransition) {
                     throw new ApiError(400, "BAD_REQUEST", getTransitionError("PENDING", "CONFIRMED"));
                 }
                 updateData.status = "CONFIRMED";
@@ -71,7 +74,7 @@ export const PATCH = withApi(
                     : [];
                 history.push({
                     timestamp: new Date().toISOString(),
-                    fromStatus: currentOrder.status,
+                    fromStatus,
                     toStatus: "CONFIRMED",
                 });
                 updateData.statusHistory = JSON.stringify(history);

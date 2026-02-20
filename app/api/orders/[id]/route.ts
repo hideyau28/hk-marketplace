@@ -8,6 +8,7 @@ import { getTenantId } from "@/lib/tenant";
 const ORDER_STATUSES = [
     // New status flow
     "PENDING",
+    "PENDING_CONFIRMATION",
     "CONFIRMED",
     "PROCESSING",
     "SHIPPED",

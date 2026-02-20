@@ -177,8 +177,8 @@ export default function PaymentActions({
         )}
       </div>
 
-      {/* 確認收款按鈕：manual 支付 + PENDING 狀態 */}
-      {manual && orderStatus === "PENDING" && (
+      {/* 確認收款按鈕：manual 支付 + PENDING/PENDING_CONFIRMATION 狀態 */}
+      {manual && (orderStatus === "PENDING" || orderStatus === "PENDING_CONFIRMATION") && (
         <div className="mt-6 pt-4 border-t border-zinc-200">
           <div className="flex gap-3">
             <button
