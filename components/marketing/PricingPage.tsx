@@ -40,8 +40,8 @@ function getPlans(isZh: boolean) {
       cta: isZh ? "免費開始" : "Start Free",
       ctaStyle: "outline" as const,
       features: isZh
-        ? ["10 件商品", "每月 50 單", "FPS + PayMe + AlipayHK", "Mochi 店舖主題", "1 員工帳號（店主）"]
-        : ["10 products", "50 orders/mo", "FPS + PayMe + AlipayHK", "Mochi theme", "1 staff account (owner)"],
+        ? ["10 件商品", "每月 50 單", "3 款收款方式（FPS・PayMe・AlipayHK）", "1 款店鋪主題"]
+        : ["10 products", "50 orders/mo", "3 payment methods (FPS · PayMe · AlipayHK)", "1 store theme"],
       noFeatures: isZh
         ? ["WhatsApp 預填訊息", "優惠碼", "訂單匯出", "數據分析"]
         : ["WhatsApp prefill", "Coupons", "Order export", "Analytics"],
@@ -57,8 +57,8 @@ function getPlans(isZh: boolean) {
       cta: isZh ? "免費試用 Lite" : "Try Lite Free",
       ctaStyle: "outline" as const,
       features: isZh
-        ? ["50 件商品", "無限訂單", "FPS + PayMe + AlipayHK + 銀行過數", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "基本數據分析", "2 員工帳號"]
-        : ["50 products", "Unlimited orders", "FPS + PayMe + AlipayHK + Bank transfer", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Basic analytics", "2 staff accounts"],
+        ? ["50 件商品", "無限訂單", "全部 7 款收款方式", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "基本數據分析"]
+        : ["50 products", "Unlimited orders", "All 7 payment methods", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Basic analytics"],
       noFeatures: [] as string[],
       footnote: isZh ? "月繳・隨時取消・0% 平台抽成" : "Monthly · cancel anytime · 0% platform fee",
       bg: "white" as const,
@@ -69,14 +69,14 @@ function getPlans(isZh: boolean) {
       price: 198,
       period: isZh ? "/月" : "/mo",
       subtitle: isZh ? "全職生意必備" : "For full-time businesses",
-      cta: isZh ? "免費試用 Pro" : "Try Pro Free",
+      cta: isZh ? "選擇 Pro" : "Choose Pro",
       ctaStyle: "primary" as const,
       badge: isZh ? "最受歡迎" : "Most popular",
       features: isZh
-        ? ["無限商品", "無限訂單", "全部收款方式", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "進階數據分析 + 熱賣排行", "棄單挽回", "CRM 客戶庫", "自訂域名（需自備）", "移除 WoWlix branding", "3 員工帳號"]
-        : ["Unlimited products", "Unlimited orders", "All payment methods", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Advanced analytics + bestseller ranking", "Abandoned cart recovery", "CRM customer database", "Custom domain (BYOD)", "Remove WoWlix branding", "3 staff accounts"],
+        ? ["無限商品", "無限訂單", "全部 7 款收款方式", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "進階數據分析 + 熱賣排行", "棄單挽回", "CRM 客戶庫", "自訂域名（加購・即將推出）", "移除 WoWlix branding"]
+        : ["Unlimited products", "Unlimited orders", "All 7 payment methods", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Advanced analytics + bestseller ranking", "Abandoned cart recovery", "CRM customer database", "Custom domain (add-on · coming soon)", "Remove WoWlix branding"],
       noFeatures: [] as string[],
-      footnote: isZh ? "14 日免費試用・0% 平台抽成" : "14-day free trial · 0% platform fee",
+      footnote: isZh ? "月繳・0% 平台抽成" : "Monthly · 0% platform fee",
       bg: "highlight" as const,
       highlight: true,
     },
@@ -161,22 +161,22 @@ function getFeatureTable(isZh: boolean): FeatureRow[] {
   return isZh ? [
     { name: "商品數量", free: "10", lite: "50", pro: "無限" },
     { name: "每月訂單", free: "50", lite: "無限", pro: "無限" },
-    { name: "收款方式", free: "3 種", lite: "4 種", pro: "全部" },
+    { name: "收款方式", free: "3 款", lite: "7 款", pro: "全部 7 款" },
     { name: "WhatsApp 預填訊息", free: false, lite: true, pro: true },
     { name: "優惠碼", free: false, lite: true, pro: true },
     { name: "棄單挽回", free: false, lite: false, pro: true },
     { name: "CRM 客戶庫", free: false, lite: false, pro: true },
-    { name: "自訂域名", free: false, lite: false, pro: true },
+    { name: "自訂域名（加購・即將推出）", free: false, lite: false, pro: true },
     { name: "平台抽成", free: "0%", lite: "0%", pro: "0%", highlight: true },
   ] : [
     { name: "Products", free: "10", lite: "50", pro: "Unlimited" },
     { name: "Orders/month", free: "50", lite: "Unlimited", pro: "Unlimited" },
-    { name: "Payment methods", free: "3", lite: "4", pro: "All" },
+    { name: "Payment methods", free: "3", lite: "7", pro: "All 7" },
     { name: "WhatsApp prefill", free: false, lite: true, pro: true },
     { name: "Coupons", free: false, lite: true, pro: true },
     { name: "Abandoned cart recovery", free: false, lite: false, pro: true },
     { name: "CRM", free: false, lite: false, pro: true },
-    { name: "Custom domain", free: false, lite: false, pro: true },
+    { name: "Custom domain (add-on · coming soon)", free: false, lite: false, pro: true },
     { name: "Platform fee", free: "0%", lite: "0%", pro: "0%", highlight: true },
   ];
 }
@@ -211,7 +211,7 @@ function AnimatedNumber({ value, duration = 600 }: { value: number; duration?: n
 
 type Plan = ReturnType<typeof getPlans>[number];
 
-function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
+function PlanCard({ plan }: { plan: Plan }) {
   const [hovered, setHovered] = useState(false);
 
   const bgStyles: Record<string, React.CSSProperties> = {
@@ -313,25 +313,7 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
       >
         {plan.cta}
       </button>
-      {plan.highlight ? (
-        <div style={{ textAlign: "center" }}>
-          <span
-            style={{
-              display: "inline-block",
-              background: "#FFF3E0",
-              color: "#E68600",
-              padding: "6px 16px",
-              borderRadius: 20,
-              fontSize: 14,
-              fontWeight: 700,
-            }}
-          >
-            {isZh ? "14 日免費試用" : "14-day free trial"}
-          </span>
-        </div>
-      ) : (
-        <div style={{ textAlign: "center", fontSize: 12, opacity: 0.5 }}>{plan.footnote}</div>
-      )}
+      <div style={{ textAlign: "center", fontSize: 12, opacity: 0.5 }}>{plan.footnote}</div>
     </div>
   );
 }
@@ -990,7 +972,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             }}
           >
             {PLANS.map((plan, i) => (
-              <PlanCard key={i} plan={plan} isZh={isZh} />
+              <PlanCard key={i} plan={plan} />
             ))}
           </div>
           <p style={{ textAlign: "center", fontSize: 12, color: "#999", marginTop: 24 }}>
