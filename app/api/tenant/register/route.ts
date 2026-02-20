@@ -23,14 +23,14 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST = withApi(async (req: Request) => {
   try {
-  let body: { name?: string; slug?: string; whatsapp?: string; instagram?: string; email?: string; password?: string; googleAuth?: boolean; coverTemplate?: string; templateId?: string; tagline?: string; paymentMethods?: string[] };
+  let body: { name?: string; slug?: string; whatsapp?: string; instagram?: string; email?: string; password?: string; googleAuth?: boolean; coverTemplate?: string; templateId?: string; tagline?: string; paymentMethods?: string[]; fpsId?: string; fpsAccountName?: string };
   try {
     body = await req.json();
   } catch {
     throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
   }
 
-  const { name, slug, whatsapp, instagram, email, password, googleAuth, coverTemplate, templateId, tagline, paymentMethods } = body;
+  const { name, slug, whatsapp, instagram, email, password, googleAuth, coverTemplate, templateId, tagline, paymentMethods, fpsId, fpsAccountName } = body;
   const isOAuth = googleAuth === true;
 
   // --- Validation ---
@@ -71,6 +71,8 @@ export const POST = withApi(async (req: Request) => {
   const cleanInstagram = instagram?.trim().replace(/^@/, "") || "";
   const cleanEmail = email.trim().toLowerCase();
   const cleanTagline = tagline?.trim() || "";
+  const cleanFpsId = fpsId?.trim() || "";
+  const cleanFpsAccountName = fpsAccountName?.trim() || "";
   const cleanTemplate = resolveTemplateId(templateId?.trim() || coverTemplate?.trim());
   const hashedPassword = (!isOAuth && password) ? await bcrypt.hash(password, 10) : null;
 
@@ -129,6 +131,31 @@ export const POST = withApi(async (req: Request) => {
           sortOrder: i,
         },
       }).catch(() => {}); // 非致命，唔好 block 整個 registration
+    }
+
+    // --- FPS PaymentMethod record（收款設定）---
+    if (cleanFpsId) {
+      await prisma.paymentMethod.create({
+        data: {
+          name: "FPS 轉數快",
+          type: "fps",
+          active: true,
+          sortOrder: 0,
+          accountNumber: cleanFpsId,
+          accountName: cleanFpsAccountName || null,
+          tenantId: tenant.id,
+        },
+      }).catch(() => {}); // 非致命
+
+      // 同步更新 Tenant FPS 欄位
+      await prisma.tenant.update({
+        where: { id: tenant.id },
+        data: {
+          fpsEnabled: true,
+          fpsAccountId: cleanFpsId,
+          fpsAccountName: cleanFpsAccountName || null,
+        },
+      }).catch(() => {});
     }
 
     // --- Default store settings with delivery options ---
