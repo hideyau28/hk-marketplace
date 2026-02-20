@@ -125,7 +125,7 @@ function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
       </div>
       <div className="hero-float hero-float-2">
         <span style={{ fontSize: 14 }}>💰</span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>PayMe 已收款</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>PayMe 待確認</span>
       </div>
       <div className="hero-float hero-float-3">
         <span style={{ fontSize: 12 }}>📦</span>
