@@ -758,24 +758,54 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <span style={{ color: "#FF9500" }}>W</span>o
           <span style={{ color: "#FF9500" }}>W</span>lix
         </Link>
-        <Link
-          href={`/${locale}/start`}
-          style={{
-            background: "#FF9500",
-            color: "#fff",
-            padding: "12px 24px",
-            borderRadius: 100,
-            fontSize: 14,
-            fontWeight: 700,
-            textDecoration: "none",
-            transition: "all 0.2s",
-            minHeight: 44,
-            display: "inline-flex",
-            alignItems: "center",
-          }}
-        >
-          {isZh ? "免費開店" : "Start Free"}
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {/* Language toggle */}
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
+            <Link
+              href="/zh-HK/pricing"
+              style={{
+                color: isZh ? "#1A1A1A" : "rgba(0,0,0,0.3)",
+                fontWeight: isZh ? 700 : 400,
+                textDecoration: "none",
+                padding: "4px 2px",
+                transition: "color 0.2s",
+              }}
+            >
+              繁
+            </Link>
+            <span style={{ color: "rgba(0,0,0,0.2)", userSelect: "none" }}>/</span>
+            <Link
+              href="/en/pricing"
+              style={{
+                color: !isZh ? "#1A1A1A" : "rgba(0,0,0,0.3)",
+                fontWeight: !isZh ? 700 : 400,
+                textDecoration: "none",
+                padding: "4px 2px",
+                transition: "color 0.2s",
+              }}
+            >
+              EN
+            </Link>
+          </div>
+          <Link
+            href={`/${locale}/start`}
+            style={{
+              background: "#FF9500",
+              color: "#fff",
+              padding: "12px 24px",
+              borderRadius: 100,
+              fontSize: 14,
+              fontWeight: 700,
+              textDecoration: "none",
+              transition: "all 0.2s",
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+            }}
+          >
+            {isZh ? "免費開店" : "Start Free"}
+          </Link>
+        </div>
       </nav>
 
       {/* HERO */}
