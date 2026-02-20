@@ -36,7 +36,7 @@ type DualVariantData = {
 
 // Wizard step state machine
 type WizardStep =
-  | "none"      // 初始，顯示 [+ 加選項]
+  | "none"      // 初始，顯示 [+ 加尺碼 / 顏色選項]
   | "type"      // 揀 preset
   | "hasColor"  // 有冇顏色？
   | "colors"    // 揀顏色
@@ -453,9 +453,8 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       setColorIsFirstDimension(false);
       setPrimaryPreset(preset);
       setOptionName1(preset.label);
-      if (preset.values.length > 0) {
-        setValues1(preset.values.map((v) => ({ name: v, qty: 0 })));
-      }
+      // Don't pre-select — let user pick sizes manually
+      setValues1([]);
       setWizardStep("hasColor");
     }
     setPresetSearch("");
@@ -490,9 +489,8 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
   const handleSizeTypeSelect = (preset: VariantPreset) => {
     setSizePreset(preset);
     setOptionName2(preset.label);
-    if (preset.values.length > 0) {
-      setValues2(preset.values);
-    }
+    // Don't pre-select — let user pick sizes manually
+    setValues2([]);
     setWizardStep("sizes");
     setPresetSearch("");
   };
@@ -1664,17 +1662,18 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
           {/* --- Variant Options Section (Wizard) --- */}
           {renderWizardSection()}
 
-          {/* Video URL */}
-          <div>
+          {/* Video URL — 即將推出 */}
+          <div className="opacity-50">
             <label className="block text-sm font-medium text-zinc-700 mb-1.5">
-              {isZh ? "影片連結（可選）" : "Video URL (optional)"}
+              {isZh ? "影片連結" : "Video URL"}
+              <span className="ml-2 text-xs text-zinc-400">{isZh ? "即將推出" : "Coming soon"}</span>
             </label>
             <input
               type="url"
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
+              disabled
+              value=""
               placeholder="https://..."
-              className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400"
+              className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-400 placeholder:text-zinc-300 cursor-not-allowed"
             />
           </div>
         </div>
