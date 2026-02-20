@@ -10,9 +10,11 @@ type Props = {
   onAdd: (product: ProductForBioLink) => void;
   onTap?: (product: ProductForBioLink) => void;
   searchQuery?: string;
+  isMerchant?: boolean;
+  adminProductsPath?: string;
 };
 
-export default function ProductGrid({ products, currency, onAdd, onTap, searchQuery }: Props) {
+export default function ProductGrid({ products, currency, onAdd, onTap, searchQuery, isMerchant, adminProductsPath }: Props) {
   const tmpl = useTemplate();
 
   if (products.length === 0) {
@@ -30,6 +32,16 @@ export default function ProductGrid({ products, currency, onAdd, onTap, searchQu
           <p className="text-sm font-medium" style={{ color: tmpl.subtext }}>
             {emptyMessage}
           </p>
+          {/* 商戶專用：去管理後台加商品按鈕 */}
+          {!searchQuery && isMerchant && adminProductsPath && (
+            <a
+              href={adminProductsPath}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-80"
+              style={{ backgroundColor: tmpl.accent }}
+            >
+              去管理後台加商品 →
+            </a>
+          )}
         </div>
       </section>
     );

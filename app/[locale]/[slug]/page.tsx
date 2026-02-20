@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import BioLinkPage from "@/components/biolink/BioLinkPage";
 import { resolveTemplateId } from "@/lib/cover-templates";
+import { verifyToken } from "@/lib/auth/jwt";
 import type { Metadata } from "next";
 import type { ProductForBioLink, DualVariantData, DeliveryOption, OrderConfirmConfig } from "@/lib/biolink-helpers";
 import { DEFAULT_DELIVERY_OPTIONS, DEFAULT_ORDER_CONFIRM } from "@/lib/biolink-helpers";
@@ -107,6 +109,17 @@ export default async function SlugPage({ params }: PageProps) {
     variants: p.variants,
   }));
 
+  // 檢查當前瀏覽者是否為此店舖商戶（用 tenant-admin-token cookie 核對 tenantId）
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get("tenant-admin-token")?.value;
+  let isMerchant = false;
+  if (adminToken) {
+    const payload = verifyToken(adminToken);
+    if (payload?.tenantId === tenant.id) {
+      isMerchant = true;
+    }
+  }
+
   // Parse JSON checkout settings with defaults, resolve legacy template IDs
   const tenantForBioLink = {
     ...tenant,
@@ -117,7 +130,7 @@ export default async function SlugPage({ params }: PageProps) {
     orderConfirmMessage: (tenant.orderConfirmMessage as OrderConfirmConfig | null) || DEFAULT_ORDER_CONFIRM,
   };
 
-  return <BioLinkPage tenant={tenantForBioLink} products={serialized} />;
+  return <BioLinkPage tenant={tenantForBioLink} products={serialized} isMerchant={isMerchant} />;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

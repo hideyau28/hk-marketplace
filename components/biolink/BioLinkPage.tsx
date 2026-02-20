@@ -61,9 +61,10 @@ function swapLocale(pathname: string, nextLocale: Locale) {
 type Props = {
   tenant: TenantForBioLink;
   products: ProductForBioLink[];
+  isMerchant?: boolean;
 };
 
-export default function BioLinkPage({ tenant, products }: Props) {
+export default function BioLinkPage({ tenant, products, isMerchant = false }: Props) {
   const tmpl = useMemo(() => getCoverTemplate(tenant.coverTemplate), [tenant.coverTemplate]);
   const fontsUrl = useMemo(() => getGoogleFontsUrl(tmpl), [tmpl]);
   const pathname = usePathname() || "/en";
@@ -247,7 +248,15 @@ export default function BioLinkPage({ tenant, products }: Props) {
       {featured.length > 0 && <div className="h-6" />}
 
       {/* Light zone — Product grid */}
-      <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onTap={handleProductTap} searchQuery={searchQuery} />
+      <ProductGrid
+        products={grid}
+        currency={currency}
+        onAdd={handleCardAdd}
+        onTap={handleProductTap}
+        searchQuery={searchQuery}
+        isMerchant={isMerchant}
+        adminProductsPath={`/${locale}/admin/products`}
+      />
 
       {/* Cart bar or WhatsApp FAB */}
       {cartCount > 0 ? (

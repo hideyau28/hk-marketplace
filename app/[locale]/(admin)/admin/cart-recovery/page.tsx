@@ -110,15 +110,16 @@ export default async function AdminCartRecovery({
 
   // 統計
   const totalAbandoned = orders.length;
-  const totalAmount = orders.reduce((sum, o) => {
+  const totalAmount = orders.reduce((sum: number, o: (typeof orders)[number]) => {
     const amounts = o.amounts as Record<string, unknown> | null;
     return sum + (Number(amounts?.total) || 0);
   }, 0);
+  type OrderRow = (typeof orders)[number];
   const contactedCount = orders.filter(
-    (o) => o.recoveryStatus === "contacted"
+    (o: OrderRow) => o.recoveryStatus === "contacted"
   ).length;
   const recoveredCount = orders.filter(
-    (o) => o.recoveryStatus === "recovered"
+    (o: OrderRow) => o.recoveryStatus === "recovered"
   ).length;
   const recoveryRate =
     contactedCount + recoveredCount > 0
@@ -148,7 +149,7 @@ export default async function AdminCartRecovery({
       </div>
 
       <CartRecoveryClient
-        orders={orders.map((o) => ({
+        orders={orders.map((o: OrderRow) => ({
           ...o,
           createdAt: o.createdAt.toISOString(),
         }))}

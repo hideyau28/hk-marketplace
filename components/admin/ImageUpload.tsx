@@ -71,15 +71,15 @@ export default function ImageUpload({ currentUrl, onUpload, disabled }: ImageUpl
   return (
     <div className="space-y-3">
       {preview ? (
-        <div className="relative rounded-lg border border-zinc-200 bg-zinc-50 overflow-hidden">
-          <img src={preview} alt="Preview" className="w-full aspect-square object-cover" />
+        <div className="relative w-20 h-20 flex-shrink-0 rounded-lg border border-zinc-200 bg-zinc-50 overflow-hidden">
+          <img src={preview} alt="Preview" className="w-full h-full object-cover" />
           <button
             type="button"
             onClick={handleClear}
             disabled={disabled || isUploading}
-            className="absolute top-2 right-2 rounded-full bg-white/90 p-2 text-zinc-600 hover:bg-white disabled:opacity-50"
+            className="absolute top-1 right-1 rounded-full bg-white/90 p-1 text-zinc-600 hover:bg-white disabled:opacity-50 shadow-sm"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3 w-3" />
           </button>
         </div>
       ) : (
