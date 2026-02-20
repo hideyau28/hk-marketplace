@@ -9,7 +9,8 @@ import { useToast } from "@/components/Toast";
 // Valid transitions for each status
 const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   // New status flow
-  PENDING: ["CONFIRMED", "CANCELLED"],
+  PENDING: ["PENDING_CONFIRMATION", "CONFIRMED", "CANCELLED"],
+  PENDING_CONFIRMATION: ["CONFIRMED", "CANCELLED"],
   CONFIRMED: ["PROCESSING", "CANCELLED"],
   PROCESSING: ["SHIPPED", "CANCELLED"],
   SHIPPED: ["DELIVERED"],
@@ -25,6 +26,7 @@ const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 const STATUS_DISPLAY: Record<OrderStatus, { en: string; zh: string }> = {
   PENDING: { en: "Pending", zh: "待處理" },
+  PENDING_CONFIRMATION: { en: "Awaiting Confirmation", zh: "待確認收款" },
   CONFIRMED: { en: "Confirmed", zh: "已確認" },
   PROCESSING: { en: "Processing", zh: "處理中" },
   SHIPPED: { en: "Shipped", zh: "已發貨" },
@@ -127,7 +129,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
         </label>
         <div className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium ${
           order.status === "COMPLETED" || order.status === "DELIVERED" ? "bg-olive-100 text-olive-700" :
-          order.status === "PENDING" ? "bg-yellow-100 text-yellow-700" :
+          order.status === "PENDING" || order.status === "PENDING_CONFIRMATION" ? "bg-yellow-100 text-yellow-700" :
           order.status === "CANCELLED" || order.status === "DISPUTED" ? "bg-red-100 text-red-700" :
           order.status === "REFUNDED" ? "bg-amber-100 text-amber-700" :
           "bg-blue-100 text-blue-700"

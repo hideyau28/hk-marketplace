@@ -1,0 +1,2 @@
+-- AlterEnum: add PENDING_CONFIRMATION to OrderStatus
+ALTER TYPE "OrderStatus" ADD VALUE 'PENDING_CONFIRMATION';

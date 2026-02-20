@@ -9,6 +9,8 @@ import { useCurrency } from "@/lib/currency";
 
 const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
   PENDING: { en: "Pending", zh: "待付款" },
+  PENDING_CONFIRMATION: { en: "Awaiting Confirmation", zh: "待確認收款" },
+  CONFIRMED: { en: "Confirmed", zh: "已確認" },
   PAID: { en: "Paid", zh: "已付款" },
   FULFILLING: { en: "Fulfilling", zh: "配送中" },
   SHIPPED: { en: "Shipped", zh: "已發貨" },
@@ -28,7 +30,7 @@ function badgeClass(status: string) {
   if (s === "paid" || s === "completed") {
     return "bg-olive-100 text-olive-700 border border-olive-200";
   }
-  if (s === "pending") {
+  if (s === "pending" || s === "pending_confirmation") {
     return "bg-yellow-100 text-yellow-700 border border-yellow-200";
   }
   if (s === "fulfilling" || s === "shipped") {

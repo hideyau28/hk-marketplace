@@ -28,6 +28,7 @@ type FilterTab = "all" | "pending" | "paid";
 
 const statusConfig: Record<string, { label: string; labelZh: string; color: string }> = {
   PENDING: { label: "Pending", labelZh: "待付款", color: "bg-amber-100 text-amber-700" },
+  PENDING_CONFIRMATION: { label: "Awaiting Confirmation", labelZh: "待確認收款", color: "bg-amber-100 text-amber-700" },
   CONFIRMED: { label: "Confirmed", labelZh: "已確認", color: "bg-blue-100 text-blue-700" },
   PAID: { label: "Paid", labelZh: "已付款", color: "bg-green-100 text-green-700" },
   PROCESSING: { label: "Processing", labelZh: "處理中", color: "bg-blue-100 text-blue-700" },
@@ -45,7 +46,7 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
   const isZh = locale === "zh-HK";
 
   const filteredOrders = orders.filter((order) => {
-    if (filter === "pending") return order.status === "PENDING";
+    if (filter === "pending") return order.status === "PENDING" || order.status === "PENDING_CONFIRMATION";
     if (filter === "paid") return ["PAID", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "COMPLETED", "FULFILLING"].includes(order.status);
     return true;
   });
@@ -187,7 +188,7 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  {order.status === "PENDING" && (
+                  {(order.status === "PENDING" || order.status === "PENDING_CONFIRMATION") && (
                     <button
                       onClick={() => handleConfirmPayment(order.id)}
                       disabled={isUpdating}

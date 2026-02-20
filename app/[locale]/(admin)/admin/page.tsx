@@ -62,7 +62,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         select: { id: true, title: true, price: true, originalPrice: true, imageUrl: true, images: true, videoUrl: true, sizes: true, sizeSystem: true, hidden: true, featured: true, sortOrder: true, createdAt: true },
       }),
       prisma.order.count({
-        where: { tenantId, status: "PENDING" },
+        where: { tenantId, status: { in: ["PENDING", "PENDING_CONFIRMATION"] } },
       }),
       prisma.storeSettings.findFirst({
         where: { tenantId },

@@ -13,6 +13,7 @@ type OrderDetailModalProps = {
 
 const ORDER_STATUSES: OrderStatus[] = [
   "PENDING",
+  "PENDING_CONFIRMATION",
   "PAID",
   "FULFILLING",
   "SHIPPED",

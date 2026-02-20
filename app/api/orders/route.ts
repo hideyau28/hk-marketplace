@@ -30,6 +30,7 @@ function generateOrderNumber(): string {
 const ORDER_STATUSES = [
     // New status flow
     "PENDING",
+    "PENDING_CONFIRMATION",
     "CONFIRMED",
     "PROCESSING",
     "SHIPPED",
@@ -456,9 +457,12 @@ export const POST = withApi(async (req) => {
 
     const orderNumber = generateOrderNumber();
 
-    // Determine payment status based on whether proof is uploaded
+    // Determine payment status and order status based on whether proof is uploaded
     const hasPaymentProof = !!payload.paymentProof;
     const paymentStatus = hasPaymentProof ? "uploaded" : "pending";
+    // Manual payments with proof → PENDING_CONFIRMATION (waiting for merchant to confirm)
+    // Online payments (Stripe) or no proof → PENDING (waiting for payment)
+    const initialOrderStatus = hasPaymentProof ? "PENDING_CONFIRMATION" : "PENDING";
 
     const appliedCouponCode = (repriced.amounts as any)?.couponCode;
 
@@ -500,7 +504,7 @@ export const POST = withApi(async (req) => {
                 fulfillmentType: payload.fulfillment.type === "pickup" ? "PICKUP" : "DELIVERY",
                 fulfillmentAddress:
                     payload.fulfillment.type === "delivery" ? (payload.fulfillment.address ?? undefined) : undefined,
-                status: "PENDING",
+                status: initialOrderStatus,
                 note: payload.note ?? null,
                 paymentMethod: payload.paymentMethod ?? null,
                 paymentProof: payload.paymentProof ?? null,

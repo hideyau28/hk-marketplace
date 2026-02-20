@@ -385,6 +385,7 @@ model TenantAdmin {
 enum OrderStatus {
   // New status flow
   PENDING
+  PENDING_CONFIRMATION  // Manual payment: proof uploaded, awaiting merchant confirmation
   CONFIRMED
   PROCESSING
   SHIPPED

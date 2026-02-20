@@ -15,7 +15,8 @@ import type { OrderStatus } from "@prisma/client";
  */
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   // New status flow
-  PENDING: ["CONFIRMED", "CANCELLED"],
+  PENDING: ["PENDING_CONFIRMATION", "CONFIRMED", "CANCELLED"],
+  PENDING_CONFIRMATION: ["CONFIRMED", "CANCELLED"],
   CONFIRMED: ["PROCESSING", "CANCELLED"],
   PROCESSING: ["SHIPPED", "CANCELLED"],
   SHIPPED: ["DELIVERED"],

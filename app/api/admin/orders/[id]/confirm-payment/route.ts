@@ -26,11 +26,11 @@ export const POST = withApi(
       throw new ApiError(404, "NOT_FOUND", "Order not found");
     }
 
-    if (order.status !== "PENDING") {
+    if (order.status !== "PENDING" && order.status !== "PENDING_CONFIRMATION") {
       throw new ApiError(
         400,
         "BAD_REQUEST",
-        `Cannot confirm payment: order status is '${order.status}', expected 'PENDING'`
+        `Cannot confirm payment: order status is '${order.status}', expected 'PENDING' or 'PENDING_CONFIRMATION'`
       );
     }
 
