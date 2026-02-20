@@ -88,7 +88,7 @@ function SortableProductCard({
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} className="relative overflow-hidden">
+    <div ref={setNodeRef} style={style} {...attributes} className="relative">
       <div
         onClick={() => {
           if (isEditMode) return;
@@ -98,7 +98,7 @@ function SortableProductCard({
       >
         {/* Image */}
         <div
-          className={`aspect-square rounded-xl overflow-hidden bg-zinc-100 border ${
+          className={`relative w-20 h-20 mx-auto rounded-xl overflow-hidden bg-zinc-100 border ${
             isSelected ? "border-[#FF9500] ring-2 ring-[#FF9500]/30" : "border-zinc-200"
           } ${product.hidden ? "opacity-50" : ""}`}
         >
@@ -108,7 +108,7 @@ function SortableProductCard({
               alt={product.title}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 33vw, 150px"
+              sizes="80px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-zinc-300">

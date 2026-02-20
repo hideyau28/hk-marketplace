@@ -573,7 +573,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     disabled={isPending}
                   />
                   {imageUrl && (
-                    <div className="mt-3 relative max-w-[200px]">
+                    <div className="mt-3 relative max-w-[80px]">
                       <img src={imageUrl} alt="Main" className="w-full aspect-square object-cover rounded-lg border border-zinc-200 bg-zinc-50" />
                       <button type="button" onClick={() => setImageUrl("")}
                         className="absolute top-2 right-2 p-1 rounded-full bg-white/90 text-zinc-500 hover:text-red-500 hover:bg-white shadow-sm">
