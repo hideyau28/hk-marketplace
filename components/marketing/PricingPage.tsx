@@ -55,15 +55,14 @@ function getPlans(isZh: boolean) {
       period: isZh ? "/月" : "/mo",
       subtitle: isZh ? "認真副業首選" : "For growing side hustles",
       cta: isZh ? "立即訂閱" : "Subscribe",
-      ctaStyle: "primary" as const,
-      badge: isZh ? "最受歡迎" : "Most popular",
+      ctaStyle: "outline" as const,
       features: isZh
         ? ["50 件商品", "無限訂單", "FPS + PayMe + AlipayHK + 銀行過數", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "基本數據分析", "2 員工帳號"]
         : ["50 products", "Unlimited orders", "FPS + PayMe + AlipayHK + Bank transfer", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Basic analytics", "2 staff accounts"],
       noFeatures: [] as string[],
       footnote: isZh ? "月繳・隨時取消・0% 平台抽成" : "Monthly · cancel anytime · 0% platform fee",
-      bg: "warm" as const,
-      highlight: true,
+      bg: "white" as const,
+      highlight: false,
     },
     {
       name: "Pro",
@@ -71,14 +70,15 @@ function getPlans(isZh: boolean) {
       period: isZh ? "/月" : "/mo",
       subtitle: isZh ? "全職生意必備" : "For full-time businesses",
       cta: isZh ? "免費試 14 日" : "Try 14 days free",
-      ctaStyle: "dark" as const,
+      ctaStyle: "primary" as const,
+      badge: isZh ? "最受歡迎" : "Most popular",
       features: isZh
         ? ["無限商品", "無限訂單", "全部收款方式", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "進階數據分析 + 熱賣排行", "棄單挽回", "CRM 客戶庫", "自訂域名（需自備）", "移除 WoWlix branding", "3 員工帳號"]
         : ["Unlimited products", "Unlimited orders", "All payment methods", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Advanced analytics + bestseller ranking", "Abandoned cart recovery", "CRM customer database", "Custom domain (BYOD)", "Remove WoWlix branding", "3 staff accounts"],
       noFeatures: [] as string[],
       footnote: isZh ? "14 日免費試用・0% 平台抽成" : "14-day free trial · 0% platform fee",
-      bg: "dark" as const,
-      highlight: false,
+      bg: "highlight" as const,
+      highlight: true,
     },
   ];
 }
@@ -216,21 +216,15 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
 
   const bgStyles: Record<string, React.CSSProperties> = {
     white: { background: "#fff", color: "#1A1A1A", border: "1px solid #E5E7EB" },
-    warm: {
-      background: "linear-gradient(180deg, #FFF8F0 0%, #FFF3E0 100%)",
+    highlight: {
+      background: "rgba(255,149,0,0.05)",
       color: "#1A1A1A",
       border: "2px solid #FF9500",
-    },
-    dark: {
-      background: "linear-gradient(180deg, #1A1A1A 0%, #111 100%)",
-      color: "#fff",
-      border: "1px solid #333",
     },
   };
   const ctaStyles: Record<string, React.CSSProperties> = {
     outline: { background: "transparent", color: "#FF9500", border: "2px solid #FF9500" },
     primary: { background: "#FF9500", color: "#fff", border: "2px solid #FF9500" },
-    dark: { background: "#fff", color: "#1A1A1A", border: "2px solid #fff" },
   };
   const style = bgStyles[plan.bg];
   const ctaStyle = ctaStyles[plan.ctaStyle];
@@ -255,29 +249,32 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
           : "scale(1)",
         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         boxShadow: plan.highlight
-          ? "0 20px 60px rgba(255, 149, 0, 0.15)"
+          ? "0 8px 32px rgba(255,149,0,0.15)"
           : hovered
           ? "0 12px 40px rgba(0,0,0,0.1)"
           : "0 4px 20px rgba(0,0,0,0.06)",
         flex: "1 1 280px",
         minWidth: 0,
         maxWidth: 380,
-        overflow: "hidden",
+        overflow: "visible",
       }}
     >
       {plan.badge && (
         <div
           style={{
             position: "absolute",
-            top: 16,
-            right: -32,
+            top: 0,
+            left: "50%",
+            transform: "translate(-50%, -50%)",
             background: "#FF9500",
             color: "#fff",
-            padding: "4px 40px",
-            fontSize: 12,
+            padding: "8px 24px",
+            fontSize: 14,
             fontWeight: 700,
-            transform: "rotate(45deg)",
-            letterSpacing: "0.05em",
+            borderRadius: 20,
+            whiteSpace: "nowrap",
+            letterSpacing: "0.02em",
+            zIndex: 2,
           }}
         >
           {plan.badge}
@@ -288,7 +285,7 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
           position: "absolute",
           top: 16,
           left: 20,
-          background: plan.bg === "dark" ? "#333" : "#FFF3E0",
+          background: "#FFF3E0",
           borderRadius: 20,
           padding: "3px 10px",
           fontSize: 11,
@@ -303,7 +300,7 @@ function PlanCard({ plan, isZh }: { plan: Plan; isZh: boolean }) {
         <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
           <span style={{ fontSize: 14, opacity: 0.5 }}>$</span>
           <span style={{ fontSize: 52, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>{plan.price}</span>
-          <span style={{ fontSize: 16, opacity: 0.5 }}>{plan.period}</span>
+          <span style={{ fontSize: 12, color: "#999" }}>{plan.period}</span>
         </div>
         <div style={{ fontSize: 14, opacity: 0.6, marginBottom: 24 }}>{plan.subtitle}</div>
       </div>
@@ -656,6 +653,27 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           margin: 0;
           padding: 0;
         }
+        .pricing-link-underline {
+          position: relative;
+          text-decoration: none;
+          color: #FF9500;
+          font-weight: 600;
+          font-size: 15px;
+          padding-bottom: 2px;
+        }
+        .pricing-link-underline::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          width: 0;
+          height: 2px;
+          background: #FF9500;
+          transition: width 0.3s ease;
+        }
+        .pricing-link-underline:hover::after {
+          width: 100%;
+        }
         .pricing-page input[type="range"] {
           -webkit-appearance: none;
           appearance: none;
@@ -888,6 +906,11 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               ? "* WoWlix 不收平台抽成。如使用信用卡等第三方支付，需支付通道手續費（由支付商收取，WoWlix 不額外加價）。"
               : "* WoWlix charges no platform fees. Third-party payment gateway fees (e.g. Stripe) are charged by the provider, not WoWlix."}
           </p>
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <a href="#feature-table" className="pricing-link-underline">
+              {isZh ? "查看完整定價 →" : "View full pricing →"}
+            </a>
+          </div>
         </div>
       </section>
 
@@ -1056,7 +1079,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* FEATURE TABLE */}
-      <section style={{ padding: "80px 24px", background: "#FAFAFA" }}>
+      <section id="feature-table" style={{ padding: "80px 24px", background: "#FAFAFA", scrollMarginTop: 80 }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>{isZh ? "功能一覽" : "Feature comparison"}</h2>
