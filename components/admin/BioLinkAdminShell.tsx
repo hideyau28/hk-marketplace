@@ -12,7 +12,7 @@ export default function BioLinkAdminShell({ children }: { children: ReactNode })
   const params = useParams();
   const router = useRouter();
   const locale = (params.locale as string) || "en";
-  const branding = useTenantBranding();
+  const { branding, loading } = useTenantBranding();
 
   const tabs = [
     { href: `/${locale}/admin`, label: locale === "zh-HK" ? "鋪面" : "Store", icon: Home, exact: true },
@@ -31,10 +31,22 @@ export default function BioLinkAdminShell({ children }: { children: ReactNode })
       {/* Top bar */}
       <div className="sticky top-0 z-20 bg-white border-b border-zinc-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#FF9500] text-white flex items-center justify-center text-sm font-bold">
-            {branding.name.charAt(0).toUpperCase()}
-          </div>
-          <span className="font-semibold text-zinc-900 text-sm truncate max-w-[200px]">{branding.name}</span>
+          {loading ? (
+            <>
+              <div className="w-8 h-8 rounded-lg bg-zinc-200 animate-pulse" />
+              <div className="h-4 w-28 bg-zinc-200 rounded animate-pulse" />
+            </>
+          ) : (
+            <>
+              <div
+                className="w-8 h-8 rounded-lg text-white flex items-center justify-center text-sm font-bold"
+                style={{ backgroundColor: branding.themeColor || "#FF9500" }}
+              >
+                {branding.name.charAt(0).toUpperCase()}
+              </div>
+              <span className="font-semibold text-zinc-900 text-sm truncate max-w-[200px]">{branding.name}</span>
+            </>
+          )}
         </div>
         <button
           onClick={handleLogout}

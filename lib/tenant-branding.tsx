@@ -12,6 +12,11 @@ export type TenantBranding = {
   mode: string;
 };
 
+type TenantBrandingContextValue = {
+  branding: TenantBranding;
+  loading: boolean;
+};
+
 const DEFAULT_BRANDING: TenantBranding = {
   name: "May's Shop",
   slug: "maysshop",
@@ -22,10 +27,14 @@ const DEFAULT_BRANDING: TenantBranding = {
   mode: "biolink",
 };
 
-const TenantBrandingContext = createContext<TenantBranding>(DEFAULT_BRANDING);
+const TenantBrandingContext = createContext<TenantBrandingContextValue>({
+  branding: DEFAULT_BRANDING,
+  loading: true,
+});
 
 export function TenantBrandingProvider({ children }: { children: ReactNode }) {
   const [branding, setBranding] = useState<TenantBranding>(DEFAULT_BRANDING);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/tenant/branding")
@@ -43,7 +52,8 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
           });
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   // Apply theme color as CSS variable on <html>
@@ -52,7 +62,7 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
   }, [branding.themeColor]);
 
   return (
-    <TenantBrandingContext.Provider value={branding}>
+    <TenantBrandingContext.Provider value={{ branding, loading }}>
       {children}
     </TenantBrandingContext.Provider>
   );
