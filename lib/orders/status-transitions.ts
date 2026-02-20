@@ -16,7 +16,7 @@ import type { OrderStatus } from "@prisma/client";
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   // New status flow
   PENDING: ["PENDING_CONFIRMATION", "CONFIRMED", "CANCELLED"],
-  PENDING_CONFIRMATION: ["CONFIRMED", "CANCELLED"],
+  PENDING_CONFIRMATION: ["PAID", "PAYMENT_REJECTED", "CONFIRMED", "CANCELLED"],
   CONFIRMED: ["PROCESSING", "CANCELLED"],
   PROCESSING: ["SHIPPED", "CANCELLED"],
   SHIPPED: ["DELIVERED"],
@@ -24,6 +24,7 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   COMPLETED: ["REFUNDED"],
   CANCELLED: [], // Terminal state
   REFUNDED: [], // Terminal state
+  PAYMENT_REJECTED: [], // Terminal state
   // Legacy statuses (backward compatibility)
   PAID: ["FULFILLING", "CONFIRMED", "CANCELLED", "REFUNDED", "DISPUTED"],
   FULFILLING: ["SHIPPED", "PROCESSING", "CANCELLED"],

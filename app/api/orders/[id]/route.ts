@@ -16,6 +16,7 @@ const ORDER_STATUSES = [
     "COMPLETED",
     "CANCELLED",
     "REFUNDED",
+    "PAYMENT_REJECTED",
     // Legacy statuses
     "PAID",
     "FULFILLING",
