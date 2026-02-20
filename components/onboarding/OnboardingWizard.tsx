@@ -46,17 +46,25 @@ const t = {
     confirmPassword: "Confirm Password *",
     confirmPasswordPlaceholder: "Re-enter your password",
     passwordMismatch: "Passwords do not match",
-    contactSection: "Contact (optional)",
-    whatsapp: "WhatsApp",
+    // Step 3: WhatsApp
+    whatsappTitle: "Your WhatsApp",
+    whatsappSub: "Customers will reach you here",
+    whatsapp: "WhatsApp Number *",
     whatsappPlaceholder: "e.g. 91234567",
     whatsappHint: "8-digit HK number, no +852",
     whatsappFormatError: "Must be 8 digits",
-    instagram: "Instagram",
-    instagramPlaceholder: "@yourshop",
+    // Step 4: FPS
+    fpsTitle: "FPS Payment",
+    fpsSub: "How customers pay you",
+    fpsId: "FPS Phone / ID *",
+    fpsIdPlaceholder: "e.g. 91234567 or FPS ID",
+    fpsIdHint: "Your FPS registered phone or ID",
+    fpsAccountName: "Account Name (optional)",
+    fpsAccountNamePlaceholder: "e.g. Chan Tai Man",
     // Navigation
     next: "Next",
     back: "Back",
-    // Step 3: Theme
+    // Step 5: Theme
     pickStyle: "Pick a style",
     pickStyleSub: "You can change this later",
     storeStyle: "Store style",
@@ -65,7 +73,7 @@ const t = {
     taglineSkipHint: "You can skip this",
     createStore: "Create my store",
     creating: "Creating your store...",
-    // Step 5: Done
+    // Step 6: Done
     congrats: "Your store is ready!",
     storeLink: "Your store link:",
     copied: "Copied!",
@@ -132,17 +140,25 @@ const t = {
     confirmPassword: "確認密碼 *",
     confirmPasswordPlaceholder: "再輸入一次密碼",
     passwordMismatch: "密碼不一致",
-    contactSection: "聯絡方式（選填）",
-    whatsapp: "WhatsApp",
+    // Step 3: WhatsApp
+    whatsappTitle: "你嘅 WhatsApp",
+    whatsappSub: "客人會用呢個號碼搵你",
+    whatsapp: "WhatsApp 號碼 *",
     whatsappPlaceholder: "例如 91234567",
     whatsappHint: "8 位香港號碼，不需要 +852",
     whatsappFormatError: "需要 8 位數字",
-    instagram: "Instagram",
-    instagramPlaceholder: "@yourshop",
+    // Step 4: FPS
+    fpsTitle: "FPS 收款設定",
+    fpsSub: "客人會用 FPS 畀錢你",
+    fpsId: "FPS 收款電話 / ID *",
+    fpsIdPlaceholder: "例如 91234567 或 FPS ID",
+    fpsIdHint: "你登記 FPS 嘅電話或 ID",
+    fpsAccountName: "收款人名稱（選填）",
+    fpsAccountNamePlaceholder: "例如：陳大文",
     // Navigation
     next: "下一步",
     back: "返回",
-    // Step 3: Theme
+    // Step 5: Theme
     pickStyle: "揀個風格",
     pickStyleSub: "之後可以隨時改",
     storeStyle: "店舖風格",
@@ -151,7 +167,7 @@ const t = {
     taglineSkipHint: "可以跳過",
     createStore: "開店",
     creating: "建立緊你嘅小店...",
-    // Step 5: Done
+    // Step 6: Done
     congrats: "你嘅店已準備好！",
     storeLink: "你嘅店舖連結：",
     copied: "已複製！",
@@ -241,7 +257,7 @@ function nameToSlug(name: string): string {
 
 type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
-type OnboardingStep = 1 | 2 | 3 | 4;
+type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6;
 
 interface OnboardingData {
   plan: string;
@@ -252,7 +268,8 @@ interface OnboardingData {
   password: string;
   confirmPassword: string;
   whatsapp: string;
-  instagram: string;
+  fpsId: string;
+  fpsAccountName: string;
   templateId: string;
   tagline: string;
 }
@@ -275,7 +292,7 @@ interface OnboardingWizardProps {
 }
 
 const STORAGE_KEY = "onboarding-wizard-state";
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 6;
 
 export default function OnboardingWizard({ locale, initialGoogleEmail }: OnboardingWizardProps) {
   const labels = locale === "zh-HK" ? t["zh-HK"] : t.en;
@@ -293,7 +310,8 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     password: "",
     confirmPassword: "",
     whatsapp: "",
-    instagram: "",
+    fpsId: "",
+    fpsAccountName: "",
     templateId: "mochi",
     tagline: "",
   });
@@ -469,9 +487,22 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
         newErrors.confirmPassword = labels.passwordMismatch;
     }
 
-    if (data.whatsapp && !WHATSAPP_REGEX.test(data.whatsapp.trim()))
-      newErrors.whatsapp = labels.whatsappFormatError;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
+  const validateStep3 = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    const wa = data.whatsapp.trim();
+    if (!wa) newErrors.whatsapp = labels.required;
+    else if (!WHATSAPP_REGEX.test(wa)) newErrors.whatsapp = labels.whatsappFormatError;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep4 = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!data.fpsId.trim()) newErrors.fpsId = labels.required;
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -479,18 +510,30 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
   const handleNext = () => {
     if (step === 2 && !validateStep2()) return;
     if (step === 2 && slugStatus === "checking") return;
-    if (step === 3) {
+    if (step === 3 && !validateStep3()) return;
+    if (step === 4 && !validateStep4()) return;
+    if (step === 5) {
       handleRegister();
       return;
     }
     goNext();
   };
 
-  // --- Submit registration at end of Step 3 ---
+  // --- Submit registration at end of Step 5 ---
   const handleRegister = async () => {
     if (!validateStep2()) {
       setDirection(-1);
       setStep(2);
+      return;
+    }
+    if (!validateStep3()) {
+      setDirection(-1);
+      setStep(3);
+      return;
+    }
+    if (!validateStep4()) {
+      setDirection(-1);
+      setStep(4);
       return;
     }
 
@@ -507,8 +550,9 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
           email: data.email.trim().toLowerCase(),
           password: googleEmail ? undefined : data.password,
           googleAuth: !!googleEmail,
-          whatsapp: data.whatsapp.trim() || undefined,
-          instagram: data.instagram.trim().replace(/^@/, "") || undefined,
+          whatsapp: data.whatsapp.trim(),
+          fpsId: data.fpsId.trim(),
+          fpsAccountName: data.fpsAccountName.trim() || undefined,
           templateId: data.templateId,
           tagline: data.tagline.trim() || undefined,
         }),
@@ -538,7 +582,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
         return;
       }
 
-      // Success → show step 5
+      // Success → show step 6 (Done)
       setCreatedSlug(json.data?.slug || data.slug);
       setSubmitting(false);
       try {
@@ -951,57 +995,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   )}
                 </div>
 
-                {/* Divider */}
-                <div className="border-t border-zinc-100" />
-
-                {/* Contact section */}
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                    {labels.contactSection}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* WhatsApp */}
-                    <div>
-                      <label className="block text-sm font-medium text-zinc-700 mb-1">
-                        {labels.whatsapp}
-                      </label>
-                      <input
-                        type="tel"
-                        value={data.whatsapp}
-                        onChange={(e) =>
-                          update(
-                            "whatsapp",
-                            e.target.value.replace(/\D/g, "").slice(0, 8)
-                          )
-                        }
-                        placeholder={labels.whatsappPlaceholder}
-                        maxLength={8}
-                        className={inputClass("whatsapp")}
-                      />
-                      {errors.whatsapp ? (
-                        <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>
-                      ) : (
-                        <p className="text-zinc-400 text-[10px] mt-0.5">{labels.whatsappHint}</p>
-                      )}
-                    </div>
-
-                    {/* Instagram */}
-                    <div>
-                      <label className="block text-sm font-medium text-zinc-700 mb-1">
-                        {labels.instagram}
-                      </label>
-                      <input
-                        type="text"
-                        value={data.instagram}
-                        onChange={(e) => update("instagram", e.target.value)}
-                        placeholder={labels.instagramPlaceholder}
-                        className={inputClass("instagram")}
-                      />
-                    </div>
-                  </div>
-                </div>
-
                 {/* Nav buttons */}
                 <div className="flex gap-3 pt-1">
                   <button
@@ -1022,8 +1015,135 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
               </div>
             )}
 
-            {/* ======== STEP 3: Theme ======== */}
+            {/* ======== STEP 3: WhatsApp ======== */}
             {step === 3 && (
+              <div className="space-y-5">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-600 text-2xl mb-3">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.05 21.785c-1.726 0-3.42-.464-4.9-1.342l-.352-.209-3.65.957.974-3.558-.23-.365a9.687 9.687 0 01-1.487-5.17c.002-5.36 4.365-9.72 9.731-9.72a9.67 9.67 0 016.882 2.852 9.67 9.67 0 012.85 6.874c-.003 5.36-4.366 9.72-9.731 9.72h-.004zm8.284-17.99A11.616 11.616 0 0012.05.42C5.495.42.16 5.753.157 12.098a11.63 11.63 0 001.555 5.828L0 24l6.258-1.64a11.67 11.67 0 005.788 1.527h.005c6.554 0 11.89-5.334 11.893-11.9a11.82 11.82 0 00-3.48-8.413z"/></svg>
+                  </div>
+                  <h2 className="text-xl font-bold text-zinc-900">
+                    {labels.whatsappTitle}
+                  </h2>
+                  <p className="text-zinc-500 text-sm mt-1">
+                    {labels.whatsappSub}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    {labels.whatsapp}
+                  </label>
+                  <input
+                    type="tel"
+                    value={data.whatsapp}
+                    onChange={(e) =>
+                      update(
+                        "whatsapp",
+                        e.target.value.replace(/\D/g, "").slice(0, 8)
+                      )
+                    }
+                    placeholder={labels.whatsappPlaceholder}
+                    maxLength={8}
+                    className={inputClass("whatsapp")}
+                    autoFocus
+                  />
+                  {errors.whatsapp ? (
+                    <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>
+                  ) : (
+                    <p className="text-zinc-400 text-xs mt-1">{labels.whatsappHint}</p>
+                  )}
+                </div>
+
+                {/* Nav buttons */}
+                <div className="flex gap-3 pt-1">
+                  <button
+                    onClick={goBack}
+                    type="button"
+                    className="flex-1 py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px]"
+                  >
+                    &larr; {labels.back}
+                  </button>
+                  <button
+                    onClick={handleNext}
+                    className="flex-1 py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px]"
+                  >
+                    {labels.next} &rarr;
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ======== STEP 4: FPS ======== */}
+            {step === 4 && (
+              <div className="space-y-5">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600 text-lg font-bold mb-3">
+                    $
+                  </div>
+                  <h2 className="text-xl font-bold text-zinc-900">
+                    {labels.fpsTitle}
+                  </h2>
+                  <p className="text-zinc-500 text-sm mt-1">
+                    {labels.fpsSub}
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                      {labels.fpsId}
+                    </label>
+                    <input
+                      type="text"
+                      value={data.fpsId}
+                      onChange={(e) => update("fpsId", e.target.value)}
+                      placeholder={labels.fpsIdPlaceholder}
+                      className={inputClass("fpsId")}
+                      autoFocus
+                    />
+                    {errors.fpsId ? (
+                      <p className="text-red-500 text-xs mt-1">{errors.fpsId}</p>
+                    ) : (
+                      <p className="text-zinc-400 text-xs mt-1">{labels.fpsIdHint}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                      {labels.fpsAccountName}
+                    </label>
+                    <input
+                      type="text"
+                      value={data.fpsAccountName}
+                      onChange={(e) => update("fpsAccountName", e.target.value)}
+                      placeholder={labels.fpsAccountNamePlaceholder}
+                      className={inputClass("fpsAccountName")}
+                    />
+                  </div>
+                </div>
+
+                {/* Nav buttons */}
+                <div className="flex gap-3 pt-1">
+                  <button
+                    onClick={goBack}
+                    type="button"
+                    className="flex-1 py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px]"
+                  >
+                    &larr; {labels.back}
+                  </button>
+                  <button
+                    onClick={handleNext}
+                    className="flex-1 py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px]"
+                  >
+                    {labels.next} &rarr;
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ======== STEP 5: Theme ======== */}
+            {step === 5 && (
               <div className="space-y-5">
                 <div className="text-center">
                   <h2 className="text-xl font-bold text-zinc-900">
@@ -1152,8 +1272,8 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
               </div>
             )}
 
-            {/* ======== STEP 4: Done ======== */}
-            {step === 4 && (
+            {/* ======== STEP 6: Done ======== */}
+            {step === 6 && (
               <div className="space-y-5 text-center">
                 <div className="text-4xl">🎉</div>
                 <h2 className="text-xl font-bold text-zinc-900">
@@ -1198,13 +1318,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                       {linkCopied ? labels.copied : labels.copyLink}
                     </button>
                   </div>
-                </div>
-
-                {/* Payment setup reminder */}
-                <div className="bg-amber-50 rounded-xl px-4 py-3 border border-amber-200 text-left">
-                  <p className="text-sm text-amber-800 font-medium">
-                    {labels.paymentReminder}
-                  </p>
                 </div>
 
                 {/* Primary CTA: Go to admin */}

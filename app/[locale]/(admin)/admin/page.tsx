@@ -8,6 +8,8 @@ import DashboardCharts from "@/components/admin/DashboardCharts";
 import TopSellingProducts from "@/components/admin/TopSellingProducts";
 import WelcomeToast from "@/components/admin/WelcomeToast";
 import BioLinkDashboard from "@/components/admin/BioLinkDashboard";
+import SetupChecklist from "@/components/admin/SetupChecklist";
+import type { ChecklistStatus } from "@/components/admin/SetupChecklist";
 import { getDict, type Locale } from "@/lib/i18n";
 import { hasFeature } from "@/lib/plan";
 
@@ -49,7 +51,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
 
   // Bio Link mode: show storefront-style dashboard
   if (mode === "biolink") {
-    const [tenant, products, pendingOrders] = await Promise.all([
+    const [tenant, products, pendingOrders, storeSettings, fpsMethod, productCount] = await Promise.all([
       prisma.tenant.findUnique({
         where: { id: tenantId },
         select: { name: true, slug: true, coverPhoto: true, coverTemplate: true, logoUrl: true, brandColor: true },
@@ -62,13 +64,40 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       prisma.order.count({
         where: { tenantId, status: "PENDING" },
       }),
+      prisma.storeSettings.findFirst({
+        where: { tenantId },
+        select: { whatsappNumber: true },
+      }),
+      prisma.paymentMethod.findFirst({
+        where: { tenantId, type: "fps", active: true },
+        select: { id: true, accountNumber: true },
+      }),
+      prisma.product.count({
+        where: { tenantId, active: true, deletedAt: null },
+      }),
     ]);
+
+    // Setup checklist status
+    const checklistStatus: ChecklistStatus = {
+      hasStoreName: !!(tenant?.name && tenant?.slug),
+      hasWhatsapp: !!(storeSettings?.whatsappNumber),
+      hasFps: !!(fpsMethod?.accountNumber),
+      hasAvatar: !!(tenant?.logoUrl && tenant?.coverPhoto),
+      hasProduct: productCount > 0,
+    };
 
     return (
       <>
         <Suspense fallback={null}>
           <WelcomeToast />
         </Suspense>
+        <div className="px-4 pt-4">
+          <SetupChecklist
+            locale={locale}
+            status={checklistStatus}
+            storeSlug={tenant?.slug || ""}
+          />
+        </div>
         <BioLinkDashboard
           locale={locale}
           tenant={tenant!}
