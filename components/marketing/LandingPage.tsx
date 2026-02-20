@@ -417,6 +417,9 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         </div>
       </section>
 
+      {/* ─── Gradient: White → Dark ─── */}
+      <div style={{ height: 80, background: "linear-gradient(to bottom, #fff, #0D0D0D)" }} />
+
       {/* ─── HOW IT WORKS (Dark bg) ─── */}
       <section id="how-it-works" className="lp-section scroll-reveal" style={{ padding: "80px 24px", background: "#0D0D0D" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" as const }}>
@@ -440,25 +443,28 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 transition: "all 0.3s",
               }}>
                 <div style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  marginBottom: 16,
+                  width: 80, height: 80, borderRadius: "50%",
+                  background: "rgba(255,149,0,0.1)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  marginBottom: 20,
                 }}>
                   <span style={{
-                    fontSize: 40, fontWeight: 900, color: "#FF9500",
+                    fontSize: 64, fontWeight: 900, color: "#FF9500",
                     fontFamily: "'JetBrains Mono', monospace",
                     lineHeight: 1,
                   }}>
                     {step.num}
                   </span>
-                  <span style={{ fontSize: 32, lineHeight: 1 }}>{step.icon}</span>
                 </div>
                 <div style={{
-                  fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8,
+                  fontSize: 20, fontWeight: 900, color: "#fff", marginBottom: 6,
+                  letterSpacing: "0.01em",
                 }}>
                   {step.title}
                 </div>
                 <div style={{
-                  fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6,
+                  fontSize: 13, color: "rgba(255,255,255,0.38)", lineHeight: 1.5,
+                  fontWeight: 400,
                 }}>
                   {step.desc}
                 </div>
@@ -467,6 +473,9 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           </div>
         </div>
       </section>
+
+      {/* ─── Gradient: Dark → White ─── */}
+      <div style={{ height: 80, background: "linear-gradient(to bottom, #0D0D0D, #fff)" }} />
 
       {/* ─── PRICING (White bg) ─── */}
       <section id="pricing" className="lp-section scroll-reveal" style={{ padding: "80px 24px", background: "#fff" }}>
@@ -575,6 +584,9 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         </div>
       </section>
 
+      {/* ─── Gradient: White → Dark ─── */}
+      <div style={{ height: 80, background: "linear-gradient(to bottom, #fff, #0D0D0D)" }} />
+
       {/* ─── TRUST SIGNALS (Dark bg) ─── */}
       <section className="lp-section scroll-reveal" style={{ padding: "80px 24px", background: "#0D0D0D" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" as const }}>
@@ -604,7 +616,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 }}>
                   {stat.value}
                 </div>
-                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>
+                <div style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>
                   {stat.label}
                 </div>
               </div>
@@ -620,7 +632,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 padding: "24px",
                 background: "#161616",
                 borderRadius: 16,
-                border: "1px solid rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.15)",
                 textAlign: "left" as const,
               }}>
                 <div style={{
@@ -630,13 +642,20 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   &ldquo;{renderBold(item.quote)}&rdquo;
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {/* IG-style gradient ring avatar */}
                   <div style={{
-                    width: 36, height: 36, borderRadius: "50%",
-                    background: "rgba(255,149,0,0.15)", display: "flex",
-                    alignItems: "center", justifyContent: "center",
-                    color: "#FF9500", fontWeight: 800, fontSize: 14,
+                    width: 42, height: 42, borderRadius: "50%",
+                    background: "linear-gradient(135deg, #F58529, #DD2A7B, #8134AF, #515BD4)",
+                    padding: 2, flexShrink: 0,
                   }}>
-                    {item.name[0]}
+                    <div style={{
+                      width: "100%", height: "100%", borderRadius: "50%",
+                      background: "#161616", display: "flex",
+                      alignItems: "center", justifyContent: "center",
+                      color: "#FF9500", fontWeight: 800, fontSize: 15,
+                    }}>
+                      {item.name[0]}
+                    </div>
                   </div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{item.name}</div>
