@@ -85,9 +85,9 @@ function getPlans(isZh: boolean) {
 
 function getCompetitors(isZh: boolean) {
   return [
-    { name: isZh ? "本地網店平台 A" : "Local Platform A", base: 499, rate: 0.008, color: "#94A3B8" },
+    { name: isZh ? "本地網店平台 A" : "Local Platform A", base: 499, rate: 0.008, color: "#64748B" },
     { name: isZh ? "海外網店平台" : "Global Platform", base: 195, rate: 0.02, color: "#94A3B8" },
-    { name: isZh ? "本地網店平台 B" : "Local Platform B", base: 374, rate: 0.005, color: "#94A3B8" },
+    { name: isZh ? "本地網店平台 B" : "Local Platform B", base: 374, rate: 0.005, color: "#B0BEC5" },
   ];
 }
 
@@ -402,12 +402,13 @@ function Calculator({ isZh }: { isZh: boolean }) {
         {[false, true].map((v) => (
           <button
             key={String(v)}
+            className="calc-toggle"
             onClick={() => setUsePro(v)}
             style={{
               padding: "10px 20px",
               borderRadius: 20,
-              border: "none",
-              background: usePro === v ? "#FF9500" : "#F3F4F6",
+              border: usePro === v ? "2px solid #FF9500" : "2px solid #E5E7EB",
+              background: usePro === v ? "#FF9500" : "transparent",
               color: usePro === v ? "#fff" : "#666",
               fontWeight: 600,
               fontSize: 14,
@@ -442,7 +443,7 @@ function Calculator({ isZh }: { isZh: boolean }) {
                 position: "relative",
                 height: 36,
                 background: "#F3F4F6",
-                borderRadius: 8,
+                borderRadius: 10,
                 overflow: "hidden",
               }}
             >
@@ -451,7 +452,7 @@ function Calculator({ isZh }: { isZh: boolean }) {
                   height: "100%",
                   width: `${(c.total / maxCost) * 100}%`,
                   background: c.isWowlix ? "linear-gradient(90deg, #FF9500, #FFB347)" : c.color,
-                  borderRadius: 8,
+                  borderRadius: 10,
                   transition: "width 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
                   display: "flex",
                   alignItems: "center",
@@ -501,6 +502,7 @@ function Calculator({ isZh }: { isZh: boolean }) {
           padding: 24,
           background: "#FFF3E0",
           borderRadius: 16,
+          boxShadow: "0 4px 20px rgba(255,149,0,0.12)",
         }}
       >
         <div style={{ fontSize: 14, opacity: 0.7, marginBottom: 4 }}>{isZh ? "每月最多慳" : "Max monthly savings"}</div>
@@ -508,8 +510,8 @@ function Calculator({ isZh }: { isZh: boolean }) {
           $
           <AnimatedNumber value={Math.max(0, Math.round(saving))} />
         </div>
-        <div style={{ fontSize: 16, opacity: 0.6, marginTop: 4 }}>
-          {isZh ? "一年慳" : "Annual savings"} <strong>${Math.max(0, Math.round(saving * 12)).toLocaleString()}</strong>
+        <div style={{ fontSize: 18, fontWeight: 500, color: "#1A1A1A", opacity: 0.8, marginTop: 4 }}>
+          {isZh ? "一年慳" : "Annual savings"} <strong style={{ fontSize: 20, fontWeight: 800, color: "#FF9500" }}>${Math.max(0, Math.round(saving * 12)).toLocaleString()}</strong>
         </div>
       </div>
 
@@ -706,6 +708,18 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         .pricing-page input[type="range"]::-moz-range-track {
           border-radius: 999px;
           height: 12px;
+        }
+        .calc-toggle:hover {
+          box-shadow: 0 2px 8px rgba(255,149,0,0.2);
+          border-color: #FF9500 !important;
+        }
+        .scenario-card:hover {
+          transform: translateY(-4px) !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+        }
+        .theme-card:hover {
+          transform: scale(1.02) !important;
+          box-shadow: 0 8px 28px rgba(0,0,0,0.14) !important;
         }
       `}</style>
 
@@ -958,7 +972,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* SAVINGS CALCULATOR */}
-      <section className="pricing-page" style={{ padding: "80px 24px", background: "#fff" }}>
+      <section className="pricing-page" style={{ padding: "120px 24px 80px", background: "#fff" }}>
         <div style={{ maxWidth: 800, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 800, marginBottom: 8 }}>
@@ -983,6 +997,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             {SCENARIOS.map((s, i) => (
               <div
                 key={i}
+                className="scenario-card"
                 style={{
                   flex: "1 1 260px",
                   maxWidth: 320,
@@ -994,26 +1009,43 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   cursor: "default",
                 }}
               >
-                <div style={{ marginBottom: 12 }}>{ICONS[s.icon]}</div>
+                <div
+                  style={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: "50%",
+                    background: "#FFF3E0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  <div style={{ transform: "scale(1.5)" }}>{ICONS[s.icon]}</div>
+                </div>
                 <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>{s.title}</h3>
-                <div style={{ fontSize: 14, color: "#888", marginBottom: 16 }}>{s.range}</div>
+                <div style={{ fontSize: 15, color: "#666", fontWeight: 600, marginBottom: 16 }}>{s.range}</div>
                 <div
                   style={{
                     display: "inline-block",
                     padding: "6px 14px",
                     borderRadius: 20,
+                    border:
+                      s.planColor === "#1A1A1A"
+                        ? "none"
+                        : s.planColor === "#FF9500"
+                        ? "2px solid #FF9500"
+                        : "2px solid #10B981",
                     background:
                       s.planColor === "#1A1A1A"
                         ? "#1A1A1A"
-                        : s.planColor === "#FF9500"
-                        ? "#FFF3E0"
-                        : "#ECFDF5",
+                        : "transparent",
                     color:
                       s.planColor === "#1A1A1A"
                         ? "#fff"
                         : s.planColor === "#FF9500"
-                        ? "#E68600"
-                        : "#059669",
+                        ? "#FF9500"
+                        : "#10B981",
                     fontSize: 14,
                     fontWeight: 700,
                     marginBottom: 16,
@@ -1037,19 +1069,22 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             </h2>
             <p style={{ color: "#888", fontSize: 16 }}>{isZh ? "每間店都有自己嘅風格" : "Every shop has its own style"}</p>
           </div>
+          <div style={{ background: "#F9FAFB", borderRadius: 24, padding: "32px 24px" }}>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
             {DEMOS.map((d, i) => (
               <div
                 key={i}
+                className="theme-card"
                 style={{
                   flex: "1 1 150px",
                   maxWidth: 220,
                   minWidth: 150,
                   borderRadius: 20,
                   overflow: "hidden",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                  boxShadow: "0 6px 24px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.04)",
                   transition: "all 0.3s",
                   border: "1px solid #E5E7EB",
+                  background: "#fff",
                 }}
               >
                 <div
@@ -1111,12 +1146,13 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                     Shop Now
                   </div>
                 </div>
-                <div style={{ padding: "16px 16px 20px", textAlign: "center" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{d.name}</div>
-                  <div style={{ fontSize: 11, color: "#999" }}>{d.desc}</div>
+                <div style={{ padding: "12px 16px 16px", textAlign: "center" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{d.name}</div>
+                  <div style={{ fontSize: 13, color: "#777" }}>{d.desc}</div>
                 </div>
               </div>
             ))}
+          </div>
           </div>
         </div>
       </section>
