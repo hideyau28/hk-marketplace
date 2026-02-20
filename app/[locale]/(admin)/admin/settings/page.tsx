@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Save, Loader2, CheckCircle2, AlertCircle, Store, Phone, Palette, User, Truck, DollarSign, MessageSquare, Plus, Pencil, Trash2, Crown, Lock, Wallet, ChevronRight } from "lucide-react";
+import { Save, Loader2, CheckCircle2, AlertCircle, Store, Phone, Palette, User, Truck, DollarSign, MessageSquare, Plus, Pencil, Trash2, Crown, Lock, Wallet, ChevronRight, ArrowUp, ArrowDown, Share2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -25,6 +25,11 @@ type OrderConfirmConfig = {
   whatsappTemplate: string;
 };
 
+type SocialLink = {
+  platform: string;
+  url: string;
+};
+
 type TenantSettings = {
   name: string;
   slug: string;
@@ -36,6 +41,8 @@ type TenantSettings = {
   coverPhoto: string | null;
   logo: string | null;
   email: string | null;
+  // Social links
+  socialLinks: SocialLink[];
   // New checkout settings
   currency: string;
   deliveryOptions: DeliveryOption[];
@@ -127,6 +134,19 @@ const CURRENCIES = [
   { code: "MYR", symbol: "RM", label: "令吉" },
 ];
 
+const SOCIAL_PLATFORMS = [
+  { id: "instagram", label: "Instagram", placeholder: "@yourshop 或 https://instagram.com/yourshop" },
+  { id: "whatsapp", label: "WhatsApp", placeholder: "852XXXXXXXX（只需數字）" },
+  { id: "facebook", label: "Facebook", placeholder: "https://facebook.com/yourpage" },
+  { id: "xiaohongshu", label: "小紅書", placeholder: "https://www.xiaohongshu.com/user/..." },
+  { id: "telegram", label: "Telegram", placeholder: "@yourshop 或 https://t.me/yourshop" },
+  { id: "tiktok", label: "TikTok", placeholder: "@yourshop 或 https://tiktok.com/@yourshop" },
+  { id: "threads", label: "Threads", placeholder: "@yourshop 或 https://threads.net/@yourshop" },
+  { id: "youtube", label: "YouTube", placeholder: "https://youtube.com/@yourchannel" },
+  { id: "x", label: "X (Twitter)", placeholder: "@yourhandle 或 https://x.com/yourhandle" },
+  { id: "wechat", label: "WeChat", placeholder: "微信號" },
+] as const;
+
 const DEFAULT_DELIVERY_OPTIONS: DeliveryOption[] = [
   { id: "meetup", label: "面交", price: 0, enabled: true },
   { id: "sf-collect", label: "順豐到付", price: 0, enabled: true },
@@ -141,6 +161,7 @@ export default function TenantSettings({ params }: { params: { locale: string } 
     location: null,
     whatsapp: null,
     instagram: null,
+    socialLinks: [],
     coverTemplate: "mochi",
     coverPhoto: null,
     logo: null,
@@ -206,6 +227,7 @@ export default function TenantSettings({ params }: { params: { locale: string } 
           const d = data.data;
           setFormData({
             ...d,
+            socialLinks: Array.isArray(d.socialLinks) ? d.socialLinks : [],
             deliveryOptions: d.deliveryOptions || DEFAULT_DELIVERY_OPTIONS,
             freeShippingEnabled: d.freeShippingThreshold != null,
             freeShippingThreshold: d.freeShippingThreshold,
@@ -648,40 +670,124 @@ export default function TenantSettings({ params }: { params: { locale: string } 
             </div>
           </div>
 
-          {/* Contact Info */}
+          {/* Social Links */}
           <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
             <div>
               <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Phone className="h-5 w-5 text-zinc-600" />
-                聯絡方式
+                <Share2 className="h-5 w-5 text-zinc-600" />
+                社交連結
               </h3>
               <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
-                客人聯絡你嘅方式
+                最多設定 4 個社交平台連結，會顯示喺商店頁面
               </p>
             </div>
 
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <Label>WhatsApp</Label>
-                <SettingsInput
-                  id="whatsapp"
-                  value={formData.whatsapp || ""}
-                  onChange={handleChange}
-                  placeholder="+852 9XXX XXXX"
-                />
-              </div>
+            {/* Current social links */}
+            <div className="space-y-3">
+              {formData.socialLinks.map((link, index) => {
+                const platformInfo = SOCIAL_PLATFORMS.find((p) => p.id === link.platform);
+                return (
+                  <div
+                    key={`${link.platform}-${index}`}
+                    className="flex items-center gap-2 rounded-lg border border-zinc-200 px-4 py-3"
+                  >
+                    {/* Platform label */}
+                    <span className="text-sm font-medium text-zinc-900 w-24 flex-shrink-0">
+                      {platformInfo?.label || link.platform}
+                    </span>
 
-              <div className="space-y-3">
-                <Label>Instagram</Label>
-                <SettingsInput
-                  id="instagram"
-                  value={formData.instagram || ""}
-                  onChange={handleChange}
-                  placeholder="@myshopp"
-                />
-              </div>
+                    {/* URL input */}
+                    <input
+                      type="text"
+                      value={link.url}
+                      onChange={(e) => {
+                        const updated = [...formData.socialLinks];
+                        updated[index] = { ...updated[index], url: e.target.value };
+                        setFormData((prev) => ({ ...prev, socialLinks: updated }));
+                      }}
+                      placeholder={platformInfo?.placeholder || "URL"}
+                      className="flex h-9 flex-1 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                    />
 
+                    {/* Move up */}
+                    <button
+                      onClick={() => {
+                        if (index === 0) return;
+                        const updated = [...formData.socialLinks];
+                        [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+                        setFormData((prev) => ({ ...prev, socialLinks: updated }));
+                      }}
+                      disabled={index === 0}
+                      className="w-7 h-7 rounded-md bg-zinc-100 flex items-center justify-center hover:bg-zinc-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      title="上移"
+                    >
+                      <ArrowUp className="h-3.5 w-3.5 text-zinc-500" />
+                    </button>
+
+                    {/* Move down */}
+                    <button
+                      onClick={() => {
+                        if (index === formData.socialLinks.length - 1) return;
+                        const updated = [...formData.socialLinks];
+                        [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+                        setFormData((prev) => ({ ...prev, socialLinks: updated }));
+                      }}
+                      disabled={index === formData.socialLinks.length - 1}
+                      className="w-7 h-7 rounded-md bg-zinc-100 flex items-center justify-center hover:bg-zinc-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      title="下移"
+                    >
+                      <ArrowDown className="h-3.5 w-3.5 text-zinc-500" />
+                    </button>
+
+                    {/* Delete */}
+                    <button
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          socialLinks: prev.socialLinks.filter((_, i) => i !== index),
+                        }));
+                      }}
+                      className="w-7 h-7 rounded-md bg-zinc-100 flex items-center justify-center hover:bg-red-100 transition-colors"
+                      title="刪除"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 text-zinc-400 hover:text-red-500" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
+
+            {/* Add platform picker */}
+            {formData.socialLinks.length < 4 && (
+              <div className="space-y-2">
+                <Label>新增平台</Label>
+                <div className="flex flex-wrap gap-2">
+                  {SOCIAL_PLATFORMS.filter(
+                    (p) => !formData.socialLinks.some((s) => s.platform === p.id)
+                  ).map((platform) => (
+                    <button
+                      key={platform.id}
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          socialLinks: [...prev.socialLinks, { platform: platform.id, url: "" }],
+                        }));
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-700 bg-zinc-100 rounded-full hover:bg-zinc-200 transition-colors"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      {platform.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {formData.socialLinks.length === 0 && (
+              <p className="text-sm text-zinc-400 text-center py-4">
+                未設定任何社交連結，撳上面嘅平台按鈕新增
+              </p>
+            )}
           </div>
 
           {/* Currency */}

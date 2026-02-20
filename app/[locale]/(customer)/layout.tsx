@@ -52,7 +52,7 @@ export default async function CustomerLayout({
   const [tenantRow, storeSettings] = await Promise.all([
     prisma.tenant.findUnique({
       where: { id: tenantId },
-      select: { templateId: true, hideBranding: true, plan: true, planExpiresAt: true },
+      select: { templateId: true, hideBranding: true, plan: true, planExpiresAt: true, socialLinks: true },
     }).catch(() => null),
     prisma.storeSettings.findFirst({
       where: { tenantId },
@@ -72,6 +72,15 @@ export default async function CustomerLayout({
   // Only Pro plan (not expired) with hideBranding enabled can hide branding
   const isPro = tenantRow?.plan === "pro" && (!tenantRow?.planExpiresAt || tenantRow.planExpiresAt > new Date());
   const effectiveHideBranding = isPro && (tenantRow?.hideBranding ?? false);
+
+  // Social links from tenant, with type safety
+  const socialLinks = Array.isArray(tenantRow?.socialLinks)
+    ? (tenantRow.socialLinks as { platform: string; url: string }[])
+    : [];
+
+  // Check if WhatsApp is configured (in socialLinks or legacy field)
+  const whatsappFromSocial = socialLinks.find((l) => l.platform === "whatsapp");
+  const floatingWhatsapp = whatsappFromSocial?.url || storeSettings?.whatsappNumber || null;
 
   const welcomePopupConfig = {
     enabled: storeSettings?.welcomePopupEnabled ?? true,
@@ -93,7 +102,21 @@ export default async function CustomerLayout({
                 <TopNav locale={l} t={t} storeName={storeName} />
                 <CategoryNavWrapper locale={l} />
                 <main>{children}</main>
-                <Footer locale={l} t={t} storeName={storeName} hideBranding={effectiveHideBranding} whatsappNumber={storeSettings?.whatsappNumber} instagramUrl={storeSettings?.instagramUrl} />
+                <Footer locale={l} t={t} storeName={storeName} hideBranding={effectiveHideBranding} socialLinks={socialLinks} whatsappNumber={storeSettings?.whatsappNumber} instagramUrl={storeSettings?.instagramUrl} />
+                {/* Floating WhatsApp button — only if WhatsApp is configured */}
+                {floatingWhatsapp && (
+                  <a
+                    href={`https://wa.me/${floatingWhatsapp.replace(/[^0-9]/g, "")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="WhatsApp"
+                    className="fixed bottom-24 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg hover:scale-105 transition-transform"
+                  >
+                    <svg viewBox="0 0 32 32" className="h-7 w-7" fill="currentColor" aria-hidden="true">
+                      <path d="M16 2.4c-7.5 0-13.6 6.1-13.6 13.6 0 2.4.6 4.8 1.8 6.9L2 30l7.3-2.1c2 1.1 4.3 1.7 6.7 1.7 7.5 0 13.6-6.1 13.6-13.6S23.5 2.4 16 2.4zm7.9 19.1c-.3.9-1.5 1.6-2.5 1.8-.7.1-1.6.2-4.7-.9-4.2-1.5-6.8-5.2-7-5.5-.2-.3-1.7-2.2-1.7-4.2s1-3 1.3-3.4c.3-.4.7-.5 1-.5h.7c.2 0 .5 0 .7.6.3.7.9 2.4 1 2.6.1.2.1.4 0 .6-.1.2-.2.4-.4.6-.2.2-.4.4-.5.5-.2.2-.4.4-.2.7.2.3.9 1.5 1.9 2.4 1.3 1.2 2.5 1.6 2.9 1.8.4.2.6.2.8 0 .2-.2 1-1.1 1.3-1.5.3-.4.5-.3.9-.2.4.1 2.5 1.2 2.9 1.4.4.2.7.3.8.5.1.2.1.9-.2 1.8z" />
+                    </svg>
+                  </a>
+                )}
                 <BottomTab t={t} />
                 <WelcomePopup config={welcomePopupConfig} />
                 <SocialProofPopup products={socialProofProducts} />

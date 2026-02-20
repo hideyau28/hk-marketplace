@@ -31,6 +31,8 @@ export const GET = withApi(
         orderConfirmMessage: true,
         // Branding
         hideBranding: true,
+        // Social links
+        socialLinks: true,
       },
     });
 
@@ -48,6 +50,7 @@ export const GET = withApi(
       ...tenant,
       email: admin?.email || null,
       logo: tenant.logoUrl,
+      socialLinks: tenant.socialLinks ?? [],
     });
   }
 );
@@ -107,6 +110,13 @@ export const PUT = withApi(
     if (body.freeShippingThreshold === null) updateData.freeShippingThreshold = null;
     if (body.orderConfirmMessage !== undefined) updateData.orderConfirmMessage = body.orderConfirmMessage;
     if (body.hideBranding !== undefined) updateData.hideBranding = body.hideBranding;
+    // Social links — validate max 4
+    if (body.socialLinks !== undefined) {
+      if (!Array.isArray(body.socialLinks) || body.socialLinks.length > 4) {
+        throw new ApiError(400, "BAD_REQUEST", "socialLinks must be an array with at most 4 entries");
+      }
+      updateData.socialLinks = body.socialLinks;
+    }
 
     const updated = await prisma.tenant.update({
       where: { id: tenantId },
@@ -126,12 +136,14 @@ export const PUT = withApi(
         freeShippingThreshold: true,
         orderConfirmMessage: true,
         hideBranding: true,
+        socialLinks: true,
       },
     });
 
     return ok(req, {
       ...updated,
       logo: updated.logoUrl,
+      socialLinks: updated.socialLinks ?? [],
     });
   }
 );
