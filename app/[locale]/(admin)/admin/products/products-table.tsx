@@ -7,7 +7,7 @@ import { type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
-import { Star, Flame, Search, Check, X, Pencil, Eye, EyeOff, Package } from "lucide-react";
+import { Search, Check, X, Pencil, Eye, EyeOff, Package, LayoutGrid, List } from "lucide-react";
 import { toggleFeatured, toggleHidden, toggleHotSelling, updatePrice, updateProduct } from "./actions";
 
 const ITEMS_PER_PAGE = 50;
@@ -152,6 +152,8 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const [savingPrice, setSavingPrice] = useState(false);
   // Batch selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // View mode
+  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
 
   const CATEGORY_OPTIONS = [
     "All",
@@ -542,6 +544,31 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           />
         </div>
         <div className="flex flex-wrap items-center gap-2 justify-end">
+          {/* View mode toggle */}
+          <div className="inline-flex rounded-xl border border-zinc-200 bg-white overflow-hidden">
+            <button
+              onClick={() => setViewMode("table")}
+              className={`flex items-center gap-1.5 px-3 py-3 text-sm font-semibold transition-colors ${
+                viewMode === "table"
+                  ? "bg-olive-600 text-white"
+                  : "text-zinc-600 hover:bg-zinc-50"
+              }`}
+              title="Table view"
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`flex items-center gap-1.5 px-3 py-3 text-sm font-semibold transition-colors ${
+                viewMode === "grid"
+                  ? "bg-olive-600 text-white"
+                  : "text-zinc-600 hover:bg-zinc-50"
+              }`}
+              title="Grid view"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
           <button
             onClick={() => setShowHidden((v) => !v)}
             className={`inline-flex items-center gap-1.5 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
@@ -606,6 +633,177 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
         </div>
       )}
 
+      {/* ── Grid view ── */}
+      {viewMode === "grid" && (
+        <div className="mt-6">
+          {paginatedProducts.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-zinc-200 bg-white px-6 py-16 text-center text-zinc-500">
+              {searchQuery ? "No products match your search." : "No data available."}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {paginatedProducts.map((product) => {
+                const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
+                const discountPercent = isOnSale
+                  ? Math.round((1 - product.price / product.originalPrice!) * 100)
+                  : 0;
+                const promotionBadges = Array.isArray(product.promotionBadges)
+                  ? product.promotionBadges
+                  : [];
+                const isNew = promotionBadges.includes("新品上架");
+
+                return (
+                  <div
+                    key={product.id}
+                    className={`group flex flex-col rounded-2xl border border-zinc-200 bg-white overflow-hidden ${
+                      !product.active ? "opacity-50" : ""
+                    } ${product.hidden ? "opacity-60" : ""}`}
+                  >
+                    {/* Image */}
+                    <div className="relative aspect-square bg-zinc-100 overflow-hidden">
+                      {product.imageUrl ? (
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center text-zinc-300">
+                          <Package size={32} />
+                        </div>
+                      )}
+
+                      {/* NEW badge — top-left */}
+                      {isNew && (
+                        <span className="absolute top-2 left-2 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                          NEW
+                        </span>
+                      )}
+
+                      {/* Discount badge — top-right */}
+                      {isOnSale && (
+                        <span className="absolute top-2 right-2 rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                          -{discountPercent}%
+                        </span>
+                      )}
+
+                      {/* Hidden overlay badge */}
+                      {product.hidden && (
+                        <span className="absolute bottom-2 left-2 rounded-full bg-zinc-700/80 px-2 py-0.5 text-[10px] font-medium text-white">
+                          已隱藏
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex flex-col flex-1 p-2.5 gap-1">
+                      {product.brand && (
+                        <div className="text-[10px] font-medium text-zinc-400 truncate uppercase tracking-wide">
+                          {product.brand}
+                        </div>
+                      )}
+                      <div className="text-xs font-semibold text-zinc-900 line-clamp-2 leading-tight min-h-[2rem]">
+                        {product.title}
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-auto pt-1">
+                        {isOnSale ? (
+                          <>
+                            <span className="text-[10px] text-zinc-400 line-through">${Math.round(product.originalPrice!)}</span>
+                            <span className="text-sm font-bold text-red-600">${Math.round(product.price)}</span>
+                          </>
+                        ) : (
+                          <span className="text-sm font-bold text-zinc-900">${Math.round(product.price)}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1.5 px-2.5 pb-2.5">
+                      <button
+                        onClick={() => handleEditProduct(product)}
+                        className="flex-1 rounded-xl border border-zinc-200 bg-white px-2 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleToggleHidden(product.id, product.hidden)}
+                        disabled={togglingHidden === product.id}
+                        className={`rounded-xl border p-1.5 disabled:opacity-50 transition-colors ${
+                          product.hidden
+                            ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
+                            : "border-zinc-200 bg-white text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"
+                        }`}
+                        title={product.hidden ? "取消隱藏" : "隱藏產品"}
+                      >
+                        {product.hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Grid pagination */}
+          <div className="flex flex-col md:flex-row items-center justify-between mt-4 text-zinc-500 text-sm gap-3">
+            <div>
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
+              {searchQuery && " (filtered)"}
+            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium ${
+                        currentPage === pageNum
+                          ? "bg-[#6B7A2F] text-white"
+                          : "border border-zinc-200 hover:bg-zinc-50"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                {totalPages > 5 && currentPage < totalPages - 2 && (
+                  <span className="px-1">...</span>
+                )}
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Table view ── */}
+      {viewMode === "table" && (
       <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-[1400px] w-full text-sm">
@@ -989,6 +1187,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           )}
         </div>
       </div>
+      )} {/* end viewMode === "table" */}
 
       {isBadgeModalOpen && (
         <div
