@@ -243,7 +243,7 @@ function calculateShippingFee(subtotal: number, region?: string): number {
 async function repriceOrder(payload: CreateOrderPayload, tenantId: string): Promise<RepricedOrder> {
     const productIds = Array.from(new Set(payload.items.map((item) => item.productId)));
     const products = await prisma.product.findMany({
-        where: { id: { in: productIds }, tenantId, deletedAt: null },
+        where: { id: { in: productIds }, tenantId, active: true, hidden: false, deletedAt: null },
         select: { id: true, title: true, price: true, active: true },
     });
 
@@ -274,7 +274,7 @@ async function repriceOrder(payload: CreateOrderPayload, tenantId: string): Prom
     // Calculate shipping fee server-side (don't trust client)
     let deliveryFee = 0;
     if (payload.fulfillment.type === "delivery") {
-        const region = payload.fulfillment.address?.region;
+        const region = payload.fulfillment.address?.region || payload.fulfillment.address?.district;
         deliveryFee = calculateShippingFee(subtotal, region);
     }
 

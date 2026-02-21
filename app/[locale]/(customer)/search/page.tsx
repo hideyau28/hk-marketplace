@@ -1,5 +1,6 @@
 import type { Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
+import { getServerTenantId } from "@/lib/tenant";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 
@@ -33,8 +34,10 @@ export default async function SearchPage({
   const l = locale as Locale;
   const query = q?.trim() || "";
 
+  const tenantId = await getServerTenantId();
+
   // Build base filter
-  const where: any = { active: true, hidden: false, deletedAt: null };
+  const where: any = { active: true, hidden: false, tenantId, deletedAt: null };
 
   // Text search filter
   if (query) {
