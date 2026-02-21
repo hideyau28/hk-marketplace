@@ -436,9 +436,10 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     setIsCreating(true);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = (saved?: boolean) => {
     setSelectedProduct(null);
     setIsCreating(false);
+    if (saved) router.refresh();
   };
 
   const toggleSort = (key: "originalPrice" | "price") => {
@@ -773,6 +774,11 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                         {product.imageUrl ? (
                           <div className="relative h-[48px] w-[48px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
                             <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="48px" />
+                            {isOnSale && (
+                              <span className="absolute top-0 right-0 rounded-bl bg-red-500 px-1 py-px text-[8px] font-bold text-white leading-tight">
+                                -{discountPercent}%
+                              </span>
+                            )}
                           </div>
                         ) : (
                           <div className="h-[48px] w-[48px] flex-shrink-0 rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />

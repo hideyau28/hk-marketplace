@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import type { Product } from "@prisma/client";
 import type { Locale } from "@/lib/i18n";
 import { createProduct, updateProduct, syncVariants } from "./actions";
@@ -80,12 +79,11 @@ function detectSizeSystem(sizeInventory: Record<string, number>): string {
 
 type ProductModalProps = {
   product: (Product & { variants?: any[] }) | null;
-  onClose: () => void;
+  onClose: (saved?: boolean) => void;
   locale: Locale;
 };
 
 export function ProductModal({ product, onClose, locale }: ProductModalProps) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -487,8 +485,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         }
       }
 
-      onClose();
-      router.refresh();
+      onClose(true);
     });
   };
 
@@ -517,7 +514,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
             {product ? "Edit Product" : "Create Product"}
           </h2>
           <button
-            onClick={onClose}
+            onClick={() => onClose()}
             disabled={isPending}
             className="rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 disabled:opacity-50"
           >
@@ -998,7 +995,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         {/* Footer */}
         <div className="sticky bottom-0 rounded-b-3xl border-t border-zinc-100 bg-white px-6 py-4">
           <div className="flex gap-3">
-            <button type="button" onClick={onClose} disabled={isPending}
+            <button type="button" onClick={() => onClose()} disabled={isPending}
               className="flex-1 rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50">
               Cancel
             </button>
