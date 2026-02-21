@@ -42,6 +42,7 @@ export const POST = withApi(async (req) => {
       id: { in: productIds },
       tenantId,
       active: true,
+      hidden: false,
       deletedAt: null,
     },
     select: { id: true },

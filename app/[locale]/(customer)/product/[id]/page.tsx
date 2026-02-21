@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const tenantId = await getServerTenantId();
 
   const product = await prisma.product.findFirst({
-    where: { id, active: true, tenantId, deletedAt: null },
+    where: { id, active: true, hidden: false, tenantId, deletedAt: null },
   });
 
   if (!product) {
@@ -65,7 +65,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   // Fetch product from database with variants (scoped to current tenant)
   const tenantId = await getServerTenantId();
   const product = await prisma.product.findFirst({
-    where: { id, active: true, tenantId, deletedAt: null },
+    where: { id, active: true, hidden: false, tenantId, deletedAt: null },
     include: {
       variants: {
         where: { active: true },
@@ -127,6 +127,7 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
     ? await prisma.product.findMany({
         where: {
           active: true,
+          hidden: false,
           tenantId,
           category: product.category,
           id: { not: product.id },

@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const sale = saleParam === "true";
 
     // Build where clause
-    const where: Prisma.ProductWhereInput = { active: true, tenantId, deletedAt: null };
+    const where: Prisma.ProductWhereInput = { active: true, hidden: false, tenantId, deletedAt: null };
 
     // Text search filter
     if (query) {
