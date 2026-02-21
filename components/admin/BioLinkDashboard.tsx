@@ -437,6 +437,14 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
                   </>
                 )}
               </button>
+
+              <button
+                onClick={handleNewProduct}
+                className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
+              >
+                <Plus size={14} />
+                {isZh ? "新增商品" : "Add"}
+              </button>
             </div>
           )}
         </div>
@@ -499,18 +507,6 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
                 />
               ))}
 
-              {/* Add new product card — normal mode only */}
-              {!isEditMode && (
-                <button
-                  onClick={handleNewProduct}
-                  className="aspect-square rounded-xl border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] hover:bg-orange-50/50 transition-colors group"
-                >
-                  <Plus size={24} className="text-zinc-400 group-hover:text-[#FF9500] transition-colors" />
-                  <span className="text-xs text-zinc-400 group-hover:text-[#FF9500] mt-1 transition-colors">
-                    {isZh ? "新增" : "Add"}
-                  </span>
-                </button>
-              )}
             </div>
           </SortableContext>
         </DndContext>
