@@ -106,6 +106,15 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onTap
           </div>
         )}
 
+        {/* Discount badge — 右上角 */}
+        {isOnSale && !soldOut && (
+          <div className="absolute top-2 right-2 z-10">
+            <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+              -{discountPct}%
+            </span>
+          </div>
+        )}
+
         {/* Video icon */}
         {hasVideo && (
           <div className="absolute bottom-2 right-2 z-10">
@@ -155,9 +164,6 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onTap
               </span>
               <span className="text-xs line-through" style={{ color: tmpl.subtext }}>
                 {formatPrice(product.originalPrice!, currency)}
-              </span>
-              <span className="px-1 py-0.5 text-[9px] font-bold rounded bg-red-500 text-white">
-                -{discountPct}%
               </span>
             </>
           ) : (
