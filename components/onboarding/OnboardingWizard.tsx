@@ -53,14 +53,28 @@ const t = {
     whatsappPlaceholder: "e.g. 91234567",
     whatsappHint: "8-digit HK number, no +852",
     whatsappFormatError: "Must be 8 digits",
-    // Step 4: FPS
-    fpsTitle: "FPS Payment",
+    // Step 4: Payment methods
+    fpsTitle: "Payment Setup",
     fpsSub: "How customers pay you",
+    paymentSelectHint: "Select at least one method",
+    fpsLabel: "FPS",
+    fpsDesc: "Customers transfer via FPS",
+    paymeLabel: "PayMe",
+    paymeDesc: "Customers scan your PayMe QR",
+    alipayLabel: "AlipayHK",
+    alipayDesc: "Customers scan your Alipay QR",
     fpsId: "FPS Phone / ID *",
     fpsIdPlaceholder: "e.g. 91234567 or FPS ID",
     fpsIdHint: "Your FPS registered phone or ID",
     fpsAccountName: "Account Name (optional)",
     fpsAccountNamePlaceholder: "e.g. Chan Tai Man",
+    uploadQr: "Upload QR Code",
+    uploadQrHint: "JPG / PNG, max 5MB",
+    uploading: "Uploading...",
+    uploadSuccess: "Uploaded!",
+    uploadError: "Upload failed, please retry",
+    paymentAtLeastOne: "Select at least one payment method",
+    paymentSetupLater: "You can add more methods later in Settings",
     // Navigation
     next: "Next",
     back: "Back",
@@ -147,14 +161,28 @@ const t = {
     whatsappPlaceholder: "例如 91234567",
     whatsappHint: "8 位香港號碼，不需要 +852",
     whatsappFormatError: "需要 8 位數字",
-    // Step 4: FPS
-    fpsTitle: "FPS 收款設定",
-    fpsSub: "客人會用 FPS 畀錢你",
+    // Step 4: Payment methods
+    fpsTitle: "收款設定",
+    fpsSub: "客人點樣畀錢你",
+    paymentSelectHint: "至少揀一個收款方式",
+    fpsLabel: "FPS 轉數快",
+    fpsDesc: "客人用 FPS 轉賬",
+    paymeLabel: "PayMe",
+    paymeDesc: "客人掃你嘅 PayMe QR Code",
+    alipayLabel: "AlipayHK",
+    alipayDesc: "客人掃你嘅 AlipayHK QR Code",
     fpsId: "FPS 收款電話 / ID *",
     fpsIdPlaceholder: "例如 91234567 或 FPS ID",
     fpsIdHint: "你登記 FPS 嘅電話或 ID",
     fpsAccountName: "收款人名稱（選填）",
     fpsAccountNamePlaceholder: "例如：陳大文",
+    uploadQr: "上傳 QR Code",
+    uploadQrHint: "JPG / PNG，最大 5MB",
+    uploading: "上傳中...",
+    uploadSuccess: "已上傳！",
+    uploadError: "上傳失敗，請重試",
+    paymentAtLeastOne: "至少揀一個收款方式",
+    paymentSetupLater: "之後可以喺「設定」加更多收款方式",
     // Navigation
     next: "下一步",
     back: "返回",
@@ -268,8 +296,11 @@ interface OnboardingData {
   password: string;
   confirmPassword: string;
   whatsapp: string;
+  selectedPayments: string[]; // "fps" | "payme" | "alipay_hk"
   fpsId: string;
   fpsAccountName: string;
+  paymeQrUrl: string;
+  alipayQrUrl: string;
   templateId: string;
   tagline: string;
 }
@@ -294,6 +325,142 @@ interface OnboardingWizardProps {
 const STORAGE_KEY = "onboarding-wizard-state";
 const TOTAL_STEPS = 6;
 
+/* ─── Payment method toggle card ─── */
+function PaymentMethodCard({
+  id,
+  label,
+  desc,
+  icon,
+  selected,
+  onToggle,
+  children,
+}: {
+  id: string;
+  label: string;
+  desc: string;
+  icon: string;
+  selected: boolean;
+  onToggle: () => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`rounded-xl border-2 p-4 transition-all duration-200 ${
+        selected
+          ? "border-[#FF9500] ring-2 ring-[#FF9500]/20 bg-orange-50/50"
+          : "border-zinc-200 bg-white hover:border-zinc-300"
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center gap-3 text-left"
+      >
+        {/* Checkbox */}
+        <div
+          className={`w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
+            selected ? "border-[#FF9500] bg-[#FF9500]" : "border-zinc-300"
+          }`}
+        >
+          {selected && (
+            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+          )}
+        </div>
+        <span className="text-xl flex-shrink-0" aria-hidden>{icon}</span>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-zinc-900 text-sm">{label}</p>
+          <p className="text-xs text-zinc-500">{desc}</p>
+        </div>
+      </button>
+      {children}
+    </div>
+  );
+}
+
+/* ─── QR code uploader (PayMe / AlipayHK) ─── */
+function QrUploader({
+  currentUrl,
+  onUploaded,
+  labels,
+}: {
+  currentUrl: string;
+  onUploaded: (url: string) => void;
+  labels: { uploadQr: string; uploadQrHint: string; uploading: string; uploadSuccess: string; uploadError: string };
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError("");
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "payments/qr");
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const json = await res.json();
+      if (json.ok && json.data?.url) {
+        onUploaded(json.data.url);
+      } else {
+        setError(json.error?.message || labels.uploadError);
+      }
+    } catch {
+      setError(labels.uploadError);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div>
+      {currentUrl ? (
+        <div className="flex items-center gap-3">
+          <img
+            src={currentUrl}
+            alt="QR Code"
+            className="w-16 h-16 rounded-lg border border-zinc-200 object-cover"
+          />
+          <div className="flex-1">
+            <p className="text-xs text-green-600 font-medium">{labels.uploadSuccess}</p>
+            <label className="text-xs text-[#FF9500] font-medium cursor-pointer hover:underline">
+              {labels.uploadQr}
+              <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
+            </label>
+          </div>
+        </div>
+      ) : (
+        <label
+          className={`flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed py-4 cursor-pointer transition-colors ${
+            uploading ? "border-zinc-300 bg-zinc-50" : "border-zinc-300 hover:border-[#FF9500] hover:bg-orange-50/30"
+          }`}
+        >
+          {uploading ? (
+            <span className="text-sm text-zinc-500 animate-pulse">{labels.uploading}</span>
+          ) : (
+            <>
+              <svg className="w-6 h-6 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="text-sm font-medium text-zinc-700">{labels.uploadQr}</span>
+              <span className="text-xs text-zinc-400">{labels.uploadQrHint}</span>
+            </>
+          )}
+          <input type="file" accept="image/*" onChange={handleFile} className="hidden" disabled={uploading} />
+        </label>
+      )}
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+    </div>
+  );
+}
+
 export default function OnboardingWizard({ locale, initialGoogleEmail }: OnboardingWizardProps) {
   const labels = locale === "zh-HK" ? t["zh-HK"] : t.en;
   const isZh = locale === "zh-HK";
@@ -310,8 +477,11 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     password: "",
     confirmPassword: "",
     whatsapp: "",
+    selectedPayments: [],
     fpsId: "",
     fpsAccountName: "",
+    paymeQrUrl: "",
+    alipayQrUrl: "",
     templateId: "mochi",
     tagline: "",
   });
@@ -502,7 +672,18 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
 
   const validateStep4 = (): boolean => {
     const newErrors: Record<string, string> = {};
-    if (!data.fpsId.trim()) newErrors.fpsId = labels.required;
+    if (data.selectedPayments.length === 0) {
+      newErrors.selectedPayments = labels.paymentAtLeastOne;
+    }
+    if (data.selectedPayments.includes("fps") && !data.fpsId.trim()) {
+      newErrors.fpsId = labels.required;
+    }
+    if (data.selectedPayments.includes("payme") && !data.paymeQrUrl) {
+      newErrors.paymeQr = labels.required;
+    }
+    if (data.selectedPayments.includes("alipay_hk") && !data.alipayQrUrl) {
+      newErrors.alipayQr = labels.required;
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -551,8 +732,11 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
           password: googleEmail ? undefined : data.password,
           googleAuth: !!googleEmail,
           whatsapp: data.whatsapp.trim(),
-          fpsId: data.fpsId.trim(),
-          fpsAccountName: data.fpsAccountName.trim() || undefined,
+          paymentMethods: data.selectedPayments,
+          fpsId: data.selectedPayments.includes("fps") ? data.fpsId.trim() : undefined,
+          fpsAccountName: data.selectedPayments.includes("fps") ? (data.fpsAccountName.trim() || undefined) : undefined,
+          paymeQrUrl: data.selectedPayments.includes("payme") ? data.paymeQrUrl : undefined,
+          alipayQrUrl: data.selectedPayments.includes("alipay_hk") ? data.alipayQrUrl : undefined,
           templateId: data.templateId,
           tagline: data.tagline.trim() || undefined,
         }),
@@ -1074,7 +1258,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
               </div>
             )}
 
-            {/* ======== STEP 4: FPS ======== */}
+            {/* ======== STEP 4: Payment Methods ======== */}
             {step === 4 && (
               <div className="space-y-5">
                 <div className="text-center">
@@ -1089,39 +1273,127 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   </p>
                 </div>
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
-                      {labels.fpsId}
-                    </label>
-                    <input
-                      type="text"
-                      value={data.fpsId}
-                      onChange={(e) => update("fpsId", e.target.value)}
-                      placeholder={labels.fpsIdPlaceholder}
-                      className={inputClass("fpsId")}
-                      autoFocus
-                    />
-                    {errors.fpsId ? (
-                      <p className="text-red-500 text-xs mt-1">{errors.fpsId}</p>
-                    ) : (
-                      <p className="text-zinc-400 text-xs mt-1">{labels.fpsIdHint}</p>
-                    )}
-                  </div>
+                {errors.selectedPayments && (
+                  <p className="text-red-500 text-sm text-center">{errors.selectedPayments}</p>
+                )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
-                      {labels.fpsAccountName}
-                    </label>
-                    <input
-                      type="text"
-                      value={data.fpsAccountName}
-                      onChange={(e) => update("fpsAccountName", e.target.value)}
-                      placeholder={labels.fpsAccountNamePlaceholder}
-                      className={inputClass("fpsAccountName")}
-                    />
-                  </div>
+                {/* Payment method cards */}
+                <div className="space-y-3">
+                  {/* FPS */}
+                  <PaymentMethodCard
+                    id="fps"
+                    label={labels.fpsLabel}
+                    desc={labels.fpsDesc}
+                    icon="💸"
+                    selected={data.selectedPayments.includes("fps")}
+                    onToggle={() => {
+                      const sel = data.selectedPayments.includes("fps")
+                        ? data.selectedPayments.filter((m) => m !== "fps")
+                        : [...data.selectedPayments, "fps"];
+                      update("selectedPayments", sel);
+                    }}
+                  >
+                    {data.selectedPayments.includes("fps") && (
+                      <div className="space-y-2 mt-3 pt-3 border-t border-zinc-100">
+                        <div>
+                          <label className="block text-sm font-medium text-zinc-700 mb-1">
+                            {labels.fpsId}
+                          </label>
+                          <input
+                            type="text"
+                            value={data.fpsId}
+                            onChange={(e) => update("fpsId", e.target.value)}
+                            placeholder={labels.fpsIdPlaceholder}
+                            className={inputClass("fpsId")}
+                          />
+                          {errors.fpsId ? (
+                            <p className="text-red-500 text-xs mt-1">{errors.fpsId}</p>
+                          ) : (
+                            <p className="text-zinc-400 text-xs mt-1">{labels.fpsIdHint}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-zinc-700 mb-1">
+                            {labels.fpsAccountName}
+                          </label>
+                          <input
+                            type="text"
+                            value={data.fpsAccountName}
+                            onChange={(e) => update("fpsAccountName", e.target.value)}
+                            placeholder={labels.fpsAccountNamePlaceholder}
+                            className={inputClass("fpsAccountName")}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </PaymentMethodCard>
+
+                  {/* PayMe */}
+                  <PaymentMethodCard
+                    id="payme"
+                    label={labels.paymeLabel}
+                    desc={labels.paymeDesc}
+                    icon="📱"
+                    selected={data.selectedPayments.includes("payme")}
+                    onToggle={() => {
+                      const sel = data.selectedPayments.includes("payme")
+                        ? data.selectedPayments.filter((m) => m !== "payme")
+                        : [...data.selectedPayments, "payme"];
+                      update("selectedPayments", sel);
+                    }}
+                  >
+                    {data.selectedPayments.includes("payme") && (
+                      <div className="mt-3 pt-3 border-t border-zinc-100">
+                        <QrUploader
+                          currentUrl={data.paymeQrUrl}
+                          onUploaded={(url) => {
+                            update("paymeQrUrl", url);
+                            setErrors((prev) => { const n = { ...prev }; delete n.paymeQr; return n; });
+                          }}
+                          labels={labels}
+                        />
+                        {errors.paymeQr && (
+                          <p className="text-red-500 text-xs mt-1">{errors.paymeQr}</p>
+                        )}
+                      </div>
+                    )}
+                  </PaymentMethodCard>
+
+                  {/* AlipayHK */}
+                  <PaymentMethodCard
+                    id="alipay_hk"
+                    label={labels.alipayLabel}
+                    desc={labels.alipayDesc}
+                    icon="🅰️"
+                    selected={data.selectedPayments.includes("alipay_hk")}
+                    onToggle={() => {
+                      const sel = data.selectedPayments.includes("alipay_hk")
+                        ? data.selectedPayments.filter((m) => m !== "alipay_hk")
+                        : [...data.selectedPayments, "alipay_hk"];
+                      update("selectedPayments", sel);
+                    }}
+                  >
+                    {data.selectedPayments.includes("alipay_hk") && (
+                      <div className="mt-3 pt-3 border-t border-zinc-100">
+                        <QrUploader
+                          currentUrl={data.alipayQrUrl}
+                          onUploaded={(url) => {
+                            update("alipayQrUrl", url);
+                            setErrors((prev) => { const n = { ...prev }; delete n.alipayQr; return n; });
+                          }}
+                          labels={labels}
+                        />
+                        {errors.alipayQr && (
+                          <p className="text-red-500 text-xs mt-1">{errors.alipayQr}</p>
+                        )}
+                      </div>
+                    )}
+                  </PaymentMethodCard>
                 </div>
+
+                <p className="text-center text-xs text-zinc-400">
+                  {labels.paymentSetupLater}
+                </p>
 
                 {/* Nav buttons */}
                 <div className="flex gap-3 pt-1">

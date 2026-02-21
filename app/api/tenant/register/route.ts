@@ -23,14 +23,14 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST = withApi(async (req: Request) => {
   try {
-  let body: { name?: string; slug?: string; whatsapp?: string; instagram?: string; email?: string; password?: string; googleAuth?: boolean; coverTemplate?: string; templateId?: string; tagline?: string; paymentMethods?: string[]; fpsId?: string; fpsAccountName?: string };
+  let body: { name?: string; slug?: string; whatsapp?: string; instagram?: string; email?: string; password?: string; googleAuth?: boolean; coverTemplate?: string; templateId?: string; tagline?: string; paymentMethods?: string[]; fpsId?: string; fpsAccountName?: string; paymeQrUrl?: string; alipayQrUrl?: string };
   try {
     body = await req.json();
   } catch {
     throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
   }
 
-  const { name, slug, whatsapp, instagram, email, password, googleAuth, coverTemplate, templateId, tagline, paymentMethods, fpsId, fpsAccountName } = body;
+  const { name, slug, whatsapp, instagram, email, password, googleAuth, coverTemplate, templateId, tagline, paymentMethods, fpsId, fpsAccountName, paymeQrUrl, alipayQrUrl } = body;
   const isOAuth = googleAuth === true;
 
   // --- Validation ---
@@ -156,6 +156,42 @@ export const POST = withApi(async (req: Request) => {
           fpsAccountName: cleanFpsAccountName || null,
         },
       }).catch(() => {});
+    }
+
+    // --- PayMe PaymentMethod record ---
+    if (paymeQrUrl && typeof paymeQrUrl === "string") {
+      await prisma.paymentMethod.create({
+        data: {
+          name: "PayMe",
+          type: "payme",
+          active: true,
+          sortOrder: 1,
+          qrCodeUrl: paymeQrUrl,
+          tenantId: tenant.id,
+        },
+      }).catch(() => {}); // 非致命
+
+      await prisma.tenant.update({
+        where: { id: tenant.id },
+        data: {
+          paymeEnabled: true,
+          paymeQrCodeUrl: paymeQrUrl,
+        },
+      }).catch(() => {});
+    }
+
+    // --- AlipayHK PaymentMethod record ---
+    if (alipayQrUrl && typeof alipayQrUrl === "string") {
+      await prisma.paymentMethod.create({
+        data: {
+          name: "AlipayHK",
+          type: "alipay_hk",
+          active: true,
+          sortOrder: 2,
+          qrCodeUrl: alipayQrUrl,
+          tenantId: tenant.id,
+        },
+      }).catch(() => {}); // 非致命
     }
 
     // --- Default store settings with delivery options ---
