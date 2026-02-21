@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSession } from "@/lib/admin/session";
+import { prisma } from "@/lib/prisma";
+import { signToken } from "@/lib/auth/jwt";
 
 export const runtime = "nodejs";
 
@@ -87,9 +89,42 @@ export async function GET(request: NextRequest) {
 
     const userInfo = await userInfoRes.json();
 
-    // Onboarding flow: redirect back to /start with email via httpOnly cookie.
-    // Email must NOT appear in the redirect URL to prevent leakage via logs/history.
+    // Onboarding flow: check if email already has a TenantAdmin record.
+    // If so, skip onboarding and go straight to admin dashboard.
     if (isOnboarding) {
+      const existingAdmin = await prisma.tenantAdmin.findUnique({
+        where: { email: (userInfo.email || "").toLowerCase() },
+      });
+
+      if (existingAdmin) {
+        // Existing account — create session and redirect to admin
+        const sessionToken = await createSession();
+        const adminToken = signToken({
+          tenantId: existingAdmin.tenantId,
+          adminId: existingAdmin.id,
+          email: existingAdmin.email,
+          role: existingAdmin.role,
+        });
+        const response = NextResponse.redirect(`${baseUrl}/${locale}/admin`);
+        response.cookies.set("admin_session", sessionToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 60 * 60 * 24,
+          path: "/",
+        });
+        response.cookies.set("tenant-admin-token", adminToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 60 * 60 * 24 * 7,
+          path: "/",
+        });
+        return response;
+      }
+
+      // New user — redirect to /start with email via httpOnly cookie.
+      // Email must NOT appear in the redirect URL to prevent leakage via logs/history.
       const redirectUrl = `${baseUrl}/${locale}/start`;
       const response = NextResponse.redirect(redirectUrl);
       response.cookies.set("google_onboard_email", userInfo.email || "", {

@@ -507,7 +507,7 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           </div>
 
           <div className="hero-cta-row">
-            <Link href="/admin/register" className="hero-cta-primary">
+            <Link href={`/${locale}/start`} className="hero-cta-primary">
               {t.ctaPrimary}
             </Link>
             <Link href={`/${locale}/pricing`} className="hero-cta-secondary">
