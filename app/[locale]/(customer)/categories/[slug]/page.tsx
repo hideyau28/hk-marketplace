@@ -87,6 +87,7 @@ export default async function CategoryPage({ params }: Props) {
     where: {
       categoryId: { in: categoryIds },
       active: true,
+      hidden: false,
       tenantId: tenant.id,
       deletedAt: null,
     },

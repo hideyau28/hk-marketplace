@@ -30,7 +30,7 @@ export const GET = withApi(async (req) => {
   const tenantId = await getTenantId(req);
 
   const products = await prisma.product.findMany({
-    where: { id: { in: ids }, tenantId, deletedAt: null },
+    where: { id: { in: ids }, tenantId, hidden: false, deletedAt: null },
     select: { id: true, price: true, active: true },
   });
 

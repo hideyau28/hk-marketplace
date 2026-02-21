@@ -32,7 +32,7 @@ export default async function CollectionsPage({ params }: { params: Promise<{ lo
   // Fetch active products for this tenant (client will filter by wishlist IDs)
   const tenantId = await getServerTenantId();
   const products = await prisma.product.findMany({
-    where: { active: true, tenantId, deletedAt: null },
+    where: { active: true, hidden: false, tenantId, deletedAt: null },
     orderBy: { createdAt: "desc" },
   });
 

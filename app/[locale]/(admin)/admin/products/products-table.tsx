@@ -8,7 +8,7 @@ import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
 import { Star, Flame, Search, Check, X, Pencil, Eye, EyeOff, Package } from "lucide-react";
-import { toggleFeatured, toggleHotSelling, updatePrice, updateProduct } from "./actions";
+import { toggleFeatured, toggleHidden, toggleHotSelling, updatePrice, updateProduct } from "./actions";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -144,6 +144,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
   const [showHidden, setShowHidden] = useState(false);
   const [togglingActive, setTogglingActive] = useState<string | null>(null);
+  const [togglingHidden, setTogglingHidden] = useState<string | null>(null);
   // Inline price editing
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState("");
@@ -307,6 +308,18 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
       console.error("Failed to toggle active:", error);
     } finally {
       setTogglingActive(null);
+    }
+  };
+
+  const handleToggleHidden = async (productId: string, currentHidden: boolean) => {
+    setTogglingHidden(productId);
+    try {
+      await toggleHidden(productId, !currentHidden);
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to toggle hidden:", error);
+    } finally {
+      setTogglingHidden(null);
     }
   };
 
@@ -744,7 +757,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     return { key: badge, label: badge, color: null };
                   });
                   return (
-                  <tr key={product.id} className={`border-t border-zinc-200 hover:bg-zinc-50 ${!product.active ? "opacity-50" : ""}`}>
+                  <tr key={product.id} className={`border-t border-zinc-200 hover:bg-zinc-50 ${!product.active ? "opacity-50" : ""} ${product.hidden ? "opacity-60" : ""}`}>
                     {/* Checkbox */}
                     <td className="px-4 py-3">
                       <input
@@ -765,7 +778,14 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                           <div className="h-[48px] w-[48px] flex-shrink-0 rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
                         )}
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-zinc-900 truncate">{product.title}</div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-semibold text-zinc-900 truncate">{product.title}</span>
+                            {product.hidden && (
+                              <span className="shrink-0 rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] font-medium text-zinc-600">
+                                已隱藏
+                              </span>
+                            )}
+                          </div>
                           <div className="text-xs text-zinc-500 truncate">{product.brand || "—"}</div>
                         </div>
                       </div>
@@ -873,6 +893,18 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       <div className="flex items-center justify-between gap-3">
                         <span>{new Date(product.updatedAt).toISOString().slice(0, 10)}</span>
                         <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => handleToggleHidden(product.id, product.hidden)}
+                          disabled={togglingHidden === product.id}
+                          className={`rounded-lg border p-1.5 disabled:opacity-50 ${
+                            product.hidden
+                              ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
+                              : "border-zinc-200 bg-white text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"
+                          }`}
+                          title={product.hidden ? "取消隱藏" : "隱藏產品"}
+                        >
+                          {product.hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </button>
                         {!product.active && (
                           <button
                             onClick={() => handleToggleActive(product.id, true)}

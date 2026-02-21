@@ -34,7 +34,7 @@ export default async function SearchPage({
   const query = q?.trim() || "";
 
   // Build base filter
-  const where: any = { active: true, deletedAt: null };
+  const where: any = { active: true, hidden: false, deletedAt: null };
 
   // Text search filter
   if (query) {
