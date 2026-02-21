@@ -62,6 +62,13 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
+  // Drag-to-close state
+  const dragStartY = useRef(0);
+  const dragCurrentY = useRef(0);
+  const isDragging = useRef(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+
   // 建立 carousel slides：圖片 + video (如果有)
   const carouselSlides = [...images];
   if (videoEmbedUrl) {
@@ -226,15 +233,61 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
     }
   };
 
+  // Drag handle — swipe down to close
+  const handleDragStart = (e: React.TouchEvent) => {
+    dragStartY.current = e.touches[0].clientY;
+    dragCurrentY.current = e.touches[0].clientY;
+    isDragging.current = true;
+  };
+  const handleDragMove = (e: React.TouchEvent) => {
+    if (!isDragging.current) return;
+    dragCurrentY.current = e.touches[0].clientY;
+    const diff = dragCurrentY.current - dragStartY.current;
+    // Only allow dragging down
+    if (diff > 0) {
+      setDragOffset(diff);
+    }
+  };
+  const handleDragEnd = () => {
+    isDragging.current = false;
+    if (dragOffset > 120) {
+      // Threshold reached — close
+      onClose();
+    } else {
+      // Snap back
+      setDragOffset(0);
+    }
+  };
+
   // Derived border color
   const sectionBorder = `${tmpl.subtext}25`;
 
   return (
-    <div className="fixed inset-0 z-50" style={{ backgroundColor: tmpl.bg }}>
-      {/* Fullscreen modal */}
-      <div className="h-full flex flex-col max-w-[480px] mx-auto animate-slide-up">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-end">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      {/* Bottom sheet modal */}
+      <div
+        ref={sheetRef}
+        className="relative w-full max-w-[480px] flex flex-col rounded-t-2xl overflow-hidden animate-slide-up"
+        style={{
+          backgroundColor: tmpl.bg,
+          maxHeight: "94vh",
+          transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
+          transition: isDragging.current ? "none" : "transform 0.3s ease-out",
+        }}
+      >
+        {/* Drag handle */}
+        <div
+          className="flex-shrink-0 flex items-center justify-center py-3 cursor-grab active:cursor-grabbing"
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+        >
+          <div className="w-10 h-1 rounded-full bg-zinc-300" />
+        </div>
         {/* Image Carousel Section - 全寬 1:1 */}
-        <div className="relative w-full aspect-square" style={{ backgroundColor: `${tmpl.card}` }}>
+        <div className="relative w-full aspect-square flex-shrink-0" style={{ backgroundColor: `${tmpl.card}` }}>
           {/* Close button - 右上角 */}
           <button
             onClick={onClose}
@@ -301,7 +354,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
           {/* 商品名稱 + 價格 */}
           <div>
             <h3 className="text-xl font-bold mb-2" style={{ color: tmpl.text }}>
@@ -478,12 +531,12 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
             </div>
           </div>
 
-          {/* Bottom padding for CTA */}
-          <div className="h-20" />
+          {/* Bottom padding */}
+          <div className="h-4" />
         </div>
 
         {/* 固定底部 CTA */}
-        <div className="absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 py-4" style={{ backgroundColor: tmpl.bg, borderTop: `1px solid ${sectionBorder}` }}>
+        <div className="flex-shrink-0 px-4 py-4" style={{ backgroundColor: tmpl.bg, borderTop: `1px solid ${sectionBorder}` }}>
           <button
             onClick={handleAdd}
             className="w-full py-4 rounded-xl text-base font-semibold transition-all active:scale-[0.98]"
