@@ -47,7 +47,7 @@ const t = {
 export interface ChecklistStatus {
   hasStoreName: boolean;
   hasWhatsapp: boolean;
-  hasFps: boolean;
+  hasPaymentMethod: boolean; // any active PaymentMethod record
   hasAvatar: boolean;
   hasProduct: boolean;
 }
@@ -95,7 +95,7 @@ export default function SetupChecklist({ locale, status, storeSlug }: SetupCheck
   const allItems = [
     { key: "storeName", label: labels.storeName, done: status.hasStoreName, href: null },
     { key: "whatsapp", label: labels.whatsapp, done: status.hasWhatsapp, href: `/${locale}/admin/settings` },
-    { key: "fps", label: labels.fps, done: status.hasFps, href: `/${locale}/admin/settings/payment-methods` },
+    { key: "fps", label: labels.fps, done: status.hasPaymentMethod, href: `/${locale}/admin/settings/payment-methods` },
     { key: "avatar", label: labels.avatar, done: status.hasAvatar, href: `/${locale}/admin/settings` },
     { key: "product", label: labels.product, done: status.hasProduct, href: `/${locale}/admin/products/new` },
     { key: "preview", label: labels.preview, done: previewDone, href: `/${locale}/${storeSlug}` },

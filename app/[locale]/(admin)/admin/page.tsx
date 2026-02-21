@@ -81,7 +81,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
     const checklistStatus: ChecklistStatus = {
       hasStoreName: !!(tenant?.name && tenant?.slug),
       hasWhatsapp: !!(storeSettings?.whatsappNumber),
-      hasFps: !!activePayment,
+      hasPaymentMethod: !!activePayment,
       hasAvatar: !!(tenant?.logoUrl && tenant?.coverPhoto),
       hasProduct: productCount > 0,
     };
