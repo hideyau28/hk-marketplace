@@ -606,9 +606,13 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
               ? "處理中..."
               : "Processing..."
             : selectedProvider?.type === "manual"
-              ? locale === "zh-HK"
-                ? "確認落單"
-                : "Confirm Order"
+              ? paymentProofFile
+                ? locale === "zh-HK"
+                  ? "確認落單"
+                  : "Confirm Order"
+                : locale === "zh-HK"
+                  ? "請先上傳轉帳收據"
+                  : "Please upload payment proof"
               : locale === "zh-HK"
                 ? "提交訂單"
                 : "Place Order"}
