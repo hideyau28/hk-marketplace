@@ -93,12 +93,12 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
                 <span className="text-xl">⏳</span>
                 <div>
                   <p className="font-semibold text-amber-900">
-                    {locale === "zh-HK" ? "訂單已提交" : "Order Submitted"}
+                    {locale === "zh-HK" ? "已提交，等待商戶確認" : "Submitted — Awaiting Confirmation"}
                   </p>
                   <p className="mt-1 text-sm text-amber-800">
                     {locale === "zh-HK"
-                      ? "商戶確認收款後會通知你，請耐心等候。"
-                      : "The store will notify you once payment is confirmed. Please wait."}
+                      ? "付款證明已收到，商戶確認收款後會通知你，請耐心等候。"
+                      : "Payment proof received. The store will notify you once confirmed."}
                   </p>
                 </div>
               </div>
