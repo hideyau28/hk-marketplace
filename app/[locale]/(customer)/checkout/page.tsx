@@ -589,19 +589,29 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
         type="button"
         onClick={handleSubmit}
         disabled={processing || !isFormValid() || invalidProductIds.length > 0}
-        className="mt-6 w-full rounded-xl bg-olive-600 py-3.5 text-center font-semibold text-white hover:bg-olive-700 disabled:cursor-not-allowed disabled:opacity-50 min-h-[48px]"
+        className={`mt-6 w-full rounded-xl py-3.5 text-center font-semibold text-white min-h-[48px] transition-colors ${
+          processing || !isFormValid() || invalidProductIds.length > 0
+            ? "bg-zinc-300 cursor-not-allowed dark:bg-zinc-700"
+            : selectedProvider?.type === "manual"
+              ? "bg-orange-500 hover:bg-orange-600"
+              : "bg-olive-600 hover:bg-olive-700"
+        }`}
       >
         {uploadingProof
           ? locale === "zh-HK"
-            ? "上傳中..."
-            : "Uploading..."
+            ? "上傳付款證明中..."
+            : "Uploading proof..."
           : processing
             ? locale === "zh-HK"
               ? "處理中..."
               : "Processing..."
-            : locale === "zh-HK"
-              ? "提交訂單"
-              : "Place Order"}
+            : selectedProvider?.type === "manual"
+              ? locale === "zh-HK"
+                ? "確認落單"
+                : "Confirm Order"
+              : locale === "zh-HK"
+                ? "提交訂單"
+                : "Place Order"}
       </button>
     </div>
   );
