@@ -180,7 +180,7 @@ export async function createProduct(
     }
 
     const result = json as ApiSuccessResponse<Product>;
-    if (locale) revalidatePath(`/${locale}/admin/products`, "page");
+    revalidatePath("/", "layout");
     return { ok: true, data: result.data };
   } catch (error) {
     console.error("Failed to create product:", error);
@@ -241,7 +241,7 @@ export async function updateProduct(
     }
 
     const result = json as ApiSuccessResponse<Product>;
-    if (locale) revalidatePath(`/${locale}/admin/products`, "page");
+    revalidatePath("/", "layout");
     return { ok: true, data: result.data };
   } catch (error) {
     console.error("Failed to update product:", error);
@@ -421,7 +421,7 @@ export async function syncVariants(
       };
     }
 
-    if (locale) revalidatePath(`/${locale}/admin/products`, "page");
+    revalidatePath("/", "layout");
     return { ok: true };
   } catch (error) {
     console.error("Failed to sync variants:", error);
