@@ -87,6 +87,14 @@ function SortableProductCard({
     zIndex: isDragging ? 50 : "auto" as const,
   };
 
+  const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
+  const discountPct = isOnSale
+    ? Math.round((1 - product.price / product.originalPrice!) * 100)
+    : 0;
+  const isNewProduct = product.createdAt
+    ? Date.now() - new Date(product.createdAt).getTime() < 48 * 60 * 60 * 1000
+    : false;
+
   return (
     <div ref={setNodeRef} style={style} {...attributes} className="relative">
       <div
@@ -96,9 +104,9 @@ function SortableProductCard({
         }}
         className={isEditMode ? "" : "cursor-pointer"}
       >
-        {/* Image */}
+        {/* Image — aspect-square to match storefront */}
         <div
-          className={`relative w-20 h-20 mx-auto rounded-xl overflow-hidden bg-zinc-100 border ${
+          className={`relative aspect-square w-full rounded-xl overflow-hidden bg-zinc-100 border ${
             isSelected ? "border-[#FF9500] ring-2 ring-[#FF9500]/30" : "border-zinc-200"
           } ${product.hidden ? "opacity-50" : ""}`}
         >
@@ -108,7 +116,7 @@ function SortableProductCard({
               alt={product.title}
               fill
               className="object-cover"
-              sizes="80px"
+              sizes="(max-width: 480px) 33vw, 160px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-zinc-300">
@@ -136,11 +144,29 @@ function SortableProductCard({
             </div>
           )}
 
-          {/* Featured badge */}
-          {product.featured && !isEditMode && (
-            <div className="absolute top-1.5 right-1.5 bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Star size={10} fill="white" />
-              精選
+          {/* NEW + Featured badges — top-left (below hidden) */}
+          {!product.hidden && !isEditMode && (
+            <div className="absolute top-2 left-2 z-10 flex gap-1">
+              {isNewProduct && (
+                <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-emerald-500 text-white">
+                  NEW
+                </span>
+              )}
+              {product.featured && (
+                <span className="bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                  <Star size={8} fill="white" />
+                  精選
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Discount badge — top-right */}
+          {isOnSale && !product.hidden && !isEditMode && (
+            <div className="absolute top-2 right-2 z-10">
+              <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                -{discountPct}%
+              </span>
             </div>
           )}
         </div>

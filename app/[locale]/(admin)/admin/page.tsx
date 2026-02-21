@@ -51,7 +51,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
 
   // Bio Link mode: show storefront-style dashboard
   if (mode === "biolink") {
-    const [tenant, products, pendingOrders, storeSettings, fpsMethod, productCount] = await Promise.all([
+    const [tenant, products, pendingOrders, storeSettings, activePayment, productCount] = await Promise.all([
       prisma.tenant.findUnique({
         where: { id: tenantId },
         select: { name: true, slug: true, coverPhoto: true, coverTemplate: true, logoUrl: true, brandColor: true },
@@ -69,8 +69,8 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         select: { whatsappNumber: true },
       }),
       prisma.paymentMethod.findFirst({
-        where: { tenantId, type: "fps", active: true },
-        select: { id: true, accountNumber: true },
+        where: { tenantId, active: true },
+        select: { id: true },
       }),
       prisma.product.count({
         where: { tenantId, active: true, deletedAt: null },
@@ -81,7 +81,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
     const checklistStatus: ChecklistStatus = {
       hasStoreName: !!(tenant?.name && tenant?.slug),
       hasWhatsapp: !!(storeSettings?.whatsappNumber),
-      hasFps: !!(fpsMethod?.accountNumber),
+      hasFps: !!activePayment,
       hasAvatar: !!(tenant?.logoUrl && tenant?.coverPhoto),
       hasProduct: productCount > 0,
     };

@@ -12,7 +12,7 @@ const t = {
     dismiss: "Dismiss",
     storeName: "Store name & link",
     whatsapp: "WhatsApp number",
-    fps: "FPS payment",
+    fps: "Set up payments",
     avatar: "Upload logo & banner",
     product: "Add your first product",
     preview: "Preview your store",
@@ -30,7 +30,7 @@ const t = {
     dismiss: "隱藏",
     storeName: "店名同連結",
     whatsapp: "WhatsApp 號碼",
-    fps: "FPS 收款",
+    fps: "設定收款方式",
     avatar: "上傳頭像同 Banner",
     product: "加入第一件商品",
     preview: "預覽店舖",
@@ -59,16 +59,19 @@ interface SetupChecklistProps {
 }
 
 const DISMISS_KEY = "setup-checklist-dismissed";
+const PREVIEW_KEY = "setup-preview-clicked";
 
 export default function SetupChecklist({ locale, status, storeSlug }: SetupChecklistProps) {
   // Start hidden to avoid SSR flash; useEffect sets real value
   const [dismissed, setDismissed] = useState(true);
+  const [previewDone, setPreviewDone] = useState(false);
   const isZh = locale === "zh-HK";
   const labels = isZh ? t["zh-HK"] : t.en;
 
   useEffect(() => {
     try {
       setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
+      setPreviewDone(localStorage.getItem(PREVIEW_KEY) === "1");
     } catch {
       setDismissed(false);
     }
@@ -81,19 +84,25 @@ export default function SetupChecklist({ locale, status, storeSlug }: SetupCheck
     } catch {}
   };
 
-  // Steps 1-5 are auto-detected; step 6 (preview) is always a CTA link
-  const checkableItems = [
+  const handlePreviewClick = () => {
+    setPreviewDone(true);
+    try {
+      localStorage.setItem(PREVIEW_KEY, "1");
+    } catch {}
+  };
+
+  // Steps 1-5 are auto-detected; step 6 (preview) uses localStorage
+  const allItems = [
     { key: "storeName", label: labels.storeName, done: status.hasStoreName, href: null },
     { key: "whatsapp", label: labels.whatsapp, done: status.hasWhatsapp, href: `/${locale}/admin/settings` },
     { key: "fps", label: labels.fps, done: status.hasFps, href: `/${locale}/admin/settings/payment-methods` },
     { key: "avatar", label: labels.avatar, done: status.hasAvatar, href: `/${locale}/admin/settings` },
     { key: "product", label: labels.product, done: status.hasProduct, href: `/${locale}/admin/products/new` },
+    { key: "preview", label: labels.preview, done: previewDone, href: `/${locale}/${storeSlug}` },
   ];
-  const previewItem = { key: "preview", label: labels.preview, done: false, href: `/${locale}/${storeSlug}` };
-  const allItems = [...checkableItems, previewItem];
 
-  const completedCount = checkableItems.filter((i) => i.done).length;
-  const totalCheckable = checkableItems.length; // 5
+  const completedCount = allItems.filter((i) => i.done).length;
+  const totalCheckable = allItems.length; // 6
   const progressPct = Math.round((completedCount / totalCheckable) * 100);
   const allDone = completedCount === totalCheckable;
 
@@ -180,6 +189,7 @@ export default function SetupChecklist({ locale, status, storeSlug }: SetupCheck
               href={item.href}
               labels={labels}
               isPreview={item.key === "preview"}
+              onPreviewClick={item.key === "preview" ? handlePreviewClick : undefined}
             />
           ))}
         </div>
@@ -194,12 +204,14 @@ function ChecklistItem({
   href,
   labels,
   isPreview,
+  onPreviewClick,
 }: {
   label: string;
   done: boolean;
   href: string | null;
   labels: (typeof t)["en"] | (typeof t)["zh-HK"];
   isPreview: boolean;
+  onPreviewClick?: () => void;
 }) {
   const actionLabel = isPreview
     ? labels.goPreview
@@ -241,6 +253,7 @@ function ChecklistItem({
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-[#FF9500] font-medium hover:underline"
+            onClick={onPreviewClick}
           >
             {actionLabel} &rarr;
           </a>
