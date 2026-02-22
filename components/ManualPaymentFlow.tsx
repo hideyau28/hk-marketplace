@@ -159,7 +159,7 @@ export default function ManualPaymentFlow({
       <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            {locale === "zh-HK" ? "上傳付款截圖" : "Upload Payment Proof"}
+            {locale === "zh-HK" ? "請轉帳後上傳收據截圖" : "Upload Payment Receipt"}
           </h2>
           <span className="rounded-md bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
             {locale === "zh-HK" ? "必填" : "Required"}

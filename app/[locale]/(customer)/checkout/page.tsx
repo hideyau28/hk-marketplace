@@ -608,8 +608,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
             : selectedProvider?.type === "manual"
               ? paymentProofFile
                 ? locale === "zh-HK"
-                  ? "確認落單"
-                  : "Confirm Order"
+                  ? `確認落單 ${format(total)}`
+                  : `Confirm Order ${format(total)}`
                 : locale === "zh-HK"
                   ? "請先上傳轉帳收據"
                   : "Please upload payment proof"
