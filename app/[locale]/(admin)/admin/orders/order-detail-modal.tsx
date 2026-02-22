@@ -353,22 +353,39 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
 
           {/* Fulfillment */}
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <h3 className="text-zinc-900 font-semibold mb-3">Fulfillment</h3>
+            <h3 className="text-zinc-900 font-semibold mb-3">
+              {locale === "zh-HK" ? "取貨方式" : "Fulfillment"}
+            </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-zinc-600">Type:</span>
-                <span className="text-zinc-900">{order.fulfillmentType}</span>
+                <span className="text-zinc-600">
+                  {locale === "zh-HK" ? "方式" : "Type"}:
+                </span>
+                <span className="text-zinc-900">
+                  {order.fulfillmentType === "DELIVERY"
+                    ? locale === "zh-HK" ? "送貨" : "Delivery"
+                    : locale === "zh-HK" ? "面交" : "Meetup / Pickup"}
+                </span>
               </div>
               {order.fulfillmentType === "DELIVERY" && fulfillmentAddress && (
                 <div>
-                  <div className="text-zinc-600 mb-1">Address:</div>
+                  <div className="text-zinc-600 mb-1">
+                    {locale === "zh-HK" ? "送貨地址" : "Address"}:
+                  </div>
                   <div className="text-zinc-900">
                     {fulfillmentAddress.line1}
                     {fulfillmentAddress.district && `, ${fulfillmentAddress.district}`}
                   </div>
                   {fulfillmentAddress.notes && (
-                    <div className="text-zinc-600 text-xs mt-1">Note: {fulfillmentAddress.notes}</div>
+                    <div className="text-zinc-600 text-xs mt-1">
+                      {locale === "zh-HK" ? "備註" : "Note"}: {fulfillmentAddress.notes}
+                    </div>
                   )}
+                </div>
+              )}
+              {order.fulfillmentType === "PICKUP" && (
+                <div className="text-zinc-600 text-xs">
+                  {locale === "zh-HK" ? "請聯絡賣家安排面交詳情" : "Contact seller to arrange meetup details"}
                 </div>
               )}
             </div>
