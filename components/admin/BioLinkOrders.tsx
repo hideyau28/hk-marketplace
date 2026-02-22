@@ -54,16 +54,18 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}`, {
+      const res = await fetch(`/api/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
       if (res.ok) {
         router.refresh();
+      } else {
+        console.error(`Failed to update order ${orderId} to ${newStatus}:`, res.status);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("Error updating order status:", err);
     } finally {
       setUpdatingId(null);
     }
