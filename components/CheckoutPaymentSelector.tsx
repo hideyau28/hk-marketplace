@@ -30,20 +30,24 @@ export default function CheckoutPaymentSelector({ locale, onSelect }: Props) {
       .then((res) => res.json())
       .then((data) => {
         if (data.ok && data.data?.providers) {
+          console.log("[CheckoutPaymentSelector] providers:", data.data.providers.length, data.data.providers.map((p: any) => ({ id: p.providerId, type: p.type, name: p.name })));
           setProviders(data.data.providers);
           // Auto-select first provider
           if (data.data.providers.length > 0) {
             const first = data.data.providers[0];
+            console.log("[CheckoutPaymentSelector] auto-select:", { providerId: first.providerId, type: first.type });
             setSelected(first.providerId);
             onSelect(first);
           }
         } else {
+          console.warn("[CheckoutPaymentSelector] API returned no providers:", data);
           setError(
             locale === "zh-HK" ? "無法載入付款方式" : "Failed to load payment methods"
           );
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("[CheckoutPaymentSelector] fetch error:", err);
         setError(
           locale === "zh-HK" ? "無法載入付款方式" : "Failed to load payment methods"
         );
@@ -54,6 +58,7 @@ export default function CheckoutPaymentSelector({ locale, onSelect }: Props) {
   }, [locale]);
 
   const handleSelect = (provider: PaymentProviderOption) => {
+    console.log("[CheckoutPaymentSelector] user selected:", { providerId: provider.providerId, type: provider.type, config: provider.config });
     setSelected(provider.providerId);
     onSelect(provider);
   };

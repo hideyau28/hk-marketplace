@@ -1009,6 +1009,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
               onSelect={setSelectedProvider}
             />
 
+            {(() => { console.log("[Checkout] selectedProvider:", selectedProvider, "type:", selectedProvider?.type); return null; })()}
             {selectedProvider?.type === "manual" && (
               <ManualPaymentFlow
                 provider={selectedProvider}
