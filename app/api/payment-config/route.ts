@@ -27,50 +27,13 @@ export const GET = withApi(async (req) => {
     tenantId = await getTenantId(req);
   }
 
-  // Query TenantPaymentConfig (primary), then PaymentMethod + Tenant flags (fallback)
-  try {
-    const configs = await prisma.tenantPaymentConfig.findMany({
+  // Merge TenantPaymentConfig + PaymentMethod — 兩個 source 合併，唔好只取一個
+  // TenantPaymentConfig 優先，PaymentMethod 補上未覆蓋嘅 provider
+  const [configs, methods, tenant] = await Promise.all([
+    prisma.tenantPaymentConfig.findMany({
       where: { tenantId, enabled: true },
       orderBy: { sortOrder: "asc" },
-    });
-
-    if (configs.length > 0) {
-      const providers = [];
-      for (const cfg of configs) {
-        const provider = getProvider(cfg.providerId);
-        if (!provider) continue;
-
-        const safeConfig: Record<string, unknown> = cfg.config && typeof cfg.config === "object" ? { ...(cfg.config as Record<string, unknown>) } : {};
-
-        let instructions: string | undefined;
-        if (provider.type === "manual") {
-          try {
-            const session = await provider.createSession({}, safeConfig);
-            instructions = session.instructions;
-          } catch {
-            // no instructions
-          }
-        }
-
-        providers.push({
-          providerId: cfg.providerId,
-          displayName: cfg.displayName,
-          name: provider.name,
-          nameZh: provider.nameZh,
-          type: provider.type,
-          icon: provider.icon,
-          config: safeConfig,
-          instructions,
-        });
-      }
-      return ok(req, { providers });
-    }
-  } catch (err) {
-    console.error("TenantPaymentConfig query failed, falling back to PaymentMethod:", err);
-  }
-
-  // Fallback: Query PaymentMethod (primary) and Tenant flags (fallback)
-  const [methods, tenant] = await Promise.all([
+    }).catch(() => [] as Array<{ providerId: string; displayName: string | null; config: unknown; sortOrder: number }>),
     prisma.paymentMethod.findMany({
       where: { tenantId, active: true },
       orderBy: { sortOrder: "asc" },
@@ -91,55 +54,94 @@ export const GET = withApi(async (req) => {
     }),
   ]);
 
-  const providers = [];
+  const providers: Array<{
+    providerId: string;
+    displayName: string | null;
+    name: string;
+    nameZh: string;
+    type: string;
+    icon: string;
+    config: Record<string, unknown>;
+    instructions?: string;
+  }> = [];
+  const seenIds = new Set<string>();
 
-  // 1. PaymentMethod records (primary source)
-  if (methods.length > 0) {
-    for (const pm of methods) {
-      const providerId = LEGACY_TYPE_MAP[pm.type] || pm.type;
-      const provider = getProvider(providerId);
-      if (!provider) continue;
+  // 1. TenantPaymentConfig records (highest priority)
+  for (const cfg of configs) {
+    const provider = getProvider(cfg.providerId);
+    if (!provider) continue;
 
-      const safeConfig: Record<string, unknown> = {};
-      // 新版結構化欄位優先，舊版 legacy 欄位作後備
-      if (pm.qrCodeUrl) safeConfig.qrCodeUrl = pm.qrCodeUrl;
-      else if (pm.qrImage) safeConfig.qrCodeUrl = pm.qrImage;
-      if (pm.accountName) safeConfig.accountName = pm.accountName;
-      if (pm.accountNumber) safeConfig.accountNumber = pm.accountNumber;
-      if (pm.bankName) safeConfig.bankName = pm.bankName;
-      if (pm.paymentLink) safeConfig.paymeLink = pm.paymentLink;
-      // legacy accountInfo fallback for accountId
-      if (pm.accountInfo && !safeConfig.accountNumber) safeConfig.accountId = pm.accountInfo;
+    const safeConfig: Record<string, unknown> = cfg.config && typeof cfg.config === "object" ? { ...(cfg.config as Record<string, unknown>) } : {};
 
-      // 優先用商戶自訂指引，否則嘗試 provider 自動生成
-      let instructions: string | undefined = pm.instructions ?? undefined;
-      if (!instructions && provider.type === "manual") {
-        try {
-          const session = await provider.createSession({}, safeConfig);
-          instructions = session.instructions;
-        } catch {
-          // no instructions
-        }
+    let instructions: string | undefined;
+    if (provider.type === "manual") {
+      try {
+        const session = await provider.createSession({}, safeConfig);
+        instructions = session.instructions;
+      } catch {
+        // no instructions
       }
-
-      providers.push({
-        providerId,
-        displayName: pm.name,
-        name: provider.name,
-        nameZh: provider.nameZh,
-        type: provider.type,
-        icon: provider.icon,
-        config: safeConfig,
-        instructions,
-      });
     }
 
-    return ok(req, { providers });
+    providers.push({
+      providerId: cfg.providerId,
+      displayName: cfg.displayName,
+      name: provider.name,
+      nameZh: provider.nameZh,
+      type: provider.type,
+      icon: provider.icon,
+      config: safeConfig,
+      instructions,
+    });
+    seenIds.add(cfg.providerId);
   }
 
-  // 2. Tenant flags as fallback
+  // 2. PaymentMethod records — 補上 TenantPaymentConfig 未覆蓋嘅 provider
+  for (const pm of methods) {
+    const providerId = LEGACY_TYPE_MAP[pm.type] || pm.type;
+    if (seenIds.has(providerId)) continue; // TenantPaymentConfig 已有，跳過
+
+    const provider = getProvider(providerId);
+    if (!provider) continue;
+
+    const safeConfig: Record<string, unknown> = {};
+    // 新版結構化欄位優先，舊版 legacy 欄位作後備
+    if (pm.qrCodeUrl) safeConfig.qrCodeUrl = pm.qrCodeUrl;
+    else if (pm.qrImage) safeConfig.qrCodeUrl = pm.qrImage;
+    if (pm.accountName) safeConfig.accountName = pm.accountName;
+    if (pm.accountNumber) safeConfig.accountNumber = pm.accountNumber;
+    if (pm.bankName) safeConfig.bankName = pm.bankName;
+    if (pm.paymentLink) safeConfig.paymeLink = pm.paymentLink;
+    // legacy accountInfo fallback for accountId
+    if (pm.accountInfo && !safeConfig.accountNumber) safeConfig.accountId = pm.accountInfo;
+
+    // 優先用商戶自訂指引，否則嘗試 provider 自動生成
+    let instructions: string | undefined = pm.instructions ?? undefined;
+    if (!instructions && provider.type === "manual") {
+      try {
+        const session = await provider.createSession({}, safeConfig);
+        instructions = session.instructions;
+      } catch {
+        // no instructions
+      }
+    }
+
+    providers.push({
+      providerId,
+      displayName: pm.name,
+      name: provider.name,
+      nameZh: provider.nameZh,
+      type: provider.type,
+      icon: provider.icon,
+      config: safeConfig,
+      instructions,
+    });
+    seenIds.add(providerId);
+  }
+
+  // 3. Tenant flags as final fallback — 只補上仲未出現嘅 provider
   if (tenant) {
-    if (tenant.fpsEnabled) {
+    if (tenant.fpsEnabled && !seenIds.has("fps")) {
       const fp = getProvider("fps");
       if (fp) {
         const cfg: Record<string, unknown> = {};
@@ -161,9 +163,10 @@ export const GET = withApi(async (req) => {
           config: cfg,
           instructions,
         });
+        seenIds.add("fps");
       }
     }
-    if (tenant.paymeEnabled) {
+    if (tenant.paymeEnabled && !seenIds.has("payme")) {
       const pm = getProvider("payme");
       if (pm) {
         const cfg: Record<string, unknown> = {};
@@ -184,9 +187,10 @@ export const GET = withApi(async (req) => {
           config: cfg,
           instructions,
         });
+        seenIds.add("payme");
       }
     }
-    if (tenant.stripeOnboarded && tenant.stripeAccountId) {
+    if (tenant.stripeOnboarded && tenant.stripeAccountId && !seenIds.has("stripe")) {
       const sp = getProvider("stripe");
       if (sp) {
         providers.push({
@@ -199,6 +203,7 @@ export const GET = withApi(async (req) => {
           config: {},
           instructions: undefined,
         });
+        seenIds.add("stripe");
       }
     }
   }
