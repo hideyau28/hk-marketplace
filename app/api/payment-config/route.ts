@@ -101,11 +101,19 @@ export const GET = withApi(async (req) => {
       if (!provider) continue;
 
       const safeConfig: Record<string, unknown> = {};
-      if (pm.qrImage) safeConfig.qrCodeUrl = pm.qrImage;
-      if (pm.accountInfo) safeConfig.accountId = pm.accountInfo;
+      // 新版結構化欄位優先，舊版 legacy 欄位作後備
+      if (pm.qrCodeUrl) safeConfig.qrCodeUrl = pm.qrCodeUrl;
+      else if (pm.qrImage) safeConfig.qrCodeUrl = pm.qrImage;
+      if (pm.accountName) safeConfig.accountName = pm.accountName;
+      if (pm.accountNumber) safeConfig.accountNumber = pm.accountNumber;
+      if (pm.bankName) safeConfig.bankName = pm.bankName;
+      if (pm.paymentLink) safeConfig.paymeLink = pm.paymentLink;
+      // legacy accountInfo fallback for accountId
+      if (pm.accountInfo && !safeConfig.accountNumber) safeConfig.accountId = pm.accountInfo;
 
-      let instructions: string | undefined;
-      if (provider.type === "manual") {
+      // 優先用商戶自訂指引，否則嘗試 provider 自動生成
+      let instructions: string | undefined = pm.instructions ?? undefined;
+      if (!instructions && provider.type === "manual") {
         try {
           const session = await provider.createSession({}, safeConfig);
           instructions = session.instructions;
