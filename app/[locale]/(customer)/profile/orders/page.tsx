@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -58,6 +58,7 @@ export default function ProfileOrdersPage() {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [activeTab, setActiveTab] = useState<"all" | "pending" | "paid" | "shipped">("all");
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -89,6 +90,20 @@ export default function ProfileOrdersPage() {
     items: locale === "zh-HK" ? "件商品" : " items",
     payment: locale === "zh-HK" ? "付款" : "Payment",
   };
+
+  const tabs = [
+    { key: "all" as const, label: locale === "zh-HK" ? "全部" : "All" },
+    { key: "pending" as const, label: locale === "zh-HK" ? "待付款" : "Pending" },
+    { key: "paid" as const, label: locale === "zh-HK" ? "已付款" : "Paid" },
+    { key: "shipped" as const, label: locale === "zh-HK" ? "已出貨" : "Shipped" },
+  ];
+
+  const filteredOrders = useMemo(() => {
+    if (activeTab === "pending") return orders.filter((o) => o.status === "PENDING" || o.status === "PENDING_CONFIRMATION");
+    if (activeTab === "paid") return orders.filter((o) => ["CONFIRMED", "PROCESSING", "PAID"].includes(o.status));
+    if (activeTab === "shipped") return orders.filter((o) => ["SHIPPED", "DELIVERED", "COMPLETED"].includes(o.status));
+    return orders;
+  }, [orders, activeTab]);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -125,11 +140,28 @@ export default function ProfileOrdersPage() {
           {t.back}
         </Link>
 
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 mb-6">
+        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
           {t.title}
         </h1>
 
-        {orders.length === 0 ? (
+        {/* Filter tabs */}
+        <div className="flex gap-2 mb-6 overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                activeTab === tab.key
+                  ? "bg-olive-600 text-white"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {filteredOrders.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
               <Package size={32} className="text-zinc-400" />
@@ -144,7 +176,7 @@ export default function ProfileOrdersPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {orders.map((order) => {
+            {filteredOrders.map((order) => {
               const status = statusConfig[order.status] || statusConfig.PENDING;
               const paymentStatus = paymentStatusConfig[order.paymentStatus] || paymentStatusConfig.pending;
               const StatusIcon = status.icon;

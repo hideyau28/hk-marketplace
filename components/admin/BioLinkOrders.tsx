@@ -24,7 +24,7 @@ type Props = {
   totalPages: number;
 };
 
-type FilterTab = "all" | "pending" | "paid";
+type FilterTab = "all" | "pending" | "paid" | "shipped";
 
 const statusConfig: Record<string, { label: string; labelZh: string; color: string }> = {
   PENDING: { label: "Pending", labelZh: "待付款", color: "bg-amber-100 text-amber-700" },
@@ -47,7 +47,8 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
 
   const filteredOrders = orders.filter((order) => {
     if (filter === "pending") return order.status === "PENDING" || order.status === "PENDING_CONFIRMATION";
-    if (filter === "paid") return ["PAID", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "COMPLETED", "FULFILLING"].includes(order.status);
+    if (filter === "paid") return ["PAID", "CONFIRMED", "PROCESSING", "FULFILLING"].includes(order.status);
+    if (filter === "shipped") return ["SHIPPED", "DELIVERED", "COMPLETED"].includes(order.status);
     return true;
   });
 
@@ -115,6 +116,7 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
     { key: "all", label: isZh ? "全部" : "All" },
     { key: "pending", label: isZh ? "待付款" : "Pending" },
     { key: "paid", label: isZh ? "已付款" : "Paid" },
+    { key: "shipped", label: isZh ? "已出貨" : "Shipped" },
   ];
 
   return (
