@@ -98,20 +98,22 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onTap
 
         {soldOut && <SoldOutOverlay />}
 
-        {/* Badges — 左上角 */}
+        {/* Badges — 同一行：NEW 左、剩X件 中、-X% 右 */}
         {!soldOut && (
-          <div className="absolute top-2 left-2 z-10 flex gap-1">
-            {isNewProduct && <NewBadge />}
-            {lowStock && <LowStockBadge count={lowStock} />}
-          </div>
-        )}
-
-        {/* Discount badge — 右上角 */}
-        {isOnSale && !soldOut && (
-          <div className="absolute top-2 right-2 z-10">
-            <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-              -{discountPct}%
-            </span>
+          <div className="absolute top-2 left-0 right-0 px-2 z-10 grid grid-cols-3 items-start">
+            <div className="flex justify-start">
+              {isNewProduct && <NewBadge />}
+            </div>
+            <div className="flex justify-center">
+              {lowStock && <LowStockBadge count={lowStock} />}
+            </div>
+            <div className="flex justify-end">
+              {isOnSale && (
+                <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  -{discountPct}%
+                </span>
+              )}
+            </div>
           </div>
         )}
 

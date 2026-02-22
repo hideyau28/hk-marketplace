@@ -55,6 +55,8 @@ type OrderStatusUpdateProps = {
 
 export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdateProps) {
   const router = useRouter();
+  // displayStatus tracks the shown badge — updated immediately on success (optimistic UI)
+  const [displayStatus, setDisplayStatus] = useState<OrderStatus>(order.status);
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(order.status);
   const [trackingNumber, setTrackingNumber] = useState(order.trackingNumber || "");
   const [cancelReason, setCancelReason] = useState("");
@@ -63,7 +65,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
   const [error, setError] = useState("");
   const { showToast } = useToast();
 
-  const validTransitions = VALID_TRANSITIONS[order.status] || [];
+  const validTransitions = VALID_TRANSITIONS[displayStatus] || [];
   const isTerminal = validTransitions.length === 0;
 
   const translateStatus = (status: OrderStatus) => {
@@ -72,7 +74,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
   };
 
   const handleUpdateStatus = async () => {
-    if (selectedStatus === order.status) return;
+    if (selectedStatus === displayStatus) return;
     if (!validTransitions.includes(selectedStatus)) {
       setError(locale === "zh-HK" ? "無效的狀態轉換" : "Invalid status transition");
       return;
@@ -106,6 +108,9 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
       });
 
       if (res.ok) {
+        // 即時更新 badge，唔使等 router.refresh() 完成
+        setDisplayStatus(selectedStatus);
+        setSelectedStatus(selectedStatus);
         showToast(locale === "zh-HK" ? "狀態已更新" : "Status updated!");
         router.refresh();
       } else {
@@ -130,14 +135,14 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
           {locale === "zh-HK" ? "當前狀態" : "Current Status"}
         </label>
         <div className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium ${
-          order.status === "COMPLETED" || order.status === "DELIVERED" ? "bg-olive-100 text-olive-700" :
-          order.status === "PENDING" ? "bg-yellow-100 text-yellow-700" :
-          order.status === "PENDING_CONFIRMATION" ? "bg-orange-100 text-orange-700 border border-orange-300" :
-          order.status === "CANCELLED" || order.status === "DISPUTED" || order.status === "PAYMENT_REJECTED" ? "bg-red-100 text-red-700" :
-          order.status === "REFUNDED" ? "bg-amber-100 text-amber-700" :
+          displayStatus === "COMPLETED" || displayStatus === "DELIVERED" ? "bg-olive-100 text-olive-700" :
+          displayStatus === "PENDING" ? "bg-yellow-100 text-yellow-700" :
+          displayStatus === "PENDING_CONFIRMATION" ? "bg-orange-100 text-orange-700 border border-orange-300" :
+          displayStatus === "CANCELLED" || displayStatus === "DISPUTED" || displayStatus === "PAYMENT_REJECTED" ? "bg-red-100 text-red-700" :
+          displayStatus === "REFUNDED" ? "bg-amber-100 text-amber-700" :
           "bg-blue-100 text-blue-700"
         }`}>
-          {translateStatus(order.status)}
+          {translateStatus(displayStatus)}
         </div>
       </div>
 
@@ -154,7 +159,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
               onChange={(e) => setSelectedStatus(e.target.value as OrderStatus)}
               className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
             >
-              <option value={order.status}>{translateStatus(order.status)}</option>
+              <option value={displayStatus}>{translateStatus(displayStatus)}</option>
               {validTransitions.map((status) => (
                 <option key={status} value={status}>
                   {translateStatus(status)}
@@ -216,7 +221,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
 
           <button
             onClick={handleUpdateStatus}
-            disabled={isUpdating || selectedStatus === order.status}
+            disabled={isUpdating || selectedStatus === displayStatus}
             className="w-full rounded-xl bg-olive-600 py-2.5 text-white font-semibold hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isUpdating
