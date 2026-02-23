@@ -17,16 +17,20 @@ export interface PaymentProviderOption {
 interface Props {
   locale: Locale;
   onSelect: (provider: PaymentProviderOption | null) => void;
+  tenantSlug?: string;
 }
 
-export default function CheckoutPaymentSelector({ locale, onSelect }: Props) {
+export default function CheckoutPaymentSelector({ locale, onSelect, tenantSlug }: Props) {
   const [providers, setProviders] = useState<PaymentProviderOption[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/payment-config")
+    const url = tenantSlug
+      ? `/api/payment-config?slug=${encodeURIComponent(tenantSlug)}`
+      : "/api/payment-config";
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
         if (data.ok && data.data?.providers) {
@@ -53,9 +57,9 @@ export default function CheckoutPaymentSelector({ locale, onSelect }: Props) {
         );
       })
       .finally(() => setLoading(false));
-    // onSelect is a callback from parent, only run on mount
+    // onSelect is a callback from parent, only run on mount/locale/tenantSlug change
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locale]);
+  }, [locale, tenantSlug]);
 
   const handleSelect = (provider: PaymentProviderOption) => {
     console.log("[CheckoutPaymentSelector] user selected:", { providerId: provider.providerId, type: provider.type, config: provider.config });

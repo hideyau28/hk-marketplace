@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { User } from "lucide-react";
 import { getCart, getCartTotal, clearCart, type CartItem } from "@/lib/cart";
 import { getDict, type Locale } from "@/lib/i18n";
@@ -46,6 +46,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
   const [mounted, setMounted] = useState(false);
   const [processing, setProcessing] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tenantSlug = searchParams.get("slug") ?? undefined;
   const { showToast } = useToast();
   const { format } = useCurrency();
   const { user } = useAuth();
@@ -1007,6 +1009,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
             <CheckoutPaymentSelector
               locale={locale}
               onSelect={setSelectedProvider}
+              tenantSlug={tenantSlug}
             />
 
             {(() => { console.log("[Checkout] selectedProvider:", selectedProvider, "type:", selectedProvider?.type); return null; })()}
