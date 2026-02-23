@@ -21,9 +21,10 @@ type OrderResult = {
   paymeInfo?: { link: string | null; qrCode: string | null };
   items?: OrderItem[];
   customer?: { name: string; phone: string };
-  delivery?: { method: string; label: string; fee?: number };
+  delivery?: { method: string; label: string; fee?: number; address?: string | null };
   paymentMethod?: string;
   paymentProof?: boolean;
+  paymentProofUrl?: string | null;
   currency?: string;
 };
 
@@ -51,6 +52,7 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
           deliveryLabel: order.delivery.label,
           paymentMethod: order.paymentMethod || "fps",
           total: order.total,
+          paymentProofUrl: order.paymentProofUrl,
         })
       : order.whatsapp
         ? `https://wa.me/${order.whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(waText)}`
@@ -115,6 +117,14 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span style={{ color: tmpl.subtext }}>送貨方式</span>
                     <span style={{ color: `${tmpl.text}B3` }}>{order.delivery.label}</span>
+                  </div>
+                )}
+                {order.delivery?.address && (
+                  <div className="flex items-start justify-between text-sm mb-1">
+                    <span style={{ color: tmpl.subtext }}>送貨地址</span>
+                    <span className="text-right max-w-[60%]" style={{ color: `${tmpl.text}B3` }}>
+                      {order.delivery.address}
+                    </span>
                   </div>
                 )}
                 {order.delivery?.fee != null && order.delivery.fee > 0 && (
