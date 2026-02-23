@@ -17,6 +17,7 @@ type NotifyOrderData = {
   paymentMethod: string;
   total: number;
   paymentProofUrl?: string | null;
+  deliveryAddress?: string | null;
 };
 
 /**
@@ -41,6 +42,8 @@ export function buildMerchantNotifyUrl(
         ? "PayMe"
         : "信用卡";
 
+  const addressLine = order.deliveryAddress ? `\n送貨地址：${order.deliveryAddress}` : "";
+
   const message = `Hi! 我已落單，以下係訂單資料：
 
 訂單：#${order.orderNumber}
@@ -50,7 +53,7 @@ export function buildMerchantNotifyUrl(
 商品：
 ${items}
 
-送貨：${order.deliveryLabel}
+送貨：${order.deliveryLabel}${addressLine}
 付款：${paymentLabel}
 合計：$${order.total.toLocaleString("en-HK")}${order.paymentProofUrl ? `\n付款截圖：${order.paymentProofUrl}` : ""}`;
 
