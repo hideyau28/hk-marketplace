@@ -154,8 +154,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   // View mode
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
-  // Trigger router.refresh() outside of any startTransition context
-  const [pendingRefresh, setPendingRefresh] = useState(false);
+
 
   const CATEGORY_OPTIONS = [
     "All",
@@ -173,13 +172,6 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const STATUS_OPTIONS = ["All", "Active", "Inactive"];
   const STOCK_OPTIONS = ["All", "In Stock", "Out of Stock"];
 
-  // Full page reload after product save — router.refresh() gets stale due to client-side cache
-  useEffect(() => {
-    if (pendingRefresh) {
-      setPendingRefresh(false);
-      window.location.reload();
-    }
-  }, [pendingRefresh]);
 
   const badgeMap = useMemo(() => new Map(badges.map((badge) => [badge.id, badge])), [badges]);
 
@@ -451,7 +443,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const handleCloseModal = (saved?: boolean) => {
     setSelectedProduct(null);
     setIsCreating(false);
-    if (saved) setPendingRefresh(true);
+    if (saved) {
+      setTimeout(() => window.location.reload(), 100);
+    }
   };
 
   const toggleSort = (key: "originalPrice" | "price") => {
