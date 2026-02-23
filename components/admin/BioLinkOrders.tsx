@@ -264,9 +264,9 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
                   </div>
                   <button
                     onClick={() => handleWhatsApp(order.phone, order.orderNumber)}
-                    className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5a] transition-colors shrink-0 ml-2"
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5a] transition-colors shrink-0 ml-2"
                   >
-                    <MessageCircle size={16} />
+                    <MessageCircle size={20} />
                   </button>
                 </div>
 
@@ -313,7 +313,7 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
                       <img
                         src={order.paymentProof}
                         alt="付款截圖"
-                        className="w-12 h-12 rounded-lg object-cover border border-zinc-200 hover:border-zinc-400 transition-colors"
+                        className="w-20 h-20 rounded-lg object-cover border border-zinc-200 hover:border-zinc-400 transition-colors"
                       />
                     </button>
                   )}
