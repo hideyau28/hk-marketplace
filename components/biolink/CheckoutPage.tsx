@@ -31,9 +31,10 @@ type OrderResult = {
   paymeInfo?: { link: string | null; qrCode: string | null };
   items?: Array<{ name: string; qty: number; unitPrice: number }>;
   customer?: { name: string; phone: string };
-  delivery?: { method: string; label: string; fee: number };
+  delivery?: { method: string; label: string; fee: number; address?: string | null };
   paymentMethod?: string;
   paymentProof?: boolean;
+  paymentProofUrl?: string | null;
   currency?: string;
 };
 
@@ -240,8 +241,14 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
           unitPrice: item.price,
         })),
         customer: { name: name.trim(), phone: phone.trim() },
-        delivery: { method: delivery, label: deliveryOpt?.label || delivery, fee: deliveryFee },
+        delivery: {
+          method: delivery,
+          label: deliveryOpt?.label || delivery,
+          fee: deliveryFee,
+          address: needsAddress ? address.trim() : null,
+        },
         paymentMethod: payment,
+        paymentProofUrl: paymentProofUrl || null,
         currency,
       };
       onOrderComplete(result);

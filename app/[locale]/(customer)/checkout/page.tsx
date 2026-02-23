@@ -1012,11 +1012,6 @@ export default function CheckoutPage({ params }: { params: Promise<{ locale: str
               tenantSlug={tenantSlug}
             />
 
-            {(() => { console.log("[Checkout] selectedProvider:", selectedProvider, "type:", selectedProvider?.type); return null; })()}
-            {/* DEBUG - remove after testing */}
-            <div style={{background:'red',color:'white',padding:'10px',margin:'10px 0'}}>
-              DEBUG: selectedProvider={JSON.stringify(selectedProvider?.providerId)} type={JSON.stringify(selectedProvider?.type)}
-            </div>
             {selectedProvider?.type === "manual" && (
               <ManualPaymentFlow
                 provider={selectedProvider}

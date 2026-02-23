@@ -16,6 +16,7 @@ type NotifyOrderData = {
   deliveryLabel: string;
   paymentMethod: string;
   total: number;
+  paymentProofUrl?: string | null;
 };
 
 /**
@@ -51,7 +52,7 @@ ${items}
 
 送貨：${order.deliveryLabel}
 付款：${paymentLabel}
-合計：$${order.total.toLocaleString("en-HK")}`;
+合計：$${order.total.toLocaleString("en-HK")}${order.paymentProofUrl ? `\n付款截圖：${order.paymentProofUrl}` : ""}`;
 
   const encoded = encodeURIComponent(message);
   const phone = merchantWhatsApp.replace(/\D/g, "");
