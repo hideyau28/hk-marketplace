@@ -50,6 +50,7 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
           customer: order.customer,
           items: order.items,
           deliveryLabel: order.delivery.label,
+          deliveryAddress: order.delivery.address,
           paymentMethod: order.paymentMethod || "fps",
           total: order.total,
           paymentProofUrl: order.paymentProofUrl,
