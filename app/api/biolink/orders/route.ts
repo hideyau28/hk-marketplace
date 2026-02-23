@@ -81,6 +81,7 @@ type BioLinkOrderPayload = {
   customer: { name: string; phone: string; email?: string | null };
   delivery: { method: string };
   payment: { method: string };
+  paymentProof: string | null;
   note: string | null;
   total: number;
 };
@@ -139,6 +140,7 @@ function parsePayload(body: unknown): BioLinkOrderPayload {
     },
     delivery: { method: del.method as string },
     payment: { method: pay.method as string },
+    paymentProof: typeof b.paymentProof === "string" && b.paymentProof.trim() ? b.paymentProof.trim() : null,
     note: typeof b.note === "string" && b.note.trim() ? b.note.trim() : null,
     total: b.total as number,
   };
@@ -303,7 +305,8 @@ export const POST = withApi(async (req) => {
       });
     }
 
-    // Create order
+    // Create order — set paymentStatus based on whether proof was uploaded
+    const hasProof = !!payload.paymentProof;
     const created = await tx.order.create({
       data: {
         tenantId: tenant.id,
@@ -323,9 +326,10 @@ export const POST = withApi(async (req) => {
           getFulfillmentType(payload.delivery.method) === "DELIVERY"
             ? { line1: selectedDelivery.label, notes: payload.delivery.method }
             : undefined,
-        status: "PENDING",
+        status: hasProof ? "PENDING_CONFIRMATION" : "PENDING",
         paymentMethod: payload.payment.method,
-        paymentStatus: "pending",
+        paymentProof: payload.paymentProof,
+        paymentStatus: hasProof ? "uploaded" : "pending",
         note: payload.note || null,
       },
     });
@@ -334,10 +338,12 @@ export const POST = withApi(async (req) => {
   });
 
   // Build response
+  const hasPaymentProof = !!payload.paymentProof;
   const response: Record<string, unknown> = {
     orderId: order.id,
     orderNumber: order.orderNumber,
-    status: "pending_payment",
+    status: hasPaymentProof ? "pending_confirmation" : "pending_payment",
+    paymentProof: hasPaymentProof,
   };
 
   // Query PaymentMethod table for payment transfer info (new merchants)

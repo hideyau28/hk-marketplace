@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { BioCartItem } from "@/lib/biolink-cart";
 import {
   formatPrice,
@@ -8,6 +8,17 @@ import {
   type DeliveryOption,
 } from "@/lib/biolink-helpers";
 import { useTemplate } from "@/lib/template-context";
+
+type PaymentProvider = {
+  providerId: string;
+  displayName: string | null;
+  name: string;
+  nameZh: string;
+  type: "online" | "manual";
+  icon: string;
+  config: Record<string, unknown>;
+  instructions?: string;
+};
 
 type OrderResult = {
   orderId: string;
@@ -22,6 +33,7 @@ type OrderResult = {
   customer?: { name: string; phone: string };
   delivery?: { method: string; label: string; fee: number };
   paymentMethod?: string;
+  paymentProof?: boolean;
   currency?: string;
 };
 
@@ -45,6 +57,10 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [availablePayments, setAvailablePayments] = useState<Array<{ id: string; label: string; sub: string }>>([]);
+  const [providers, setProviders] = useState<PaymentProvider[]>([]);
+  const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
+  const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currency = tenant.currency || "HKD";
   const enabledOptions = (tenant.deliveryOptions || []).filter((o: DeliveryOption) => o.enabled);
@@ -62,13 +78,13 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
       .then((res) => res.json())
       .then((data) => {
         if (data.ok && data.data?.providers?.length > 0) {
-          const methods = data.data.providers.map(
-            (p: { providerId: string; displayName: string | null; nameZh: string; type: string }) => ({
-              id: p.providerId,
-              label: p.displayName || p.nameZh,
-              sub: p.type === "online" ? "線上支付" : "手動確認",
-            })
-          );
+          const providerList = data.data.providers as PaymentProvider[];
+          setProviders(providerList);
+          const methods = providerList.map((p) => ({
+            id: p.providerId,
+            label: p.displayName || p.nameZh,
+            sub: p.type === "online" ? "線上支付" : "手動確認",
+          }));
           setAvailablePayments(methods);
           setPayment(methods[0].id);
         } else {
@@ -99,6 +115,17 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
       });
   }, [tenant.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Reset payment proof when switching payment method
+  useEffect(() => {
+    setPaymentProofFile(null);
+    setPaymentProofPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, [payment]);
+
+  // Current selected provider (full data)
+  const selectedProvider = providers.find((p) => p.providerId === payment);
+  const isManualPayment = selectedProvider ? selectedProvider.type === "manual" : !["stripe"].includes(payment);
+
   // 面交/自取唔使填地址，其他送貨方式需要
   const needsAddress = !!delivery && !["meetup", "pickup", "self-pickup"].includes(delivery);
 
@@ -113,13 +140,42 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
   const total = subtotal + deliveryFee;
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setError("圖片大小不能超過 5MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPaymentProofFile(file);
+      setPaymentProofPreview(reader.result as string);
+      setError(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveProof = () => {
+    setPaymentProofFile(null);
+    setPaymentProofPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleReUpload = () => {
+    handleRemoveProof();
+    setTimeout(() => fileInputRef.current?.click(), 50);
+  };
+
   const validate = useCallback(() => {
     if (name.trim().length < 2) return "請輸入姓名（最少 2 個字）";
     if (!/^\d{8}$/.test(phone.trim())) return "請輸入 8 位電話號碼";
     if (!delivery) return "請選擇送貨方式";
     if (needsAddress && address.trim().length < 5) return "請輸入送貨地址";
+    if (isManualPayment && !paymentProofFile) return "請上傳付款截圖";
     return null;
-  }, [name, phone, delivery, needsAddress, address]);
+  }, [name, phone, delivery, needsAddress, address, isManualPayment, paymentProofFile]);
 
   const handleSubmit = async () => {
     const validationError = validate();
@@ -132,6 +188,20 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
     setError(null);
 
     try {
+      // Upload payment proof if manual payment
+      let paymentProofUrl: string | undefined;
+      if (isManualPayment && paymentProofFile) {
+        const formData = new FormData();
+        formData.append("file", paymentProofFile);
+        formData.append("folder", "payments");
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+        const uploadJson = await uploadRes.json();
+        if (!uploadRes.ok || !uploadJson.ok) {
+          throw new Error("上傳截圖失敗，請重試");
+        }
+        paymentProofUrl = uploadJson.data.url;
+      }
+
       const res = await fetch("/api/biolink/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -149,6 +219,7 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
           customer: { name: name.trim(), phone: phone.trim(), email: email.trim() || null },
           delivery: { method: delivery, address: needsAddress ? address.trim() : null },
           payment: { method: payment },
+          paymentProof: paymentProofUrl || null,
           note: note.trim() || null,
           total: subtotal,
         }),
@@ -374,6 +445,131 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
             </div>
           </div>
 
+          {/* Manual payment info + upload */}
+          {isManualPayment && selectedProvider && (
+            <div className="mt-6">
+              <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>收款資料</h3>
+              <div className="rounded-2xl p-4" style={{ backgroundColor: inputBg, border: `1px solid ${subtleBorder}` }}>
+                <div className="text-center">
+                  {/* Transfer amount */}
+                  <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: `${tmpl.accent}20` }}>
+                    <p className="text-xs" style={{ color: tmpl.accent }}>請轉帳以下金額</p>
+                    <p className="text-2xl font-bold" style={{ color: tmpl.accent }}>{formatPrice(total, currency)}</p>
+                  </div>
+
+                  {/* QR Code */}
+                  {!!selectedProvider.config.qrCodeUrl && (
+                    <div className="mx-auto w-full max-w-[200px] overflow-hidden rounded-xl bg-white p-2 mb-4">
+                      <img
+                        src={selectedProvider.config.qrCodeUrl as string}
+                        alt={selectedProvider.displayName || selectedProvider.nameZh}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+
+                  {/* Account info */}
+                  {!!(selectedProvider.config.bankName || selectedProvider.config.accountName || selectedProvider.config.accountId || selectedProvider.config.accountNumber || selectedProvider.config.paymeLink) && (
+                    <div className="rounded-xl p-3 text-left space-y-2 text-sm" style={{ backgroundColor: `${tmpl.subtext}10` }}>
+                      {!!selectedProvider.config.bankName && (
+                        <div className="flex justify-between">
+                          <span style={{ color: tmpl.subtext }}>銀行</span>
+                          <span className="font-medium" style={{ color: tmpl.text }}>{selectedProvider.config.bankName as string}</span>
+                        </div>
+                      )}
+                      {!!selectedProvider.config.accountName && (
+                        <div className="flex justify-between">
+                          <span style={{ color: tmpl.subtext }}>收款人</span>
+                          <span className="font-medium" style={{ color: tmpl.text }}>{selectedProvider.config.accountName as string}</span>
+                        </div>
+                      )}
+                      {!!(selectedProvider.config.accountId || selectedProvider.config.accountNumber) && (
+                        <div className="flex justify-between">
+                          <span style={{ color: tmpl.subtext }}>帳號 / FPS ID</span>
+                          <span className="font-mono font-medium" style={{ color: tmpl.text }}>
+                            {(selectedProvider.config.accountId || selectedProvider.config.accountNumber) as string}
+                          </span>
+                        </div>
+                      )}
+                      {!!selectedProvider.config.paymeLink && (
+                        <div className="pt-1">
+                          <a
+                            href={selectedProvider.config.paymeLink as string}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 rounded-lg bg-[#db0011] px-4 py-2 text-sm font-medium text-white"
+                          >
+                            打開 PayMe 連結 →
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {!!selectedProvider.instructions && (
+                    <p className="mt-3 text-xs" style={{ color: tmpl.subtext }}>{selectedProvider.instructions}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Upload payment proof */}
+              <div className="mt-4 rounded-2xl p-4" style={{ backgroundColor: inputBg, border: `1px solid ${subtleBorder}` }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <h4 className="text-sm font-semibold" style={{ color: tmpl.text }}>請轉帳後上傳收據截圖</h4>
+                  <span className="rounded-md px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>必填</span>
+                </div>
+                <p className="text-xs mb-3" style={{ color: tmpl.subtext }}>完成轉帳後，請上傳付款截圖以確認落單</p>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/heic"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                {paymentProofPreview ? (
+                  <div className="space-y-3">
+                    <div className="relative overflow-hidden rounded-xl" style={{ border: `1px solid ${borderColor}` }}>
+                      <img
+                        src={paymentProofPreview}
+                        alt="付款截圖"
+                        className="w-full max-h-64 object-contain"
+                        style={{ backgroundColor: `${tmpl.subtext}10` }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveProof}
+                        className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleReUpload}
+                      className="w-full rounded-xl py-2 text-sm font-medium"
+                      style={{ backgroundColor: `${tmpl.subtext}15`, color: `${tmpl.text}CC` }}
+                    >
+                      重新上傳
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full rounded-xl border-2 border-dashed p-6 text-center transition-colors"
+                    style={{ borderColor: `${tmpl.subtext}40`, backgroundColor: `${tmpl.subtext}08` }}
+                  >
+                    <div className="text-3xl mb-1">📷</div>
+                    <div className="text-sm font-medium" style={{ color: `${tmpl.text}CC` }}>點擊上傳付款截圖</div>
+                    <div className="text-xs mt-1" style={{ color: tmpl.subtext }}>JPG, PNG, WebP（最大 5MB）</div>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Order summary */}
           <div className="mt-6">
             <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>訂單摘要</h3>
@@ -424,9 +620,12 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
           {/* Submit */}
           <button
             onClick={handleSubmit}
-            disabled={submitting}
-            className="mt-6 w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform disabled:opacity-50 disabled:active:scale-100"
-            style={{ backgroundColor: tmpl.accent }}
+            disabled={submitting || (isManualPayment && !paymentProofFile)}
+            className="mt-6 w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform disabled:active:scale-100"
+            style={{
+              backgroundColor: (isManualPayment && !paymentProofFile) ? `${tmpl.subtext}40` : tmpl.accent,
+              opacity: submitting ? 0.5 : 1,
+            }}
           >
             {submitting ? "處理中..." : `確認落單　${formatPrice(total, currency)}`}
           </button>

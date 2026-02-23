@@ -23,6 +23,7 @@ type OrderResult = {
   customer?: { name: string; phone: string };
   delivery?: { method: string; label: string; fee?: number };
   paymentMethod?: string;
+  paymentProof?: boolean;
   currency?: string;
 };
 
@@ -55,11 +56,14 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
         ? `https://wa.me/${order.whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(waText)}`
         : null;
 
+  // 手動付款已上傳截圖 → 唔使再顯示收款資料
+  const hasPaymentProof = !!order.paymentProof;
+
   const isFps = !!order.fpsInfo;
   const isPayme = !!order.paymeInfo;
   const fpsHasContent = isFps && (order.fpsInfo!.qrCode || order.fpsInfo!.id);
   const paymeHasContent = isPayme && (order.paymeInfo!.qrCode || order.paymeInfo!.link);
-  const showPaymentFallback = (isFps && !fpsHasContent) || (isPayme && !paymeHasContent);
+  const showPaymentFallback = !hasPaymentProof && ((isFps && !fpsHasContent) || (isPayme && !paymeHasContent));
 
   // Derived border / card colors
   const subtleBorder = `${tmpl.subtext}20`;
@@ -85,7 +89,9 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
             </div>
             <h2 className="text-xl font-bold" style={{ color: tmpl.text }}>{config.thanks}</h2>
             <p className="text-sm mt-1" style={{ color: tmpl.subtext }}>訂單編號：{order.orderNumber}</p>
-            <p className="text-xs mt-0.5" style={{ color: `${tmpl.subtext}99` }}>狀態：待確認付款</p>
+            <p className="text-xs mt-0.5" style={{ color: `${tmpl.subtext}99` }}>
+              {hasPaymentProof ? "狀態：等待商戶確認" : "狀態：待確認付款"}
+            </p>
           </div>
 
           {/* Order summary */}
@@ -125,8 +131,21 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
             </div>
           )}
 
-          {/* FPS Payment info */}
-          {order.fpsInfo && fpsHasContent && (
+          {/* Manual payment submitted — waiting for merchant */}
+          {hasPaymentProof && (
+            <div className="rounded-2xl p-5 mb-4 text-center" style={{ backgroundColor: cardBg, border: `1px solid ${subtleBorder}` }}>
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full mb-3" style={{ backgroundColor: `${tmpl.accent}20` }}>
+                <svg className="w-5 h-5" style={{ color: tmpl.accent }} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium" style={{ color: tmpl.text }}>訂單已提交，等待商戶確認</p>
+              <p className="text-xs mt-1" style={{ color: tmpl.subtext }}>商戶收到你嘅付款截圖後會確認訂單</p>
+            </div>
+          )}
+
+          {/* FPS Payment info — only show if no proof uploaded */}
+          {!hasPaymentProof && order.fpsInfo && fpsHasContent && (
             <div className="rounded-2xl p-5 mb-4" style={{ backgroundColor: cardBg, border: `1px solid ${subtleBorder}` }}>
               <p className="text-sm font-medium text-center mb-4" style={{ color: tmpl.text }}>
                 請用 FPS 轉帳 <span className="font-bold" style={{ color: tmpl.accent }}>{formatPrice(order.total, currency)}</span> 到：
@@ -157,8 +176,8 @@ export default function OrderConfirmation({ order, onClose, orderConfirmMessage 
             </div>
           )}
 
-          {/* PayMe Payment info */}
-          {order.paymeInfo && paymeHasContent && (
+          {/* PayMe Payment info — only show if no proof uploaded */}
+          {!hasPaymentProof && order.paymeInfo && paymeHasContent && (
             <div className="rounded-2xl p-5 mb-4" style={{ backgroundColor: cardBg, border: `1px solid ${subtleBorder}` }}>
               <p className="text-sm font-medium text-center mb-4" style={{ color: tmpl.text }}>
                 請用 PayMe 付款 <span className="font-bold" style={{ color: tmpl.accent }}>{formatPrice(order.total, currency)}</span>
