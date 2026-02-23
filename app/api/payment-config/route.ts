@@ -12,9 +12,9 @@ const LEGACY_TYPE_MAP: Record<string, string> = {
 export const GET = withApi(async (req) => {
   let tenantId: string | null = null;
 
-  // Query param override — biolink checkout passes ?tenant=<slug>
+  // Query param override — biolink checkout passes ?tenant=<slug> or ?slug=<slug>
   const url = new URL(req.url);
-  const tenantParam = url.searchParams.get("tenant");
+  const tenantParam = url.searchParams.get("tenant") || url.searchParams.get("slug");
   if (tenantParam) {
     const t = await prisma.tenant.findUnique({
       where: { slug: tenantParam },
