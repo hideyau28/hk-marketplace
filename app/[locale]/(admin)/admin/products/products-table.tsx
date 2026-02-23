@@ -173,13 +173,13 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const STATUS_OPTIONS = ["All", "Active", "Inactive"];
   const STOCK_OPTIONS = ["All", "In Stock", "Out of Stock"];
 
-  // Fire router.refresh() outside any startTransition context so it isn't dropped
+  // Full page reload after product save — router.refresh() gets stale due to client-side cache
   useEffect(() => {
     if (pendingRefresh) {
       setPendingRefresh(false);
-      router.refresh();
+      window.location.reload();
     }
-  }, [pendingRefresh, router]);
+  }, [pendingRefresh]);
 
   const badgeMap = useMemo(() => new Map(badges.map((badge) => [badge.id, badge])), [badges]);
 
