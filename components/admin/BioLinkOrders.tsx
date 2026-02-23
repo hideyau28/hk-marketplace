@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, Package, MessageCircle, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { Check, Package, MessageCircle, Loader2, Copy, CheckCheck } from "lucide-react";
 
 type Order = {
   id: string;
@@ -14,6 +15,7 @@ type Order = {
   amounts: any;
   status: string;
   paymentStatus: string;
+  paymentMethod: string | null;
   fulfillmentType: string;
   fulfillmentAddress: any;
   paymentProof: string | null;
@@ -27,30 +29,69 @@ type Props = {
   totalPages: number;
 };
 
-type FilterTab = "all" | "pending" | "paid" | "shipped";
+type FilterTab = "all" | "pending" | "shipping" | "shipped";
 
 const statusConfig: Record<string, { label: string; labelZh: string; color: string }> = {
-  PENDING: { label: "Pending", labelZh: "待付款", color: "bg-amber-100 text-amber-700" },
+  PENDING: { label: "Pending Payment", labelZh: "待付款", color: "bg-amber-100 text-amber-700" },
   PENDING_CONFIRMATION: { label: "Awaiting Confirmation", labelZh: "待確認收款", color: "bg-amber-100 text-amber-700" },
-  CONFIRMED: { label: "Confirmed", labelZh: "已確認", color: "bg-blue-100 text-blue-700" },
-  PAID: { label: "Paid", labelZh: "已付款", color: "bg-green-100 text-green-700" },
-  PROCESSING: { label: "Processing", labelZh: "處理中", color: "bg-blue-100 text-blue-700" },
+  CONFIRMED: { label: "To Ship", labelZh: "待出貨", color: "bg-blue-100 text-blue-700" },
+  PAID: { label: "To Ship", labelZh: "待出貨", color: "bg-blue-100 text-blue-700" },
+  PROCESSING: { label: "To Ship", labelZh: "待出貨", color: "bg-blue-100 text-blue-700" },
+  FULFILLING: { label: "To Ship", labelZh: "待出貨", color: "bg-blue-100 text-blue-700" },
   SHIPPED: { label: "Shipped", labelZh: "已出貨", color: "bg-purple-100 text-purple-700" },
   DELIVERED: { label: "Delivered", labelZh: "已送達", color: "bg-green-100 text-green-700" },
   COMPLETED: { label: "Completed", labelZh: "完成", color: "bg-green-100 text-green-700" },
   CANCELLED: { label: "Cancelled", labelZh: "已取消", color: "bg-zinc-100 text-zinc-500" },
-  FULFILLING: { label: "Fulfilling", labelZh: "配送中", color: "bg-blue-100 text-blue-700" },
 };
+
+const paymentMethodLabels: Record<string, string> = {
+  fps: "FPS 轉帳",
+  payme: "PayMe",
+  alipay: "AlipayHK",
+  bank_transfer: "銀行轉帳",
+};
+
+function CopyableField({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }, [value]);
+
+  return (
+    <div className="flex items-baseline gap-1">
+      <span className="text-zinc-400 text-xs shrink-0">{label}</span>
+      <button
+        onClick={handleCopy}
+        className="flex items-center gap-1 text-sm text-zinc-700 hover:text-zinc-900 transition-colors min-w-0"
+      >
+        {copied ? (
+          <>
+            <span className="text-green-600 text-xs">已複製 ✓</span>
+          </>
+        ) : (
+          <>
+            <span className="truncate">{value}</span>
+            <Copy size={12} className="text-zinc-300 shrink-0" />
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
 
 export default function BioLinkOrders({ orders, locale, page, totalPages }: Props) {
   const router = useRouter();
   const [filter, setFilter] = useState<FilterTab>("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
   const isZh = locale === "zh-HK";
 
   const filteredOrders = orders.filter((order) => {
     if (filter === "pending") return order.status === "PENDING" || order.status === "PENDING_CONFIRMATION";
-    if (filter === "paid") return ["PAID", "CONFIRMED", "PROCESSING", "FULFILLING"].includes(order.status);
+    if (filter === "shipping") return ["PAID", "CONFIRMED", "PROCESSING", "FULFILLING"].includes(order.status);
     if (filter === "shipped") return ["SHIPPED", "DELIVERED", "COMPLETED"].includes(order.status);
     return true;
   });
@@ -115,11 +156,31 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
       .join(", ");
   };
 
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const hour = d.getHours();
+    const minute = d.getMinutes().toString().padStart(2, "0");
+    const ampm = hour >= 12 ? "下午" : "上午";
+    const h12 = hour % 12 || 12;
+    return `${month}月${day}日 ${ampm}${h12}:${minute}`;
+  };
+
+  const getAddress = (order: Order): string | null => {
+    const addr = order.fulfillmentAddress;
+    if (!addr) return null;
+    const line1 = addr.line1 || "";
+    const address = addr.address || "";
+    if (!line1 && !address) return null;
+    return address ? `${line1} — ${address}` : line1;
+  };
+
   const tabs: { key: FilterTab; label: string }[] = [
-    { key: "all", label: isZh ? "全部" : "All" },
-    { key: "pending", label: isZh ? "待付款" : "Pending" },
-    { key: "paid", label: isZh ? "已付款" : "Paid" },
-    { key: "shipped", label: isZh ? "已出貨" : "Shipped" },
+    { key: "all", label: "全部" },
+    { key: "pending", label: "待付款" },
+    { key: "shipping", label: "待出貨" },
+    { key: "shipped", label: "已出貨" },
   ];
 
   return (
@@ -143,6 +204,20 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
         ))}
       </div>
 
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <img
+            src={lightbox}
+            alt="付款截圖"
+            className="max-w-full max-h-[80vh] rounded-xl object-contain"
+          />
+        </div>
+      )}
+
       {/* Orders list */}
       {filteredOrders.length === 0 ? (
         <div className="text-center py-12 text-zinc-400">
@@ -156,90 +231,114 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
             const total = amounts?.total || 0;
             const config = statusConfig[order.status] || statusConfig.PENDING;
             const isUpdating = updatingId === order.id;
+            const address = getAddress(order);
+            const showConfirm = order.status === "PENDING" || order.status === "PENDING_CONFIRMATION";
+            const showShip = ["PAID", "CONFIRMED", "PROCESSING", "FULFILLING"].includes(order.status);
 
             return (
               <div
                 key={order.id}
-                className="bg-white rounded-xl border border-zinc-200 p-4 space-y-3"
+                className="bg-white rounded-xl border border-zinc-200 overflow-hidden"
               >
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-mono text-zinc-400">
-                      {order.orderNumber || order.id.slice(0, 12)}
-                    </p>
-                    <p className="text-sm font-medium text-zinc-900 mt-0.5">
-                      {order.customerName} · {order.phone}
-                    </p>
-                  </div>
+                {/* Header: order number + status */}
+                <div className="flex items-center justify-between px-4 pt-4 pb-3">
+                  <span className="text-xs font-mono text-zinc-400">
+                    {order.orderNumber || order.id.slice(0, 12)}
+                  </span>
                   <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${config.color}`}>
                     {isZh ? config.labelZh : config.label}
                   </span>
                 </div>
 
-                {/* Items */}
-                <p className="text-sm text-zinc-600 line-clamp-2">{formatItems(order.items)}</p>
-                {order.fulfillmentAddress && (
-                  <p className="text-xs text-zinc-500">
-                    📦 {order.fulfillmentAddress.line1}
-                    {order.fulfillmentAddress.address && ` — ${order.fulfillmentAddress.address}`}
-                  </p>
-                )}
-                {order.paymentProof && (
-                  <a href={order.paymentProof} target="_blank" rel="noopener noreferrer" className="block">
-                    <img src={order.paymentProof} alt="付款截圖" className="w-20 h-20 rounded-lg object-cover border border-zinc-200" />
-                  </a>
-                )}
+                <div className="border-t border-zinc-100 mx-4" />
 
-                {/* Total + date */}
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-semibold text-zinc-900">${Math.round(total)}</span>
-                  <span className="text-xs text-zinc-400">
-                    {new Date(order.createdAt).toLocaleDateString(isZh ? "zh-HK" : "en-HK", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
+                {/* 👤 客人 */}
+                <div className="px-4 py-3 space-y-1.5">
+                  <CopyableField label="姓名：" value={order.customerName} />
+                  <CopyableField label="電話：" value={order.phone} />
+                  {address && <CopyableField label="地址：" value={address} />}
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2">
-                  {(order.status === "PENDING" || order.status === "PENDING_CONFIRMATION") && (
+                <div className="border-t border-zinc-100 mx-4" />
+
+                {/* 🛒 商品 */}
+                <div className="px-4 py-3 space-y-2">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-zinc-400 text-xs shrink-0">商品：</span>
+                    <span className="text-sm text-zinc-700">{formatItems(order.items)}</span>
+                  </div>
+                  {order.paymentProof && (
+                    <div className="flex items-start gap-1">
+                      <span className="text-zinc-400 text-xs shrink-0 mt-0.5">付款截圖：</span>
+                      <button onClick={() => setLightbox(order.paymentProof)}>
+                        <img
+                          src={order.paymentProof}
+                          alt="付款截圖"
+                          className="w-12 h-12 rounded-lg object-cover border border-zinc-200 hover:border-zinc-400 transition-colors"
+                        />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-zinc-100 mx-4" />
+
+                {/* 💰 訂單 */}
+                <div className="px-4 py-3 space-y-1.5">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-zinc-400 text-xs shrink-0">金額：</span>
+                    <span className="text-sm font-semibold text-zinc-700">${Math.round(total)}</span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-zinc-400 text-xs shrink-0">日期：</span>
+                    <span className="text-sm text-zinc-700">{formatDate(order.createdAt)}</span>
+                  </div>
+                  {order.paymentMethod && (
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-zinc-400 text-xs shrink-0">付款：</span>
+                      <span className="text-sm text-zinc-700">
+                        {paymentMethodLabels[order.paymentMethod] || order.paymentMethod}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer: actions */}
+                {(showConfirm || showShip) && <div className="border-t border-zinc-100 mx-4" />}
+                <div className="px-4 py-3 flex gap-2">
+                  {showConfirm && (
                     <button
                       onClick={() => handleConfirmPayment(order.id)}
                       disabled={isUpdating}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-green-500 text-white text-sm font-medium hover:bg-green-600 disabled:opacity-50 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-500 text-white text-sm font-medium hover:bg-green-600 disabled:opacity-50 transition-colors"
                     >
                       {isUpdating ? (
                         <Loader2 size={14} className="animate-spin" />
                       ) : (
                         <Check size={14} />
                       )}
-                      {isZh ? "確認收款" : "Confirm Payment"}
+                      確認收款
                     </button>
                   )}
-                  {(order.status === "PAID" || order.status === "CONFIRMED" || order.status === "PROCESSING") && (
+                  {showShip && (
                     <button
                       onClick={() => handleUpdateStatus(order.id, "SHIPPED")}
                       disabled={isUpdating}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
                     >
                       {isUpdating ? (
                         <Loader2 size={14} className="animate-spin" />
                       ) : (
                         <Package size={14} />
                       )}
-                      {isZh ? "標記出貨" : "Mark Shipped"}
+                      標記出貨
                     </button>
                   )}
                   <button
                     onClick={() => handleWhatsApp(order.phone, order.orderNumber)}
-                    className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-[#25D366] text-white text-sm font-medium hover:bg-[#20bd5a] transition-colors"
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5a] transition-colors shrink-0"
                   >
-                    <MessageCircle size={14} />
-                    WhatsApp
+                    <MessageCircle size={18} />
                   </button>
                 </div>
               </div>

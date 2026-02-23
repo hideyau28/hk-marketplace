@@ -51,6 +51,7 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
           amounts: true,
           status: true,
           paymentStatus: true,
+          paymentMethod: true,
           createdAt: true,
           fulfillmentType: true,
           fulfillmentAddress: true,
