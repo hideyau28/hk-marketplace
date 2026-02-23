@@ -66,15 +66,47 @@ export const GET = withApi(async (req) => {
   }> = [];
   const seenIds = new Set<string>();
 
+  // Build PaymentMethod lookup map — 用嚟補充 TenantPaymentConfig 缺少嘅欄位
+  const pmByProviderId = new Map<string, (typeof methods)[number]>();
+  for (const pm of methods) {
+    const pid = LEGACY_TYPE_MAP[pm.type] || pm.type;
+    pmByProviderId.set(pid, pm);
+  }
+
   // 1. TenantPaymentConfig records (highest priority)
+  // 當 config 空白時，從 PaymentMethod 補上實際收款資料
   for (const cfg of configs) {
     const provider = getProvider(cfg.providerId);
     if (!provider) continue;
 
     const safeConfig: Record<string, unknown> = cfg.config && typeof cfg.config === "object" ? { ...(cfg.config as Record<string, unknown>) } : {};
 
-    let instructions: string | undefined;
-    if (provider.type === "manual") {
+    // 從 PaymentMethod 補上 TenantPaymentConfig 缺少嘅欄位
+    const legacyPm = pmByProviderId.get(cfg.providerId);
+    if (legacyPm) {
+      if (!safeConfig.qrCodeUrl && (legacyPm.qrCodeUrl || legacyPm.qrImage)) {
+        safeConfig.qrCodeUrl = legacyPm.qrCodeUrl || legacyPm.qrImage;
+      }
+      if (!safeConfig.accountName && legacyPm.accountName) {
+        safeConfig.accountName = legacyPm.accountName;
+      }
+      if (!safeConfig.accountNumber && legacyPm.accountNumber) {
+        safeConfig.accountNumber = legacyPm.accountNumber;
+      }
+      if (!safeConfig.accountId && !safeConfig.accountNumber && legacyPm.accountInfo) {
+        safeConfig.accountId = legacyPm.accountInfo;
+      }
+      if (!safeConfig.bankName && legacyPm.bankName) {
+        safeConfig.bankName = legacyPm.bankName;
+      }
+      if (!safeConfig.paymeLink && legacyPm.paymentLink) {
+        safeConfig.paymeLink = legacyPm.paymentLink;
+      }
+    }
+
+    // 優先用商戶自訂指引
+    let instructions: string | undefined = legacyPm?.instructions ?? undefined;
+    if (!instructions && provider.type === "manual") {
       try {
         const session = await provider.createSession({}, safeConfig);
         instructions = session.instructions;

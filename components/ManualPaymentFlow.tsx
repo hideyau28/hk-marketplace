@@ -91,8 +91,8 @@ export default function ManualPaymentFlow({
           )}
 
           {!qrCodeUrl && !hasAccountInfo && (
-            <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-              {locale === "zh-HK" ? "付款資料準備中" : "Payment details loading"}
+            <p className="mt-4 text-sm text-zinc-400 dark:text-zinc-500">
+              {locale === "zh-HK" ? "商戶未設定收款資料" : "Merchant has not configured payment details"}
             </p>
           )}
 
