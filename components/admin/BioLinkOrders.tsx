@@ -16,6 +16,7 @@ type Order = {
   paymentStatus: string;
   fulfillmentType: string;
   fulfillmentAddress: any;
+  paymentProof: string | null;
   createdAt: string;
 };
 
@@ -183,6 +184,11 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
                     📦 {order.fulfillmentAddress.line1}
                     {order.fulfillmentAddress.address && ` — ${order.fulfillmentAddress.address}`}
                   </p>
+                )}
+                {order.paymentProof && (
+                  <a href={order.paymentProof} target="_blank" rel="noopener noreferrer" className="block">
+                    <img src={order.paymentProof} alt="付款截圖" className="w-20 h-20 rounded-lg object-cover border border-zinc-200" />
+                  </a>
                 )}
 
                 {/* Total + date */}
