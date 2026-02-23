@@ -170,10 +170,13 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
   const getAddress = (order: Order): string | null => {
     const addr = order.fulfillmentAddress;
     if (!addr) return null;
-    const line1 = addr.line1 || "";
-    const address = addr.address || "";
-    if (!line1 && !address) return null;
-    return address ? `${line1} — ${address}` : line1;
+    return addr.address || null;
+  };
+
+  const getFulfillmentLabel = (order: Order): string | null => {
+    const addr = order.fulfillmentAddress;
+    if (!addr) return null;
+    return addr.line1 || null;
   };
 
   const tabs: { key: FilterTab; label: string }[] = [
@@ -253,94 +256,108 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
                 <div className="border-t border-zinc-100 mx-4" />
 
                 {/* 👤 客人 */}
-                <div className="px-4 py-3 space-y-1.5">
-                  <CopyableField label="姓名：" value={order.customerName} />
-                  <CopyableField label="電話：" value={order.phone} />
-                  {address && <CopyableField label="地址：" value={address} />}
+                <div className="px-4 py-3 flex justify-between items-start">
+                  <div className="space-y-1.5 min-w-0 flex-1">
+                    <CopyableField label="姓名：" value={order.customerName} />
+                    <CopyableField label="電話：" value={order.phone} />
+                    {address && <CopyableField label="地址：" value={address} />}
+                  </div>
+                  <button
+                    onClick={() => handleWhatsApp(order.phone, order.orderNumber)}
+                    className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5a] transition-colors shrink-0 ml-3"
+                  >
+                    <MessageCircle size={16} />
+                  </button>
                 </div>
 
                 <div className="border-t border-zinc-100 mx-4" />
 
                 {/* 🛒 商品 */}
-                <div className="px-4 py-3 space-y-2">
+                <div className="px-4 py-3">
                   <div className="flex items-baseline gap-1">
                     <span className="text-zinc-400 text-xs shrink-0">商品：</span>
                     <span className="text-sm text-zinc-700">{formatItems(order.items)}</span>
                   </div>
-                  {order.paymentProof && (
-                    <div className="flex items-start gap-1">
-                      <span className="text-zinc-400 text-xs shrink-0 mt-0.5">付款截圖：</span>
-                      <button onClick={() => setLightbox(order.paymentProof)}>
-                        <img
-                          src={order.paymentProof}
-                          alt="付款截圖"
-                          className="w-12 h-12 rounded-lg object-cover border border-zinc-200 hover:border-zinc-400 transition-colors"
-                        />
-                      </button>
-                    </div>
-                  )}
                 </div>
 
                 <div className="border-t border-zinc-100 mx-4" />
 
-                {/* 💰 訂單 */}
-                <div className="px-4 py-3 space-y-1.5">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-zinc-400 text-xs shrink-0">金額：</span>
-                    <span className="text-sm font-semibold text-zinc-700">${Math.round(total)}</span>
-                  </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-zinc-400 text-xs shrink-0">日期：</span>
-                    <span className="text-sm text-zinc-700">{formatDate(order.createdAt)}</span>
-                  </div>
-                  {order.paymentMethod && (
+                {/* 💰 訂單資訊 */}
+                <div className="px-4 py-3 flex justify-between items-start">
+                  <div className="space-y-1.5 min-w-0 flex-1">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-zinc-400 text-xs shrink-0">付款：</span>
-                      <span className="text-sm text-zinc-700">
-                        {paymentMethodLabels[order.paymentMethod] || order.paymentMethod}
-                      </span>
+                      <span className="text-zinc-400 text-xs shrink-0">金額：</span>
+                      <span className="text-sm font-semibold text-zinc-700">${Math.round(total)}</span>
                     </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-zinc-400 text-xs shrink-0">日期：</span>
+                      <span className="text-sm text-zinc-700">{formatDate(order.createdAt)}</span>
+                    </div>
+                    {order.paymentMethod && (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-zinc-400 text-xs shrink-0">付款：</span>
+                        <span className="text-sm text-zinc-700">
+                          {paymentMethodLabels[order.paymentMethod] || order.paymentMethod}
+                        </span>
+                      </div>
+                    )}
+                    {getFulfillmentLabel(order) && (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-zinc-400 text-xs shrink-0">取貨方式：</span>
+                        <span className="text-sm text-zinc-700">{getFulfillmentLabel(order)}</span>
+                      </div>
+                    )}
+                  </div>
+                  {order.paymentProof && (
+                    <button
+                      onClick={() => setLightbox(order.paymentProof)}
+                      className="shrink-0 ml-3"
+                    >
+                      <img
+                        src={order.paymentProof}
+                        alt="付款截圖"
+                        className="w-12 h-12 rounded-lg object-cover border border-zinc-200 hover:border-zinc-400 transition-colors"
+                      />
+                    </button>
                   )}
                 </div>
 
                 {/* Footer: actions */}
-                {(showConfirm || showShip) && <div className="border-t border-zinc-100 mx-4" />}
-                <div className="px-4 py-3 flex gap-2">
-                  {showConfirm && (
-                    <button
-                      onClick={() => handleConfirmPayment(order.id)}
-                      disabled={isUpdating}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-500 text-white text-sm font-medium hover:bg-green-600 disabled:opacity-50 transition-colors"
-                    >
-                      {isUpdating ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : (
-                        <Check size={14} />
+                {(showConfirm || showShip) && (
+                  <>
+                    <div className="border-t border-zinc-100 mx-4" />
+                    <div className="px-4 py-3 flex gap-2">
+                      {showConfirm && (
+                        <button
+                          onClick={() => handleConfirmPayment(order.id)}
+                          disabled={isUpdating}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-green-500 text-white text-sm font-medium hover:bg-green-600 disabled:opacity-50 transition-colors"
+                        >
+                          {isUpdating ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Check size={14} />
+                          )}
+                          確認收款
+                        </button>
                       )}
-                      確認收款
-                    </button>
-                  )}
-                  {showShip && (
-                    <button
-                      onClick={() => handleUpdateStatus(order.id, "SHIPPED")}
-                      disabled={isUpdating}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
-                    >
-                      {isUpdating ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : (
-                        <Package size={14} />
+                      {showShip && (
+                        <button
+                          onClick={() => handleUpdateStatus(order.id, "SHIPPED")}
+                          disabled={isUpdating}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
+                        >
+                          {isUpdating ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Package size={14} />
+                          )}
+                          標記出貨
+                        </button>
                       )}
-                      標記出貨
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleWhatsApp(order.phone, order.orderNumber)}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5a] transition-colors shrink-0"
-                  >
-                    <MessageCircle size={18} />
-                  </button>
-                </div>
+                    </div>
+                  </>
+                )}
               </div>
             );
           })}
