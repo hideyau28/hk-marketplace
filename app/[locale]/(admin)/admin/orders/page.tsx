@@ -52,6 +52,8 @@ export default async function AdminOrders({ params, searchParams }: PageProps) {
           status: true,
           paymentStatus: true,
           createdAt: true,
+          fulfillmentType: true,
+          fulfillmentAddress: true,
         },
       }),
       prisma.order.count({ where: { tenantId } }),

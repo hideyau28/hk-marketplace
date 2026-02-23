@@ -14,6 +14,8 @@ type Order = {
   amounts: any;
   status: string;
   paymentStatus: string;
+  fulfillmentType: string;
+  fulfillmentAddress: any;
   createdAt: string;
 };
 
@@ -176,6 +178,12 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
 
                 {/* Items */}
                 <p className="text-sm text-zinc-600 line-clamp-2">{formatItems(order.items)}</p>
+                {order.fulfillmentAddress && (
+                  <p className="text-xs text-zinc-500">
+                    📦 {order.fulfillmentAddress.line1}
+                    {order.fulfillmentAddress.address && ` — ${order.fulfillmentAddress.address}`}
+                  </p>
+                )}
 
                 {/* Total + date */}
                 <div className="flex items-center justify-between">
