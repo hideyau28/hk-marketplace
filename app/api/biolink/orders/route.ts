@@ -79,7 +79,7 @@ type BioLinkOrderPayload = {
     image: string | null;
   }>;
   customer: { name: string; phone: string; email?: string | null };
-  delivery: { method: string };
+  delivery: { method: string; address?: string | null };
   payment: { method: string };
   paymentProof: string | null;
   note: string | null;
@@ -138,7 +138,7 @@ function parsePayload(body: unknown): BioLinkOrderPayload {
       phone: (cust.phone as string).trim(),
       email: typeof cust.email === "string" && cust.email.trim() ? cust.email.trim() : null,
     },
-    delivery: { method: del.method as string },
+    delivery: { method: del.method as string, address: typeof del.address === "string" && del.address.trim() ? del.address.trim() : null },
     payment: { method: pay.method as string },
     paymentProof: typeof b.paymentProof === "string" && b.paymentProof.trim() ? b.paymentProof.trim() : null,
     note: typeof b.note === "string" && b.note.trim() ? b.note.trim() : null,
@@ -324,7 +324,7 @@ export const POST = withApi(async (req) => {
         fulfillmentType: getFulfillmentType(payload.delivery.method),
         fulfillmentAddress:
           getFulfillmentType(payload.delivery.method) === "DELIVERY"
-            ? { line1: selectedDelivery.label, notes: payload.delivery.method }
+            ? { line1: selectedDelivery.label, notes: payload.delivery.method, address: payload.delivery.address }
             : undefined,
         status: hasProof ? "PENDING_CONFIRMATION" : "PENDING",
         paymentMethod: payload.payment.method,
