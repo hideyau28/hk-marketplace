@@ -1,0 +1,326 @@
+<!--
+  Wowlix UI/UX Review Report
+  Render as markdown or open in browser.
+-->
+<pre style="font-family:monospace;white-space:pre-wrap;max-width:900px;margin:auto;padding:2rem;">
+# Wowlix UI/UX Review Report
+
+**Date:** 2026-02-24
+**Device:** iPhone 14 Pro (393x852 @3x)
+**Tool:** `scripts/screenshot.ts` (Puppeteer, networkidle0)
+
+---
+
+## Table of Contents
+
+1. Site Pages
+   - Homepage (`/`)
+   - Pricing Page (`/pricing`)
+2. Demo Stores
+   - Tonic (`/tonic`)
+   - HYPEDROPS (`/hypedrops`)
+   - 日和雜貨 nichiyori (`/nichiyori`)
+   - 綠日 Green Day (`/greenday`)
+   - 花語甜室 Petit Fleur (`/petitfleur`)
+3. Cross-Store Systemic Issues
+4. Improvement Summary (P0/P1/P2)
+5. Store Scorecard
+
+---
+
+## Site Pages
+
+### Homepage (`/`)
+
+**Screenshot:** `screenshots/home-2026-02-24T05-47-46-634Z.png`
+
+#### Visual Hierarchy
+- Hero tagline 「一條 Link 將 Follower 變成生意」有力，但排版斷句不自然 — 「將」字獨佔一行
+- 頁面中段有巨大黑色空白區域（約佔 40% viewport），疑似 section gap 失控或 content 未正確 render
+- 頁尾重複整個 hero section，疑為 duplicate render bug
+
+#### Interaction
+- 「免費開店」同「睇主頁」兩個 CTA 並排，視覺權重相同，primary/secondary 唔分明
+- Phone mockup 入面嘅 demo 店太細，文字不可讀，失去展示效果
+- 暗色背景上嘅 nav bar 文字對比度偏低
+
+#### Brand Consistency
+- 黑底 + 橙色 accent 型格夠，但同 store page 嘅暖米色完全唔同 — 用戶從 landing → store 會覺得去咗另一個產品
+- 頂部 nav 嘅「免費開店」CTA 同 hero CTA 功能重複
+
+#### Mobile UX
+- 頁面極長但中間大片空白，scroll depth 同 content 唔成正比
+- 冇 scroll indicator 或 section navigation
+- Hero CTA 喺拇指可達區（下半 screen），OK
+
+#### vs Competitors
+- Shopify landing: clean hero → feature cards → pricing → social proof，節奏明確
+- SHOPLINE: 有客戶 logo wall、數字 stats、video demo
+- Linktree: 極簡 hero + 一個 CTA，轉化率高
+- Wowlix 資訊密度太低，scroll depth 同 content 不成正比
+
+---
+
+### Pricing Page (`/pricing`)
+
+**Screenshot:** `screenshots/pricing-2026-02-24T05-47-53-625Z.png`
+
+#### Visual Hierarchy
+- 「全港最平 IG 網店」headline 清晰，value prop 明確
+- 3 tier pricing（Free / $78 Pro / $198 Premium）結構合理
+- Feature list 太長，冇 visual grouping 或 icon，wall of text 難 scan
+- 收入轉換 section（$10,000 → $501）概念好但數字排版冇 hierarchy
+
+#### Interaction
+- 每個 plan 嘅 CTA button 用同一隻橙色，冇區分 recommended plan
+- Feature list 冇 checkbox/icon，純文字 bullet 難以比較 plan 差異
+- 頁面底部重複整個 pricing section — 同 homepage 一樣有 duplicate 問題
+
+#### Brand Consistency
+- 白底 + 橙色 accent，同 landing page 黑底又係另一個風格
+- 三個頁面三種色調（暖米色 / 黑色 / 白色），品牌 identity 分裂
+
+#### Mobile UX
+- Pricing cards vertical stack，適合 mobile
+- 但每個 card 太長，要 scroll 好耐先見下一個 plan
+- 冇 sticky comparison table 或 toggle
+- 頁面總長度 ~27000px，大部分係重複 content
+
+#### vs Competitors
+- Shopify pricing: 3 cards 並排，有 "Most popular" badge，feature 用 icon + short text
+- SHOPLINE: comparison toggle table、enterprise CTA
+- Linktree: 4 tiers 顏色區分，feature 對比用 checkmark grid
+
+---
+
+## Demo Stores
+
+### Tonic (`/tonic`)
+
+**Screenshot:** `screenshots/tonic-2026-02-24T05-47-40-976Z.png`
+
+#### Visual Hierarchy
+- Cover → Avatar → Name 視覺流暢，hierarchy OK
+- Store name 下面重複 "Tonic / Tonic" — 冗餘資訊
+- 產品名（Uu、Isb、Jennd）似 test data 留喺 production
+- 價格 typography 冇分層 — 現價、原價、折扣 badge 視覺權重接近
+
+#### Interaction
+- `+` button 太細（約 32px），低於 Apple HIG 44px minimum tap target
+- Store 得 5 件產品，search bar ROI 低
+- 「已售完」商品仍顯示 `+` button，誤導用戶
+
+#### Brand Consistency
+- 暖米色背景 + 橙色 accent 整體和諧
+- 產品圖質素參差：有截圖、有實拍、有 chat screenshot
+- 「買2件 -10%」badge 用紅底綠字，同暖色系衝突
+
+#### Mobile UX
+- WhatsApp FAB 遮住右下角產品圖
+- 冇 sticky header / back-to-top
+- Footer "Powered by Wowlix" 冇互動價值
+
+---
+
+### HYPEDROPS (`/hypedrops`)
+
+**Screenshot:** `screenshots/hypedrops-2026-02-24T06-08-04-083Z.png`
+
+#### Template Style
+- 黑底 + 橙色 accent — 同潮流/streetwear 定位完美匹配，4 間店入面品牌感最強
+- Avatar 橙色圓底白字 "H"，辨識度高
+- Product card 用深灰底 + 微圓角，同背景有適當分層
+- Store bio「香港街頭潮流選物｜波鞋・衛衣・配件」簡潔有力，有 IG icon
+
+#### Product Images
+- 圖片質素整體最好 — 鞋款用白底 product shot，T-shirt 有平放圖，專業
+- Snapback Cap 左上角有 broken image icon — 載入失敗，production 唔應該出現
+- Cargo Pants 用真人穿搭圖，同其他白底圖風格唔一致
+
+#### Price / Discount Badges
+- -11%、-17%、-14% 紅底白字 badge 位置一致（右上角），易讀
+- NEW 綠色 + 剩3件 橙色 badge 並排，資訊豐富但稍擁擠
+- 買2件 + NEW + -14% 同時出現（Dunk Low），badge 過多開始 noisy
+- 原價 strikethrough + 現價 bold，hierarchy OK
+
+#### vs Competitors
+- 最接近 Shopify 質感 — dark theme + clean product shots，似 KITH / END. mobile store
+- 欠缺 product variant selector（size/color）、Recently Viewed、category filter
+- 比 SHOPLINE 預設 template 更有個性
+- 比 Linktree 功能豐富但 link-in-bio identity 較弱
+
+---
+
+### 日和雜貨 nichiyori (`/nichiyori`)
+
+**Screenshot:** `screenshots/nichiyori-2026-02-24T06-08-11-727Z.png`
+
+#### Template Style
+- 暖白底 + 柔啡色 accent — 完美配合日系手作定位，溫暖恬靜
+- Avatar 啡色圓底 + 「日」字，同品牌名呼應
+- Card 有淺啡邊框圓角，同主色系一致
+- `+` button 用啡色而非橙色，統一度好
+
+#### Product Images
+- 頭兩張產品圖有問題 — 蠟燭同花束圖片只佔 card 下半部分，上半截大片空白（aspect ratio / object-fit 問題）
+- 陶瓷杯同束口袋圖片正常填滿，對比之下問題更明顯
+- 明信片圖只係一排色鉛筆，同產品描述唔直觀
+
+#### Price / Discount Badges
+- -12%、-13% badge 用綠底白字 — badge 顏色唔係 follow template accent，綠色同啡色系唔太搭
+- NEW badge 綠色 OK
+- 原價 strikethrough 正常
+
+#### vs Competitors
+- 氛圍最好 — 有 Pinkoi / Creema 嘅日系手作感
+- 修好圖片 rendering 問題後會好好多
+- 比 Shopify default theme 更有溫度，但欠 collection navigation
+- 比 SHOPLINE 更 niche、更有品味
+
+---
+
+### 綠日 Green Day (`/greenday`)
+
+**Screenshot:** `screenshots/greenday-2026-02-24T06-08-16-943Z.png`
+
+#### Template Style
+- 白底 + 綠色 accent — 綠色 avatar + 品牌名「綠」直覺配合
+- 整體偏白偏空，冇用綠色做更多氛圍營造
+- Cover image 水果碎片飽和度低
+- Bio「有機・天然・無添加｜食得健康 活得自在」清晰
+
+#### Product Images
+- 圖片質素最參差：
+  - 抹茶粉、洛神花茶：lifestyle shot，氛圍好
+  - 椰子油：product shot with branding，專業
+  - 西瓜：直接一個切開嘅西瓜圖，冇包裝冇品牌，似 stock photo
+  - 燕麥 Granola：藍色冰晶背景，風格突兀
+- 產品圖風格嚴重不統一
+
+#### Price / Discount Badges
+- -14%、-16% 紅底 badge 同綠色品牌色衝突 — 紅配綠太 Christmas
+- NEW 綠色 badge 同 accent 一致，OK
+- 產品名被截斷「超級食物混合粉 — 奇亞籽+亞…」— truncation 太早
+
+#### vs Competitors
+- 有機店應該更 premium、更 editorial
+- 競品參考：iHerb mobile（clean grid + consistent product shots）、Green Common（lifestyle + 統一攝影風格）
+- 比 Shopify food theme 差一截，主要輸喺圖片一致性
+
+---
+
+### 花語甜室 Petit Fleur (`/petitfleur`)
+
+**Screenshot:** `screenshots/petitfleur-2026-02-24T06-08-21-991Z.png`
+
+#### Template Style
+- 淡粉紅底 + 玫瑰紫 accent — 法式甜品定位完美，4 間入面最「designed」
+- Avatar 粉紫底 + 「花」字，同品牌名呼應
+- Cover image 馬卡龍 + 草莓，同品牌完美 match
+- `+` button 用啡色（同 nichiyori 一樣）— 應跟 template accent 改做粉紫色
+
+#### Product Images
+- 4 間入面圖片質素最一致 — 全部專業甜品攝影，角度統一，光線溫暖
+- 馬卡龍、千層蛋糕、曲奇禮盒、生日蛋糕 — 每張都好 appetizing
+- 焦糖布丁俯拍、瑞士卷側拍，角度有變化但風格統一
+- 最佳示範 — 應用呢間做 demo store showcase
+
+#### Price / Discount Badges
+- -15%、-12% 紅底 badge 同粉紅背景太接近，辨識度降低
+- NEW 綠色 badge 同粉紅系完全衝突 — 應用品牌色做 badge
+- 價位 $148-$688 合理，但冇 "per piece" 或 weight 資訊
+
+#### vs Competitors
+- 最接近 premium 甜品店質感 — 類似 Lady M、DALLOYAU mobile ordering
+- 比 Shopify food theme 更有溫度
+- 欠缺訂購日期選擇、size selector、customization options（甜品店必備）
+- 比 SHOPLINE 甜品店 template 好 — 更 focused、更少 clutter
+
+---
+
+## Cross-Store Systemic Issues
+
+以下問題喺所有或大部分店鋪重複出現，屬於 platform-level fix：
+
+| Issue                                  | Affected Stores      | Current State                                               |
+|----------------------------------------|---------------------|-------------------------------------------------------------|
+| Badge 顏色唔跟 template accent           | ALL                 | NEW 永遠綠色、折扣永遠紅色，無論品牌色係咩                      |
+| `+` button 顏色唔統一                    | nichiyori, petitfleur | 用啡色而非 template accent                                   |
+| 產品圖 aspect ratio 唔一致               | nichiyori, greenday  | 部分圖有空白或 truncated                                      |
+| 產品名 truncation 太早                   | greenday, hypedrops  | 長名被截斷冇 tooltip/expand                                   |
+| WhatsApp FAB 遮住產品圖                  | ALL                 | 右下角永遠擋住第二列產品                                       |
+| "Powered by Wowlix" 佔空間              | ALL                 | Footer 冇 value 但佔一行                                      |
+| 已售完商品仍顯示 `+` button               | tonic               | 誤導用戶以為可以加購                                           |
+| Homepage/Pricing duplicate sections     | `/`, `/pricing`     | 頁尾重複整個 hero/pricing section                              |
+| 品牌色調分裂（3 頁 3 種風格）              | `/`, `/pricing`, stores | Landing 黑色 / Pricing 白色 / Stores 各自配色                |
+
+---
+
+## Improvement Summary
+
+### P0 — Must Fix (Security / Data Integrity / Core UX)
+
+| #  | Issue                                    | Pages              | Action                                                                                     |
+|----|------------------------------------------|--------------------|---------------------------------------------------------------------------------------------|
+| 1  | Homepage 大片空白 + 底部重複 hero section   | `/`                | 檢查 render logic，移除 duplicate section，控制 section gap                                   |
+| 2  | Pricing 底部重複整個 pricing section        | `/pricing`         | 同上，component 被 render 兩次                                                                |
+| 3  | 品牌色調分裂（3 頁 3 種風格）                | ALL                | 統一 design token：定一套 primary/secondary/background palette 全站共用                        |
+| 4  | 已售完商品仍顯示 `+` button                 | Stores             | Sold-out card disable add button + 圖片加 grayscale overlay                                   |
+| 5  | Badge 顏色唔跟 template accent              | ALL stores         | Badge 應用 template accent color 或 neutral tone。Discount 用 secondary color，NEW 用 accent  |
+| 6  | 產品圖 aspect ratio 失控                    | nichiyori, greenday | 強制 object-fit: cover + 統一 aspect ratio (1:1 或 4:5)                                      |
+| 7  | Broken image fallback                      | hypedrops          | Image 載入失敗顯示 brand-colored placeholder，唔好 show broken icon                            |
+| 8  | `+` button 顏色唔跟 accent                  | nichiyori, petitfleur | Button color 讀 template accent CSS variable                                               |
+
+### P1 — Should Fix (DX / Error Messages / Observability)
+
+| #  | Issue                                    | Pages              | Action                                                                                     |
+|----|------------------------------------------|--------------------|---------------------------------------------------------------------------------------------|
+| 9  | `+` button tap target 太細                 | ALL stores         | 最少 44x44px，改用 "加入購物車" 文字 button 或加大 icon                                        |
+| 10 | WhatsApp FAB 遮產品圖                       | ALL stores         | Scroll-aware：scroll 時縮細或靠邊，idle 時展開                                                |
+| 11 | Pricing feature list wall of text           | `/pricing`         | 加 icon/checkmark、分 category group、highlight plan 差異                                     |
+| 12 | Homepage CTA 主次不分                       | `/`                | 「免費開店」用 solid button (primary)，「睇主頁」用 outline/ghost (secondary)                   |
+| 13 | Store name 重複 "Tonic / Tonic"             | `/tonic`           | 第二行顯示 store bio 或 category tag                                                         |
+| 14 | Phone mockup 內容太細                       | `/`                | 放大 mockup 或用 animated demo / 截圖 carousel                                               |
+| 15 | 產品名 truncation 太早                      | greenday, hypedrops | Card 內文字最少 show 2 行，超過先 truncate                                                    |
+| 16 | 冇 category/filter                          | ALL stores         | 產品 > 6 件時自動顯示 horizontal category tabs（全部 / 新品 / 優惠）                            |
+| 17 | Search bar 喺小店 ROI 低                    | ALL stores         | 產品 < 10 件時隱藏 search，改為 store announcement                                            |
+
+### P2 — Nice to Have (UI Polish / Perf / Refactor)
+
+| #  | Issue                                    | Pages              | Action                                                                                     |
+|----|------------------------------------------|--------------------|---------------------------------------------------------------------------------------------|
+| 18 | 產品圖質素參差                              | tonic, greenday    | 提供圖片裁切指引，強制統一比例                                                                 |
+| 19 | 冇 social proof                             | `/`, `/pricing`    | 加客戶 testimonial、店鋪數量 stats、成交金額                                                   |
+| 20 | Pricing 冇 recommended badge                | `/pricing`         | Pro plan 加 "最受歡迎" badge + 視覺 highlight                                                |
+| 21 | 冇 back-to-top / sticky nav                | ALL                | 長頁面加 scroll-to-top FAB 或 sticky header                                                  |
+| 22 | "Powered by Wowlix" 改善                    | ALL stores         | 改為 "Create your store — Wowlix" CTA，做 growth channel                                    |
+| 23 | 冇 store atmosphere section                 | ALL stores         | Cover image 下加 store mood text 或 story section                                           |
+| 24 | 用 petitfleur 做 demo showcase              | `/`                | 圖片質素最一致、品牌感最強，做 landing page demo                                               |
+| 25 | Badge 過多時 noisy                          | hypedrops          | 同一 card 最多 2 個 badge，超過用 priority queue 顯示                                         |
+
+---
+
+## Store Scorecard
+
+| Store            | Brand | Images | Template Fit | Overall    | Competitor Level      |
+|------------------|-------|--------|-------------|------------|-----------------------|
+| HYPEDROPS        | 9/10  | 7/10   | 8/10        | **8.0/10** | Shopify-tier          |
+| 日和雜貨          | 8/10  | 5/10   | 7/10        | **6.5/10** | Pinkoi-tier           |
+| 綠日 Green Day    | 6/10  | 4/10   | 6/10        | **5.0/10** | Below SHOPLINE        |
+| 花語甜室          | 9/10  | 9/10   | 7/10        | **8.5/10** | Premium pastry shop   |
+| Tonic            | 5/10  | 3/10   | 6/10        | **4.5/10** | Below average         |
+
+---
+
+## Screenshot File Index
+
+| Page                  | File                                                      |
+|-----------------------|-----------------------------------------------------------|
+| Homepage `/`          | `screenshots/home-2026-02-24T05-47-46-634Z.png`          |
+| Pricing `/pricing`    | `screenshots/pricing-2026-02-24T05-47-53-625Z.png`       |
+| Tonic `/tonic`        | `screenshots/tonic-2026-02-24T05-47-40-976Z.png`         |
+| HYPEDROPS `/hypedrops` | `screenshots/hypedrops-2026-02-24T06-08-04-083Z.png`    |
+| 日和雜貨 `/nichiyori`  | `screenshots/nichiyori-2026-02-24T06-08-11-727Z.png`     |
+| 綠日 `/greenday`       | `screenshots/greenday-2026-02-24T06-08-16-943Z.png`      |
+| 花語甜室 `/petitfleur`  | `screenshots/petitfleur-2026-02-24T06-08-21-991Z.png`   |
+</pre>
