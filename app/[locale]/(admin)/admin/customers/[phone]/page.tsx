@@ -5,6 +5,7 @@ import type { Locale } from "@/lib/i18n";
 import { getDict } from "@/lib/i18n";
 import SidebarToggle from "@/components/admin/SidebarToggle";
 import Link from "next/link";
+import CustomerNotes from "./customer-notes";
 
 type PageProps = {
   params: Promise<{ locale: string; phone: string }>;
@@ -39,8 +40,7 @@ function orderStatusBadgeClass(status: string) {
     return "bg-blue-100 text-blue-700 border border-blue-200";
   if (s === "COMPLETED" || s === "DELIVERED")
     return "bg-zinc-100 text-zinc-600 border border-zinc-200";
-  if (s === "CANCELLED")
-    return "bg-red-100 text-red-700 border border-red-200";
+  if (s === "CANCELLED") return "bg-red-100 text-red-700 border border-red-200";
   if (s === "REFUNDED")
     return "bg-amber-100 text-amber-700 border border-amber-200";
   return "bg-zinc-100 text-zinc-600 border border-zinc-200";
@@ -85,7 +85,9 @@ export default async function CustomerDetailPage({ params }: PageProps) {
           </div>
         </div>
         <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-white p-12 text-center">
-          <p className="text-zinc-500 mb-6">{t.admin.customers.proFeatureDesc}</p>
+          <p className="text-zinc-500 mb-6">
+            {t.admin.customers.proFeatureDesc}
+          </p>
           <Link
             href={`/${locale}/admin/settings`}
             className="inline-flex items-center justify-center rounded-xl bg-violet-600 px-6 py-3 text-sm font-semibold text-white hover:bg-violet-700 transition-colors"
@@ -143,8 +145,9 @@ export default async function CustomerDetailPage({ params }: PageProps) {
 
   const latestOrder = orders[0];
   const totalSpent = orders.reduce(
-    (sum, o) => sum + (Number((o.amounts as Record<string, unknown>)?.total) || 0),
-    0
+    (sum, o) =>
+      sum + (Number((o.amounts as Record<string, unknown>)?.total) || 0),
+    0,
   );
 
   // WhatsApp link — strip non-numeric for wa.me
@@ -169,8 +172,18 @@ export default async function CustomerDetailPage({ params }: PageProps) {
         href={`/${locale}/admin/customers`}
         className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 transition-colors mb-6"
       >
-        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
         </svg>
         {t.admin.customers.back}
       </Link>
@@ -179,20 +192,52 @@ export default async function CustomerDetailPage({ params }: PageProps) {
       <div className="rounded-2xl border border-zinc-200 bg-white p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-zinc-900">
-              {latestOrder.customerName}
-            </h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl font-semibold text-zinc-900">
+                {latestOrder.customerName}
+              </h2>
+              {orders.length >= 2 && (
+                <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-100">
+                  🔄 {locale === "zh-HK" ? "回頭客" : "Repeat"}
+                </span>
+              )}
+              {totalSpent >= 1000 && (
+                <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 border border-amber-100">
+                  ⭐ VIP
+                </span>
+              )}
+            </div>
             <div className="mt-2 space-y-1 text-sm text-zinc-600">
               <div className="flex items-center gap-2">
-                <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                <svg
+                  className="h-4 w-4 text-zinc-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                  />
                 </svg>
                 <span className="font-mono">{decodedPhone}</span>
               </div>
               {latestOrder.email && (
                 <div className="flex items-center gap-2">
-                  <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <svg
+                    className="h-4 w-4 text-zinc-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
                   </svg>
                   <span>{latestOrder.email}</span>
                 </div>
@@ -234,7 +279,9 @@ export default async function CustomerDetailPage({ params }: PageProps) {
           </div>
           <div className="text-center">
             <div className="text-2xl font-semibold text-zinc-900">
-              {formatCurrency(orders.length > 0 ? totalSpent / orders.length : 0)}
+              {formatCurrency(
+                orders.length > 0 ? totalSpent / orders.length : 0,
+              )}
             </div>
             <div className="text-xs text-zinc-500">
               {locale === "zh-HK" ? "平均消費" : "Avg. Order"}
@@ -256,7 +303,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
             const productCount = Array.isArray(items)
               ? items.reduce(
                   (sum, item) => sum + (Number(item.quantity) || 1),
-                  0
+                  0,
                 )
               : 0;
 
@@ -274,7 +321,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                       </span>
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${orderStatusBadgeClass(
-                          order.status
+                          order.status,
                         )}`}
                       >
                         {translateStatus(order.status, l)}
@@ -295,6 +342,11 @@ export default async function CustomerDetailPage({ params }: PageProps) {
             );
           })}
         </div>
+      </div>
+
+      {/* Customer notes */}
+      <div className="mt-6">
+        <CustomerNotes phone={decodedPhone} locale={l} />
       </div>
     </div>
   );
