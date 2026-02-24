@@ -40,8 +40,8 @@ function getPlans(isZh: boolean) {
       cta: isZh ? "免費開始" : "Start Free",
       ctaStyle: "outline" as const,
       features: isZh
-        ? ["10 件商品", "每月 50 單", "3 款收款方式（FPS・PayMe・AlipayHK）", "1 款店鋪主題"]
-        : ["10 products", "50 orders/mo", "3 payment methods (FPS · PayMe · AlipayHK)", "1 store theme"],
+        ? ["10 件商品", "每月 50 單", "全部收款方式", "1 款店鋪主題"]
+        : ["10 products", "50 orders/mo", "All payment methods", "1 store theme"],
       noFeatures: isZh
         ? ["WhatsApp 預填訊息", "優惠碼", "訂單匯出", "數據分析"]
         : ["WhatsApp prefill", "Coupons", "Order export", "Analytics"],
@@ -57,8 +57,8 @@ function getPlans(isZh: boolean) {
       cta: isZh ? "免費試用 Lite" : "Try Lite Free",
       ctaStyle: "outline" as const,
       features: isZh
-        ? ["50 件商品", "無限訂單", "全部 7 款收款方式", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "基本數據分析"]
-        : ["50 products", "Unlimited orders", "All 7 payment methods", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Basic analytics"],
+        ? ["50 件商品", "無限訂單", "全部收款方式", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "基本數據分析"]
+        : ["50 products", "Unlimited orders", "All payment methods", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Basic analytics"],
       noFeatures: [] as string[],
       footnote: isZh ? "月繳・隨時取消・0% 平台抽成" : "Monthly · cancel anytime · 0% platform fee",
       bg: "white" as const,
@@ -73,8 +73,8 @@ function getPlans(isZh: boolean) {
       ctaStyle: "primary" as const,
       badge: isZh ? "最受歡迎" : "Most popular",
       features: isZh
-        ? ["無限商品", "無限訂單", "全部 7 款收款方式", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "進階數據分析 + 熱賣排行", "棄單挽回", "CRM 客戶庫", "自訂域名（加購・即將推出）", "移除 WoWlix branding"]
-        : ["Unlimited products", "Unlimited orders", "All 7 payment methods", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Advanced analytics + bestseller ranking", "Abandoned cart recovery", "CRM customer database", "Custom domain (add-on · coming soon)", "Remove WoWlix branding"],
+        ? ["無限商品", "無限訂單", "全部收款方式", "全部主題（持續更新）", "WhatsApp 預填訊息", "優惠碼", "訂單 CSV 匯出", "進階數據分析 + 熱賣排行", "棄單挽回", "CRM 客戶庫", "自訂域名（加購・即將推出）", "移除 WoWlix branding"]
+        : ["Unlimited products", "Unlimited orders", "All payment methods", "All themes (updated)", "WhatsApp prefill", "Coupons", "Order CSV export", "Advanced analytics + bestseller ranking", "Abandoned cart recovery", "CRM customer database", "Custom domain (add-on · coming soon)", "Remove WoWlix branding"],
       noFeatures: [] as string[],
       footnote: isZh ? "月繳・0% 平台抽成" : "Monthly · 0% platform fee",
       bg: "highlight" as const,
@@ -161,7 +161,7 @@ function getFeatureTable(isZh: boolean): FeatureRow[] {
   return isZh ? [
     { name: "商品數量", free: "10", lite: "50", pro: "無限" },
     { name: "每月訂單", free: "50", lite: "無限", pro: "無限" },
-    { name: "收款方式", free: "3 款", lite: "7 款", pro: "全部 7 款" },
+    { name: "收款方式", free: "全部", lite: "全部", pro: "全部" },
     { name: "WhatsApp 預填訊息", free: false, lite: true, pro: true },
     { name: "優惠碼", free: false, lite: true, pro: true },
     { name: "棄單挽回", free: false, lite: false, pro: true },

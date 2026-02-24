@@ -100,7 +100,7 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onTap
 
         {/* Badges — 同一行：NEW 左、剩X件 中、-X% 右 */}
         {!soldOut && (
-          <div className="absolute top-2 left-0 right-0 px-2 z-10 grid grid-cols-3 items-start">
+          <div className="absolute top-2 left-0 right-0 px-2 z-10 grid grid-cols-3 items-center">
             <div className="flex justify-start">
               {isNewProduct && <NewBadge />}
             </div>
