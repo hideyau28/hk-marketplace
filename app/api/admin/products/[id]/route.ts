@@ -28,18 +28,26 @@ export const PATCH = withApi(
     }
 
     if (existing.tenantId !== tenantId) {
-      throw new ApiError(403, "FORBIDDEN", "Product does not belong to this tenant");
+      throw new ApiError(
+        403,
+        "FORBIDDEN",
+        "Product does not belong to this tenant",
+      );
     }
 
     // Prepare update data (only update fields that are present)
     const updateData: any = {};
     if (body.hidden !== undefined) updateData.hidden = Boolean(body.hidden);
-    if (body.featured !== undefined) updateData.featured = Boolean(body.featured);
+    if (body.featured !== undefined)
+      updateData.featured = Boolean(body.featured);
     if (body.active !== undefined) updateData.active = Boolean(body.active);
     if (body.title !== undefined) updateData.title = body.title;
     if (body.price !== undefined) updateData.price = body.price;
-    if (body.originalPrice !== undefined) updateData.originalPrice = body.originalPrice;
+    if (body.originalPrice !== undefined)
+      updateData.originalPrice = body.originalPrice;
     if (body.imageUrl !== undefined) updateData.imageUrl = body.imageUrl;
+    if (body.description !== undefined)
+      updateData.description = body.description;
     if (body.images !== undefined) updateData.images = body.images;
     if (body.videoUrl !== undefined) updateData.videoUrl = body.videoUrl;
     if (body.category !== undefined) updateData.category = body.category;
@@ -48,9 +56,12 @@ export const PATCH = withApi(
     if (body.sizeSystem !== undefined) updateData.sizeSystem = body.sizeSystem;
     if (body.sizes !== undefined) updateData.sizes = body.sizes;
     if (body.stock !== undefined) updateData.stock = body.stock;
-    if (body.productType !== undefined) updateData.productType = body.productType;
-    if (body.inventoryMode !== undefined) updateData.inventoryMode = body.inventoryMode;
-    if (body.promotionBadges !== undefined) updateData.promotionBadges = body.promotionBadges;
+    if (body.productType !== undefined)
+      updateData.productType = body.productType;
+    if (body.inventoryMode !== undefined)
+      updateData.inventoryMode = body.inventoryMode;
+    if (body.promotionBadges !== undefined)
+      updateData.promotionBadges = body.promotionBadges;
     if (body.sku !== undefined) updateData.sku = body.sku || null;
     if (body.shoeType !== undefined) updateData.shoeType = body.shoeType;
 
@@ -60,7 +71,7 @@ export const PATCH = withApi(
     });
 
     return ok(req, updated);
-  }
+  },
 );
 
 // DELETE /api/admin/products/[id] (admin)
@@ -80,7 +91,11 @@ export const DELETE = withApi(
     }
 
     if (existing.tenantId !== tenantId) {
-      throw new ApiError(403, "FORBIDDEN", "Product does not belong to this tenant");
+      throw new ApiError(
+        403,
+        "FORBIDDEN",
+        "Product does not belong to this tenant",
+      );
     }
 
     await prisma.product.updateMany({
@@ -92,5 +107,5 @@ export const DELETE = withApi(
     });
 
     return ok(req, { success: true });
-  }
+  },
 );
