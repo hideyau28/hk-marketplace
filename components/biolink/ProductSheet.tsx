@@ -26,6 +26,8 @@ type Props = {
   ) => void;
   allProducts?: ProductForBioLink[];
   onSwitchProduct?: (product: ProductForBioLink) => void;
+  wishlisted?: boolean;
+  onToggleWishlist?: () => void;
 };
 
 export default function ProductSheet({
@@ -35,6 +37,8 @@ export default function ProductSheet({
   onAddToCart,
   allProducts,
   onSwitchProduct,
+  wishlisted = false,
+  onToggleWishlist,
 }: Props) {
   const tmpl = useTemplate();
   const images = getAllImages(product);
@@ -377,7 +381,28 @@ export default function ProductSheet({
           className="relative w-full aspect-square overflow-hidden"
           style={{ backgroundColor: `${tmpl.card}` }}
         >
-          {/* Close button - 右上角 */}
+          {/* Top buttons - 收藏 + 關閉 */}
+          {onToggleWishlist && (
+            <button
+              onClick={onToggleWishlist}
+              aria-label={wishlisted ? "取消收藏" : "加入收藏"}
+              className="absolute top-4 right-16 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center active:scale-95 transition-all"
+            >
+              <svg
+                className="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill={wishlisted ? "#ef4444" : "none"}
+                stroke={wishlisted ? "#ef4444" : "#52525b"}
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                />
+              </svg>
+            </button>
+          )}
           <button
             onClick={onClose}
             aria-label="關閉"
