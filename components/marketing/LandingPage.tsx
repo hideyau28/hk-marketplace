@@ -99,6 +99,7 @@ const T = {
     ctaTitle: "準備好將你嘅 IG Shop 升級？",
     ctaSub: "2 分鐘開店 · 0% 佣金 · $0 起步",
     ctaBtn: "限時免費開始→",
+    ctaSecondaryBtn: "睇主頁示範",
     ctaNote: "唔使信用卡 · 隨時取消",
     ctaTrust1: "唔使信用卡",
     ctaTrust2: "隨時取消",
@@ -208,6 +209,7 @@ const T = {
     ctaTitle: "Ready to upgrade your IG Shop?",
     ctaSub: "2 min setup · 0% commission · From $0",
     ctaBtn: "Start Free Now→",
+    ctaSecondaryBtn: "Browse Demo Store",
     ctaNote: "No credit card · Cancel anytime",
     ctaTrust1: "No credit card",
     ctaTrust2: "Cancel anytime",
@@ -1129,25 +1131,51 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           >
             {t.ctaSub}
           </p>
-          <Link
-            href={`/${locale}/start`}
-            className="lp-pulse"
+          <div
             style={{
-              background: "#FF9500",
-              color: "#fff",
-              border: "none",
-              padding: "18px 48px",
-              borderRadius: 14,
-              fontSize: 20,
-              fontWeight: 700,
-              textDecoration: "none",
-              display: "inline-block",
-              boxShadow: "0 8px 32px rgba(255,149,0,0.4)",
-              transition: "transform 0.2s",
+              display: "flex",
+              gap: 12,
+              justifyContent: "center",
+              flexWrap: "wrap",
             }}
           >
-            {t.ctaBtn}
-          </Link>
+            <Link
+              href={`/${locale}/start`}
+              className="lp-pulse"
+              style={{
+                background: "#FF9500",
+                color: "#fff",
+                border: "2px solid #FF9500",
+                padding: "18px 48px",
+                borderRadius: 14,
+                fontSize: 20,
+                fontWeight: 700,
+                textDecoration: "none",
+                display: "inline-block",
+                boxShadow: "0 8px 32px rgba(255,149,0,0.4)",
+                transition: "transform 0.2s",
+              }}
+            >
+              {t.ctaBtn}
+            </Link>
+            <Link
+              href={`/${locale}/hypedrops`}
+              style={{
+                background: "transparent",
+                color: "rgba(255,255,255,0.75)",
+                border: "2px solid rgba(255,255,255,0.25)",
+                padding: "18px 36px",
+                borderRadius: 14,
+                fontSize: 18,
+                fontWeight: 600,
+                textDecoration: "none",
+                display: "inline-block",
+                transition: "border-color 0.2s, color 0.2s",
+              }}
+            >
+              {t.ctaSecondaryBtn}
+            </Link>
+          </div>
           <div
             style={{
               marginTop: 24,
