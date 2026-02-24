@@ -23,7 +23,12 @@ type Props = {
   onTap?: (product: ProductForBioLink) => void;
 };
 
-export default function BioProductCard({ product, currency = "HKD", onAdd, onTap }: Props) {
+export default function BioProductCard({
+  product,
+  currency = "HKD",
+  onAdd,
+  onTap,
+}: Props) {
   const tmpl = useTemplate();
   const images = getAllImages(product);
   const heroImage = images[0] || null;
@@ -67,7 +72,9 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onTap
       {/* Image 1:1 with carousel — tap opens product detail sheet */}
       <div
         className="relative aspect-square overflow-hidden cursor-pointer"
-        style={{ borderRadius: `${tmpl.borderRadius.image}px ${tmpl.borderRadius.image}px 0 0` }}
+        style={{
+          borderRadius: `${tmpl.borderRadius.image}px ${tmpl.borderRadius.image}px 0 0`,
+        }}
         onClick={() => onTap?.(product)}
       >
         {heroImage ? (
@@ -88,10 +95,28 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onTap
             ))}
           </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: `${tmpl.subtext}15` }}>
-            <svg className="w-12 h-12" fill="none" stroke={tmpl.subtext} strokeWidth={1.5} viewBox="0 0 24 24" opacity={0.4}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ backgroundColor: `${tmpl.subtext}15` }}
+          >
+            <svg
+              className="w-12 h-12"
+              fill="none"
+              stroke={tmpl.subtext}
+              strokeWidth={1.5}
+              viewBox="0 0 24 24"
+              opacity={0.4}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"
+              />
             </svg>
           </div>
         )}
@@ -121,7 +146,13 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onTap
         {hasVideo && (
           <div className="absolute bottom-2 right-2 z-10">
             <span className="flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-white">
-              <svg width="12" height="12" viewBox="0 0 10 10" fill="none" className="inline-block">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 10 10"
+                fill="none"
+                className="inline-block"
+              >
                 <path d="M2 1.5v7l6-3.5-6-3.5z" fill="currentColor" />
               </svg>
             </span>
@@ -147,49 +178,73 @@ export default function BioProductCard({ product, currency = "HKD", onAdd, onTap
 
       {/* Content — 點擊標題/價格開 product sheet */}
       <div className="p-3 relative">
-        <div className={onTap ? "cursor-pointer" : ""} onClick={() => onTap?.(product)}>
-        <h3 className="text-sm font-semibold leading-snug mb-1 pr-10" style={{
-          color: tmpl.text,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden'
-        }}>
-          {product.title}
-        </h3>
+        <div
+          className={onTap ? "cursor-pointer" : ""}
+          onClick={() => onTap?.(product)}
+        >
+          <h3
+            className="text-sm font-semibold leading-snug mb-1 pr-10"
+            style={{
+              color: tmpl.text,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {product.title}
+          </h3>
 
-        <div className="flex items-center gap-2">
-          {isOnSale ? (
-            <>
-              <span className="font-bold text-base" style={{ color: tmpl.text }}>
+          <div className="flex items-center gap-2">
+            {isOnSale ? (
+              <>
+                <span
+                  className="font-bold text-base"
+                  style={{ color: tmpl.text }}
+                >
+                  {formatPrice(product.price, currency)}
+                </span>
+                <span
+                  className="text-xs line-through"
+                  style={{ color: tmpl.subtext }}
+                >
+                  {formatPrice(product.originalPrice!, currency)}
+                </span>
+              </>
+            ) : (
+              <span
+                className="font-bold text-base"
+                style={{ color: tmpl.text }}
+              >
                 {formatPrice(product.price, currency)}
               </span>
-              <span className="text-xs line-through" style={{ color: tmpl.subtext }}>
-                {formatPrice(product.originalPrice!, currency)}
-              </span>
-            </>
-          ) : (
-            <span className="font-bold text-base" style={{ color: tmpl.text }}>
-              {formatPrice(product.price, currency)}
-            </span>
-          )}
-        </div>
+            )}
+          </div>
         </div>
 
-        {/* + 圓形按鈕 — 右下角 */}
-        <button
-          onClick={() => !soldOut && onAdd(product)}
-          disabled={soldOut}
-          aria-label={`加入購物車 ${product.title}`}
-          className={`absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-transform ${
-            soldOut ? "bg-zinc-300 text-zinc-400 cursor-not-allowed" : "text-white active:scale-95"
-          }`}
-          style={soldOut ? undefined : { backgroundColor: tmpl.accent }}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </button>
+        {/* + 圓形按鈕 — 右下角（已售完時隱藏） */}
+        {!soldOut && (
+          <button
+            onClick={() => onAdd(product)}
+            aria-label={`加入購物車 ${product.title}`}
+            className="absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-transform text-white active:scale-95"
+            style={{ backgroundColor: tmpl.accent }}
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );
