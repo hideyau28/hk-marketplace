@@ -40,6 +40,7 @@ export default function BioProductCard({
   const hasVideo = !!product.videoUrl;
 
   const [current, setCurrent] = useState(0);
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // 自動輪播 — 多張圖每 3 秒切換
@@ -77,7 +78,7 @@ export default function BioProductCard({
         }}
         onClick={() => onTap?.(product)}
       >
-        {heroImage ? (
+        {heroImage && !brokenImages.has(heroImage) ? (
           <div className="relative w-full h-full">
             {/* 所有圖片疊喺一齊，用 opacity 切換 */}
             {images.map((src, i) => (
@@ -91,6 +92,9 @@ export default function BioProductCard({
                 }`}
                 sizes="(max-width: 480px) 50vw, 240px"
                 loading={i === 0 ? undefined : "lazy"}
+                onError={() =>
+                  setBrokenImages((prev) => new Set(prev).add(src))
+                }
               />
             ))}
           </div>
