@@ -13,45 +13,54 @@ import { Metadata } from "next";
 import LandingPage from "@/components/marketing/LandingPage";
 
 // Force dynamic rendering because we need headers() for tenant resolution
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
   const { locale } = await params;
+
+  const platformMeta = {
+    title: "WoWlix — Turn Followers into Customers",
+    description:
+      "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
+    alternates: { canonical: "https://wowlix.com" },
+    openGraph: {
+      title: "WoWlix — Turn Followers into Customers",
+      description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
+      url: "https://wowlix.com",
+      siteName: "WoWlix",
+      locale: "zh_HK",
+      type: "website" as const,
+      images: [
+        {
+          url: "https://wowlix.com/og-default.png",
+          width: 1200,
+          height: 630,
+          alt: "WoWlix",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image" as const,
+      title: "WoWlix — Turn Followers into Customers",
+      description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
+      images: ["https://wowlix.com/og-default.png"],
+    },
+  };
 
   // Platform bare domain → landing page metadata
   if (await isPlatformMode()) {
-    return {
-      title: "WoWlix — Turn Followers into Customers",
-      description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
-      alternates: { canonical: "https://wowlix.com" },
-      openGraph: {
-        title: "WoWlix — Turn Followers into Customers",
-        description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
-        url: "https://wowlix.com",
-        siteName: "WoWlix",
-        locale: "zh_HK",
-        type: "website",
-      },
-    };
+    return platformMeta;
   }
 
   // Fallback: check if tenant exists
   try {
     await getServerTenantId();
   } catch (error) {
-    return {
-      title: "WoWlix — Turn Followers into Customers",
-      description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
-      alternates: { canonical: "https://wowlix.com" },
-      openGraph: {
-        title: "WoWlix — Turn Followers into Customers",
-        description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
-        url: "https://wowlix.com",
-        siteName: "WoWlix",
-        locale: "zh_HK",
-        type: "website",
-      },
-    };
+    return platformMeta;
   }
 
   const { headers } = await import("next/headers");
@@ -61,9 +70,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const storeName = await getStoreName();
 
   const title = `${storeName} - 香港波鞋專門店`;
-  const description = locale === "zh-HK"
-    ? "探索最新波鞋及運動裝備，正品保證！"
-    : "Shop the latest sneakers and sports gear. 100% authentic!";
+  const description =
+    locale === "zh-HK"
+      ? "探索最新波鞋及運動裝備，正品保證！"
+      : "Shop the latest sneakers and sports gear. 100% authentic!";
   const canonicalUrl = `https://${tenantSlug}.wowlix.com/${locale}`;
 
   return {
@@ -96,7 +106,7 @@ async function fetchSectionProducts(
     filterValue: string | null;
     productIds: string[];
   },
-  allProducts: any[]
+  allProducts: any[],
 ) {
   const KIDS_SHOE_TYPES = ["grade_school", "preschool", "toddler"];
   const isKidsSection = section.title === "童裝專區";
@@ -110,7 +120,9 @@ async function fetchSectionProducts(
 
   if (section.productIds && section.productIds.length > 0) {
     const productMap = new Map(allProducts.map((p) => [p.id, p]));
-    const selected = section.productIds.map((id) => productMap.get(id)).filter(Boolean);
+    const selected = section.productIds
+      .map((id) => productMap.get(id))
+      .filter(Boolean);
     return filterByAgeGroup(selected).slice(0, 10);
   }
 
@@ -119,21 +131,29 @@ async function fetchSectionProducts(
 
     switch (section.filterType) {
       case "category":
-        filtered = allProducts.filter((p) => p.category === section.filterValue);
+        filtered = allProducts.filter(
+          (p) => p.category === section.filterValue,
+        );
         break;
       case "shoeType":
         if (section.filterValue === "kids") {
-          filtered = allProducts.filter((p) => KIDS_SHOE_TYPES.includes(p.shoeType || ""));
+          filtered = allProducts.filter((p) =>
+            KIDS_SHOE_TYPES.includes(p.shoeType || ""),
+          );
           return shuffleArray(filtered).slice(0, 10);
         } else {
-          filtered = allProducts.filter((p) => p.shoeType === section.filterValue);
+          filtered = allProducts.filter(
+            (p) => p.shoeType === section.filterValue,
+          );
         }
         break;
       case "featured":
         filtered = allProducts.filter((p) => p.featured);
         break;
       case "promotion":
-        filtered = allProducts.filter((p) => p.promotionBadges?.includes(section.filterValue!));
+        filtered = allProducts.filter((p) =>
+          p.promotionBadges?.includes(section.filterValue!),
+        );
         break;
       default:
         filtered = allProducts;
@@ -149,7 +169,11 @@ type HomepageItem =
   | { type: "section"; data: any; products: any[] }
   | { type: "banner"; data: any };
 
-export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const { locale } = await params;
   const l = locale as Locale;
   const t = getDict(l);
@@ -170,33 +194,45 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   const PAID_STATUSES = ["PAID", "FULFILLING", "SHIPPED", "COMPLETED"] as const;
   const hpNow = new Date();
-  const start30 = new Date(hpNow.getFullYear(), hpNow.getMonth(), hpNow.getDate() - 29);
+  const start30 = new Date(
+    hpNow.getFullYear(),
+    hpNow.getMonth(),
+    hpNow.getDate() - 29,
+  );
 
-  const [sectionsRaw, bannersRaw, allProductsRaw, paidOrders] = await Promise.all([
-    prisma.homepageSection.findMany({
-      where: { active: true, tenantId },
-      orderBy: { sortOrder: "asc" },
-    }),
-    prisma.homepageBanner.findMany({
-      where: { active: true, tenantId },
-      orderBy: { sortOrder: "asc" },
-    }),
-    prisma.product.findMany({
-      where: { active: true, hidden: false, tenantId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.order.findMany({
-      where: { tenantId, createdAt: { gte: start30 }, status: { in: [...PAID_STATUSES] } },
-      select: { items: true },
-    }),
-  ]);
+  const [sectionsRaw, bannersRaw, allProductsRaw, paidOrders] =
+    await Promise.all([
+      prisma.homepageSection.findMany({
+        where: { active: true, tenantId },
+        orderBy: { sortOrder: "asc" },
+      }),
+      prisma.homepageBanner.findMany({
+        where: { active: true, tenantId },
+        orderBy: { sortOrder: "asc" },
+      }),
+      prisma.product.findMany({
+        where: { active: true, hidden: false, tenantId, deletedAt: null },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.order.findMany({
+        where: {
+          tenantId,
+          createdAt: { gte: start30 },
+          status: { in: [...PAID_STATUSES] },
+        },
+        select: { items: true },
+      }),
+    ]);
 
   // Compute top 3 seller IDs for 🔥 badge
   const productSales = new Map<string, number>();
   for (const order of paidOrders) {
-    const items = Array.isArray(order.items) ? (order.items as Record<string, unknown>[]) : [];
+    const items = Array.isArray(order.items)
+      ? (order.items as Record<string, unknown>[])
+      : [];
     for (const item of items) {
-      const productId = typeof item?.productId === "string" ? item.productId : null;
+      const productId =
+        typeof item?.productId === "string" ? item.productId : null;
       if (!productId) continue;
       const qty = Number(item?.quantity ?? item?.qty ?? 0);
       if (!Number.isFinite(qty) || qty <= 0) continue;
@@ -259,14 +295,16 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       stock: p.stock,
     }));
 
-  const fallbackProducts = shuffleArray(allProducts).slice(0, 8).map((p) => ({
-    id: p.id,
-    title: p.title,
-    price: p.price,
-    image: p.image,
-    sizes: p.sizes,
-    stock: p.stock,
-  }));
+  const fallbackProducts = shuffleArray(allProducts)
+    .slice(0, 8)
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      price: p.price,
+      image: p.image,
+      sizes: p.sizes,
+      stock: p.stock,
+    }));
 
   return (
     <div className="pb-16">
@@ -296,7 +334,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           }));
 
           return (
-            <HeroCarouselCMS key={`banner-${banner.id}`} slides={carouselSlides} locale={l} />
+            <HeroCarouselCMS
+              key={`banner-${banner.id}`}
+              slides={carouselSlides}
+              locale={l}
+            />
           );
         }
 

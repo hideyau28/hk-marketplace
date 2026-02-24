@@ -3,8 +3,16 @@ import { notFound } from "next/navigation";
 import BioLinkPage from "@/components/biolink/BioLinkPage";
 import { resolveTemplateId } from "@/lib/cover-templates";
 import type { Metadata } from "next";
-import type { ProductForBioLink, DualVariantData, DeliveryOption, OrderConfirmConfig } from "@/lib/biolink-helpers";
-import { DEFAULT_DELIVERY_OPTIONS, DEFAULT_ORDER_CONFIRM } from "@/lib/biolink-helpers";
+import type {
+  ProductForBioLink,
+  DualVariantData,
+  DeliveryOption,
+  OrderConfirmConfig,
+} from "@/lib/biolink-helpers";
+import {
+  DEFAULT_DELIVERY_OPTIONS,
+  DEFAULT_ORDER_CONFIRM,
+} from "@/lib/biolink-helpers";
 
 // Force dynamic rendering — tenant slug pages need DB access per request
 export const dynamic = "force-dynamic";
@@ -55,40 +63,47 @@ export default async function SlugPage({ params }: PageProps) {
 
   if (!tenant) notFound();
 
-  const products = await prisma.product.findMany({
-    where: { tenantId: tenant.id, active: true, hidden: false, deletedAt: null },
-    orderBy: { updatedAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      price: true,
-      originalPrice: true,
-      imageUrl: true,
-      images: true,
-      videoUrl: true,
-      sizes: true,
-      sizeSystem: true,
-      badges: true,
-      featured: true,
-      createdAt: true,
-      variants: {
-        where: { active: true },
-        orderBy: { sortOrder: "asc" },
-        select: {
-          id: true,
-          name: true,
-          price: true,
-          compareAtPrice: true,
-          stock: true,
-          active: true,
-          imageUrl: true,
+  const products = await prisma.product
+    .findMany({
+      where: {
+        tenantId: tenant.id,
+        active: true,
+        hidden: false,
+        deletedAt: null,
+      },
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        originalPrice: true,
+        imageUrl: true,
+        images: true,
+        videoUrl: true,
+        sizes: true,
+        sizeSystem: true,
+        badges: true,
+        featured: true,
+        createdAt: true,
+        variants: {
+          where: { active: true },
+          orderBy: { sortOrder: "asc" },
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            compareAtPrice: true,
+            stock: true,
+            active: true,
+            imageUrl: true,
+          },
         },
       },
-    },
-  }).catch((err) => {
-    console.error(`[slug/${slug}] products query failed:`, err);
-    return [];
-  });
+    })
+    .catch((err) => {
+      console.error(`[slug/${slug}] products query failed:`, err);
+      return [];
+    });
 
   // Serialize for client component (dates → strings via JSON, Json fields → typed)
   const serialized: ProductForBioLink[] = products.map((p) => ({
@@ -112,15 +127,21 @@ export default async function SlugPage({ params }: PageProps) {
     ...tenant,
     coverTemplate: resolveTemplateId(tenant.coverTemplate || tenant.template),
     currency: tenant.currency || "HKD",
-    deliveryOptions: (tenant.deliveryOptions as DeliveryOption[] | null) || DEFAULT_DELIVERY_OPTIONS,
+    deliveryOptions:
+      (tenant.deliveryOptions as DeliveryOption[] | null) ||
+      DEFAULT_DELIVERY_OPTIONS,
     freeShippingThreshold: tenant.freeShippingThreshold,
-    orderConfirmMessage: (tenant.orderConfirmMessage as OrderConfirmConfig | null) || DEFAULT_ORDER_CONFIRM,
+    orderConfirmMessage:
+      (tenant.orderConfirmMessage as OrderConfirmConfig | null) ||
+      DEFAULT_ORDER_CONFIRM,
   };
 
   return <BioLinkPage tenant={tenantForBioLink} products={serialized} />;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
   try {
@@ -133,19 +154,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const title = `${tenant.name} | WoWlix`;
     const description = tenant.description || `Shop at ${tenant.name}`;
     const ogImage = tenant.coverPhoto || "https://wowlix.com/og-default.png";
+    const pageUrl = `https://www.wowlix.com/${slug}`;
 
     return {
       title,
       description,
+      alternates: { canonical: pageUrl },
       openGraph: {
-        title: tenant.name,
+        title: `${tenant.name} | WoWlix`,
         description,
         images: [ogImage],
         type: "website",
+        url: pageUrl,
+        siteName: "WoWlix",
       },
       twitter: {
         card: "summary_large_image",
-        title: tenant.name,
+        title: `${tenant.name} | WoWlix`,
         description,
         images: [ogImage],
       },
