@@ -225,29 +225,37 @@ function getScenarios(isZh: boolean) {
 function getDemos(isZh: boolean) {
   return [
     {
-      name: "Noir",
-      desc: isZh ? "型格街頭風" : "Urban streetwear",
+      name: "HYPEDROPS",
+      handle: "hypedrops",
+      href: "/hypedrops",
+      desc: isZh ? "型格街頭潮流" : "Streetwear & sneakers",
       gradient: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
       textColor: "#fff",
       accent: "#FF9500",
     },
     {
-      name: "Linen",
-      desc: isZh ? "溫暖手感風" : "Warm & natural",
+      name: "日和雜貨",
+      handle: "nichiyori",
+      href: "/nichiyori",
+      desc: isZh ? "溫暖日系生活" : "Japanese lifestyle",
       gradient: "linear-gradient(135deg, #F5F0EB 0%, #E8DDD3 100%)",
       textColor: "#3D2E1E",
       accent: "#8B7355",
     },
     {
-      name: "Mochi",
-      desc: isZh ? "清新甜美風" : "Fresh & sweet",
-      gradient: "linear-gradient(135deg, #FFF8F0 0%, #FFE8CC 100%)",
-      textColor: "#5C3D00",
-      accent: "#FF9500",
+      name: "綠日 Green Day",
+      handle: "greenday",
+      href: "/greenday",
+      desc: isZh ? "清新植物小店" : "Plants & living",
+      gradient: "linear-gradient(135deg, #EFF7EE 0%, #CCE8CC 100%)",
+      textColor: "#1A3D1A",
+      accent: "#3A7D44",
     },
     {
-      name: "Petal",
-      desc: isZh ? "柔美花漾風" : "Soft & floral",
+      name: "花語甜室",
+      handle: "petitfleur",
+      href: "/petitfleur",
+      desc: isZh ? "花藝甜品禮盒" : "Floral & pastries",
       gradient: "linear-gradient(135deg, #FFF0F5 0%, #FFE0EB 100%)",
       textColor: "#8B2252",
       accent: "#D4447C",
@@ -1690,8 +1698,11 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               }}
             >
               {DEMOS.map((d, i) => (
-                <div
+                <Link
                   key={i}
+                  href={d.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="theme-card"
                   style={{
                     flex: "1 1 150px",
@@ -1704,6 +1715,8 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                     transition: "all 0.3s",
                     border: "1px solid #E5E7EB",
                     background: "#fff",
+                    textDecoration: "none",
+                    display: "block",
                   }}
                 >
                   <div
@@ -1734,6 +1747,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                         fontWeight: 800,
                         color: d.textColor,
                         marginBottom: 4,
+                        textAlign: "center",
                       }}
                     >
                       {d.name}
@@ -1746,7 +1760,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                         marginBottom: 16,
                       }}
                     >
-                      @{d.name.toLowerCase()}shop
+                      @{d.handle}
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       {[1, 2].map((n) => (
@@ -1776,20 +1790,25 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                         letterSpacing: "0.04em",
                       }}
                     >
-                      Shop Now
+                      {isZh ? "進入商店" : "Shop Now"}
                     </div>
                   </div>
                   <div
                     style={{ padding: "12px 16px 16px", textAlign: "center" }}
                   >
                     <div
-                      style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        marginBottom: 2,
+                        color: "#1A1A1A",
+                      }}
                     >
                       {d.name}
                     </div>
                     <div style={{ fontSize: 13, color: "#777" }}>{d.desc}</div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
