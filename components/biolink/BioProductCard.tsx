@@ -21,6 +21,7 @@ type Props = {
   currency?: string;
   onAdd: (product: ProductForBioLink) => void;
   onTap?: (product: ProductForBioLink) => void;
+  priority?: boolean;
 };
 
 export default function BioProductCard({
@@ -28,6 +29,7 @@ export default function BioProductCard({
   currency = "HKD",
   onAdd,
   onTap,
+  priority = false,
 }: Props) {
   const tmpl = useTemplate();
   const images = getAllImages(product);
@@ -98,6 +100,7 @@ export default function BioProductCard({
                   i === current ? "opacity-100" : "opacity-0"
                 }`}
                 sizes="(max-width: 480px) 50vw, 240px"
+                priority={priority && i === 0}
                 loading={i === 0 ? undefined : "lazy"}
                 onError={() =>
                   setBrokenImages((prev) => new Set(prev).add(src))
