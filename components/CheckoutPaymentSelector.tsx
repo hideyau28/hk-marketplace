@@ -20,7 +20,11 @@ interface Props {
   tenantSlug?: string;
 }
 
-export default function CheckoutPaymentSelector({ locale, onSelect, tenantSlug }: Props) {
+export default function CheckoutPaymentSelector({
+  locale,
+  onSelect,
+  tenantSlug,
+}: Props) {
   const [providers, setProviders] = useState<PaymentProviderOption[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,26 +38,31 @@ export default function CheckoutPaymentSelector({ locale, onSelect, tenantSlug }
       .then((res) => res.json())
       .then((data) => {
         if (data.ok && data.data?.providers) {
-          console.log("[CheckoutPaymentSelector] providers:", data.data.providers.length, data.data.providers.map((p: any) => ({ id: p.providerId, type: p.type, name: p.name })));
           setProviders(data.data.providers);
           // Auto-select first provider
           if (data.data.providers.length > 0) {
             const first = data.data.providers[0];
-            console.log("[CheckoutPaymentSelector] auto-select:", { providerId: first.providerId, type: first.type });
             setSelected(first.providerId);
             onSelect(first);
           }
         } else {
-          console.warn("[CheckoutPaymentSelector] API returned no providers:", data);
+          console.warn(
+            "[CheckoutPaymentSelector] API returned no providers:",
+            data,
+          );
           setError(
-            locale === "zh-HK" ? "無法載入付款方式" : "Failed to load payment methods"
+            locale === "zh-HK"
+              ? "無法載入付款方式"
+              : "Failed to load payment methods",
           );
         }
       })
       .catch((err) => {
         console.error("[CheckoutPaymentSelector] fetch error:", err);
         setError(
-          locale === "zh-HK" ? "無法載入付款方式" : "Failed to load payment methods"
+          locale === "zh-HK"
+            ? "無法載入付款方式"
+            : "Failed to load payment methods",
         );
       })
       .finally(() => setLoading(false));
@@ -62,7 +71,6 @@ export default function CheckoutPaymentSelector({ locale, onSelect, tenantSlug }
   }, [locale, tenantSlug]);
 
   const handleSelect = (provider: PaymentProviderOption) => {
-    console.log("[CheckoutPaymentSelector] user selected:", { providerId: provider.providerId, type: provider.type, config: provider.config });
     setSelected(provider.providerId);
     onSelect(provider);
   };
@@ -90,7 +98,10 @@ export default function CheckoutPaymentSelector({ locale, onSelect, tenantSlug }
           {locale === "zh-HK" ? "付款方式" : "Payment"}
         </h2>
         <p className="text-sm text-zinc-500">
-          {error || (locale === "zh-HK" ? "暫無可用付款方式" : "No payment methods available")}
+          {error ||
+            (locale === "zh-HK"
+              ? "暫無可用付款方式"
+              : "No payment methods available")}
         </p>
       </div>
     );
