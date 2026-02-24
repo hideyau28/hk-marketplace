@@ -409,9 +409,9 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           top: 0,
           zIndex: 100,
           width: "100%",
-          background: "rgba(13,13,13,0.92)",
-          backdropFilter: "blur(16px)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
         }}
       >
         <div
@@ -424,16 +424,26 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             margin: "0 auto",
           }}
         >
-          <div style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>
-            <span style={{ color: "#FF9500" }}>&#10022;</span> WoWlix
-          </div>
+          <Link
+            href={`/${locale}`}
+            style={{
+              fontSize: 22,
+              fontWeight: 800,
+              letterSpacing: -0.5,
+              textDecoration: "none",
+              color: "#1A1A1A",
+            }}
+          >
+            <span style={{ color: "#FF9500" }}>W</span>o
+            <span style={{ color: "#FF9500" }}>W</span>lix
+          </Link>
           <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
             <Link
               href={`/${locale}/pricing`}
               style={{
                 fontSize: 14,
                 fontWeight: 600,
-                color: "rgba(255,255,255,0.6)",
+                color: "rgba(0,0,0,0.5)",
                 textDecoration: "none",
                 transition: "color 0.2s",
               }}
@@ -451,7 +461,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               <Link
                 href="/zh-HK"
                 style={{
-                  color: isZH ? "#fff" : "rgba(255,255,255,0.35)",
+                  color: isZH ? "#1A1A1A" : "rgba(0,0,0,0.3)",
                   fontWeight: isZH ? 700 : 400,
                   textDecoration: "none",
                   padding: "4px 2px",
@@ -460,15 +470,13 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               >
                 {t.navLangZh}
               </Link>
-              <span
-                style={{ color: "rgba(255,255,255,0.2)", userSelect: "none" }}
-              >
+              <span style={{ color: "rgba(0,0,0,0.2)", userSelect: "none" }}>
                 /
               </span>
               <Link
                 href="/en"
                 style={{
-                  color: !isZH ? "#fff" : "rgba(255,255,255,0.35)",
+                  color: !isZH ? "#1A1A1A" : "rgba(0,0,0,0.3)",
                   fontWeight: !isZH ? 700 : 400,
                   textDecoration: "none",
                   padding: "4px 2px",
@@ -484,16 +492,15 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                 background: "#FF9500",
                 color: "#fff",
                 border: "none",
-                padding: "10px 22px",
-                borderRadius: 10,
+                padding: "12px 24px",
+                borderRadius: 100,
                 fontSize: 14,
                 fontWeight: 700,
                 textDecoration: "none",
                 minHeight: 44,
                 display: "inline-flex",
                 alignItems: "center",
-                transition: "transform 0.2s, box-shadow 0.2s",
-                boxShadow: "0 4px 16px rgba(255,149,0,0.3)",
+                transition: "all 0.2s",
               }}
             >
               {t.navCta}
