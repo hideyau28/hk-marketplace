@@ -17,12 +17,18 @@ type AddToCartButtonProps = {
   locale?: string;
 };
 
-export function AddToCartButton({ product, label, addedLabel, className, locale }: AddToCartButtonProps) {
+export function AddToCartButton({
+  product,
+  label,
+  addedLabel,
+  className,
+  locale,
+}: AddToCartButtonProps) {
   const [added, setAdded] = useState(false);
   const { showToast } = useToast();
+  const useDefault = !className;
   const buttonClass =
-    className ??
-    "rounded-2xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700";
+    className ?? "rounded-2xl px-4 py-3 text-white font-semibold";
 
   const handleAddToCart = () => {
     addToCart({
@@ -37,7 +43,15 @@ export function AddToCartButton({ product, label, addedLabel, className, locale 
   };
 
   return (
-    <button onClick={handleAddToCart} className={buttonClass}>
+    <button
+      onClick={handleAddToCart}
+      className={buttonClass}
+      style={
+        useDefault
+          ? { backgroundColor: "var(--tmpl-accent, #5c7c3a)" }
+          : undefined
+      }
+    >
       {added ? addedLabel : label}
     </button>
   );
