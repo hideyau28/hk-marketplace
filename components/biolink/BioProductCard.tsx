@@ -79,7 +79,10 @@ export default function BioProductCard({
         onClick={() => onTap?.(product)}
       >
         {heroImage && !brokenImages.has(heroImage) ? (
-          <div className="relative w-full h-full">
+          <div
+            className="relative w-full h-full"
+            style={{ backgroundColor: `${tmpl.subtext}10` }}
+          >
             {/* 所有圖片疊喺一齊，用 opacity 切換 */}
             {images.map((src, i) => (
               <Image
@@ -87,7 +90,7 @@ export default function BioProductCard({
                 src={src}
                 alt={`${product.title} ${i + 1}`}
                 fill
-                className={`object-cover transition-opacity duration-500 ${
+                className={`object-cover object-center transition-opacity duration-500 ${
                   i === current ? "opacity-100" : "opacity-0"
                 }`}
                 sizes="(max-width: 480px) 50vw, 240px"
