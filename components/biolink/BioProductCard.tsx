@@ -134,14 +134,19 @@ export default function BioProductCard({
         {!soldOut && (
           <div className="absolute top-2 left-0 right-0 px-2 z-10 grid grid-cols-3 items-center">
             <div className="flex justify-start">
-              {isNewProduct && <NewBadge />}
+              {isNewProduct && <NewBadge accentColor={tmpl.accent} />}
             </div>
             <div className="flex justify-center">
-              {lowStock && <LowStockBadge count={lowStock} />}
+              {lowStock && (
+                <LowStockBadge count={lowStock} accentColor={tmpl.accent} />
+              )}
             </div>
             <div className="flex justify-end">
               {isOnSale && (
-                <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                <span
+                  className="rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
+                  style={{ backgroundColor: tmpl.accent }}
+                >
                   -{discountPct}%
                 </span>
               )}
