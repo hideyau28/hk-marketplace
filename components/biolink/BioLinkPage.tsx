@@ -248,8 +248,10 @@ export default function BioLinkPage({ tenant, products }: Props) {
         <CoverPhoto url={tenant.coverPhoto} />
         <ProfileSection tenant={tenant} />
 
-        {/* Search bar */}
-        <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        {/* Search bar — only show when store has 10+ products */}
+        {products.length >= 10 && (
+          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        )}
 
         {/* Featured loot cards */}
         {featured.length > 0 && (
