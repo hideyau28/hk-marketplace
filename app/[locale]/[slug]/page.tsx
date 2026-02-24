@@ -83,6 +83,7 @@ export default async function SlugPage({ params }: PageProps) {
         sizes: true,
         sizeSystem: true,
         badges: true,
+        category: true,
         featured: true,
         createdAt: true,
         variants: {
@@ -117,6 +118,7 @@ export default async function SlugPage({ params }: PageProps) {
     sizes: p.sizes as Record<string, number> | DualVariantData | null,
     sizeSystem: p.sizeSystem,
     badges: p.badges as string[] | null,
+    category: p.category,
     featured: p.featured,
     createdAt: p.createdAt,
     variants: p.variants,

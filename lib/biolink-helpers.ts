@@ -26,7 +26,7 @@ export type DualVariantData = {
 
 /** Check if sizes data is dual-variant format */
 export function isDualVariant(
-  sizes: Record<string, number> | DualVariantData | null
+  sizes: Record<string, number> | DualVariantData | null,
 ): sizes is DualVariantData {
   if (!sizes || typeof sizes !== "object") return false;
   return (
@@ -48,6 +48,7 @@ export type ProductForBioLink = {
   sizes: Record<string, number> | DualVariantData | null;
   sizeSystem?: string | null;
   badges: string[] | null;
+  category?: string | null;
   featured: boolean;
   createdAt: Date;
   // ProductVariant relation (may be included)
@@ -116,7 +117,7 @@ export function getAllImages(product: ProductForBioLink): string[] {
  * 雙維 variant 唔用呢個 function — 用 getDualVariantData() 代替
  */
 export function getVisibleVariants(
-  product: ProductForBioLink
+  product: ProductForBioLink,
 ): { name: string; stock: number; price: number | null }[] | null {
   // 雙維 variant — 唔返回 flat list，由 VariantSelector 自己處理
   if (isDualVariant(product.sizes)) return null;
@@ -133,7 +134,11 @@ export function getVisibleVariants(
     if (entries.length > 0) {
       // New format: {"S": {"qty": 5, "status": "available"}}
       const firstVal = entries[0][1];
-      if (typeof firstVal === "object" && firstVal !== null && "qty" in (firstVal as Record<string, unknown>)) {
+      if (
+        typeof firstVal === "object" &&
+        firstVal !== null &&
+        "qty" in (firstVal as Record<string, unknown>)
+      ) {
         return entries
           .filter(([, val]) => {
             const v = val as { qty: number; status?: string };
@@ -158,7 +163,7 @@ export function getVisibleVariants(
 
 /** Get dual-variant data if product uses dual-variant format */
 export function getDualVariantData(
-  product: ProductForBioLink
+  product: ProductForBioLink,
 ): DualVariantData | null {
   if (isDualVariant(product.sizes)) return product.sizes;
   return null;
@@ -166,7 +171,8 @@ export function getDualVariantData(
 
 export function getVariantLabel(product: ProductForBioLink): string {
   // 雙維 — 用第二維嘅名做 label
-  if (isDualVariant(product.sizes)) return product.sizes.dimensions[1] || "款式";
+  if (isDualVariant(product.sizes))
+    return product.sizes.dimensions[1] || "款式";
   // If has ProductVariant relation, generic label
   if (product.variants && product.variants.length > 0) return "款式";
   // 用 sizeSystem 做 label（商戶自訂選項名稱）
@@ -196,13 +202,15 @@ export function isNew(product: ProductForBioLink): boolean {
 }
 
 export function getTotalVisibleStock(
-  variants: { name: string; stock: number }[]
+  variants: { name: string; stock: number }[],
 ): number {
-  return variants.filter((v) => v.stock > 0).reduce((sum, v) => sum + v.stock, 0);
+  return variants
+    .filter((v) => v.stock > 0)
+    .reduce((sum, v) => sum + v.stock, 0);
 }
 
 export function getLowStockCount(
-  variants: { name: string; stock: number }[]
+  variants: { name: string; stock: number }[],
 ): number | null {
   const total = getTotalVisibleStock(variants);
   return total > 0 && total <= 3 ? total : null;
@@ -227,7 +235,11 @@ export const rarityConfig: Record<
   common: { glow: "shadow-zinc-400/30", color: "#8a8a8a", label: "COMMON" },
   rare: { glow: "shadow-blue-500/40", color: "#3b82f6", label: "RARE" },
   hot: { glow: "shadow-orange-500/40", color: "#FF9500", label: "HOT" },
-  legendary: { glow: "shadow-purple-500/40", color: "#a855f7", label: "LEGENDARY" },
+  legendary: {
+    glow: "shadow-purple-500/40",
+    color: "#a855f7",
+    label: "LEGENDARY",
+  },
 };
 
 export function getRarity(product: ProductForBioLink): Rarity | null {
