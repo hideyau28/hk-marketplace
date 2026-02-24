@@ -84,7 +84,8 @@ const T = {
     trustStat2Label: "開店時間",
     trustStat3Value: "$0",
     trustStat3Label: "免費開始",
-    testimonial1Quote: "用咗 WoWlix，**訂單自動入 system，付款狀態一目了然**，慳返好多時間。",
+    testimonial1Quote:
+      "用咗 WoWlix，**訂單自動入 system，付款狀態一目了然**，慳返好多時間。",
     testimonial1Name: "May",
     testimonial1Shop: "@maysshop · 飾物店",
     testimonial2Quote: "客人自己揀 FPS 定 PayMe，**所有訂單同付款一覽無遺**。",
@@ -148,7 +149,8 @@ const T = {
     howStep2Desc: "FPS, PayMe, AlipayHK — customers pay on their own",
     howStep3Num: "03",
     howStep3Title: "Share Link & Start Selling",
-    howStep3Desc: "Drop the link in your IG Bio, customers can order & pay instantly",
+    howStep3Desc:
+      "Drop the link in your IG Bio, customers can order & pay instantly",
 
     pricingTitle: "Simple & Transparent. 0% Commission.",
     pricingSub: "What you earn is what you keep — we never take a cut",
@@ -157,7 +159,8 @@ const T = {
     pricingFreeDesc: "Test the waters",
     pricingFreeFeat1: "10 products",
     pricingFreeFeat2: "50 orders/month",
-    pricingFreeFeat3: "All payment methods (FPS · PayMe · AlipayHK · Credit Card)",
+    pricingFreeFeat3:
+      "All payment methods (FPS · PayMe · AlipayHK · Credit Card)",
     pricingFreeFeat4: "0% commission",
     pricingFreeBtn: "Start Free",
     pricingLiteName: "Lite",
@@ -189,13 +192,16 @@ const T = {
     trustStat2Label: "Setup Time",
     trustStat3Value: "$0",
     trustStat3Label: "Free to Start",
-    testimonial1Quote: "With WoWlix, **orders auto-track and payment status is crystal clear** — saves me hours.",
+    testimonial1Quote:
+      "With WoWlix, **orders auto-track and payment status is crystal clear** — saves me hours.",
     testimonial1Name: "May",
     testimonial1Shop: "@maysshop · Jewelry",
-    testimonial2Quote: "Customers pick FPS or PayMe themselves — **all orders and payments in one dashboard**.",
+    testimonial2Quote:
+      "Customers pick FPS or PayMe themselves — **all orders and payments in one dashboard**.",
     testimonial2Name: "K",
     testimonial2Shop: "K · Handmade",
-    testimonial3Quote: "**No more Excel for inventory** — variant management just works!",
+    testimonial3Quote:
+      "**No more Excel for inventory** — variant management just works!",
     testimonial3Name: "Mr. Chan",
     testimonial3Shop: "Mr. Chan · Sneaker Reseller",
 
@@ -231,6 +237,9 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
   /* ─── Scroll fade-in-up (Intersection Observer) ─── */
   useEffect(() => {
+    // Progressive enhancement: hide sections only after JS is ready
+    document.documentElement.classList.add("js-scroll-ready");
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -240,17 +249,28 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
-    document.querySelectorAll(".scroll-reveal").forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    document
+      .querySelectorAll(".scroll-reveal")
+      .forEach((el) => observer.observe(el));
+    return () => {
+      observer.disconnect();
+      document.documentElement.classList.remove("js-scroll-ready");
+    };
   }, []);
 
   /* ─── Parse **bold** markers in testimonial quotes ─── */
   const renderBold = (text: string) => {
     const parts = text.split(/\*\*(.*?)\*\*/);
     return parts.map((part, i) =>
-      i % 2 === 1 ? <strong key={i} style={{ color: "#fff", fontStyle: "normal" }}>{part}</strong> : part
+      i % 2 === 1 ? (
+        <strong key={i} style={{ color: "#fff", fontStyle: "normal" }}>
+          {part}
+        </strong>
+      ) : (
+        part
+      ),
     );
   };
 
@@ -262,43 +282,108 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
   ];
 
   const howSteps = [
-    { num: t.howStep1Num, title: t.howStep1Title, desc: t.howStep1Desc, icon: "📦" },
-    { num: t.howStep2Num, title: t.howStep2Title, desc: t.howStep2Desc, icon: "💳" },
-    { num: t.howStep3Num, title: t.howStep3Title, desc: t.howStep3Desc, icon: "🔗" },
+    {
+      num: t.howStep1Num,
+      title: t.howStep1Title,
+      desc: t.howStep1Desc,
+      icon: "📦",
+    },
+    {
+      num: t.howStep2Num,
+      title: t.howStep2Title,
+      desc: t.howStep2Desc,
+      icon: "💳",
+    },
+    {
+      num: t.howStep3Num,
+      title: t.howStep3Title,
+      desc: t.howStep3Desc,
+      icon: "🔗",
+    },
   ];
 
   const plans = [
     {
-      name: t.pricingFreeName, price: t.pricingFreePrice, desc: t.pricingFreeDesc,
-      btn: t.pricingFreeBtn, features: [t.pricingFreeFeat1, t.pricingFreeFeat2, t.pricingFreeFeat3, t.pricingFreeFeat4],
-      href: `/${locale}/start?plan=free`, highlighted: false,
+      name: t.pricingFreeName,
+      price: t.pricingFreePrice,
+      desc: t.pricingFreeDesc,
+      btn: t.pricingFreeBtn,
+      features: [
+        t.pricingFreeFeat1,
+        t.pricingFreeFeat2,
+        t.pricingFreeFeat3,
+        t.pricingFreeFeat4,
+      ],
+      href: `/${locale}/start?plan=free`,
+      highlighted: false,
     },
     {
-      name: t.pricingLiteName, price: t.pricingLitePrice, desc: t.pricingLiteDesc,
-      btn: t.pricingLiteBtn, features: [t.pricingLiteFeat1, t.pricingLiteFeat2, t.pricingLiteFeat3, t.pricingLiteFeat4, t.pricingLiteFeat5],
-      href: `/${locale}/start?plan=lite`, highlighted: false,
+      name: t.pricingLiteName,
+      price: t.pricingLitePrice,
+      desc: t.pricingLiteDesc,
+      btn: t.pricingLiteBtn,
+      features: [
+        t.pricingLiteFeat1,
+        t.pricingLiteFeat2,
+        t.pricingLiteFeat3,
+        t.pricingLiteFeat4,
+        t.pricingLiteFeat5,
+      ],
+      href: `/${locale}/start?plan=lite`,
+      highlighted: false,
     },
     {
-      name: t.pricingProName, price: t.pricingProPrice, desc: t.pricingProDesc,
-      btn: t.pricingProBtn, features: [t.pricingProFeat1, t.pricingProFeat2, t.pricingProFeat3, t.pricingProFeat4, t.pricingProFeat5],
-      href: `/${locale}/start?plan=pro`, highlighted: true, badge: t.pricingProBadge,
+      name: t.pricingProName,
+      price: t.pricingProPrice,
+      desc: t.pricingProDesc,
+      btn: t.pricingProBtn,
+      features: [
+        t.pricingProFeat1,
+        t.pricingProFeat2,
+        t.pricingProFeat3,
+        t.pricingProFeat4,
+        t.pricingProFeat5,
+      ],
+      href: `/${locale}/start?plan=pro`,
+      highlighted: true,
+      badge: t.pricingProBadge,
     },
   ];
 
   const testimonials = [
-    { quote: t.testimonial1Quote, name: t.testimonial1Name, shop: t.testimonial1Shop },
-    { quote: t.testimonial2Quote, name: t.testimonial2Name, shop: t.testimonial2Shop },
-    { quote: t.testimonial3Quote, name: t.testimonial3Name, shop: t.testimonial3Shop },
+    {
+      quote: t.testimonial1Quote,
+      name: t.testimonial1Name,
+      shop: t.testimonial1Shop,
+    },
+    {
+      quote: t.testimonial2Quote,
+      name: t.testimonial2Name,
+      shop: t.testimonial2Shop,
+    },
+    {
+      quote: t.testimonial3Quote,
+      name: t.testimonial3Name,
+      shop: t.testimonial3Shop,
+    },
   ];
 
   return (
-    <div style={{ fontFamily: "'Noto Sans TC', 'Plus Jakarta Sans', -apple-system, sans-serif", color: "#1A1A1A", overflowX: "hidden" }}>
-<style>{`
+    <div
+      style={{
+        fontFamily:
+          "'Noto Sans TC', 'Plus Jakarta Sans', -apple-system, sans-serif",
+        color: "#1A1A1A",
+        overflowX: "hidden",
+      }}
+    >
+      <style>{`
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         @keyframes pulse { 0%,100% { box-shadow: 0 8px 32px rgba(255,149,0,0.4); } 50% { box-shadow: 0 8px 48px rgba(255,149,0,0.65); } }
-        .scroll-reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s cubic-bezier(0.33,1,0.68,1), transform 0.6s cubic-bezier(0.33,1,0.68,1); }
-        .scroll-visible { opacity: 1 !important; transform: translateY(0) !important; }
+        .scroll-reveal { opacity: 1; transform: translateY(0); transition: opacity 0.6s cubic-bezier(0.33,1,0.68,1), transform 0.6s cubic-bezier(0.33,1,0.68,1); }
+        .js-scroll-ready .scroll-reveal { opacity: 0; transform: translateY(24px); }
+        .js-scroll-ready .scroll-visible { opacity: 1 !important; transform: translateY(0) !important; }
         .lp-pulse { animation: pulse 2s ease-in-out infinite; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -318,79 +403,152 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       `}</style>
 
       {/* ─── NAV (Dark) ─── */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 100, width: "100%",
-        background: "rgba(13,13,13,0.92)", backdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-      }}>
-       <div style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "16px 24px", maxWidth: 1200, margin: "0 auto",
-       }}>
-        <div style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>
-          <span style={{ color: "#FF9500" }}>&#10022;</span> WoWlix
-        </div>
-        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <Link href={`/${locale}/pricing`} style={{
-            fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.6)",
-            textDecoration: "none", transition: "color 0.2s",
-          }}>{t.navPricing}</Link>
-          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13 }}>
+      <nav
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          width: "100%",
+          background: "rgba(13,13,13,0.92)",
+          backdropFilter: "blur(16px)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "16px 24px",
+            maxWidth: 1200,
+            margin: "0 auto",
+          }}
+        >
+          <div style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>
+            <span style={{ color: "#FF9500" }}>&#10022;</span> WoWlix
+          </div>
+          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
             <Link
-              href="/zh-HK"
+              href={`/${locale}/pricing`}
               style={{
-                color: isZH ? "#fff" : "rgba(255,255,255,0.35)",
-                fontWeight: isZH ? 700 : 400,
-                textDecoration: "none", padding: "4px 2px", transition: "color 0.2s",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "rgba(255,255,255,0.6)",
+                textDecoration: "none",
+                transition: "color 0.2s",
               }}
             >
-              {t.navLangZh}
+              {t.navPricing}
             </Link>
-            <span style={{ color: "rgba(255,255,255,0.2)", userSelect: "none" }}>/</span>
-            <Link
-              href="/en"
+            <div
               style={{
-                color: !isZH ? "#fff" : "rgba(255,255,255,0.35)",
-                fontWeight: !isZH ? 700 : 400,
-                textDecoration: "none", padding: "4px 2px", transition: "color 0.2s",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                fontSize: 13,
               }}
             >
-              {t.navLangEn}
+              <Link
+                href="/zh-HK"
+                style={{
+                  color: isZH ? "#fff" : "rgba(255,255,255,0.35)",
+                  fontWeight: isZH ? 700 : 400,
+                  textDecoration: "none",
+                  padding: "4px 2px",
+                  transition: "color 0.2s",
+                }}
+              >
+                {t.navLangZh}
+              </Link>
+              <span
+                style={{ color: "rgba(255,255,255,0.2)", userSelect: "none" }}
+              >
+                /
+              </span>
+              <Link
+                href="/en"
+                style={{
+                  color: !isZH ? "#fff" : "rgba(255,255,255,0.35)",
+                  fontWeight: !isZH ? 700 : 400,
+                  textDecoration: "none",
+                  padding: "4px 2px",
+                  transition: "color 0.2s",
+                }}
+              >
+                {t.navLangEn}
+              </Link>
+            </div>
+            <Link
+              href={`/${locale}/start`}
+              style={{
+                background: "#FF9500",
+                color: "#fff",
+                border: "none",
+                padding: "10px 22px",
+                borderRadius: 10,
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: "none",
+                minHeight: 44,
+                display: "inline-flex",
+                alignItems: "center",
+                transition: "transform 0.2s, box-shadow 0.2s",
+                boxShadow: "0 4px 16px rgba(255,149,0,0.3)",
+              }}
+            >
+              {t.navCta}
             </Link>
           </div>
-          <Link href={`/${locale}/start`} style={{
-            background: "#FF9500", color: "#fff", border: "none",
-            padding: "10px 22px", borderRadius: 10, fontSize: 14, fontWeight: 700,
-            textDecoration: "none", minHeight: 44, display: "inline-flex", alignItems: "center",
-            transition: "transform 0.2s, box-shadow 0.2s",
-            boxShadow: "0 4px 16px rgba(255,149,0,0.3)",
-          }}>{t.navCta}</Link>
         </div>
-       </div>
       </nav>
 
       {/* ─── HERO ─── */}
       <HeroSection locale={locale as Locale} />
 
       {/* ─── PAIN POINTS (White bg) ─── */}
-      <section className="lp-section scroll-reveal" style={{ padding: "80px 24px", background: "#fff" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" as const }}>
-          <h2 style={{
-            fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 900,
-            color: "#1A1A1A", marginBottom: 12,
-          }}>
+      <section
+        className="lp-section scroll-reveal"
+        style={{ padding: "80px 24px", background: "#fff" }}
+      >
+        <div
+          style={{
+            maxWidth: 900,
+            margin: "0 auto",
+            textAlign: "center" as const,
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "clamp(28px, 5vw, 42px)",
+              fontWeight: 900,
+              color: "#1A1A1A",
+              marginBottom: 12,
+            }}
+          >
             {t.painTitle}
           </h2>
-          <p style={{
-            fontSize: 20, fontWeight: 600, color: "#6B7280", lineHeight: 1.6, marginBottom: 48,
-          }}>
-            {t.painSub1}<br />{t.painSub2}
+          <p
+            style={{
+              fontSize: 20,
+              fontWeight: 600,
+              color: "#6B7280",
+              lineHeight: 1.6,
+              marginBottom: 48,
+            }}
+          >
+            {t.painSub1}
+            <br />
+            {t.painSub2}
           </p>
 
-          <div className="lp-pain-grid" style={{
-            display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 12,
-          }}>
+          <div
+            className="lp-pain-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: 12,
+            }}
+          >
             {painCards.map((card, i) => (
               <div
                 key={i}
@@ -402,15 +560,33 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   borderRadius: 14,
                   border: "1px solid #F0F0F0",
                   transition: "all 0.3s",
-                  transform: hoveredPain === i ? "translateY(-4px)" : "translateY(0)",
-                  boxShadow: hoveredPain === i ? "0 12px 32px rgba(0,0,0,0.10)" : "none",
-                  display: "flex", flexDirection: "column" as const, alignItems: "center",
-                  textAlign: "center" as const, minHeight: 120,
+                  transform:
+                    hoveredPain === i ? "translateY(-4px)" : "translateY(0)",
+                  boxShadow:
+                    hoveredPain === i ? "0 12px 32px rgba(0,0,0,0.10)" : "none",
+                  display: "flex",
+                  flexDirection: "column" as const,
+                  alignItems: "center",
+                  textAlign: "center" as const,
+                  minHeight: 120,
                 }}
               >
-                <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 8 }}>{card.icon}</div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: "#1A1A1A", marginBottom: 4 }}>{card.title}</div>
-                <div style={{ fontSize: 13, color: "#888", lineHeight: 1.4 }}>{card.desc}</div>
+                <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 8 }}>
+                  {card.icon}
+                </div>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 800,
+                    color: "#1A1A1A",
+                    marginBottom: 4,
+                  }}
+                >
+                  {card.title}
+                </div>
+                <div style={{ fontSize: 13, color: "#888", lineHeight: 1.4 }}>
+                  {card.desc}
+                </div>
               </div>
             ))}
           </div>
@@ -418,54 +594,100 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* ─── Gradient: White → Dark ─── */}
-      <div style={{ height: 80, background: "linear-gradient(to bottom, #fff, #0D0D0D)" }} />
+      <div
+        style={{
+          height: 80,
+          background: "linear-gradient(to bottom, #fff, #0D0D0D)",
+        }}
+      />
 
       {/* ─── HOW IT WORKS (Dark bg) ─── */}
-      <section id="how-it-works" className="lp-section scroll-reveal" style={{ padding: "80px 24px", background: "#0D0D0D" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" as const }}>
-          <h2 style={{
-            fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 900,
-            color: "#fff", marginBottom: 48,
-          }}>
+      <section
+        id="how-it-works"
+        className="lp-section scroll-reveal"
+        style={{ padding: "80px 24px", background: "#0D0D0D" }}
+      >
+        <div
+          style={{
+            maxWidth: 900,
+            margin: "0 auto",
+            textAlign: "center" as const,
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "clamp(28px, 5vw, 42px)",
+              fontWeight: 900,
+              color: "#fff",
+              marginBottom: 48,
+            }}
+          >
             {t.howTitle}
           </h2>
 
-          <div className="lp-how-grid" style={{
-            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20,
-          }}>
+          <div
+            className="lp-how-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 20,
+            }}
+          >
             {howSteps.map((step, i) => (
-              <div key={i} style={{
-                padding: "32px 24px",
-                background: "#161616",
-                borderRadius: 20,
-                border: "1px solid rgba(255,255,255,0.06)",
-                textAlign: "left" as const,
-                transition: "all 0.3s",
-              }}>
-                <div style={{
-                  width: 80, height: 80, borderRadius: "50%",
-                  background: "rgba(255,149,0,0.1)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  marginBottom: 20,
-                }}>
-                  <span style={{
-                    fontSize: 64, fontWeight: 900, color: "#FF9500",
-                    fontFamily: "'JetBrains Mono', monospace",
-                    lineHeight: 1,
-                  }}>
+              <div
+                key={i}
+                style={{
+                  padding: "32px 24px",
+                  background: "#161616",
+                  borderRadius: 20,
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  textAlign: "left" as const,
+                  transition: "all 0.3s",
+                }}
+              >
+                <div
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: "50%",
+                    background: "rgba(255,149,0,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 20,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 64,
+                      fontWeight: 900,
+                      color: "#FF9500",
+                      fontFamily: "'JetBrains Mono', monospace",
+                      lineHeight: 1,
+                    }}
+                  >
                     {step.num}
                   </span>
                 </div>
-                <div style={{
-                  fontSize: 20, fontWeight: 900, color: "#fff", marginBottom: 6,
-                  letterSpacing: "0.01em",
-                }}>
+                <div
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 900,
+                    color: "#fff",
+                    marginBottom: 6,
+                    letterSpacing: "0.01em",
+                  }}
+                >
                   {step.title}
                 </div>
-                <div style={{
-                  fontSize: 13, color: "rgba(255,255,255,0.38)", lineHeight: 1.5,
-                  fontWeight: 400,
-                }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: "rgba(255,255,255,0.38)",
+                    lineHeight: 1.5,
+                    fontWeight: 400,
+                  }}
+                >
                   {step.desc}
                 </div>
               </div>
@@ -475,27 +697,55 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* ─── Gradient: Dark → White ─── */}
-      <div style={{ height: 80, background: "linear-gradient(to bottom, #0D0D0D, #fff)" }} />
+      <div
+        style={{
+          height: 80,
+          background: "linear-gradient(to bottom, #0D0D0D, #fff)",
+        }}
+      />
 
       {/* ─── PRICING (White bg) ─── */}
-      <section id="pricing" className="lp-section scroll-reveal" style={{ padding: "80px 24px", background: "#fff" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto", textAlign: "center" as const }}>
-          <h2 style={{
-            fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 900,
-            color: "#1A1A1A", marginBottom: 12,
-          }}>
+      <section
+        id="pricing"
+        className="lp-section scroll-reveal"
+        style={{ padding: "80px 24px", background: "#fff" }}
+      >
+        <div
+          style={{
+            maxWidth: 960,
+            margin: "0 auto",
+            textAlign: "center" as const,
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "clamp(28px, 5vw, 42px)",
+              fontWeight: 900,
+              color: "#1A1A1A",
+              marginBottom: 12,
+            }}
+          >
             {t.pricingTitle}
           </h2>
-          <p style={{
-            fontSize: 16, color: "#6B7280", marginBottom: 48,
-          }}>
+          <p
+            style={{
+              fontSize: 16,
+              color: "#6B7280",
+              marginBottom: 48,
+            }}
+          >
             {t.pricingSub}
           </p>
 
-          <div className="lp-plan-grid" style={{
-            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20,
-            alignItems: "start",
-          }}>
+          <div
+            className="lp-plan-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 20,
+              alignItems: "start",
+            }}
+          >
             {plans.map((plan, i) => (
               <div
                 key={i}
@@ -505,68 +755,145 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   padding: "32px 24px",
                   background: "#fff",
                   borderRadius: 20,
-                  border: plan.highlighted ? "2px solid #FF9500" : "1px solid #E5E7EB",
+                  border: plan.highlighted
+                    ? "2px solid #FF9500"
+                    : "1px solid #E5E7EB",
                   textAlign: "left" as const,
                   position: "relative" as const,
                   transition: "all 0.3s",
-                  transform: hoveredPlan === i ? "translateY(-4px)" : "translateY(0)",
+                  transform:
+                    hoveredPlan === i ? "translateY(-4px)" : "translateY(0)",
                   boxShadow: plan.highlighted
                     ? "0 12px 40px rgba(255,149,0,0.12)"
-                    : hoveredPlan === i ? "0 8px 24px rgba(0,0,0,0.06)" : "none",
+                    : hoveredPlan === i
+                      ? "0 8px 24px rgba(0,0,0,0.06)"
+                      : "none",
                 }}
               >
                 {plan.highlighted && plan.badge && (
-                  <div style={{
-                    position: "absolute" as const, top: -12, left: "50%", transform: "translateX(-50%)",
-                    background: "#FF9500", color: "#fff", padding: "4px 16px",
-                    borderRadius: 12, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" as const,
-                  }}>
+                  <div
+                    style={{
+                      position: "absolute" as const,
+                      top: -12,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      background: "#FF9500",
+                      color: "#fff",
+                      padding: "4px 16px",
+                      borderRadius: 12,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      whiteSpace: "nowrap" as const,
+                    }}
+                  >
                     {plan.badge}
                   </div>
                 )}
 
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#6B7280", marginBottom: 4 }}>
+                <div
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "#6B7280",
+                    marginBottom: 4,
+                  }}
+                >
                   {plan.name}
                 </div>
-                <div style={{ fontSize: 13, color: "#9CA3AF", marginBottom: 16 }}>
+                <div
+                  style={{ fontSize: 13, color: "#9CA3AF", marginBottom: 16 }}
+                >
                   {plan.desc}
                 </div>
 
-                <div style={{ display: "flex", alignItems: "baseline", gap: 2, marginBottom: 24 }}>
-                  <span style={{ fontSize: 16, fontWeight: 600, color: "#9CA3AF" }}>$</span>
-                  <span style={{
-                    fontSize: 48, fontWeight: 900, lineHeight: 1, color: "#1A1A1A",
-                    fontFamily: "'JetBrains Mono', monospace",
-                  }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 2,
+                    marginBottom: 24,
+                  }}
+                >
+                  <span
+                    style={{ fontSize: 16, fontWeight: 600, color: "#9CA3AF" }}
+                  >
+                    $
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 48,
+                      fontWeight: 900,
+                      lineHeight: 1,
+                      color: "#1A1A1A",
+                      fontFamily: "'JetBrains Mono', monospace",
+                    }}
+                  >
                     {plan.price}
                   </span>
-                  <span style={{ fontSize: 14, color: "#9CA3AF", marginLeft: 2 }}>
+                  <span
+                    style={{ fontSize: 14, color: "#9CA3AF", marginLeft: 2 }}
+                  >
                     {t.pricingPeriod}
                   </span>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column" as const, gap: 10, marginBottom: 24 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column" as const,
+                    gap: 10,
+                    marginBottom: 24,
+                  }}
+                >
                   {plan.features.map((feat, j) => (
-                    <div key={j} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "#555" }}>
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M13.3 4.3L6.3 11.3L2.7 7.7" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <div
+                      key={j}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        fontSize: 14,
+                        color: "#555",
+                      }}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      >
+                        <path
+                          d="M13.3 4.3L6.3 11.3L2.7 7.7"
+                          stroke="#FF9500"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                       {feat}
                     </div>
                   ))}
                 </div>
 
-                <Link href={plan.href} style={{
-                  display: "block", textAlign: "center" as const,
-                  padding: "14px 24px", borderRadius: 12,
-                  fontSize: 15, fontWeight: 700,
-                  textDecoration: "none",
-                  background: plan.highlighted ? "#FF9500" : "transparent",
-                  color: plan.highlighted ? "#fff" : "#FF9500",
-                  border: plan.highlighted ? "none" : "1.5px solid #FF9500",
-                  transition: "all 0.2s",
-                  boxShadow: plan.highlighted ? "0 4px 16px rgba(255,149,0,0.3)" : "none",
-                }}>
+                <Link
+                  href={plan.href}
+                  style={{
+                    display: "block",
+                    textAlign: "center" as const,
+                    padding: "14px 24px",
+                    borderRadius: 12,
+                    fontSize: 15,
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    background: plan.highlighted ? "#FF9500" : "transparent",
+                    color: plan.highlighted ? "#fff" : "#FF9500",
+                    border: plan.highlighted ? "none" : "1.5px solid #FF9500",
+                    transition: "all 0.2s",
+                    boxShadow: plan.highlighted
+                      ? "0 4px 16px rgba(255,149,0,0.3)"
+                      : "none",
+                  }}
+                >
                   {plan.btn}
                 </Link>
               </div>
@@ -574,10 +901,16 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           </div>
 
           <div style={{ textAlign: "center", marginTop: 32 }}>
-            <Link href={`/${locale}/pricing`} style={{
-              fontSize: 15, fontWeight: 700, color: "#FF9500",
-              textDecoration: "none", transition: "opacity 0.2s",
-            }}>
+            <Link
+              href={`/${locale}/pricing`}
+              style={{
+                fontSize: 15,
+                fontWeight: 700,
+                color: "#FF9500",
+                textDecoration: "none",
+                transition: "opacity 0.2s",
+              }}
+            >
               {t.pricingFullLink}
             </Link>
           </div>
@@ -585,38 +918,72 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* ─── Gradient: White → Dark ─── */}
-      <div style={{ height: 80, background: "linear-gradient(to bottom, #fff, #0D0D0D)" }} />
+      <div
+        style={{
+          height: 80,
+          background: "linear-gradient(to bottom, #fff, #0D0D0D)",
+        }}
+      />
 
       {/* ─── TRUST SIGNALS (Dark bg) ─── */}
-      <section className="lp-section scroll-reveal" style={{ padding: "80px 24px", background: "#0D0D0D" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" as const }}>
-          <h2 style={{
-            fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 900,
-            color: "#fff", marginBottom: 48,
-          }}>
+      <section
+        className="lp-section scroll-reveal"
+        style={{ padding: "80px 24px", background: "#0D0D0D" }}
+      >
+        <div
+          style={{
+            maxWidth: 900,
+            margin: "0 auto",
+            textAlign: "center" as const,
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "clamp(28px, 5vw, 42px)",
+              fontWeight: 900,
+              color: "#fff",
+              marginBottom: 48,
+            }}
+          >
             {t.trustTitle}
           </h2>
 
           {/* Stats row */}
-          <div className="lp-stats-row" style={{
-            display: "flex", justifyContent: "center", gap: 48, marginBottom: 56,
-            flexWrap: "wrap" as const,
-          }}>
+          <div
+            className="lp-stats-row"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 48,
+              marginBottom: 56,
+              flexWrap: "wrap" as const,
+            }}
+          >
             {[
               { value: t.trustStat1Value, label: t.trustStat1Label },
               { value: t.trustStat2Value, label: t.trustStat2Label },
               { value: t.trustStat3Value, label: t.trustStat3Label },
             ].map((stat, i) => (
               <div key={i} style={{ textAlign: "center" as const }}>
-                <div style={{
-                  fontSize: "clamp(36px, 6vw, 56px)", fontWeight: 900,
-                  color: "#FF9500", lineHeight: 1,
-                  fontFamily: "'JetBrains Mono', monospace",
-                  marginBottom: 8,
-                }}>
+                <div
+                  style={{
+                    fontSize: "clamp(36px, 6vw, 56px)",
+                    fontWeight: 900,
+                    color: "#FF9500",
+                    lineHeight: 1,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    marginBottom: 8,
+                  }}
+                >
                   {stat.value}
                 </div>
-                <div style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>
+                <div
+                  style={{
+                    fontSize: 16,
+                    color: "rgba(255,255,255,0.5)",
+                    fontWeight: 500,
+                  }}
+                >
                   {stat.label}
                 </div>
               </div>
@@ -624,42 +991,77 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           </div>
 
           {/* Testimonials */}
-          <div className="lp-testimonial-grid" style={{
-            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16,
-          }}>
+          <div
+            className="lp-testimonial-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 16,
+            }}
+          >
             {testimonials.map((item, i) => (
-              <div key={i} style={{
-                padding: "24px",
-                background: "#161616",
-                borderRadius: 16,
-                border: "1px solid rgba(255,255,255,0.15)",
-                textAlign: "left" as const,
-              }}>
-                <div style={{
-                  fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.7,
-                  marginBottom: 16, fontStyle: "italic" as const,
-                }}>
+              <div
+                key={i}
+                style={{
+                  padding: "24px",
+                  background: "#161616",
+                  borderRadius: 16,
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  textAlign: "left" as const,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 14,
+                    color: "rgba(255,255,255,0.7)",
+                    lineHeight: 1.7,
+                    marginBottom: 16,
+                    fontStyle: "italic" as const,
+                  }}
+                >
                   &ldquo;{renderBold(item.quote)}&rdquo;
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   {/* IG-style gradient ring avatar */}
-                  <div style={{
-                    width: 42, height: 42, borderRadius: "50%",
-                    background: "linear-gradient(135deg, #F58529, #DD2A7B, #8134AF, #515BD4)",
-                    padding: 2, flexShrink: 0,
-                  }}>
-                    <div style={{
-                      width: "100%", height: "100%", borderRadius: "50%",
-                      background: "#161616", display: "flex",
-                      alignItems: "center", justifyContent: "center",
-                      color: "#FF9500", fontWeight: 800, fontSize: 15,
-                    }}>
+                  <div
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: "50%",
+                      background:
+                        "linear-gradient(135deg, #F58529, #DD2A7B, #8134AF, #515BD4)",
+                      padding: 2,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderRadius: "50%",
+                        background: "#161616",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#FF9500",
+                        fontWeight: 800,
+                        fontSize: 15,
+                      }}
+                    >
                       {item.name[0]}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{item.name}</div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{item.shop}</div>
+                    <div
+                      style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}
+                    >
+                      {item.name}
+                    </div>
+                    <div
+                      style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}
+                    >
+                      {item.shop}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -669,44 +1071,104 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* ─── FINAL CTA (Dark bg) ─── */}
-      <section className="lp-section scroll-reveal" style={{
-        padding: "80px 24px",
-        background: "#111",
-        textAlign: "center" as const,
-        position: "relative" as const, overflow: "hidden",
-      }}>
+      <section
+        className="lp-section scroll-reveal"
+        style={{
+          padding: "80px 24px",
+          background: "#111",
+          textAlign: "center" as const,
+          position: "relative" as const,
+          overflow: "hidden",
+        }}
+      >
         {/* Glow */}
-        <div style={{
-          position: "absolute" as const, top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 600, height: 600,
-          background: "radial-gradient(circle, rgba(255,149,0,0.06) 0%, transparent 70%)",
-          borderRadius: "50%", pointerEvents: "none" as const,
-        }} />
-        <div style={{ position: "relative" as const, maxWidth: 600, margin: "0 auto" }}>
-          <h2 style={{
-            fontSize: "clamp(28px, 5vw, 44px)", fontWeight: 900,
-            color: "#fff", marginBottom: 12,
-          }}>
+        <div
+          style={{
+            position: "absolute" as const,
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 600,
+            height: 600,
+            background:
+              "radial-gradient(circle, rgba(255,149,0,0.06) 0%, transparent 70%)",
+            borderRadius: "50%",
+            pointerEvents: "none" as const,
+          }}
+        />
+        <div
+          style={{
+            position: "relative" as const,
+            maxWidth: 600,
+            margin: "0 auto",
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "clamp(28px, 5vw, 44px)",
+              fontWeight: 900,
+              color: "#fff",
+              marginBottom: 12,
+            }}
+          >
             {t.ctaTitle}
           </h2>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.45)", marginBottom: 36 }}>
+          <p
+            style={{
+              fontSize: 16,
+              color: "rgba(255,255,255,0.45)",
+              marginBottom: 36,
+            }}
+          >
             {t.ctaSub}
           </p>
-          <Link href={`/${locale}/start`} className="lp-pulse" style={{
-            background: "#FF9500", color: "#fff", border: "none",
-            padding: "18px 48px", borderRadius: 14, fontSize: 20, fontWeight: 700,
-            textDecoration: "none", display: "inline-block",
-            boxShadow: "0 8px 32px rgba(255,149,0,0.4)",
-            transition: "transform 0.2s",
-          }}>
+          <Link
+            href={`/${locale}/start`}
+            className="lp-pulse"
+            style={{
+              background: "#FF9500",
+              color: "#fff",
+              border: "none",
+              padding: "18px 48px",
+              borderRadius: 14,
+              fontSize: 20,
+              fontWeight: 700,
+              textDecoration: "none",
+              display: "inline-block",
+              boxShadow: "0 8px 32px rgba(255,149,0,0.4)",
+              transition: "transform 0.2s",
+            }}
+          >
             {t.ctaBtn}
           </Link>
-          <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 24, flexWrap: "wrap" as const }}>
+          <div
+            style={{
+              marginTop: 24,
+              display: "flex",
+              justifyContent: "center",
+              gap: 24,
+              flexWrap: "wrap" as const,
+            }}
+          >
             {[t.ctaTrust1, t.ctaTrust2, t.ctaTrust3].map((item, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: "rgba(255,255,255,0.45)" }}>
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 14,
+                  color: "rgba(255,255,255,0.45)",
+                }}
+              >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M13.3 4.3L6.3 11.3L2.7 7.7" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M13.3 4.3L6.3 11.3L2.7 7.7"
+                    stroke="#10B981"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
                 {item}
               </div>
@@ -716,68 +1178,241 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       </section>
 
       {/* ─── FOOTER (Dark bg) ─── */}
-      <footer style={{
-        padding: "56px 24px 32px", background: "#0A0A0A",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-      }}>
+      <footer
+        style={{
+          padding: "56px 24px 32px",
+          background: "#0A0A0A",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div className="lp-footer-grid" style={{
-            display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 32,
-            marginBottom: 40,
-          }}>
+          <div
+            className="lp-footer-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 32,
+              marginBottom: 40,
+            }}
+          >
             {/* Column 1: Product */}
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "rgba(255,255,255,0.5)",
+                  marginBottom: 16,
+                  textTransform: "uppercase" as const,
+                  letterSpacing: "0.06em",
+                }}
+              >
                 {t.footerProduct}
               </div>
-              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerPricing}</Link>
-                <Link href={`/${locale}/pricing`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14, transition: "color 0.2s" }}>{t.footerFeatures}</Link>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column" as const,
+                  gap: 10,
+                }}
+              >
+                <Link
+                  href={`/${locale}/pricing`}
+                  style={{
+                    color: "rgba(255,255,255,0.4)",
+                    textDecoration: "none",
+                    fontSize: 14,
+                    transition: "color 0.2s",
+                  }}
+                >
+                  {t.footerPricing}
+                </Link>
+                <Link
+                  href={`/${locale}/pricing`}
+                  style={{
+                    color: "rgba(255,255,255,0.4)",
+                    textDecoration: "none",
+                    fontSize: 14,
+                    transition: "color 0.2s",
+                  }}
+                >
+                  {t.footerFeatures}
+                </Link>
               </div>
             </div>
             {/* Column 2: Support */}
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "rgba(255,255,255,0.5)",
+                  marginBottom: 16,
+                  textTransform: "uppercase" as const,
+                  letterSpacing: "0.06em",
+                }}
+              >
                 {t.footerSupport}
               </div>
-              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                <Link href={`/${locale}/contact`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerHelp}</Link>
-                <Link href={`/${locale}/contact`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerContact}</Link>
-                <a href="https://wa.me/85298765432" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerWhatsApp}</a>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column" as const,
+                  gap: 10,
+                }}
+              >
+                <Link
+                  href={`/${locale}/contact`}
+                  style={{
+                    color: "rgba(255,255,255,0.4)",
+                    textDecoration: "none",
+                    fontSize: 14,
+                  }}
+                >
+                  {t.footerHelp}
+                </Link>
+                <Link
+                  href={`/${locale}/contact`}
+                  style={{
+                    color: "rgba(255,255,255,0.4)",
+                    textDecoration: "none",
+                    fontSize: 14,
+                  }}
+                >
+                  {t.footerContact}
+                </Link>
+                <a
+                  href="https://wa.me/85298765432"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "rgba(255,255,255,0.4)",
+                    textDecoration: "none",
+                    fontSize: 14,
+                  }}
+                >
+                  {t.footerWhatsApp}
+                </a>
               </div>
             </div>
             {/* Column 3: Legal */}
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 16, textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "rgba(255,255,255,0.5)",
+                  marginBottom: 16,
+                  textTransform: "uppercase" as const,
+                  letterSpacing: "0.06em",
+                }}
+              >
                 {t.footerLegal}
               </div>
-              <div style={{ display: "flex", flexDirection: "column" as const, gap: 10 }}>
-                <Link href={`/${locale}/terms`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerTerms}</Link>
-                <Link href={`/${locale}/privacy`} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 14 }}>{t.footerPrivacy}</Link>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column" as const,
+                  gap: 10,
+                }}
+              >
+                <Link
+                  href={`/${locale}/terms`}
+                  style={{
+                    color: "rgba(255,255,255,0.4)",
+                    textDecoration: "none",
+                    fontSize: 14,
+                  }}
+                >
+                  {t.footerTerms}
+                </Link>
+                <Link
+                  href={`/${locale}/privacy`}
+                  style={{
+                    color: "rgba(255,255,255,0.4)",
+                    textDecoration: "none",
+                    fontSize: 14,
+                  }}
+                >
+                  {t.footerPrivacy}
+                </Link>
               </div>
             </div>
           </div>
 
           {/* Bottom bar */}
-          <div style={{
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-            paddingTop: 24, textAlign: "center" as const,
-          }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 12 }}>
+          <div
+            style={{
+              borderTop: "1px solid rgba(255,255,255,0.06)",
+              paddingTop: 24,
+              textAlign: "center" as const,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 20,
+                fontWeight: 800,
+                color: "#fff",
+                marginBottom: 12,
+              }}
+            >
               <span style={{ color: "#FF9500" }}>&#10022;</span> WoWlix
             </div>
-            <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: 16,
+                marginBottom: 12,
+              }}
+            >
               {/* Instagram */}
-              <a href="https://www.instagram.com/wowlix.hk" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.35)", transition: "color 0.2s" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <a
+                href="https://www.instagram.com/wowlix.hk"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "rgba(255,255,255,0.35)",
+                  transition: "color 0.2s",
+                }}
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <rect x="2" y="2" width="20" height="20" rx="5" />
                   <circle cx="12" cy="12" r="5" />
-                  <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
+                  <circle
+                    cx="17.5"
+                    cy="6.5"
+                    r="1.5"
+                    fill="currentColor"
+                    stroke="none"
+                  />
                 </svg>
               </a>
               {/* WhatsApp */}
-              <a href="https://wa.me/85298765432" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(255,255,255,0.35)", transition: "color 0.2s" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <a
+                href="https://wa.me/85298765432"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "rgba(255,255,255,0.35)",
+                  transition: "color 0.2s",
+                }}
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
               </a>
