@@ -232,6 +232,10 @@ function getDemos(isZh: boolean) {
       gradient: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
       textColor: "#fff",
       accent: "#FF9500",
+      images: [
+        "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=200&q=80",
+        "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=200&q=80",
+      ],
     },
     {
       name: "日和雜貨",
@@ -241,6 +245,10 @@ function getDemos(isZh: boolean) {
       gradient: "linear-gradient(135deg, #F5F0EB 0%, #E8DDD3 100%)",
       textColor: "#3D2E1E",
       accent: "#8B7355",
+      images: [
+        "https://images.unsplash.com/photo-1602607663923-bc2f5e36a8f4?w=200&q=80",
+        "https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=200&q=80",
+      ],
     },
     {
       name: "綠日 Green Day",
@@ -250,6 +258,10 @@ function getDemos(isZh: boolean) {
       gradient: "linear-gradient(135deg, #EFF7EE 0%, #CCE8CC 100%)",
       textColor: "#1A3D1A",
       accent: "#3A7D44",
+      images: [
+        "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=200&q=80",
+        "https://images.unsplash.com/photo-1517093728432-a0440f8d45af?w=200&q=80",
+      ],
     },
     {
       name: "花語甜室",
@@ -259,6 +271,10 @@ function getDemos(isZh: boolean) {
       gradient: "linear-gradient(135deg, #FFF0F5 0%, #FFE0EB 100%)",
       textColor: "#8B2252",
       accent: "#D4447C",
+      images: [
+        "https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=200&q=80",
+        "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=200&q=80",
+      ],
     },
   ];
 }
@@ -1763,17 +1779,18 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                       @{d.handle}
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      {[1, 2].map((n) => (
-                        <div
+                      {d.images.map((img, n) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
                           key={n}
+                          src={img}
+                          alt={d.name}
                           style={{
                             width: 60,
                             height: 60,
                             borderRadius: 8,
-                            background:
-                              d.textColor === "#fff"
-                                ? "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)"
-                                : `linear-gradient(135deg, ${d.accent}18 0%, ${d.accent}08 100%)`,
+                            objectFit: "cover",
+                            display: "block",
                           }}
                         />
                       ))}
