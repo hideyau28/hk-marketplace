@@ -34,78 +34,24 @@ const T = {
   },
 };
 
-/* ─── Demo store data for phone carousel ─── */
-function getStores(isZh: boolean) {
-  return [
-    {
-      name: "petitfleur",
-      desc: isZh ? "花藝甜品禮盒" : "Floral & pastries",
-      avatar: "P",
-      accent: "#D4447C",
-      cta: isZh ? "立即選購" : "Shop Now",
-      products: [
-        { img: "https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=120&q=80", name: isZh ? "玫瑰花束" : "Rose Bouquet", price: "$288" },
-        { img: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=120&q=80", name: isZh ? "草莓蛋糕" : "Strawberry Cake", price: "$168" },
-        { img: "https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=120&q=80", name: isZh ? "乾花擺設" : "Dried Flowers", price: "$128" },
-        { img: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=120&q=80", name: isZh ? "馬卡龍禮盒" : "Macaron Box", price: "$198" },
-      ],
-    },
-    {
-      name: "hypedrops",
-      desc: isZh ? "型格街頭潮流" : "Streetwear & sneakers",
-      avatar: "H",
-      accent: "#FF9500",
-      cta: isZh ? "立即選購" : "Shop Now",
-      products: [
-        { img: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=120&q=80", name: isZh ? "限量波鞋" : "Limited Sneakers", price: "$1,280" },
-        { img: "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=120&q=80", name: isZh ? "潮流 Tee" : "Street Tee", price: "$380" },
-        { img: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=120&q=80", name: isZh ? "聯名衛衣" : "Collab Hoodie", price: "$680" },
-        { img: "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=120&q=80", name: isZh ? "棒球帽" : "Baseball Cap", price: "$280" },
-      ],
-    },
-    {
-      name: "nichiyori",
-      desc: isZh ? "溫暖日系生活" : "Japanese lifestyle",
-      avatar: "N",
-      accent: "#8B7355",
-      cta: isZh ? "立即選購" : "Shop Now",
-      products: [
-        { img: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=120&q=80", name: isZh ? "復古太陽眼鏡" : "Retro Sunglasses", price: "$198" },
-        { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=120&q=80", name: isZh ? "極簡手錶" : "Minimal Watch", price: "$468" },
-        { img: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=120&q=80", name: isZh ? "日系手袋" : "Canvas Tote", price: "$128" },
-        { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=120&q=80", name: isZh ? "陶瓷杯" : "Ceramic Mug", price: "$88" },
-      ],
-    },
-    {
-      name: "greenday",
-      desc: isZh ? "清新植物小店" : "Plants & living",
-      avatar: "G",
-      accent: "#3A7D44",
-      cta: isZh ? "立即選購" : "Shop Now",
-      products: [
-        { img: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=120&q=80", name: isZh ? "龜背芋" : "Monstera", price: "$168" },
-        { img: "https://images.unsplash.com/photo-1517093728432-a0440f8d45af?w=120&q=80", name: isZh ? "仙人掌組合" : "Cactus Set", price: "$88" },
-        { img: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=120&q=80", name: isZh ? "小盆栽" : "Mini Plant", price: "$58" },
-        { img: "https://images.unsplash.com/photo-1517093728432-a0440f8d45af?w=120&q=80", name: isZh ? "植物掛畫" : "Plant Print", price: "$128" },
-      ],
-    },
-  ];
-}
+/* ─── Demo store screenshots for phone carousel ─── */
+const DEMO_SCREENS = [
+  { slug: "petitfleur", src: "/demos/petitfleur.png" },
+  { slug: "hypedrops", src: "/demos/hypedrops.png" },
+  { slug: "nichiyori", src: "/demos/nichiyori.png" },
+  { slug: "greenday", src: "/demos/greenday.png" },
+];
 
 /* ─── Phone Mockup (auto-carousel) ─── */
-function PhoneMockup({ locale }: { locale: Locale }) {
-  const isZh = locale === "zh-HK";
-  const stores = getStores(isZh);
+function PhoneMockup() {
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setIdx((prev) => (prev + 1) % stores.length);
+      setIdx((prev) => (prev + 1) % DEMO_SCREENS.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, [stores.length]);
-
-  const store = stores[idx];
+  }, []);
 
   return (
     <div className="hero-phone-wrap">
@@ -113,151 +59,50 @@ function PhoneMockup({ locale }: { locale: Locale }) {
         {/* Dynamic Island */}
         <div className="hero-dynamic-island" />
 
-        {/* Screen content */}
-        <div className="hero-phone-screen">
-          <div style={{ height: 48 }} />
+        {/* Screenshot — fades on each store change */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          key={idx}
+          src={DEMO_SCREENS[idx].src}
+          alt={DEMO_SCREENS[idx].slug}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "top",
+            animation: "phoneFadeIn 0.5s ease-out",
+          }}
+        />
 
-          {/* Fade wrapper — re-mounts on store change */}
-          <div key={idx} style={{ animation: "phoneFadeIn 0.5s ease-out" }}>
-            {/* Store header */}
+        {/* Dot indicators */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            left: 0,
+            right: 0,
+            display: "flex",
+            justifyContent: "center",
+            gap: 5,
+            zIndex: 5,
+          }}
+        >
+          {DEMO_SCREENS.map((_, i) => (
             <div
+              key={i}
               style={{
-                textAlign: "center" as const,
-                padding: "8px 16px 12px",
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                background: i === idx ? "#FF9500" : "rgba(255,255,255,0.35)",
+                transition: "background 0.3s",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
               }}
-            >
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 12,
-                  background: store.accent,
-                  margin: "0 auto 6px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#fff",
-                  fontWeight: 800,
-                  fontSize: 16,
-                }}
-              >
-                {store.avatar}
-              </div>
-              <div style={{ color: "#fff", fontSize: 13, fontWeight: 700 }}>
-                {store.name}
-              </div>
-              <div
-                style={{
-                  color: "rgba(255,255,255,0.4)",
-                  fontSize: 10,
-                  marginTop: 2,
-                }}
-              >
-                {store.desc}
-              </div>
-            </div>
-
-            {/* Product grid 2x2 */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 6,
-                padding: "4px 10px",
-              }}
-            >
-              {store.products.map((p, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: "rgba(255,255,255,0.06)",
-                    borderRadius: 8,
-                    overflow: "hidden",
-                  }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={p.img}
-                    alt=""
-                    style={{
-                      width: "100%",
-                      height: 48,
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display =
-                        "none";
-                    }}
-                  />
-                  <div style={{ padding: "4px 6px" }}>
-                    <div
-                      style={{
-                        color: "#fff",
-                        fontSize: 8,
-                        fontWeight: 600,
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {p.name}
-                    </div>
-                    <div
-                      style={{
-                        color: store.accent,
-                        fontSize: 9,
-                        fontWeight: 700,
-                        marginTop: 1,
-                        fontFamily: "'JetBrains Mono', monospace",
-                      }}
-                    >
-                      {p.price}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA button */}
-            <div style={{ padding: "8px 10px" }}>
-              <div
-                style={{
-                  background: store.accent,
-                  borderRadius: 8,
-                  padding: "7px",
-                  textAlign: "center" as const,
-                  color: "#fff",
-                  fontSize: 10,
-                  fontWeight: 700,
-                }}
-              >
-                {store.cta}
-              </div>
-            </div>
-          </div>
-
-          {/* Dot indicators */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 4,
-              padding: "4px 0 6px",
-            }}
-          >
-            {stores.map((_, i) => (
-              <div
-                key={i}
-                style={{
-                  width: 4,
-                  height: 4,
-                  borderRadius: "50%",
-                  background:
-                    i === idx ? store.accent : "rgba(255,255,255,0.2)",
-                  transition: "background 0.3s",
-                }}
-              />
-            ))}
-          </div>
+            />
+          ))}
         </div>
       </div>
 
@@ -525,15 +370,6 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           z-index: 10;
         }
 
-        /* ─── Screen ─── */
-        .hero-phone-screen {
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(180deg, #1A1A1A 0%, #111 100%);
-          display: flex;
-          flex-direction: column;
-        }
-
         /* ─── Floating notifications ─── */
         .hero-float {
           position: absolute;
@@ -670,7 +506,7 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
         </div>
 
         {/* Phone Mockup — auto-carousel of 4 demo stores */}
-        <PhoneMockup locale={locale as Locale} />
+        <PhoneMockup />
       </div>
     </section>
   );
