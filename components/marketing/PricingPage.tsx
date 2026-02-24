@@ -434,6 +434,7 @@ function PlanCard({ plan }: { plan: Plan }) {
       background: "#FFF9F2",
       color: "#1A1A1A",
       border: "2px solid #FF9500",
+      boxShadow: "0 0 0 4px rgba(255,149,0,0.08)",
     },
   };
   const ctaStyles: Record<string, React.CSSProperties> = {
@@ -483,23 +484,30 @@ function PlanCard({ plan }: { plan: Plan }) {
     >
       {plan.badge && (
         <div
+          className="plan-popular-badge"
           style={{
             position: "absolute",
             top: 0,
             left: "50%",
             transform: "translate(-50%, -50%)",
-            background: "#FF9500",
+            background: "linear-gradient(90deg, #FF9500 0%, #FFB347 100%)",
             color: "#fff",
-            padding: "8px 24px",
-            fontSize: 14,
-            fontWeight: 700,
+            padding: "9px 22px",
+            fontSize: 13,
+            fontWeight: 800,
             borderRadius: 20,
             whiteSpace: "nowrap",
-            letterSpacing: "0.02em",
+            letterSpacing: "0.05em",
             zIndex: 2,
+            boxShadow: "0 4px 16px rgba(255,149,0,0.45)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
           }}
         >
+          <span style={{ fontSize: 12 }}>★</span>
           {plan.badge}
+          <span style={{ fontSize: 12 }}>★</span>
         </div>
       )}
       <div style={{ marginTop: plan.badge ? 20 : 0 }}>
@@ -1035,6 +1043,18 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           50% {
             opacity: 0.4;
           }
+        }
+        @keyframes badgeGlow {
+          0%,
+          100% {
+            box-shadow: 0 4px 16px rgba(255, 149, 0, 0.45);
+          }
+          50% {
+            box-shadow: 0 4px 28px rgba(255, 149, 0, 0.75);
+          }
+        }
+        .plan-popular-badge {
+          animation: badgeGlow 2.4s ease-in-out infinite;
         }
         @keyframes fadeInUp {
           from {
