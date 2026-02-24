@@ -1,7 +1,24 @@
-// Google Fonts URL 生成 — 根據 template 嘅 heading + body font
-// 預載所有 template 用到嘅字體，避免切換時閃爍
+// Font utilities for storefront templates.
+// next/font self-hosting: all template fonts are declared in app/layout.tsx with CSS variables.
+// getFontVar() maps font family names to their CSS variable references.
 
 import type { CoverTemplate } from "./cover-templates";
+
+/** CSS variable names for each template font (declared in app/layout.tsx) */
+const FONT_VARS: Record<string, string> = {
+  "Bebas Neue": "var(--font-bebas-neue)",
+  "Playfair Display": "var(--font-playfair)",
+  Montserrat: "var(--font-montserrat)",
+  "Cormorant Garamond": "var(--font-cormorant)",
+  Inter: "var(--font-inter)",
+  Lato: "var(--font-lato)",
+};
+
+/** Return the CSS font-family value for a template font name.
+ *  Uses next/font CSS variable when available, falls back to quoted family name. */
+export function getFontVar(fontName: string): string {
+  return FONT_VARS[fontName] ?? `'${fontName}'`;
+}
 
 /** 生成 Google Fonts <link> href for a specific template */
 export function getGoogleFontsUrl(tmpl: CoverTemplate): string {
@@ -9,7 +26,9 @@ export function getGoogleFontsUrl(tmpl: CoverTemplate): string {
 
   // heading font
   const headingWeights = getWeights(tmpl.headingFont);
-  families.push(`family=${encodeFont(tmpl.headingFont)}:wght@${headingWeights}`);
+  families.push(
+    `family=${encodeFont(tmpl.headingFont)}:wght@${headingWeights}`,
+  );
 
   // body font（如果同 heading 唔同）
   if (tmpl.bodyFont !== tmpl.headingFont) {

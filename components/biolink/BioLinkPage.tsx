@@ -31,7 +31,7 @@ import {
 } from "@/lib/biolink-cart";
 import { getCoverTemplate } from "@/lib/cover-templates";
 import { TemplateProvider } from "@/lib/template-context";
-import { getGoogleFontsUrl } from "@/lib/fonts";
+import { getFontVar } from "@/lib/fonts";
 import StickyHeader from "./StickyHeader";
 import CoverPhoto from "./CoverPhoto";
 import ProfileSection from "./ProfileSection";
@@ -64,8 +64,10 @@ type Props = {
 };
 
 export default function BioLinkPage({ tenant, products }: Props) {
-  const tmpl = useMemo(() => getCoverTemplate(tenant.coverTemplate), [tenant.coverTemplate]);
-  const fontsUrl = useMemo(() => getGoogleFontsUrl(tmpl), [tmpl]);
+  const tmpl = useMemo(
+    () => getCoverTemplate(tenant.coverTemplate),
+    [tenant.coverTemplate],
+  );
   const pathname = usePathname() || "/en";
   const locale = (pathname.split("/").filter(Boolean)[0] || "en") as Locale;
 
@@ -73,19 +75,27 @@ export default function BioLinkPage({ tenant, products }: Props) {
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
-  const [sheetProduct, setSheetProduct] = useState<ProductForBioLink | null>(null);
-  const [lightbox, setLightbox] = useState<{ images: string[]; startIndex: number; videoUrl?: string | null } | null>(null);
+  const [sheetProduct, setSheetProduct] = useState<ProductForBioLink | null>(
+    null,
+  );
+  const [lightbox, setLightbox] = useState<{
+    images: string[];
+    startIndex: number;
+    videoUrl?: string | null;
+  } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const currency = tenant.currency || "HKD";
-  const deliveryOptions: DeliveryOption[] = tenant.deliveryOptions || DEFAULT_DELIVERY_OPTIONS;
-  const orderConfirmMessage: OrderConfirmConfig = tenant.orderConfirmMessage || DEFAULT_ORDER_CONFIRM;
+  const deliveryOptions: DeliveryOption[] =
+    tenant.deliveryOptions || DEFAULT_DELIVERY_OPTIONS;
+  const orderConfirmMessage: OrderConfirmConfig =
+    tenant.orderConfirmMessage || DEFAULT_ORDER_CONFIRM;
 
   // Filter products by search query
   const filteredProducts = searchQuery
     ? products.filter((p) =>
-        p.title.toLowerCase().includes(searchQuery.toLowerCase())
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : products;
 
@@ -134,21 +144,21 @@ export default function BioLinkPage({ tenant, products }: Props) {
 
       setCart((prev) => bioAddToCart(prev, item));
     },
-    []
+    [],
   );
 
   const handleUpdateQty = useCallback(
     (productId: string, variant: string | undefined, delta: number) => {
       setCart((prev) => bioUpdateQty(prev, productId, variant, delta));
     },
-    []
+    [],
   );
 
   const handleRemoveItem = useCallback(
     (productId: string, variant: string | undefined) => {
       setCart((prev) => bioRemoveFromCart(prev, productId, variant));
     },
-    []
+    [],
   );
 
   const handleClearCart = useCallback(() => {
@@ -182,7 +192,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
         setSheetProduct(product);
       }
     },
-    [handleAddToCart]
+    [handleAddToCart],
   );
 
   // ProductSheet 加入購物車
@@ -192,145 +202,172 @@ export default function BioLinkPage({ tenant, products }: Props) {
       setSheetProduct(null);
       setToast("已加入購物車");
     },
-    [handleAddToCart]
+    [handleAddToCart],
   );
 
   // Tap 產品卡 → 開 product sheet
-  const handleProductTap = useCallback(
-    (product: ProductForBioLink) => {
-      setSheetProduct(product);
-    },
-    []
-  );
+  const handleProductTap = useCallback((product: ProductForBioLink) => {
+    setSheetProduct(product);
+  }, []);
 
   // Tap 圖片 → 開 lightbox
   const handleImageTap = useCallback(
     (images: string[], startIndex: number, videoUrl?: string | null) => {
       setLightbox({ images, startIndex, videoUrl });
     },
-    []
+    [],
   );
 
   return (
     <TemplateProvider value={tmpl}>
-    {/* Google Fonts for current template */}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-    <link rel="stylesheet" href={fontsUrl} />
-    <div
-      className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden"
-      style={{ backgroundColor: tmpl.bg, fontFamily: `'${tmpl.bodyFont}', sans-serif` }}
-    >
-      <StickyHeader tenant={tenant} cartCount={cartCount} onCartClick={() => cartCount > 0 && setShowCart(true)} />
-
-      {/* Language toggle — always visible at top-right over cover */}
-      <Link
-        href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
-        className="absolute top-3 right-3 z-40 text-xs px-2 py-0.5 rounded-full backdrop-blur-sm transition-colors"
-        style={{ color: tmpl.subtext, backgroundColor: `${tmpl.bg}80` }}
-      >
-        {locale === "zh-HK" ? "EN" : "繁"}
-      </Link>
-
-      <CoverPhoto url={tenant.coverPhoto} />
-      <ProfileSection tenant={tenant} />
-
-      {/* Search bar */}
-      <SearchBar value={searchQuery} onChange={setSearchQuery} />
-
-      {/* Featured loot cards */}
-      {featured.length > 0 && (
-        <FeaturedSection products={featured} currency={currency} onAdd={handleCardAdd} onTap={handleProductTap} onImageTap={handleImageTap} />
-      )}
-
-      {/* Spacer (no longer a gradient since bg is unified) */}
-      {featured.length > 0 && <div className="h-6" />}
-
-      {/* Light zone — Product grid */}
-      <ProductGrid products={grid} currency={currency} onAdd={handleCardAdd} onTap={handleProductTap} searchQuery={searchQuery} />
-
-      {/* Cart bar or WhatsApp FAB */}
-      {cartCount > 0 ? (
-        <CartBar
-          count={cartCount}
-          total={cartTotal}
-          currency={currency}
-          whatsapp={tenant.whatsapp}
-          onCheckout={() => setShowCart(true)}
-        />
-      ) : (
-        <WhatsAppFAB whatsapp={tenant.whatsapp} cart={cart.items} />
-      )}
-
-      {/* Cart sheet (bottom sheet) */}
-      <CartSheet
-        open={showCart}
-        onClose={() => setShowCart(false)}
-        items={cart.items}
-        currency={currency}
-        freeShippingThreshold={tenant.freeShippingThreshold}
-        onUpdateQty={handleUpdateQty}
-        onRemoveItem={handleRemoveItem}
-        onClearCart={handleClearCart}
-        onCheckout={() => {
-          setShowCart(false);
-          setShowCheckout(true);
+      <div
+        className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden"
+        style={{
+          backgroundColor: tmpl.bg,
+          fontFamily: `${getFontVar(tmpl.bodyFont)}, sans-serif`,
         }}
-      />
-
-      {/* Checkout page (full screen) */}
-      <CheckoutPage
-        open={showCheckout}
-        onClose={() => setShowCheckout(false)}
-        cart={cart.items}
-        tenant={tenant}
-        onOrderComplete={handleOrderComplete}
-      />
-
-      {/* Order confirmation */}
-      {orderResult && (
-        <OrderConfirmation
-          order={orderResult}
-          onClose={handleConfirmationClose}
-          orderConfirmMessage={orderConfirmMessage}
+      >
+        <StickyHeader
+          tenant={tenant}
+          cartCount={cartCount}
+          onCartClick={() => cartCount > 0 && setShowCart(true)}
         />
-      )}
 
-      {/* Product bottom sheet (variant selection) */}
-      {sheetProduct && (
-        <ProductSheet
-          product={sheetProduct}
+        {/* Language toggle — always visible at top-right over cover */}
+        <Link
+          href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
+          className="absolute top-3 right-3 z-40 text-xs px-2 py-0.5 rounded-full backdrop-blur-sm transition-colors"
+          style={{ color: tmpl.subtext, backgroundColor: `${tmpl.bg}80` }}
+        >
+          {locale === "zh-HK" ? "EN" : "繁"}
+        </Link>
+
+        <CoverPhoto url={tenant.coverPhoto} />
+        <ProfileSection tenant={tenant} />
+
+        {/* Search bar */}
+        <SearchBar value={searchQuery} onChange={setSearchQuery} />
+
+        {/* Featured loot cards */}
+        {featured.length > 0 && (
+          <FeaturedSection
+            products={featured}
+            currency={currency}
+            onAdd={handleCardAdd}
+            onTap={handleProductTap}
+            onImageTap={handleImageTap}
+          />
+        )}
+
+        {/* Spacer (no longer a gradient since bg is unified) */}
+        {featured.length > 0 && <div className="h-6" />}
+
+        {/* Light zone — Product grid */}
+        <ProductGrid
+          products={grid}
           currency={currency}
-          onClose={() => setSheetProduct(null)}
-          onAddToCart={handleSheetAdd}
+          onAdd={handleCardAdd}
+          onTap={handleProductTap}
+          searchQuery={searchQuery}
         />
-      )}
 
-      {/* Image lightbox */}
-      {lightbox && (
-        <ImageLightbox
-          images={lightbox.images}
-          startIndex={lightbox.startIndex}
-          videoUrl={lightbox.videoUrl}
-          onClose={() => setLightbox(null)}
+        {/* Cart bar or WhatsApp FAB */}
+        {cartCount > 0 ? (
+          <CartBar
+            count={cartCount}
+            total={cartTotal}
+            currency={currency}
+            whatsapp={tenant.whatsapp}
+            onCheckout={() => setShowCart(true)}
+          />
+        ) : (
+          <WhatsAppFAB whatsapp={tenant.whatsapp} cart={cart.items} />
+        )}
+
+        {/* Cart sheet (bottom sheet) */}
+        <CartSheet
+          open={showCart}
+          onClose={() => setShowCart(false)}
+          items={cart.items}
+          currency={currency}
+          freeShippingThreshold={tenant.freeShippingThreshold}
+          onUpdateQty={handleUpdateQty}
+          onRemoveItem={handleRemoveItem}
+          onClearCart={handleClearCart}
+          onCheckout={() => {
+            setShowCart(false);
+            setShowCheckout(true);
+          }}
         />
-      )}
 
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-full text-sm font-medium shadow-lg animate-slide-up" style={{ backgroundColor: tmpl.card, color: tmpl.text }}>
-          {toast}
-        </div>
-      )}
+        {/* Checkout page (full screen) */}
+        <CheckoutPage
+          open={showCheckout}
+          onClose={() => setShowCheckout(false)}
+          cart={cart.items}
+          tenant={tenant}
+          onOrderComplete={handleOrderComplete}
+        />
 
-      {/* Footer */}
-      <footer className="py-4 pb-20 text-center border-t" style={{ backgroundColor: tmpl.bg, borderColor: `${tmpl.subtext}20` }}>
-        <span className="text-[11px] font-medium" style={{ color: tmpl.subtext }}>
-          Powered by{" "}
-        </span>
-        <a href="/" className="text-[11px] font-bold hover:underline" style={{ color: tmpl.accent }}>Wowlix</a>
-      </footer>
-    </div>
+        {/* Order confirmation */}
+        {orderResult && (
+          <OrderConfirmation
+            order={orderResult}
+            onClose={handleConfirmationClose}
+            orderConfirmMessage={orderConfirmMessage}
+          />
+        )}
+
+        {/* Product bottom sheet (variant selection) */}
+        {sheetProduct && (
+          <ProductSheet
+            product={sheetProduct}
+            currency={currency}
+            onClose={() => setSheetProduct(null)}
+            onAddToCart={handleSheetAdd}
+          />
+        )}
+
+        {/* Image lightbox */}
+        {lightbox && (
+          <ImageLightbox
+            images={lightbox.images}
+            startIndex={lightbox.startIndex}
+            videoUrl={lightbox.videoUrl}
+            onClose={() => setLightbox(null)}
+          />
+        )}
+
+        {/* Toast */}
+        {toast && (
+          <div
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] px-5 py-2.5 rounded-full text-sm font-medium shadow-lg animate-slide-up"
+            style={{ backgroundColor: tmpl.card, color: tmpl.text }}
+          >
+            {toast}
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer
+          className="py-4 pb-20 text-center border-t"
+          style={{ backgroundColor: tmpl.bg, borderColor: `${tmpl.subtext}20` }}
+        >
+          <span
+            className="text-[11px] font-medium"
+            style={{ color: tmpl.subtext }}
+          >
+            Powered by{" "}
+          </span>
+          <a
+            href="/"
+            className="text-[11px] font-bold hover:underline"
+            style={{ color: tmpl.accent }}
+          >
+            Wowlix
+          </a>
+        </footer>
+      </div>
     </TemplateProvider>
   );
 }
