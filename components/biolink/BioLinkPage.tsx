@@ -46,6 +46,7 @@ import type { OrderResult } from "./CheckoutPage";
 import OrderConfirmation from "./OrderConfirmation";
 import ProductSheet from "./ProductSheet";
 import ImageLightbox from "./ImageLightbox";
+import ScrollToTopFAB from "./ScrollToTopFAB";
 
 function swapLocale(pathname: string, nextLocale: Locale) {
   const parts = pathname.split("/").filter(Boolean);
@@ -329,6 +330,9 @@ export default function BioLinkPage({ tenant, products }: Props) {
             onAddToCart={handleSheetAdd}
           />
         )}
+
+        {/* Scroll to top FAB */}
+        <ScrollToTopFAB />
 
         {/* Image lightbox */}
         {lightbox && (
