@@ -27,11 +27,20 @@ type OrderResult = {
   total: number;
   storeName: string;
   whatsapp: string | null;
-  fpsInfo?: { accountName: string | null; id: string | null; qrCode: string | null };
+  fpsInfo?: {
+    accountName: string | null;
+    id: string | null;
+    qrCode: string | null;
+  };
   paymeInfo?: { link: string | null; qrCode: string | null };
   items?: Array<{ name: string; qty: number; unitPrice: number }>;
   customer?: { name: string; phone: string };
-  delivery?: { method: string; label: string; fee: number; address?: string | null };
+  delivery?: {
+    method: string;
+    label: string;
+    fee: number;
+    address?: string | null;
+  };
   paymentMethod?: string;
   paymentProof?: boolean;
   paymentProofUrl?: string | null;
@@ -46,7 +55,13 @@ type Props = {
   onOrderComplete: (result: OrderResult) => void;
 };
 
-export default function CheckoutPage({ open, onClose, cart, tenant, onOrderComplete }: Props) {
+export default function CheckoutPage({
+  open,
+  onClose,
+  cart,
+  tenant,
+  onOrderComplete,
+}: Props) {
   const tmpl = useTemplate();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -57,21 +72,58 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
   const [payment, setPayment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [availablePayments, setAvailablePayments] = useState<Array<{ id: string; label: string; sub: string }>>([]);
+  const [availablePayments, setAvailablePayments] = useState<
+    Array<{ id: string; label: string; sub: string }>
+  >([]);
   const [providers, setProviders] = useState<PaymentProvider[]>([]);
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
-  const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
+  const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(
+    null,
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [couponFeatureEnabled, setCouponFeatureEnabled] = useState(false);
+
   const currency = tenant.currency || "HKD";
-  const enabledOptions = (tenant.deliveryOptions || []).filter((o: DeliveryOption) => o.enabled);
+  const enabledOptions = (tenant.deliveryOptions || []).filter(
+    (o: DeliveryOption) => o.enabled,
+  );
+
+  // Computed values (needed by effects below)
+  const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const selectedDelivery = enabledOptions.find((o) => o.id === delivery);
+  let deliveryFee = selectedDelivery?.price || 0;
+  const freeShippingReached =
+    tenant.freeShippingThreshold != null &&
+    subtotal >= tenant.freeShippingThreshold;
+  if (freeShippingReached) deliveryFee = 0;
+  const total = Math.max(0, subtotal + deliveryFee - discount);
 
   // Auto-select first delivery option
   useEffect(() => {
-    if (enabledOptions.length > 0 && !enabledOptions.find((o) => o.id === delivery)) {
+    if (
+      enabledOptions.length > 0 &&
+      !enabledOptions.find((o) => o.id === delivery)
+    ) {
       setDelivery(enabledOptions[0].id);
     }
   }, [enabledOptions.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Check if coupon feature is enabled for this tenant
+  useEffect(() => {
+    fetch(`/api/features/coupon?slug=${tenant.slug}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.data?.enabled) setCouponFeatureEnabled(true);
+      })
+      .catch(() => {});
+  }, [tenant.slug]);
 
   // Fetch all active payment methods from API
   useEffect(() => {
@@ -90,9 +142,12 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
           setPayment(methods[0].id);
         } else {
           // Fallback to legacy tenant flags
-          const fallback: Array<{ id: string; label: string; sub: string }> = [];
-          if (tenant.fpsEnabled) fallback.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
-          if (tenant.paymeEnabled) fallback.push({ id: "payme", label: "PayMe", sub: "手動確認" });
+          const fallback: Array<{ id: string; label: string; sub: string }> =
+            [];
+          if (tenant.fpsEnabled)
+            fallback.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
+          if (tenant.paymeEnabled)
+            fallback.push({ id: "payme", label: "PayMe", sub: "手動確認" });
           if (tenant.stripeOnboarded && tenant.stripeAccountId) {
             fallback.push({ id: "stripe", label: "信用卡", sub: "Stripe" });
           }
@@ -106,8 +161,10 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
       .catch(() => {
         // Fallback to legacy tenant flags on error
         const fallback: Array<{ id: string; label: string; sub: string }> = [];
-        if (tenant.fpsEnabled) fallback.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
-        if (tenant.paymeEnabled) fallback.push({ id: "payme", label: "PayMe", sub: "手動確認" });
+        if (tenant.fpsEnabled)
+          fallback.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
+        if (tenant.paymeEnabled)
+          fallback.push({ id: "payme", label: "PayMe", sub: "手動確認" });
         if (fallback.length === 0) {
           fallback.push({ id: "fps", label: "FPS 轉帳", sub: "手動確認" });
         }
@@ -125,21 +182,63 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
   // Current selected provider (full data)
   const selectedProvider = providers.find((p) => p.providerId === payment);
-  const isManualPayment = selectedProvider ? selectedProvider.type === "manual" : !["stripe"].includes(payment);
+  const isManualPayment = selectedProvider
+    ? selectedProvider.type === "manual"
+    : !["stripe"].includes(payment);
+
+  // Apply coupon handler
+  const applyCoupon = useCallback(
+    async (code?: string) => {
+      const finalCode = (code ?? couponCode).trim();
+      if (!finalCode) {
+        setCouponError("請輸入優惠碼");
+        return;
+      }
+
+      setApplyingCoupon(true);
+      setCouponError(null);
+
+      try {
+        const res = await fetch("/api/coupons/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code: finalCode,
+            subtotal,
+            deliveryFee,
+            tenantId: tenant.id,
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.ok) {
+          setCouponError(json?.error?.message || "優惠碼無效");
+          setDiscount(0);
+          setCouponApplied(false);
+        } else {
+          setDiscount(json.data.discount || 0);
+          setCouponApplied(true);
+        }
+      } catch {
+        setCouponError("驗證失敗，請重試");
+        setDiscount(0);
+        setCouponApplied(false);
+      } finally {
+        setApplyingCoupon(false);
+      }
+    },
+    [couponCode, subtotal, deliveryFee, tenant.id],
+  );
+
+  // Auto-revalidate coupon when delivery/subtotal changes
+  useEffect(() => {
+    if (!couponApplied) return;
+    void applyCoupon();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [delivery, subtotal]);
 
   // 面交/自取唔使填地址，其他送貨方式需要
-  const needsAddress = !!delivery && !["meetup", "pickup", "self-pickup"].includes(delivery);
-
-  const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
-
-  // Calculate delivery fee
-  const selectedDelivery = enabledOptions.find((o) => o.id === delivery);
-  let deliveryFee = selectedDelivery?.price || 0;
-  const freeShippingReached =
-    tenant.freeShippingThreshold != null && subtotal >= tenant.freeShippingThreshold;
-  if (freeShippingReached) deliveryFee = 0;
-
-  const total = subtotal + deliveryFee;
+  const needsAddress =
+    !!delivery && !["meetup", "pickup", "self-pickup"].includes(delivery);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -176,7 +275,15 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
     if (needsAddress && address.trim().length < 5) return "請輸入送貨地址";
     if (isManualPayment && !paymentProofFile) return "請上傳付款截圖";
     return null;
-  }, [name, phone, delivery, needsAddress, address, isManualPayment, paymentProofFile]);
+  }, [
+    name,
+    phone,
+    delivery,
+    needsAddress,
+    address,
+    isManualPayment,
+    paymentProofFile,
+  ]);
 
   const handleSubmit = async () => {
     const validationError = validate();
@@ -195,7 +302,10 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
         const formData = new FormData();
         formData.append("file", paymentProofFile);
         formData.append("folder", "payments");
-        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
         const uploadJson = await uploadRes.json();
         if (!uploadRes.ok || !uploadJson.ok) {
           throw new Error("上傳截圖失敗，請重試");
@@ -217,11 +327,21 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
             price: item.price,
             image: item.image,
           })),
-          customer: { name: name.trim(), phone: phone.trim(), email: email.trim() || null },
-          delivery: { method: delivery, address: needsAddress ? address.trim() : null },
+          customer: {
+            name: name.trim(),
+            phone: phone.trim(),
+            email: email.trim() || null,
+          },
+          delivery: {
+            method: delivery,
+            address: needsAddress ? address.trim() : null,
+          },
           payment: { method: payment },
           paymentProof: paymentProofUrl || null,
           note: note.trim() || null,
+          couponCode: couponApplied
+            ? couponCode.trim().toUpperCase()
+            : undefined,
           total: subtotal,
         }),
       });
@@ -236,7 +356,9 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
       const result: OrderResult = {
         ...(json.data as OrderResult),
         items: cart.map((item) => ({
-          name: item.name + (item.variant ? ` · ${item.variant.replace(/\|/g, " · ")}` : ""),
+          name:
+            item.name +
+            (item.variant ? ` · ${item.variant.replace(/\|/g, " · ")}` : ""),
           qty: item.qty,
           unitPrice: item.price,
         })),
@@ -277,12 +399,24 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
         style={{ backgroundColor: tmpl.bg, animation: "slideUp 0.3s ease-out" }}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 px-5 pt-4 pb-3" style={{ backgroundColor: tmpl.bg, borderBottom: `1px solid ${subtleBorder}` }}>
+        <div
+          className="sticky top-0 z-10 px-5 pt-4 pb-3"
+          style={{
+            backgroundColor: tmpl.bg,
+            borderBottom: `1px solid ${subtleBorder}`,
+          }}
+        >
           <div className="flex items-center justify-between">
-            <button onClick={onClose} className="text-sm font-medium" style={{ color: tmpl.subtext }}>
+            <button
+              onClick={onClose}
+              className="text-sm font-medium"
+              style={{ color: tmpl.subtext }}
+            >
               ← 返回
             </button>
-            <h2 className="font-bold text-base" style={{ color: tmpl.text }}>結帳</h2>
+            <h2 className="font-bold text-base" style={{ color: tmpl.text }}>
+              結帳
+            </h2>
             <div className="w-10" />
           </div>
         </div>
@@ -290,46 +424,96 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
         <div className="px-5 pb-8">
           {/* Customer info */}
           <div className="mt-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>聯絡資料</h3>
+            <h3
+              className="text-xs font-bold uppercase tracking-wider mb-3"
+              style={{ color: `${tmpl.text}CC` }}
+            >
+              聯絡資料
+            </h3>
             <div className="space-y-3">
               <div>
-                <label className="text-xs mb-1 block" style={{ color: tmpl.subtext }}>姓名 *</label>
+                <label
+                  className="text-xs mb-1 block"
+                  style={{ color: tmpl.subtext }}
+                >
+                  姓名 *
+                </label>
                 <input
                   type="text"
                   placeholder="陳大文"
                   value={name}
-                  onChange={(e) => { setName(e.target.value); setError(null); }}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setError(null);
+                  }}
                   className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors"
-                  style={{ backgroundColor: inputBg, color: tmpl.text, border: `1px solid ${borderColor}` }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = tmpl.accent; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = borderColor; }}
+                  style={{
+                    backgroundColor: inputBg,
+                    color: tmpl.text,
+                    border: `1px solid ${borderColor}`,
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = tmpl.accent;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = borderColor;
+                  }}
                 />
               </div>
               <div>
-                <label className="text-xs mb-1 block" style={{ color: tmpl.subtext }}>電話 *</label>
+                <label
+                  className="text-xs mb-1 block"
+                  style={{ color: tmpl.subtext }}
+                >
+                  電話 *
+                </label>
                 <input
                   type="tel"
                   placeholder="9XXX XXXX"
                   value={phone}
-                  onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 8)); setError(null); }}
+                  onChange={(e) => {
+                    setPhone(e.target.value.replace(/\D/g, "").slice(0, 8));
+                    setError(null);
+                  }}
                   inputMode="numeric"
                   className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors"
-                  style={{ backgroundColor: inputBg, color: tmpl.text, border: `1px solid ${borderColor}` }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = tmpl.accent; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = borderColor; }}
+                  style={{
+                    backgroundColor: inputBg,
+                    color: tmpl.text,
+                    border: `1px solid ${borderColor}`,
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = tmpl.accent;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = borderColor;
+                  }}
                 />
               </div>
               <div>
-                <label className="text-xs mb-1 block" style={{ color: tmpl.subtext }}>Email（可選）</label>
+                <label
+                  className="text-xs mb-1 block"
+                  style={{ color: tmpl.subtext }}
+                >
+                  Email（可選）
+                </label>
                 <input
                   type="email"
                   placeholder="hello@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors"
-                  style={{ backgroundColor: inputBg, color: tmpl.text, border: `1px solid ${borderColor}` }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = tmpl.accent; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = borderColor; }}
+                  style={{
+                    backgroundColor: inputBg,
+                    color: tmpl.text,
+                    border: `1px solid ${borderColor}`,
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = tmpl.accent;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = borderColor;
+                  }}
                 />
               </div>
             </div>
@@ -337,7 +521,12 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
           {/* Delivery options */}
           <div className="mt-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>送貨方式</h3>
+            <h3
+              className="text-xs font-bold uppercase tracking-wider mb-3"
+              style={{ color: `${tmpl.text}CC` }}
+            >
+              送貨方式
+            </h3>
             <div className="space-y-2">
               {enabledOptions.map((opt) => {
                 const showFree = freeShippingReached && opt.price > 0;
@@ -349,22 +538,41 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-colors"
                     style={{
                       borderColor: isSelected ? tmpl.accent : borderColor,
-                      backgroundColor: isSelected ? `${tmpl.accent}18` : inputBg,
+                      backgroundColor: isSelected
+                        ? `${tmpl.accent}18`
+                        : inputBg,
                     }}
                   >
                     <div
                       className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                      style={{ borderColor: isSelected ? tmpl.accent : `${tmpl.subtext}50` }}
+                      style={{
+                        borderColor: isSelected
+                          ? tmpl.accent
+                          : `${tmpl.subtext}50`,
+                      }}
                     >
                       {isSelected && (
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tmpl.accent }} />
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: tmpl.accent }}
+                        />
                       )}
                     </div>
                     <div className="flex-1">
-                      <span className="text-sm font-medium" style={{ color: tmpl.text }}>{opt.label}</span>
-                      <span className="text-xs ml-2" style={{ color: tmpl.subtext }}>
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: tmpl.text }}
+                      >
+                        {opt.label}
+                      </span>
+                      <span
+                        className="text-xs ml-2"
+                        style={{ color: tmpl.subtext }}
+                      >
                         {showFree ? (
-                          <span className="line-through mr-1">{formatPrice(opt.price, currency)}</span>
+                          <span className="line-through mr-1">
+                            {formatPrice(opt.price, currency)}
+                          </span>
                         ) : null}
                         {opt.price > 0 && !showFree
                           ? formatPrice(opt.price, currency)
@@ -378,7 +586,8 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
             {freeShippingReached && (
               <p className="mt-2 text-sm text-green-400 font-medium">
-                🎉 滿 {formatPrice(tenant.freeShippingThreshold!, currency)} 免運費！
+                🎉 滿 {formatPrice(tenant.freeShippingThreshold!, currency)}{" "}
+                免運費！
               </p>
             )}
           </div>
@@ -386,18 +595,39 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
           {/* 送貨地址 — 非面交/自取先顯示 */}
           {needsAddress && (
             <div className="mt-6">
-              <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>送貨地址</h3>
+              <h3
+                className="text-xs font-bold uppercase tracking-wider mb-3"
+                style={{ color: `${tmpl.text}CC` }}
+              >
+                送貨地址
+              </h3>
               <div>
-                <label className="text-xs mb-1 block" style={{ color: tmpl.subtext }}>地址 *</label>
+                <label
+                  className="text-xs mb-1 block"
+                  style={{ color: tmpl.subtext }}
+                >
+                  地址 *
+                </label>
                 <textarea
                   placeholder="例：九龍觀塘成業街 10 號 xx 大廈 5 樓 A 室"
                   value={address}
-                  onChange={(e) => { setAddress(e.target.value); setError(null); }}
+                  onChange={(e) => {
+                    setAddress(e.target.value);
+                    setError(null);
+                  }}
                   rows={2}
                   className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors resize-none"
-                  style={{ backgroundColor: inputBg, color: tmpl.text, border: `1px solid ${borderColor}` }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = tmpl.accent; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = borderColor; }}
+                  style={{
+                    backgroundColor: inputBg,
+                    color: tmpl.text,
+                    border: `1px solid ${borderColor}`,
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = tmpl.accent;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = borderColor;
+                  }}
                 />
               </div>
             </div>
@@ -405,22 +635,94 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
           {/* Note */}
           <div className="mt-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>備註（可選）</h3>
+            <h3
+              className="text-xs font-bold uppercase tracking-wider mb-3"
+              style={{ color: `${tmpl.text}CC` }}
+            >
+              備註（可選）
+            </h3>
             <textarea
               placeholder="星期六下午方便 / 刻字內容 / 過敏資料..."
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={2}
               className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors resize-none"
-              style={{ backgroundColor: inputBg, color: tmpl.text, border: `1px solid ${borderColor}` }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = tmpl.accent; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = borderColor; }}
+              style={{
+                backgroundColor: inputBg,
+                color: tmpl.text,
+                border: `1px solid ${borderColor}`,
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = tmpl.accent;
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = borderColor;
+              }}
             />
           </div>
 
+          {/* Coupon code */}
+          {couponFeatureEnabled && (
+            <div className="mt-6">
+              <h3
+                className="text-xs font-bold uppercase tracking-wider mb-3"
+                style={{ color: `${tmpl.text}CC` }}
+              >
+                優惠碼
+              </h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="輸入優惠碼"
+                  value={couponCode}
+                  onChange={(e) => {
+                    setCouponCode(e.target.value);
+                    setCouponError(null);
+                  }}
+                  className="flex-1 px-4 py-3 rounded-xl text-sm focus:outline-none transition-colors"
+                  style={{
+                    backgroundColor: inputBg,
+                    color: tmpl.text,
+                    border: `1px solid ${borderColor}`,
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = tmpl.accent;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = borderColor;
+                  }}
+                />
+                <button
+                  onClick={() => applyCoupon()}
+                  disabled={applyingCoupon}
+                  className="px-5 py-3 rounded-xl text-sm font-medium text-white transition-opacity"
+                  style={{
+                    backgroundColor: tmpl.accent,
+                    opacity: applyingCoupon ? 0.5 : 1,
+                  }}
+                >
+                  {applyingCoupon ? "驗證中..." : "套用"}
+                </button>
+              </div>
+              {couponError && (
+                <p className="mt-2 text-xs text-red-400">{couponError}</p>
+              )}
+              {couponApplied && discount > 0 && (
+                <p className="mt-2 text-xs text-green-400 font-medium">
+                  已套用優惠碼，折扣 {formatPrice(discount, currency)}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Payment method */}
           <div className="mt-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>付款方式</h3>
+            <h3
+              className="text-xs font-bold uppercase tracking-wider mb-3"
+              style={{ color: `${tmpl.text}CC` }}
+            >
+              付款方式
+            </h3>
             <div className="space-y-2">
               {availablePayments.map((opt) => {
                 const isSelected = payment === opt.id;
@@ -431,20 +733,39 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-colors"
                     style={{
                       borderColor: isSelected ? tmpl.accent : borderColor,
-                      backgroundColor: isSelected ? `${tmpl.accent}18` : inputBg,
+                      backgroundColor: isSelected
+                        ? `${tmpl.accent}18`
+                        : inputBg,
                     }}
                   >
                     <div
                       className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                      style={{ borderColor: isSelected ? tmpl.accent : `${tmpl.subtext}50` }}
+                      style={{
+                        borderColor: isSelected
+                          ? tmpl.accent
+                          : `${tmpl.subtext}50`,
+                      }}
                     >
                       {isSelected && (
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tmpl.accent }} />
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: tmpl.accent }}
+                        />
                       )}
                     </div>
                     <div className="flex-1">
-                      <span className="text-sm font-medium" style={{ color: tmpl.text }}>{opt.label}</span>
-                      <span className="text-xs ml-2" style={{ color: tmpl.subtext }}>（{opt.sub}）</span>
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: tmpl.text }}
+                      >
+                        {opt.label}
+                      </span>
+                      <span
+                        className="text-xs ml-2"
+                        style={{ color: tmpl.subtext }}
+                      >
+                        （{opt.sub}）
+                      </span>
                     </div>
                   </button>
                 );
@@ -455,13 +776,34 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
           {/* Manual payment info + upload */}
           {isManualPayment && selectedProvider && (
             <div className="mt-6">
-              <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>收款資料</h3>
-              <div className="rounded-2xl p-4" style={{ backgroundColor: inputBg, border: `1px solid ${subtleBorder}` }}>
+              <h3
+                className="text-xs font-bold uppercase tracking-wider mb-3"
+                style={{ color: `${tmpl.text}CC` }}
+              >
+                收款資料
+              </h3>
+              <div
+                className="rounded-2xl p-4"
+                style={{
+                  backgroundColor: inputBg,
+                  border: `1px solid ${subtleBorder}`,
+                }}
+              >
                 <div className="text-center">
                   {/* Transfer amount */}
-                  <div className="rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: `${tmpl.accent}20` }}>
-                    <p className="text-xs" style={{ color: tmpl.accent }}>請轉帳以下金額</p>
-                    <p className="text-2xl font-bold" style={{ color: tmpl.accent }}>{formatPrice(total, currency)}</p>
+                  <div
+                    className="rounded-xl px-4 py-3 mb-4"
+                    style={{ backgroundColor: `${tmpl.accent}20` }}
+                  >
+                    <p className="text-xs" style={{ color: tmpl.accent }}>
+                      請轉帳以下金額
+                    </p>
+                    <p
+                      className="text-2xl font-bold"
+                      style={{ color: tmpl.accent }}
+                    >
+                      {formatPrice(total, currency)}
+                    </p>
                   </div>
 
                   {/* QR Code */}
@@ -469,32 +811,65 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
                     <div className="mx-auto w-full max-w-[200px] overflow-hidden rounded-xl bg-white p-2 mb-4">
                       <img
                         src={selectedProvider.config.qrCodeUrl as string}
-                        alt={selectedProvider.displayName || selectedProvider.nameZh}
+                        alt={
+                          selectedProvider.displayName ||
+                          selectedProvider.nameZh
+                        }
                         className="w-full h-full object-contain"
                       />
                     </div>
                   )}
 
                   {/* Account info */}
-                  {!!(selectedProvider.config.bankName || selectedProvider.config.accountName || selectedProvider.config.accountId || selectedProvider.config.accountNumber || selectedProvider.config.paymeLink) && (
-                    <div className="rounded-xl p-3 text-left space-y-2 text-sm" style={{ backgroundColor: `${tmpl.subtext}10` }}>
+                  {!!(
+                    selectedProvider.config.bankName ||
+                    selectedProvider.config.accountName ||
+                    selectedProvider.config.accountId ||
+                    selectedProvider.config.accountNumber ||
+                    selectedProvider.config.paymeLink
+                  ) && (
+                    <div
+                      className="rounded-xl p-3 text-left space-y-2 text-sm"
+                      style={{ backgroundColor: `${tmpl.subtext}10` }}
+                    >
                       {!!selectedProvider.config.bankName && (
                         <div className="flex justify-between">
                           <span style={{ color: tmpl.subtext }}>銀行</span>
-                          <span className="font-medium" style={{ color: tmpl.text }}>{selectedProvider.config.bankName as string}</span>
+                          <span
+                            className="font-medium"
+                            style={{ color: tmpl.text }}
+                          >
+                            {selectedProvider.config.bankName as string}
+                          </span>
                         </div>
                       )}
                       {!!selectedProvider.config.accountName && (
                         <div className="flex justify-between">
                           <span style={{ color: tmpl.subtext }}>收款人</span>
-                          <span className="font-medium" style={{ color: tmpl.text }}>{selectedProvider.config.accountName as string}</span>
+                          <span
+                            className="font-medium"
+                            style={{ color: tmpl.text }}
+                          >
+                            {selectedProvider.config.accountName as string}
+                          </span>
                         </div>
                       )}
-                      {!!(selectedProvider.config.accountId || selectedProvider.config.accountNumber) && (
+                      {!!(
+                        selectedProvider.config.accountId ||
+                        selectedProvider.config.accountNumber
+                      ) && (
                         <div className="flex justify-between">
-                          <span style={{ color: tmpl.subtext }}>帳號 / FPS ID</span>
-                          <span className="font-mono font-medium" style={{ color: tmpl.text }}>
-                            {(selectedProvider.config.accountId || selectedProvider.config.accountNumber) as string}
+                          <span style={{ color: tmpl.subtext }}>
+                            帳號 / FPS ID
+                          </span>
+                          <span
+                            className="font-mono font-medium"
+                            style={{ color: tmpl.text }}
+                          >
+                            {
+                              (selectedProvider.config.accountId ||
+                                selectedProvider.config.accountNumber) as string
+                            }
                           </span>
                         </div>
                       )}
@@ -514,18 +889,38 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
                   )}
 
                   {!!selectedProvider.instructions && (
-                    <p className="mt-3 text-xs" style={{ color: tmpl.subtext }}>{selectedProvider.instructions}</p>
+                    <p className="mt-3 text-xs" style={{ color: tmpl.subtext }}>
+                      {selectedProvider.instructions}
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Upload payment proof */}
-              <div className="mt-4 rounded-2xl p-4" style={{ backgroundColor: inputBg, border: `1px solid ${subtleBorder}` }}>
+              <div
+                className="mt-4 rounded-2xl p-4"
+                style={{
+                  backgroundColor: inputBg,
+                  border: `1px solid ${subtleBorder}`,
+                }}
+              >
                 <div className="flex items-center gap-2 mb-2">
-                  <h4 className="text-sm font-semibold" style={{ color: tmpl.text }}>請轉帳後上傳收據截圖</h4>
-                  <span className="rounded-md px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>必填</span>
+                  <h4
+                    className="text-sm font-semibold"
+                    style={{ color: tmpl.text }}
+                  >
+                    請轉帳後上傳收據截圖
+                  </h4>
+                  <span
+                    className="rounded-md px-1.5 py-0.5 text-[10px] font-medium"
+                    style={{ backgroundColor: "#ef444420", color: "#ef4444" }}
+                  >
+                    必填
+                  </span>
                 </div>
-                <p className="text-xs mb-3" style={{ color: tmpl.subtext }}>完成轉帳後，請上傳付款截圖以確認落單</p>
+                <p className="text-xs mb-3" style={{ color: tmpl.subtext }}>
+                  完成轉帳後，請上傳付款截圖以確認落單
+                </p>
 
                 <input
                   ref={fileInputRef}
@@ -537,7 +932,10 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
                 {paymentProofPreview ? (
                   <div className="space-y-3">
-                    <div className="relative overflow-hidden rounded-xl" style={{ border: `1px solid ${borderColor}` }}>
+                    <div
+                      className="relative overflow-hidden rounded-xl"
+                      style={{ border: `1px solid ${borderColor}` }}
+                    >
                       <img
                         src={paymentProofPreview}
                         alt="付款截圖"
@@ -556,7 +954,10 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
                       type="button"
                       onClick={handleReUpload}
                       className="w-full rounded-xl py-2 text-sm font-medium"
-                      style={{ backgroundColor: `${tmpl.subtext}15`, color: `${tmpl.text}CC` }}
+                      style={{
+                        backgroundColor: `${tmpl.subtext}15`,
+                        color: `${tmpl.text}CC`,
+                      }}
                     >
                       重新上傳
                     </button>
@@ -566,11 +967,24 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="w-full rounded-xl border-2 border-dashed p-6 text-center transition-colors"
-                    style={{ borderColor: `${tmpl.subtext}40`, backgroundColor: `${tmpl.subtext}08` }}
+                    style={{
+                      borderColor: `${tmpl.subtext}40`,
+                      backgroundColor: `${tmpl.subtext}08`,
+                    }}
                   >
                     <div className="text-3xl mb-1">📷</div>
-                    <div className="text-sm font-medium" style={{ color: `${tmpl.text}CC` }}>點擊上傳付款截圖</div>
-                    <div className="text-xs mt-1" style={{ color: tmpl.subtext }}>JPG, PNG, WebP（最大 5MB）</div>
+                    <div
+                      className="text-sm font-medium"
+                      style={{ color: `${tmpl.text}CC` }}
+                    >
+                      點擊上傳付款截圖
+                    </div>
+                    <div
+                      className="text-xs mt-1"
+                      style={{ color: tmpl.subtext }}
+                    >
+                      JPG, PNG, WebP（最大 5MB）
+                    </div>
                   </button>
                 )}
               </div>
@@ -579,37 +993,83 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
 
           {/* Order summary */}
           <div className="mt-6">
-            <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: `${tmpl.text}CC` }}>訂單摘要</h3>
-            <div className="rounded-2xl p-4" style={{ backgroundColor: inputBg, border: `1px solid ${subtleBorder}` }}>
+            <h3
+              className="text-xs font-bold uppercase tracking-wider mb-3"
+              style={{ color: `${tmpl.text}CC` }}
+            >
+              訂單摘要
+            </h3>
+            <div
+              className="rounded-2xl p-4"
+              style={{
+                backgroundColor: inputBg,
+                border: `1px solid ${subtleBorder}`,
+              }}
+            >
               <div className="space-y-2">
                 {cart.map((item) => (
-                  <div key={`${item.productId}-${item.variant || "default"}`} className="flex items-center justify-between text-sm">
-                    <span className="flex-1 min-w-0 truncate" style={{ color: `${tmpl.text}CC` }}>
+                  <div
+                    key={`${item.productId}-${item.variant || "default"}`}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span
+                      className="flex-1 min-w-0 truncate"
+                      style={{ color: `${tmpl.text}CC` }}
+                    >
                       {item.name}
-                      {item.variant ? ` ${item.variant.replace(/\|/g, " · ")}` : ""}
-                      {" × "}{item.qty}
+                      {item.variant
+                        ? ` ${item.variant.replace(/\|/g, " · ")}`
+                        : ""}
+                      {" × "}
+                      {item.qty}
                     </span>
-                    <span className="font-medium ml-3 flex-shrink-0" style={{ color: tmpl.text }}>
+                    <span
+                      className="font-medium ml-3 flex-shrink-0"
+                      style={{ color: tmpl.text }}
+                    >
                       {formatPrice(item.price * item.qty, currency)}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-3 pt-3 space-y-1" style={{ borderTop: `1px solid ${subtleBorder}` }}>
+              <div
+                className="mt-3 pt-3 space-y-1"
+                style={{ borderTop: `1px solid ${subtleBorder}` }}
+              >
                 <div className="flex items-center justify-between text-sm">
                   <span style={{ color: tmpl.subtext }}>商品小計</span>
-                  <span style={{ color: `${tmpl.text}B3` }}>{formatPrice(subtotal, currency)}</span>
+                  <span style={{ color: `${tmpl.text}B3` }}>
+                    {formatPrice(subtotal, currency)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span style={{ color: tmpl.subtext }}>運費</span>
                   <span style={{ color: `${tmpl.text}B3` }}>
-                    {deliveryFee > 0 ? formatPrice(deliveryFee, currency) : "免運費"}
+                    {deliveryFee > 0
+                      ? formatPrice(deliveryFee, currency)
+                      : "免運費"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between pt-2" style={{ borderTop: `1px solid ${subtleBorder}` }}>
-                  <span className="font-medium" style={{ color: tmpl.text }}>總計</span>
-                  <span className="font-bold text-lg" style={{ color: tmpl.accent }}>
+                {discount > 0 && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span style={{ color: "#4ade80" }}>優惠折扣</span>
+                    <span style={{ color: "#4ade80" }}>
+                      −{formatPrice(discount, currency)}
+                    </span>
+                  </div>
+                )}
+                <div
+                  className="flex items-center justify-between pt-2"
+                  style={{ borderTop: `1px solid ${subtleBorder}` }}
+                >
+                  <span className="font-medium" style={{ color: tmpl.text }}>
+                    總計
+                  </span>
+                  <span
+                    className="font-bold text-lg"
+                    style={{ color: tmpl.accent }}
+                  >
                     {formatPrice(total, currency)}
                   </span>
                 </div>
@@ -630,19 +1090,28 @@ export default function CheckoutPage({ open, onClose, cart, tenant, onOrderCompl
             disabled={submitting || (isManualPayment && !paymentProofFile)}
             className="mt-6 w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform disabled:active:scale-100"
             style={{
-              backgroundColor: (isManualPayment && !paymentProofFile) ? `${tmpl.subtext}40` : tmpl.accent,
+              backgroundColor:
+                isManualPayment && !paymentProofFile
+                  ? `${tmpl.subtext}40`
+                  : tmpl.accent,
               opacity: submitting ? 0.5 : 1,
             }}
           >
-            {submitting ? "處理中..." : `確認落單　${formatPrice(total, currency)}`}
+            {submitting
+              ? "處理中..."
+              : `確認落單　${formatPrice(total, currency)}`}
           </button>
         </div>
       </div>
 
       <style jsx>{`
         @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
         }
       `}</style>
     </div>

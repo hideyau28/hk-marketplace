@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import { customAlphabet } from "nanoid";
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { getProvider } from "@/lib/payments/registry";
-import { checkPlanLimit } from "@/lib/plan";
+import { checkPlanLimit, hasFeature } from "@/lib/plan";
 import { prisma } from "@/lib/prisma";
 
 type DeliveryOption = {
@@ -64,7 +64,11 @@ function sha256(s: string) {
 }
 
 function getIdempotencyKey(req: Request) {
-  return (req.headers.get("x-idempotency-key") ?? req.headers.get("idempotency-key") ?? "").trim();
+  return (
+    req.headers.get("x-idempotency-key") ??
+    req.headers.get("idempotency-key") ??
+    ""
+  ).trim();
 }
 
 type BioLinkOrderPayload = {
@@ -84,6 +88,7 @@ type BioLinkOrderPayload = {
   paymentProof: string | null;
   note: string | null;
   total: number;
+  couponCode: string | null;
 };
 
 function parsePayload(body: unknown): BioLinkOrderPayload {
@@ -100,20 +105,33 @@ function parsePayload(body: unknown): BioLinkOrderPayload {
     throw new ApiError(400, "BAD_REQUEST", "Missing items");
   }
   for (const item of b.items) {
-    if (!item || typeof item !== "object") throw new ApiError(400, "BAD_REQUEST", "Invalid item");
+    if (!item || typeof item !== "object")
+      throw new ApiError(400, "BAD_REQUEST", "Invalid item");
     const i = item as Record<string, unknown>;
-    if (typeof i.productId !== "string") throw new ApiError(400, "BAD_REQUEST", "Missing item.productId");
-    if (typeof i.productName !== "string") throw new ApiError(400, "BAD_REQUEST", "Missing item.productName");
-    if (typeof i.qty !== "number" || i.qty <= 0) throw new ApiError(400, "BAD_REQUEST", "Invalid item.qty");
-    if (typeof i.price !== "number" || i.price <= 0) throw new ApiError(400, "BAD_REQUEST", "Invalid item.price");
+    if (typeof i.productId !== "string")
+      throw new ApiError(400, "BAD_REQUEST", "Missing item.productId");
+    if (typeof i.productName !== "string")
+      throw new ApiError(400, "BAD_REQUEST", "Missing item.productName");
+    if (typeof i.qty !== "number" || i.qty <= 0)
+      throw new ApiError(400, "BAD_REQUEST", "Invalid item.qty");
+    if (typeof i.price !== "number" || i.price <= 0)
+      throw new ApiError(400, "BAD_REQUEST", "Invalid item.price");
   }
 
   const cust = b.customer as Record<string, unknown> | undefined;
   if (!cust || typeof cust.name !== "string" || cust.name.trim().length < 2) {
-    throw new ApiError(400, "BAD_REQUEST", "Missing or invalid customer.name (min 2 chars)");
+    throw new ApiError(
+      400,
+      "BAD_REQUEST",
+      "Missing or invalid customer.name (min 2 chars)",
+    );
   }
   if (typeof cust.phone !== "string" || !/^\d{8}$/.test(cust.phone.trim())) {
-    throw new ApiError(400, "BAD_REQUEST", "Missing or invalid customer.phone (8 digits)");
+    throw new ApiError(
+      400,
+      "BAD_REQUEST",
+      "Missing or invalid customer.phone (8 digits)",
+    );
   }
 
   const del = b.delivery as Record<string, unknown> | undefined;
@@ -136,13 +154,29 @@ function parsePayload(body: unknown): BioLinkOrderPayload {
     customer: {
       name: (cust.name as string).trim(),
       phone: (cust.phone as string).trim(),
-      email: typeof cust.email === "string" && cust.email.trim() ? cust.email.trim() : null,
+      email:
+        typeof cust.email === "string" && cust.email.trim()
+          ? cust.email.trim()
+          : null,
     },
-    delivery: { method: del.method as string, address: typeof del.address === "string" && del.address.trim() ? del.address.trim() : null },
+    delivery: {
+      method: del.method as string,
+      address:
+        typeof del.address === "string" && del.address.trim()
+          ? del.address.trim()
+          : null,
+    },
     payment: { method: pay.method as string },
-    paymentProof: typeof b.paymentProof === "string" && b.paymentProof.trim() ? b.paymentProof.trim() : null,
+    paymentProof:
+      typeof b.paymentProof === "string" && b.paymentProof.trim()
+        ? b.paymentProof.trim()
+        : null,
     note: typeof b.note === "string" && b.note.trim() ? b.note.trim() : null,
     total: b.total as number,
+    couponCode:
+      typeof b.couponCode === "string" && b.couponCode.trim()
+        ? b.couponCode.trim().toUpperCase()
+        : null,
   };
 }
 
@@ -185,7 +219,7 @@ export const POST = withApi(async (req) => {
     throw new ApiError(
       403,
       "FORBIDDEN",
-      "This store has reached its monthly order limit. Please try again later. | 店主本月訂單已滿，請稍後再試。"
+      "This store has reached its monthly order limit. Please try again later. | 店主本月訂單已滿，請稍後再試。",
     );
   }
 
@@ -195,25 +229,38 @@ export const POST = withApi(async (req) => {
 
   if (idemKey) {
     requestHash = sha256(
-      stableStringify({ route: ROUTE, method: "POST", body: payload })
+      stableStringify({ route: ROUTE, method: "POST", body: payload }),
     );
 
     const existing = await prisma.idempotencyKey.findFirst({
-      where: { key: idemKey, route: ROUTE, method: "POST", tenantId: tenant.id },
+      where: {
+        key: idemKey,
+        route: ROUTE,
+        method: "POST",
+        tenantId: tenant.id,
+      },
     });
 
     if (existing) {
       if (existing.requestHash !== requestHash) {
-        throw new ApiError(409, "CONFLICT", "Idempotency key already used with different payload");
+        throw new ApiError(
+          409,
+          "CONFLICT",
+          "Idempotency key already used with different payload",
+        );
       }
       return ok(req, existing.responseJson);
     }
   }
 
   // Get delivery options from tenant settings
-  const deliveryOptions = (tenant.deliveryOptions as DeliveryOption[] | null) || DEFAULT_DELIVERY_OPTIONS;
+  const deliveryOptions =
+    (tenant.deliveryOptions as DeliveryOption[] | null) ||
+    DEFAULT_DELIVERY_OPTIONS;
   const enabledOptions = deliveryOptions.filter((o) => o.enabled);
-  const selectedDelivery = enabledOptions.find((o) => o.id === payload.delivery.method);
+  const selectedDelivery = enabledOptions.find(
+    (o) => o.id === payload.delivery.method,
+  );
 
   if (!selectedDelivery) {
     throw new ApiError(400, "BAD_REQUEST", "Invalid delivery method");
@@ -222,20 +269,38 @@ export const POST = withApi(async (req) => {
   // Server-side repricing: verify prices match DB
   const productIds = Array.from(new Set(payload.items.map((i) => i.productId)));
   const products = await prisma.product.findMany({
-    where: { id: { in: productIds }, tenantId: tenant.id, active: true, hidden: false, deletedAt: null },
+    where: {
+      id: { in: productIds },
+      tenantId: tenant.id,
+      active: true,
+      hidden: false,
+      deletedAt: null,
+    },
     select: { id: true, title: true, price: true, sizes: true },
   });
   const productMap = new Map(products.map((p) => [p.id, p]));
 
   let serverTotal = 0;
-  const repricedItems: Array<{ productId: string; name: string; unitPrice: number; quantity: number }> = [];
+  const repricedItems: Array<{
+    productId: string;
+    name: string;
+    unitPrice: number;
+    quantity: number;
+  }> = [];
 
   for (const item of payload.items) {
     const product = productMap.get(item.productId);
-    if (!product) throw new ApiError(400, "BAD_REQUEST", `Product not found: ${item.productId}`);
+    if (!product)
+      throw new ApiError(
+        400,
+        "BAD_REQUEST",
+        `Product not found: ${item.productId}`,
+      );
     const lineTotal = product.price * item.qty;
     serverTotal += lineTotal;
-    const variantDisplay = item.variant ? item.variant.replace(/\|/g, " · ") : null;
+    const variantDisplay = item.variant
+      ? item.variant.replace(/\|/g, " · ")
+      : null;
     repricedItems.push({
       productId: item.productId,
       name: `${product.title}${variantDisplay ? ` · ${variantDisplay}` : ""}`,
@@ -251,12 +316,58 @@ export const POST = withApi(async (req) => {
 
   // Calculate delivery fee
   let deliveryFee = selectedDelivery.price || 0;
-  if (tenant.freeShippingThreshold && serverTotal >= tenant.freeShippingThreshold) {
+  if (
+    tenant.freeShippingThreshold &&
+    serverTotal >= tenant.freeShippingThreshold
+  ) {
     deliveryFee = 0;
   }
 
+  // Server-side coupon validation (if provided)
+  let couponDiscount = 0;
+  let validatedCouponCode: string | null = null;
+
+  if (payload.couponCode) {
+    const couponAllowed = await hasFeature(tenant.id, "coupon");
+    if (couponAllowed) {
+      const coupon = await prisma.coupon.findFirst({
+        where: { code: payload.couponCode, tenantId: tenant.id },
+      });
+      if (coupon && coupon.active) {
+        const notExpired =
+          !coupon.expiresAt || coupon.expiresAt.getTime() >= Date.now();
+        const withinLimit =
+          coupon.maxUsage === null || coupon.usageCount < coupon.maxUsage;
+        const meetsMin =
+          coupon.minOrder === null || serverTotal >= coupon.minOrder;
+
+        if (notExpired && withinLimit && meetsMin) {
+          if (coupon.discountType === "PERCENTAGE") {
+            couponDiscount = serverTotal * (coupon.discountValue / 100);
+          } else if (coupon.code.toUpperCase() === "FREESHIP") {
+            couponDiscount = Math.min(deliveryFee, coupon.discountValue);
+          } else {
+            couponDiscount = coupon.discountValue;
+          }
+          const maxDiscount = serverTotal + deliveryFee;
+          if (couponDiscount > maxDiscount) couponDiscount = maxDiscount;
+          validatedCouponCode = coupon.code;
+
+          // Increment usage count
+          await prisma.coupon.update({
+            where: { id: coupon.id },
+            data: { usageCount: { increment: 1 } },
+          });
+        }
+      }
+    }
+  }
+
   const orderNumber = generateOrderNumber();
-  const totalWithDelivery = serverTotal + deliveryFee;
+  const totalWithDelivery = Math.max(
+    0,
+    serverTotal + deliveryFee - couponDiscount,
+  );
 
   // Atomic: stock deduction + order creation in a single transaction
   const order = await (prisma as any).$transaction(async (tx: any) => {
@@ -269,7 +380,11 @@ export const POST = withApi(async (req) => {
         data: { stock: { decrement: item.qty } },
       });
       if (result.count === 0) {
-        throw new ApiError(400, "BAD_REQUEST", `INSUFFICIENT_STOCK: 庫存不足 — ${item.productName}`);
+        throw new ApiError(
+          400,
+          "BAD_REQUEST",
+          `INSUFFICIENT_STOCK: 庫存不足 — ${item.productName}`,
+        );
       }
 
       // Deactivate variant if stock hits zero
@@ -288,12 +403,21 @@ export const POST = withApi(async (req) => {
       if (!product) continue;
 
       const sizes = product.sizes as Record<string, unknown> | null;
-      if (!sizes || !("dimensions" in sizes) || !("combinations" in sizes)) continue;
+      if (!sizes || !("dimensions" in sizes) || !("combinations" in sizes))
+        continue;
 
-      const combinations = (sizes as { combinations: Record<string, { qty: number; status: string }> }).combinations;
+      const combinations = (
+        sizes as {
+          combinations: Record<string, { qty: number; status: string }>;
+        }
+      ).combinations;
       const combo = combinations[item.variant];
       if (!combo || combo.qty < item.qty) {
-        throw new ApiError(400, "BAD_REQUEST", `INSUFFICIENT_STOCK: ${item.variant.replace(/\|/g, " · ")} 庫存不足`);
+        throw new ApiError(
+          400,
+          "BAD_REQUEST",
+          `INSUFFICIENT_STOCK: ${item.variant.replace(/\|/g, " · ")} 庫存不足`,
+        );
       }
 
       combo.qty -= item.qty;
@@ -318,13 +442,19 @@ export const POST = withApi(async (req) => {
         amounts: {
           subtotal: serverTotal,
           deliveryFee,
+          discount: couponDiscount > 0 ? couponDiscount : undefined,
+          couponCode: validatedCouponCode || undefined,
           total: totalWithDelivery,
           currency: tenant.currency || "HKD",
         },
         fulfillmentType: getFulfillmentType(payload.delivery.method),
         fulfillmentAddress:
           getFulfillmentType(payload.delivery.method) === "DELIVERY"
-            ? { line1: selectedDelivery.label, notes: payload.delivery.method, address: payload.delivery.address }
+            ? {
+                line1: selectedDelivery.label,
+                notes: payload.delivery.method,
+                address: payload.delivery.address,
+              }
             : undefined,
         status: hasProof ? "PENDING_CONFIRMATION" : "PENDING",
         paymentMethod: payload.payment.method,
@@ -350,7 +480,11 @@ export const POST = withApi(async (req) => {
   const paymentMethodRecord =
     payload.payment.method === "fps" || payload.payment.method === "payme"
       ? await prisma.paymentMethod.findFirst({
-          where: { tenantId: tenant.id, type: payload.payment.method, active: true },
+          where: {
+            tenantId: tenant.id,
+            type: payload.payment.method,
+            active: true,
+          },
           select: { qrImage: true, accountInfo: true },
         })
       : null;
