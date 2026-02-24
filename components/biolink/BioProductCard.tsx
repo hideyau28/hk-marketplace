@@ -43,6 +43,7 @@ export default function BioProductCard({
 
   const [current, setCurrent] = useState(0);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+  const [bouncing, setBouncing] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // 自動輪播 — 多張圖每 3 秒切換
@@ -244,10 +245,19 @@ export default function BioProductCard({
         {/* + 圓形按鈕 — 右下角（已售完時隱藏） */}
         {!soldOut && (
           <button
-            onClick={() => onAdd(product)}
+            onClick={() => {
+              setBouncing(true);
+              onAdd(product);
+            }}
+            onAnimationEnd={() => setBouncing(false)}
             aria-label={`加入購物車 ${product.title}`}
-            className="absolute bottom-2 right-2 w-11 h-11 rounded-full flex items-center justify-center shadow-md transition-transform text-white active:scale-95"
-            style={{ backgroundColor: tmpl.accent }}
+            className="absolute bottom-2 right-2 w-11 h-11 rounded-full flex items-center justify-center shadow-md text-white"
+            style={{
+              backgroundColor: tmpl.accent,
+              animation: bouncing
+                ? "addBounce 0.42s cubic-bezier(0.36,0.07,0.19,0.97) forwards"
+                : undefined,
+            }}
           >
             <svg
               className="w-5 h-5"
@@ -264,6 +274,29 @@ export default function BioProductCard({
             </svg>
           </button>
         )}
+
+        <style jsx>{`
+          @keyframes addBounce {
+            0% {
+              transform: scale(1);
+            }
+            18% {
+              transform: scale(0.78);
+            }
+            48% {
+              transform: scale(1.22);
+            }
+            68% {
+              transform: scale(0.92);
+            }
+            84% {
+              transform: scale(1.06);
+            }
+            100% {
+              transform: scale(1);
+            }
+          }
+        `}</style>
       </div>
     </div>
   );
