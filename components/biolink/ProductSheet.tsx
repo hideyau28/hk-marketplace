@@ -81,8 +81,23 @@ export default function ProductSheet({
   const [showDescription, setShowDescription] = useState(false);
   const [showSizeChart, setShowSizeChart] = useState(false);
 
+  // Swipe / zoom state
+  const [scale, setScale] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [swipeDelta, setSwipeDelta] = useState(0);
+
   const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
+  const pinchRef = useRef<{ startDist: number; startScale: number } | null>(
+    null,
+  );
+  const panRef = useRef<{
+    startX: number;
+    startY: number;
+    initPanX: number;
+    initPanY: number;
+  } | null>(null);
+  const lastTapRef = useRef(0);
 
   // 建立 carousel slides：圖片 + video (如果有)
   const carouselSlides = [...images];
@@ -99,6 +114,13 @@ export default function ProductSheet({
       document.body.style.overflow = originalStyle;
     };
   }, []);
+
+  // 換 slide 時重設 zoom
+  useEffect(() => {
+    setScale(1);
+    setPanX(0);
+    setPanY(0);
+  }, [carouselIndex]);
 
   // 預設選第一個有貨組合
   useEffect(() => {
@@ -242,27 +264,84 @@ export default function ProductSheet({
     ? !!(selectedColor && selectedSize && selectedStock > 0)
     : !!(selectedSize && selectedStock > 0);
 
-  // Swipe 手勢
+  // ─── Touch: pinch-to-zoom + swipe ───
+
+  const getDist = (t: React.TouchList) =>
+    Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+    if (e.touches.length === 2) {
+      pinchRef.current = { startDist: getDist(e.touches), startScale: scale };
+    } else if (e.touches.length === 1) {
+      const t = e.touches[0];
+      const now = Date.now();
+      if (now - lastTapRef.current < 280) {
+        // 雙擊切換 zoom
+        if (scale > 1) {
+          setScale(1);
+          setPanX(0);
+          setPanY(0);
+        } else {
+          setScale(2.5);
+        }
+        lastTapRef.current = 0;
+        return;
+      }
+      lastTapRef.current = now;
+      touchStartX.current = t.clientX;
+      if (scale > 1) {
+        panRef.current = {
+          startX: t.clientX,
+          startY: t.clientY,
+          initPanX: panX,
+          initPanY: panY,
+        };
+      }
+    }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
+    if (e.touches.length === 2 && pinchRef.current) {
+      const newScale = Math.min(
+        4,
+        Math.max(
+          1,
+          pinchRef.current.startScale *
+            (getDist(e.touches) / pinchRef.current.startDist),
+        ),
+      );
+      setScale(newScale);
+      if (newScale <= 1.05) {
+        setPanX(0);
+        setPanY(0);
+      }
+      return;
+    }
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      if (scale > 1 && panRef.current) {
+        setPanX(panRef.current.initPanX + t.clientX - panRef.current.startX);
+        setPanY(panRef.current.initPanY + t.clientY - panRef.current.startY);
+      } else if (scale <= 1) {
+        setSwipeDelta(t.clientX - touchStartX.current);
+      }
+    }
   };
 
   const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
-    const threshold = 50; // 最小滑動距離
-
-    if (Math.abs(diff) < threshold) return;
-
-    if (diff > 0) {
-      // Swipe left - 下一張
-      setCarouselIndex((prev) => Math.min(totalSlides - 1, prev + 1));
-    } else {
-      // Swipe right - 上一張
-      setCarouselIndex((prev) => Math.max(0, prev - 1));
+    pinchRef.current = null;
+    panRef.current = null;
+    if (scale < 1.1) {
+      setScale(1);
+      setPanX(0);
+      setPanY(0);
+    }
+    const delta = swipeDelta;
+    if (Math.abs(delta) > 0) {
+      setSwipeDelta(0);
+      if (delta < -50)
+        setCarouselIndex((prev) => Math.min(totalSlides - 1, prev + 1));
+      else if (delta > 50) setCarouselIndex((prev) => Math.max(0, prev - 1));
     }
   };
 
@@ -275,7 +354,7 @@ export default function ProductSheet({
       <div className="h-full flex flex-col max-w-[480px] mx-auto animate-slide-up">
         {/* Image Carousel Section - 全寬 1:1 */}
         <div
-          className="relative w-full aspect-square"
+          className="relative w-full aspect-square overflow-hidden"
           style={{ backgroundColor: `${tmpl.card}` }}
         >
           {/* Close button - 右上角 */}
@@ -305,6 +384,17 @@ export default function ProductSheet({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
+            style={{
+              transform:
+                scale <= 1 && swipeDelta !== 0
+                  ? `translateX(${swipeDelta}px)`
+                  : undefined,
+              transition:
+                swipeDelta === 0 && scale <= 1
+                  ? "transform 0.22s ease-out"
+                  : "none",
+              cursor: scale > 1 ? "grab" : "default",
+            }}
           >
             {carouselSlides.map((slide, idx) => (
               <div
@@ -323,14 +413,27 @@ export default function ProductSheet({
                     allowFullScreen
                   />
                 ) : (
-                  <Image
-                    src={slide}
-                    alt={product.title}
-                    fill
-                    className="object-cover"
-                    sizes="480px"
-                    priority={idx === 0}
-                  />
+                  <div
+                    className="w-full h-full"
+                    style={
+                      idx === carouselIndex && scale > 1
+                        ? {
+                            transform: `scale(${scale}) translate(${panX / scale}px, ${panY / scale}px)`,
+                            transformOrigin: "center",
+                            transition: "none",
+                          }
+                        : undefined
+                    }
+                  >
+                    <Image
+                      src={slide}
+                      alt={product.title}
+                      fill
+                      className="object-cover"
+                      sizes="480px"
+                      priority={idx === 0}
+                    />
+                  </div>
                 )}
               </div>
             ))}
