@@ -200,11 +200,12 @@ export const translations = {
       notFound: "Order not found.",
       currentStatus: "Current Status:",
       backHome: "Back to Home",
-      statusNote: "This order is currently in status \"{status}\".",
+      statusNote: 'This order is currently in status "{status}".',
     },
     errorPage: {
       notFoundTitle: "Page Not Found",
-      notFoundDesc: "The page you're looking for doesn't exist or has been moved.",
+      notFoundDesc:
+        "The page you're looking for doesn't exist or has been moved.",
       backToHome: "Back to Home",
       errorTitle: "Something Went Wrong",
       errorDesc: "An unexpected error occurred. Please try again.",
@@ -226,8 +227,10 @@ export const translations = {
       defaultMessage: "Hi! I'd like to ask a question",
       contactStore: "WhatsApp Store",
       contactCustomer: "WhatsApp Customer",
-      orderContactStoreMessage: "Hi, I just placed an order at {storeName}, order #{orderNumber}. I'd like to confirm the order status.",
-      orderContactCustomerMessage: "Hi {customerName}, your order #{orderNumber} has been confirmed. We'll arrange it as soon as possible.",
+      orderContactStoreMessage:
+        "Hi, I just placed an order at {storeName}, order #{orderNumber}. I'd like to confirm the order status.",
+      orderContactCustomerMessage:
+        "Hi {customerName}, your order #{orderNumber} has been confirmed. We'll arrange it as soon as possible.",
     },
     admin: {
       common: {
@@ -278,7 +281,8 @@ export const translations = {
         topProductsTitle: "Top Selling Products",
         noSalesData: "No sales data yet",
         upgradeTitle: "Unlock Full Analytics",
-        upgradeDesc: "Upgrade to Lite or Pro plan to access detailed analytics, charts, and top products.",
+        upgradeDesc:
+          "Upgrade to Lite or Pro plan to access detailed analytics, charts, and top products.",
         topSellersTitle: "Top Selling Products",
         topSellersDesc: "Best-selling products by order volume",
         topSellersRange7d: "7 Days",
@@ -289,7 +293,8 @@ export const translations = {
         topSellersRevenue: "Revenue",
         topSellersEmpty: "No sales data yet",
         topSellersProOnly: "Unlock Top Sellers Analytics",
-        topSellersProDesc: "Upgrade to Pro plan to see your top 10 best-selling products with images, revenue, and time range filters.",
+        topSellersProDesc:
+          "Upgrade to Pro plan to see your top 10 best-selling products with images, revenue, and time range filters.",
         hotBadge: "Hot",
         adminLabel: "Admin",
         viewAllProducts: "View All Products",
@@ -543,11 +548,14 @@ export const translations = {
         filterToday: "Today",
         filter7d: "7 Days",
         filter30d: "30 Days",
-        empty: "No abandoned carts yet. When customers add items to cart but don't complete payment, they will appear here automatically.",
+        empty:
+          "No abandoned carts yet. When customers add items to cart but don't complete payment, they will appear here automatically.",
         proFeature: "Pro Feature",
-        proFeatureDesc: "Cart recovery is available on the Pro plan. Upgrade to recover abandoned carts and boost your revenue.",
+        proFeatureDesc:
+          "Cart recovery is available on the Pro plan. Upgrade to recover abandoned carts and boost your revenue.",
         upgrade: "Upgrade to Pro",
-        whatsappMessage: "Hi {customerName}, you previously selected {itemName}. Still interested? Complete your purchase: {checkoutLink}",
+        whatsappMessage:
+          "Hi {customerName}, you previously selected {itemName}. Still interested? Complete your purchase: {checkoutLink}",
         minutesAgo: "{n}m ago",
         hoursAgo: "{n}h ago",
         daysAgo: "{n}d ago",
@@ -565,7 +573,8 @@ export const translations = {
         sortByRecent: "Recent",
         sortBySpent: "Top Spender",
         noCustomers: "No customers yet",
-        noCustomersDesc: "Customer data will appear here after orders are placed.",
+        noCustomersDesc:
+          "Customer data will appear here after orders are placed.",
         noResults: "No customers found",
         noResultsDesc: "Try a different search term.",
         viewDetails: "View Details",
@@ -574,11 +583,19 @@ export const translations = {
         orderHistory: "Order History",
         totalOrders: "Total Orders",
         proFeature: "Pro Feature",
-        proFeatureDesc: "Customer management is available on the Pro plan. Upgrade to access your CRM.",
+        proFeatureDesc:
+          "Customer management is available on the Pro plan. Upgrade to access your CRM.",
         upgrade: "Upgrade to Pro",
         back: "Back to Customers",
         showing: "Showing",
         customersCount: "customers",
+        repeatCustomer: "Repeat",
+        vip: "VIP",
+        notes: "Customer Notes",
+        addNote: "Add a note...",
+        saveNote: "Save Note",
+        savingNote: "Saving...",
+        noNotes: "No notes yet",
       },
       login: {
         heading: "Log in to your store",
@@ -828,8 +845,10 @@ export const translations = {
       defaultMessage: "你好！我想查詢",
       contactStore: "WhatsApp 聯絡店主",
       contactCustomer: "WhatsApp 客人",
-      orderContactStoreMessage: "你好，我啱啱喺 {storeName} 落咗單，訂單號 #{orderNumber}，想確認訂單狀態。",
-      orderContactCustomerMessage: "你好 {customerName}，你嘅訂單 #{orderNumber} 已確認，我哋會盡快安排。",
+      orderContactStoreMessage:
+        "你好，我啱啱喺 {storeName} 落咗單，訂單號 #{orderNumber}，想確認訂單狀態。",
+      orderContactCustomerMessage:
+        "你好 {customerName}，你嘅訂單 #{orderNumber} 已確認，我哋會盡快安排。",
     },
     admin: {
       common: {
@@ -880,7 +899,8 @@ export const translations = {
         topProductsTitle: "熱賣產品 Top 5",
         noSalesData: "暫無銷售數據",
         upgradeTitle: "解鎖完整數據分析",
-        upgradeDesc: "升級至 Lite 或 Pro 計劃，即可查看詳細分析、圖表及熱賣產品。",
+        upgradeDesc:
+          "升級至 Lite 或 Pro 計劃，即可查看詳細分析、圖表及熱賣產品。",
         topSellersTitle: "熱賣排行 Top 10",
         topSellersDesc: "按銷量排列嘅最暢銷產品",
         topSellersRange7d: "7 日",
@@ -891,7 +911,8 @@ export const translations = {
         topSellersRevenue: "收入",
         topSellersEmpty: "暫無銷售數據",
         topSellersProOnly: "解鎖熱賣排行分析",
-        topSellersProDesc: "升級至 Pro 計劃，即可查看 Top 10 熱賣產品，包括圖片、收入及時間篩選。",
+        topSellersProDesc:
+          "升級至 Pro 計劃，即可查看 Top 10 熱賣產品，包括圖片、收入及時間篩選。",
         hotBadge: "熱賣",
         adminLabel: "管理",
         viewAllProducts: "查看所有產品",
@@ -1147,9 +1168,11 @@ export const translations = {
         filter30d: "30日內",
         empty: "暫無棄單記錄。當客人加入購物車但未完成付款，會自動出現。",
         proFeature: "Pro 專屬功能",
-        proFeatureDesc: "棄單挽回係 Pro 方案功能。升級即可挽回棄單，提升營業額。",
+        proFeatureDesc:
+          "棄單挽回係 Pro 方案功能。升級即可挽回棄單，提升營業額。",
         upgrade: "升級至 Pro",
-        whatsappMessage: "Hi {customerName}，你之前揀咗 {itemName}，仲有興趣嗎？完成購買：{checkoutLink}",
+        whatsappMessage:
+          "Hi {customerName}，你之前揀咗 {itemName}，仲有興趣嗎？完成購買：{checkoutLink}",
         minutesAgo: "{n}分鐘前",
         hoursAgo: "{n}小時前",
         daysAgo: "{n}日前",
@@ -1181,6 +1204,13 @@ export const translations = {
         back: "返回客戶列表",
         showing: "顯示",
         customersCount: "位客戶",
+        repeatCustomer: "回頭客",
+        vip: "VIP",
+        notes: "客戶備註",
+        addNote: "新增備註...",
+        saveNote: "儲存備註",
+        savingNote: "儲存中...",
+        noNotes: "暫無備註",
       },
       login: {
         heading: "登入你嘅商店",

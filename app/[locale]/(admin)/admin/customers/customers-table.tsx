@@ -165,8 +165,20 @@ export function CustomersTable({
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 {/* Left: Customer info */}
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-zinc-900">
-                    {customer.customerName}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-zinc-900">
+                      {customer.customerName}
+                    </span>
+                    {customer.orderCount >= 2 && (
+                      <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700 border border-blue-100">
+                        🔄 {locale === "zh-HK" ? "回頭客" : "Repeat"}
+                      </span>
+                    )}
+                    {customer.totalSpent >= 1000 && (
+                      <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 border border-amber-100">
+                        ⭐ VIP
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-zinc-500 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="font-mono">{customer.phone}</span>

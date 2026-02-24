@@ -367,6 +367,7 @@ model Tenant {
   productVariants      ProductVariant[]
   attributeDefinitions AttributeDefinition[]
   paymentConfigs       TenantPaymentConfig[]
+  customerNotes        CustomerNote[]
 }
 
 model TenantAdmin {
@@ -568,6 +569,19 @@ model TenantPaymentConfig {
 
   @@unique([tenantId, providerId])
   @@index([tenantId])
+}
+
+model CustomerNote {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  phone     String
+  note      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, phone])
+  @@index([createdAt])
 }
 
 model OtpCode {
