@@ -99,6 +99,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
       )
     : products;
 
+  const { grid: allGrid } = splitProducts(products);
   const { featured, grid } = splitProducts(filteredProducts);
 
   // Load cart from localStorage on mount
@@ -265,6 +266,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
         {/* Light zone — Product grid */}
         <ProductGrid
           products={grid}
+          allProducts={allGrid}
           currency={currency}
           onAdd={handleCardAdd}
           onTap={handleProductTap}
