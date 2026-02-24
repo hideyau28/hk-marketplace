@@ -2,7 +2,7 @@ export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
 import { authenticateAdmin } from "@/lib/auth/admin-auth";
-import { checkPlanLimit } from "@/lib/plan";
+import { checkPlanLimit, hasFeature } from "@/lib/plan";
 import { prisma } from "@/lib/prisma";
 
 type ImportPayload = {
@@ -10,10 +10,13 @@ type ImportPayload = {
   brand?: unknown;
   category?: unknown;
   price?: unknown;
+  originalPrice?: unknown;
   description?: unknown;
   imageUrl?: unknown;
   sizeSystem?: unknown;
   sizes?: unknown;
+  stock?: unknown;
+  productType?: unknown;
   active?: unknown;
 };
 
@@ -44,7 +47,9 @@ function parseActive(value: unknown) {
 
 function parseSizes(value: unknown) {
   if (Array.isArray(value)) {
-    const list = value.map((v) => (typeof v === "string" ? v.trim() : "")).filter(Boolean);
+    const list = value
+      .map((v) => (typeof v === "string" ? v.trim() : ""))
+      .filter(Boolean);
     return list.length > 0 ? list : null;
   }
   if (typeof value === "string") {
@@ -65,9 +70,23 @@ type FailedRow = {
 export const POST = withApi(async (req: Request) => {
   const { tenantId } = await authenticateAdmin(req);
 
+  // Feature gate: CSV import requires Lite+ plan
+  const csvAllowed = await hasFeature(tenantId, "csv_export");
+  if (!csvAllowed) {
+    throw new ApiError(
+      403,
+      "FORBIDDEN",
+      "CSV import requires Lite or Pro plan. Please upgrade.",
+    );
+  }
+
   const skuCheck = await checkPlanLimit(tenantId, "sku");
   if (!skuCheck.allowed) {
-    throw new ApiError(403, "FORBIDDEN", "SKU limit reached for your plan. Upgrade to import more products.");
+    throw new ApiError(
+      403,
+      "FORBIDDEN",
+      "SKU limit reached for your plan. Upgrade to import more products.",
+    );
   }
 
   let body: unknown;
@@ -96,10 +115,17 @@ export const POST = withApi(async (req: Request) => {
       const sizeSystem = toOptionalString(entry.sizeSystem);
       const sizes = parseSizes(entry.sizes);
       const price = parsePrice(entry.price);
+      const originalPrice = parsePrice(entry.originalPrice);
       const active = parseActive(entry.active);
+      const productType = toOptionalString(entry.productType);
 
-      if (!title || !brand || price === null) {
-        throw new Error("Missing required fields");
+      // stock: parse as integer, default 0
+      const stockRaw = parsePrice(entry.stock);
+      const stock =
+        stockRaw !== null ? Math.max(0, Math.round(stockRaw)) : undefined;
+
+      if (!title || price === null) {
+        throw new Error("Missing required fields (title, price)");
       }
 
       if ((sizes && !sizeSystem) || (sizeSystem && !sizes)) {
@@ -112,10 +138,13 @@ export const POST = withApi(async (req: Request) => {
           title,
           brand,
           price,
+          originalPrice,
           category,
           imageUrl,
           sizeSystem,
           sizes: sizes ?? undefined,
+          stock: stock ?? 0,
+          productType,
           active: active ?? true,
         },
       });
