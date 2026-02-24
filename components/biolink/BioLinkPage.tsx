@@ -350,23 +350,30 @@ export default function BioLinkPage({ tenant, products }: Props) {
           </div>
         )}
 
-        {/* Footer */}
+        {/* Footer — growth CTA */}
         <footer
-          className="py-4 pb-20 text-center border-t"
+          className="py-5 pb-20 text-center border-t"
           style={{ backgroundColor: tmpl.bg, borderColor: `${tmpl.subtext}20` }}
         >
-          <span
-            className="text-[11px] font-medium"
-            style={{ color: tmpl.subtext }}
-          >
-            Powered by{" "}
-          </span>
           <a
             href="/"
-            className="text-[11px] font-bold hover:underline"
+            className="inline-flex items-center gap-1.5 text-[12px] font-bold transition-opacity hover:opacity-80 active:opacity-60"
             style={{ color: tmpl.accent }}
           >
-            Wowlix
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              <polyline points="9,22 9,12 15,12 15,22" />
+            </svg>
+            用 WoWlix 免費開店 →
           </a>
         </footer>
       </div>
