@@ -249,7 +249,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           }
         });
       },
-      { threshold: 0.15 },
+      { threshold: 0.15, rootMargin: "300px" },
     );
     document
       .querySelectorAll(".scroll-reveal")
