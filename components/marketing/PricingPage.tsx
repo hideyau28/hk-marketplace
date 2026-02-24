@@ -246,8 +246,8 @@ function getDemos(isZh: boolean) {
       textColor: "#3D2E1E",
       accent: "#8B7355",
       images: [
-        "https://images.unsplash.com/photo-1602607663923-bc2f5e36a8f4?w=200&q=80",
-        "https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=200&q=80",
+        "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=200&q=80",
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&q=80",
       ],
     },
     {
