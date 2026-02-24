@@ -4,7 +4,7 @@ import { withApi } from "@/lib/api/route-helpers";
 import { authenticateAdmin } from "@/lib/auth/admin-auth";
 
 const HEADER =
-  "title,brand,category,price,description,imageUrl,sizeSystem,sizes,active";
+  "title,brand,category,price,originalPrice,description,imageUrl,sizeSystem,sizes,stock,productType,active";
 
 export const GET = withApi(async (req: Request) => {
   await authenticateAdmin(req);

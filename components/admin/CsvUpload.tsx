@@ -2,16 +2,19 @@
 
 import { useRef, useState } from "react";
 
-const REQUIRED_COLUMNS = ["title", "brand", "price"];
+const REQUIRED_COLUMNS = ["title", "price"];
 const ALL_COLUMNS = [
   "title",
   "brand",
   "category",
   "price",
+  "originalPrice",
   "description",
   "imageUrl",
   "sizeSystem",
   "sizes",
+  "stock",
+  "productType",
   "active",
 ];
 
@@ -19,13 +22,16 @@ type ParsedRow = {
   raw: Record<string, string>;
   normalized: {
     title: string;
-    brand: string;
+    brand: string | null;
     category: string | null;
     price: number | null;
+    originalPrice: number | null;
     description: string | null;
     imageUrl: string | null;
     sizeSystem: string | null;
     sizes: string[] | null;
+    stock: number | null;
+    productType: string | null;
     active: boolean | null;
   };
   errors: string[];
@@ -69,9 +75,9 @@ function parseCsv(text: string): string[][] {
     const char = content[i];
     const next = content[i + 1];
 
-    if (char === "\"") {
-      if (inQuotes && next === "\"") {
-        field += "\"";
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        field += '"';
         i += 1;
       } else {
         inQuotes = !inQuotes;
@@ -123,7 +129,8 @@ function parseBoolean(value: string) {
 
 function parseRows(text: string) {
   const rows = parseCsv(text);
-  if (rows.length === 0) return { headerError: "CSV is empty.", parsed: [] as ParsedRow[] };
+  if (rows.length === 0)
+    return { headerError: "CSV is empty.", parsed: [] as ParsedRow[] };
 
   const headers = rows[0].map((h) => normalizeHeader(h));
   const headerIndex = new Map<string, number>();
@@ -155,6 +162,19 @@ function parseRows(text: string) {
       errors.push("Price must be a number");
     }
 
+    const originalPrice = raw.originalPrice ? Number(raw.originalPrice) : null;
+    if (originalPrice !== null && !Number.isFinite(originalPrice)) {
+      errors.push("originalPrice must be a number");
+    }
+
+    const stock = raw.stock ? Number(raw.stock) : null;
+    if (
+      stock !== null &&
+      (!Number.isFinite(stock) || stock < 0 || !Number.isInteger(stock))
+    ) {
+      errors.push("stock must be a non-negative integer");
+    }
+
     for (const required of REQUIRED_COLUMNS) {
       if (!raw[required]) errors.push(`${required} is required`);
     }
@@ -179,13 +199,19 @@ function parseRows(text: string) {
       raw,
       normalized: {
         title: raw.title,
-        brand: raw.brand,
+        brand: raw.brand || null,
         category: raw.category || null,
         price: price === null || Number.isNaN(price) ? null : price,
+        originalPrice:
+          originalPrice === null || Number.isNaN(originalPrice)
+            ? null
+            : originalPrice,
         description: raw.description || null,
         imageUrl: raw.imageUrl || null,
         sizeSystem,
         sizes,
+        stock: stock === null || Number.isNaN(stock) ? null : stock,
+        productType: raw.productType || null,
         active,
       },
       errors,
@@ -195,7 +221,11 @@ function parseRows(text: string) {
   return { headerError: "", parsed };
 }
 
-export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps) {
+export default function CsvUpload({
+  open,
+  onClose,
+  onImported,
+}: CsvUploadProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [fileName, setFileName] = useState("");
   const [rows, setRows] = useState<ParsedRow[]>([]);
@@ -243,10 +273,13 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
         brand: row.normalized.brand,
         category: row.normalized.category,
         price: row.normalized.price,
+        originalPrice: row.normalized.originalPrice,
         description: row.normalized.description,
         imageUrl: row.normalized.imageUrl,
         sizeSystem: row.normalized.sizeSystem,
         sizes: row.normalized.sizes,
+        stock: row.normalized.stock,
+        productType: row.normalized.productType,
         active: row.normalized.active ?? true,
       }));
 
@@ -290,7 +323,9 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-zinc-900">Import CSV</h2>
-            <p className="mt-1 text-sm text-zinc-500">Upload a CSV file to batch create products.</p>
+            <p className="mt-1 text-sm text-zinc-500">
+              Upload a CSV file to batch create products.
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -309,9 +344,13 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
               onDragOver={(event) => event.preventDefault()}
               className="flex h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 px-4 text-center text-sm text-zinc-500 hover:border-olive-500 hover:text-olive-700"
             >
-              <div className="text-base font-semibold text-zinc-700">Upload CSV</div>
+              <div className="text-base font-semibold text-zinc-700">
+                Upload CSV
+              </div>
               <div className="mt-2">Drag & drop or click to select</div>
-              {fileName && <div className="mt-3 text-xs text-zinc-500">{fileName}</div>}
+              {fileName && (
+                <div className="mt-3 text-xs text-zinc-500">{fileName}</div>
+              )}
             </div>
             <input
               ref={inputRef}
@@ -322,7 +361,7 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
             />
 
             <div className="mt-4 space-y-2 text-xs text-zinc-500">
-              <div>Required: title, brand, price.</div>
+              <div>Required: title, price.</div>
               <div>Ensure sizeSystem matches sizes if provided.</div>
             </div>
 
@@ -341,7 +380,9 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
                 disabled={importing || validRows.length === 0 || !!headerError}
                 className="flex-1 rounded-xl bg-olive-600 px-3 py-2 text-xs font-semibold text-white hover:bg-olive-700 disabled:opacity-50"
               >
-                {importing ? `Importing ${progress.current}/${progress.total}...` : "Confirm Import"}
+                {importing
+                  ? `Importing ${progress.current}/${progress.total}...`
+                  : "Confirm Import"}
               </button>
             </div>
           </div>
@@ -364,13 +405,19 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
                 {importing && progress.total > 0 && (
                   <div className="mt-3 rounded-2xl border border-olive-200 bg-olive-50 px-4 py-3">
                     <div className="flex items-center justify-between text-xs text-olive-700 mb-2">
-                      <span className="font-semibold">Importing products...</span>
-                      <span>{progress.current} / {progress.total}</span>
+                      <span className="font-semibold">
+                        Importing products...
+                      </span>
+                      <span>
+                        {progress.current} / {progress.total}
+                      </span>
                     </div>
                     <div className="h-2 bg-olive-100 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-olive-600 transition-all duration-300"
-                        style={{ width: `${(progress.current / progress.total) * 100}%` }}
+                        style={{
+                          width: `${(progress.current / progress.total) * 100}%`,
+                        }}
                       />
                     </div>
                   </div>
@@ -382,7 +429,9 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
                       Import Summary
                     </div>
                     <div className="text-xs text-olive-700 space-y-1">
-                      <div>✓ Success: {result.successCount} products imported</div>
+                      <div>
+                        ✓ Success: {result.successCount} products imported
+                      </div>
                       <div>✗ Failed: {result.failureCount} rows</div>
                     </div>
                     {result.failures && result.failures.length > 0 && (
@@ -390,14 +439,20 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
                         <table className="w-full text-xs">
                           <thead className="sticky top-0 bg-red-100 text-red-700">
                             <tr>
-                              <th className="px-2 py-1 text-left font-medium">Row</th>
-                              <th className="px-2 py-1 text-left font-medium">Reason</th>
+                              <th className="px-2 py-1 text-left font-medium">
+                                Row
+                              </th>
+                              <th className="px-2 py-1 text-left font-medium">
+                                Reason
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="text-red-600">
                             {result.failures.map((failure, idx) => (
                               <tr key={idx} className="border-t border-red-200">
-                                <td className="px-2 py-1">{failure.rowNumber}</td>
+                                <td className="px-2 py-1">
+                                  {failure.rowNumber}
+                                </td>
                                 <td className="px-2 py-1">{failure.reason}</td>
                               </tr>
                             ))}
@@ -419,16 +474,24 @@ export default function CsvUpload({ open, onClose, onImported }: CsvUploadProps)
                     <thead className="sticky top-0 bg-zinc-50 text-zinc-500">
                       <tr>
                         {ALL_COLUMNS.map((col) => (
-                          <th key={col} className="px-3 py-2 text-left font-medium">
+                          <th
+                            key={col}
+                            className="px-3 py-2 text-left font-medium"
+                          >
                             {col}
                           </th>
                         ))}
-                        <th className="px-3 py-2 text-left font-medium">errors</th>
+                        <th className="px-3 py-2 text-left font-medium">
+                          errors
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {rows.map((row, idx) => (
-                        <tr key={`${row.raw.title}-${idx}`} className={row.errors.length ? "bg-red-50" : ""}>
+                        <tr
+                          key={`${row.raw.title}-${idx}`}
+                          className={row.errors.length ? "bg-red-50" : ""}
+                        >
                           {ALL_COLUMNS.map((col) => (
                             <td key={col} className="px-3 py-2 text-zinc-700">
                               {row.raw[col] || "—"}
