@@ -1780,19 +1780,34 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       {d.images.map((img, n) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <div
                           key={n}
-                          src={img}
-                          alt={d.name}
                           style={{
                             width: 60,
                             height: 60,
                             borderRadius: 8,
-                            objectFit: "cover",
-                            display: "block",
+                            background: `${d.accent}30`,
+                            overflow: "hidden",
+                            flexShrink: 0,
                           }}
-                        />
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={img}
+                            alt=""
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              display: "block",
+                            }}
+                            onError={(e) => {
+                              (
+                                e.currentTarget as HTMLImageElement
+                              ).style.display = "none";
+                            }}
+                          />
+                        </div>
                       ))}
                     </div>
                     <div
