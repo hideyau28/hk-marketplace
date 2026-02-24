@@ -68,39 +68,112 @@ function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
           <div style={{ height: 48 }} />
 
           {/* Store header */}
-          <div style={{ textAlign: "center" as const, padding: "8px 16px 12px" }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 12,
-              background: "#FF9500", margin: "0 auto 6px",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff", fontWeight: 800, fontSize: 16,
-            }}>
+          <div
+            style={{ textAlign: "center" as const, padding: "8px 16px 12px" }}
+          >
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                background: "#FF9500",
+                margin: "0 auto 6px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontWeight: 800,
+                fontSize: 16,
+              }}
+            >
               M
             </div>
             <div style={{ color: "#fff", fontSize: 13, fontWeight: 700 }}>
               {t.mockupName}
             </div>
-            <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, marginTop: 2 }}>
+            <div
+              style={{
+                color: "rgba(255,255,255,0.4)",
+                fontSize: 10,
+                marginTop: 2,
+              }}
+            >
               {t.mockupDesc}
             </div>
           </div>
 
           {/* Product grid 2x2 */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, padding: "4px 10px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 6,
+              padding: "4px 10px",
+            }}
+          >
             {[
-              { color: "#FFE0EB", name: t.mockupProduct1, price: t.mockupPrice1 },
-              { color: "#E8DDD3", name: t.mockupProduct2, price: t.mockupPrice2 },
-              { color: "#D1E8FF", name: t.mockupProduct3, price: t.mockupPrice3 },
-              { color: "#E8E0FF", name: t.mockupProduct4, price: t.mockupPrice4 },
+              {
+                img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=120&q=80",
+                name: t.mockupProduct1,
+                price: t.mockupPrice1,
+              },
+              {
+                img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=120&q=80",
+                name: t.mockupProduct2,
+                price: t.mockupPrice2,
+              },
+              {
+                img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=120&q=80",
+                name: t.mockupProduct3,
+                price: t.mockupPrice3,
+              },
+              {
+                img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=120&q=80",
+                name: t.mockupProduct4,
+                price: t.mockupPrice4,
+              },
             ].map((p, i) => (
-              <div key={i} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 8, overflow: "hidden" }}>
-                <div style={{ height: 48, background: p.color, opacity: 0.2 }} />
+              <div
+                key={i}
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  borderRadius: 8,
+                  overflow: "hidden",
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p.img}
+                  alt={p.name}
+                  style={{
+                    width: "100%",
+                    height: 48,
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
                 <div style={{ padding: "4px 6px" }}>
-                  <div style={{ color: "#fff", fontSize: 8, fontWeight: 600, lineHeight: 1.3 }}>{p.name}</div>
-                  <div style={{
-                    color: "#FF9500", fontSize: 9, fontWeight: 700, marginTop: 1,
-                    fontFamily: "'JetBrains Mono', monospace",
-                  }}>{p.price}</div>
+                  <div
+                    style={{
+                      color: "#fff",
+                      fontSize: 8,
+                      fontWeight: 600,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {p.name}
+                  </div>
+                  <div
+                    style={{
+                      color: "#FF9500",
+                      fontSize: 9,
+                      fontWeight: 700,
+                      marginTop: 1,
+                      fontFamily: "'JetBrains Mono', monospace",
+                    }}
+                  >
+                    {p.price}
+                  </div>
                 </div>
               </div>
             ))}
@@ -108,10 +181,17 @@ function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
 
           {/* CTA button */}
           <div style={{ padding: "8px 10px" }}>
-            <div style={{
-              background: "#FF9500", borderRadius: 8, padding: "7px",
-              textAlign: "center" as const, color: "#fff", fontSize: 10, fontWeight: 700,
-            }}>
+            <div
+              style={{
+                background: "#FF9500",
+                borderRadius: 8,
+                padding: "7px",
+                textAlign: "center" as const,
+                color: "#fff",
+                fontSize: 10,
+                fontWeight: 700,
+              }}
+            >
               {t.mockupCta}
             </div>
           </div>
@@ -121,15 +201,21 @@ function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
       {/* Floating notifications */}
       <div className="hero-float hero-float-1">
         <span style={{ fontSize: 12 }}>🔔</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>新訂單！</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>
+          新訂單！
+        </span>
       </div>
       <div className="hero-float hero-float-2">
         <span style={{ fontSize: 14 }}>💰</span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>PayMe 待確認</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+          PayMe 待確認
+        </span>
       </div>
       <div className="hero-float hero-float-3">
         <span style={{ fontSize: 12 }}>📦</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#FF9500" }}>新訂單 +1</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#FF9500" }}>
+          新訂單 +1
+        </span>
       </div>
     </div>
   );
@@ -141,7 +227,7 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
 
   return (
     <section className="hero-section">
-<style>{`
+      <style>{`
         @keyframes heroFadeInUp {
           from { opacity: 0; transform: translateY(24px); }
           to   { opacity: 1; transform: translateY(0); }
