@@ -34,14 +34,14 @@ const T = {
     // How It Works
     howTitle: "三步開店，簡單到唔信",
     howStep1Num: "01",
-    howStep1Title: "上架商品",
-    howStep1Desc: "影相上架，填好價錢同庫存，30 秒搞掂",
+    howStep1Title: "填店名",
+    howStep1Desc: "取個名，30 秒搞掂",
     howStep2Num: "02",
-    howStep2Title: "設定收款",
-    howStep2Desc: "FPS、PayMe、AlipayHK，客人自助付款",
+    howStep2Title: "選風格",
+    howStep2Desc: "4 款主題模板任你揀",
     howStep3Num: "03",
-    howStep3Title: "分享 Link 開始收單",
-    howStep3Desc: "將 Link 放入 IG Bio，客人即刻可以落單付款",
+    howStep3Title: "上架開賣",
+    howStep3Desc: "影相上架，即刻開始收單",
 
     // Pricing
     pricingTitle: "簡單透明，0% 佣金",
@@ -143,15 +143,14 @@ const T = {
 
     howTitle: "3 Steps to Launch. It's That Simple.",
     howStep1Num: "01",
-    howStep1Title: "List Products",
-    howStep1Desc: "Snap photos, set prices and inventory — done in 30 seconds",
+    howStep1Title: "Name Your Shop",
+    howStep1Desc: "Pick a name — done in 30 seconds",
     howStep2Num: "02",
-    howStep2Title: "Set Up Payments",
-    howStep2Desc: "FPS, PayMe, AlipayHK — customers pay on their own",
+    howStep2Title: "Pick a Style",
+    howStep2Desc: "4 theme templates to match your vibe",
     howStep3Num: "03",
-    howStep3Title: "Share Link & Start Selling",
-    howStep3Desc:
-      "Drop the link in your IG Bio, customers can order & pay instantly",
+    howStep3Title: "List & Sell",
+    howStep3Desc: "Upload photos and start taking orders",
 
     pricingTitle: "Simple & Transparent. 0% Commission.",
     pricingSub: "What you earn is what you keep — we never take a cut",
@@ -288,19 +287,19 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
       num: t.howStep1Num,
       title: t.howStep1Title,
       desc: t.howStep1Desc,
-      icon: "📦",
+      icon: "✏️",
     },
     {
       num: t.howStep2Num,
       title: t.howStep2Title,
       desc: t.howStep2Desc,
-      icon: "💳",
+      icon: "🎨",
     },
     {
       num: t.howStep3Num,
       title: t.howStep3Title,
       desc: t.howStep3Desc,
-      icon: "🔗",
+      icon: "🚀",
     },
   ];
 
@@ -388,6 +387,12 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         .js-scroll-ready .scroll-visible { opacity: 1 !important; transform: translateY(0) !important; }
         .lp-pulse { animation: pulse 2s ease-in-out infinite; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ─── How-step stagger reveal ─── */
+        .js-scroll-ready .how-step { opacity: 0; }
+        .js-scroll-ready .scroll-visible .how-step {
+          animation: fadeInUp 0.6s cubic-bezier(0.33,1,0.68,1) both;
+        }
 
         /* ─── Mobile responsive ─── */
         @media (max-width: 640px) {
@@ -645,6 +650,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             {howSteps.map((step, i) => (
               <div
                 key={i}
+                className="how-step"
                 style={{
                   padding: "32px 24px",
                   background: "#161616",
@@ -652,6 +658,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   border: "1px solid rgba(255,255,255,0.06)",
                   textAlign: "left" as const,
                   transition: "all 0.3s",
+                  animationDelay: `${i * 200}ms`,
                 }}
               >
                 <div
