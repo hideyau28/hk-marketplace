@@ -24,6 +24,8 @@ type Props = {
     variant: string | null,
     qty: number,
   ) => void;
+  allProducts?: ProductForBioLink[];
+  onSwitchProduct?: (product: ProductForBioLink) => void;
 };
 
 export default function ProductSheet({
@@ -31,6 +33,8 @@ export default function ProductSheet({
   currency = "HKD",
   onClose,
   onAddToCart,
+  allProducts,
+  onSwitchProduct,
 }: Props) {
   const tmpl = useTemplate();
   const images = getAllImages(product);
@@ -263,6 +267,22 @@ export default function ProductSheet({
   const canAdd = isDual
     ? !!(selectedColor && selectedSize && selectedStock > 0)
     : !!(selectedSize && selectedStock > 0);
+
+  // 你可能鍾意 — 同 category 或隨機推薦，最多 4 件
+  const relatedProducts = (() => {
+    if (!allProducts || allProducts.length <= 1) return [];
+    const others = allProducts.filter((p) => p.id !== product.id);
+    // 優先同 category
+    const sameCategory = product.category
+      ? others.filter((p) => p.category === product.category)
+      : [];
+    if (sameCategory.length >= 4) return sameCategory.slice(0, 4);
+    // 不夠就補其他產品
+    const rest = others.filter(
+      (p) => !sameCategory.some((sc) => sc.id === p.id),
+    );
+    return [...sameCategory, ...rest].slice(0, 4);
+  })();
 
   // ─── Touch: pinch-to-zoom + swipe ───
 
@@ -723,6 +743,104 @@ export default function ProductSheet({
               </button>
             </div>
           </div>
+
+          {/* 你可能鍾意 */}
+          {relatedProducts.length > 0 && onSwitchProduct && (
+            <div>
+              <p
+                className="text-sm font-semibold mb-3 pb-2"
+                style={{
+                  color: tmpl.text,
+                  borderBottom: `1px solid ${sectionBorder}`,
+                }}
+              >
+                你可能鍾意
+              </p>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {relatedProducts.map((rp) => {
+                  const rpImages = getAllImages(rp);
+                  const rpHero = rpImages[0] || null;
+                  const rpOnSale =
+                    rp.originalPrice != null && rp.originalPrice > rp.price;
+                  return (
+                    <button
+                      key={rp.id}
+                      onClick={() => onSwitchProduct(rp)}
+                      className="flex-shrink-0 w-28 text-left"
+                    >
+                      <div
+                        className="relative aspect-square rounded-lg overflow-hidden mb-1.5"
+                        style={{ backgroundColor: `${tmpl.subtext}10` }}
+                      >
+                        {rpHero ? (
+                          <Image
+                            src={rpHero}
+                            alt={rp.title}
+                            fill
+                            className="object-cover"
+                            sizes="112px"
+                          />
+                        ) : (
+                          <div
+                            className="w-full h-full flex items-center justify-center"
+                            style={{ backgroundColor: `${tmpl.subtext}15` }}
+                          >
+                            <svg
+                              className="w-6 h-6"
+                              fill="none"
+                              stroke={tmpl.subtext}
+                              strokeWidth={1.5}
+                              viewBox="0 0 24 24"
+                              opacity={0.4}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <p
+                        className="text-xs font-medium leading-tight mb-0.5"
+                        style={{
+                          color: tmpl.text,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {rp.title}
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <span
+                          className="text-xs font-bold"
+                          style={{ color: tmpl.text }}
+                        >
+                          {formatPrice(rp.price, currency)}
+                        </span>
+                        {rpOnSale && (
+                          <span
+                            className="text-[10px] line-through"
+                            style={{ color: tmpl.subtext }}
+                          >
+                            {formatPrice(rp.originalPrice!, currency)}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Bottom padding for CTA */}
           <div className="h-20" />

@@ -331,6 +331,8 @@ export default function BioLinkPage({ tenant, products }: Props) {
             currency={currency}
             onClose={() => setSheetProduct(null)}
             onAddToCart={handleSheetAdd}
+            allProducts={products}
+            onSwitchProduct={setSheetProduct}
           />
         )}
 
