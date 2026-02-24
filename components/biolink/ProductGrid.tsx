@@ -13,6 +13,8 @@ type Props = {
   onAdd: (product: ProductForBioLink) => void;
   onTap?: (product: ProductForBioLink) => void;
   searchQuery?: string;
+  wishlist?: string[];
+  onToggleWishlist?: (productId: string) => void;
 };
 
 export default function ProductGrid({
@@ -22,6 +24,8 @@ export default function ProductGrid({
   onAdd,
   onTap,
   searchQuery,
+  wishlist,
+  onToggleWishlist,
 }: Props) {
   const tmpl = useTemplate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -38,17 +42,17 @@ export default function ProductGrid({
   );
 
   // Show tabs when total store products > 6 and at least 2 categories exist
-  const showTabs =
-    sourceForCategories.length > 6 && categories.length >= 2;
+  const showTabs = sourceForCategories.length > 6 && categories.length >= 2;
 
   // Filter displayed products by selected category
-  const displayProducts =
-    selectedCategory
-      ? products.filter((p) => p.category === selectedCategory)
-      : products;
+  const displayProducts = selectedCategory
+    ? products.filter((p) => p.category === selectedCategory)
+    : products;
 
   if (displayProducts.length === 0 && !showTabs) {
-    const emptyMessage = searchQuery ? "搵唔到商品" : "仲未有商品，快啲加第一件啦！";
+    const emptyMessage = searchQuery
+      ? "搵唔到商品"
+      : "仲未有商品，快啲加第一件啦！";
     return (
       <section className="px-4 py-12" style={{ backgroundColor: tmpl.bg }}>
         <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -138,7 +142,10 @@ export default function ProductGrid({
         </h2>
 
         {displayProducts.length === 0 ? (
-          <p className="text-sm py-8 text-center" style={{ color: tmpl.subtext }}>
+          <p
+            className="text-sm py-8 text-center"
+            style={{ color: tmpl.subtext }}
+          >
             {searchQuery ? "搵唔到商品" : "呢個分類暫時冇商品"}
           </p>
         ) : (
@@ -151,6 +158,10 @@ export default function ProductGrid({
                 onAdd={onAdd}
                 onTap={onTap}
                 priority={i === 0}
+                wishlisted={wishlist?.includes(p.id)}
+                onToggleWishlist={
+                  onToggleWishlist ? () => onToggleWishlist(p.id) : undefined
+                }
               />
             ))}
           </div>

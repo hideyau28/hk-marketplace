@@ -22,6 +22,8 @@ type Props = {
   onAdd: (product: ProductForBioLink) => void;
   onTap?: (product: ProductForBioLink) => void;
   priority?: boolean;
+  wishlisted?: boolean;
+  onToggleWishlist?: () => void;
 };
 
 export default function BioProductCard({
@@ -30,6 +32,8 @@ export default function BioProductCard({
   onAdd,
   onTap,
   priority = false,
+  wishlisted = false,
+  onToggleWishlist,
 }: Props) {
   const tmpl = useTemplate();
   const images = getAllImages(product);
@@ -160,6 +164,33 @@ export default function BioProductCard({
               )}
             </div>
           </div>
+        )}
+
+        {/* Wishlist heart */}
+        {onToggleWishlist && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleWishlist();
+            }}
+            aria-label={wishlisted ? "取消收藏" : "加入收藏"}
+            className="absolute top-2 right-2 z-20 w-7 h-7 rounded-full flex items-center justify-center transition-transform active:scale-90"
+            style={{ backgroundColor: "rgba(255,255,255,0.85)" }}
+          >
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill={wishlisted ? "#ef4444" : "none"}
+              stroke={wishlisted ? "#ef4444" : "#71717a"}
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+              />
+            </svg>
+          </button>
         )}
 
         {/* Video icon */}
