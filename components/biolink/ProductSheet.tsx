@@ -19,10 +19,19 @@ type Props = {
   product: ProductForBioLink;
   currency?: string;
   onClose: () => void;
-  onAddToCart: (product: ProductForBioLink, variant: string | null, qty: number) => void;
+  onAddToCart: (
+    product: ProductForBioLink,
+    variant: string | null,
+    qty: number,
+  ) => void;
 };
 
-export default function ProductSheet({ product, currency = "HKD", onClose, onAddToCart }: Props) {
+export default function ProductSheet({
+  product,
+  currency = "HKD",
+  onClose,
+  onAddToCart,
+}: Props) {
   const tmpl = useTemplate();
   const images = getAllImages(product);
   const dualVariant = getDualVariantData(product);
@@ -36,7 +45,9 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
   const isShoeSize = (() => {
     if (isDual) {
       const dims = dualVariant!.dimensions.map((d) => d.toLowerCase());
-      return dims.some((d) => d.includes("size") || d.includes("尺碼") || d.includes("us"));
+      return dims.some(
+        (d) => d.includes("size") || d.includes("尺碼") || d.includes("us"),
+      );
     }
     if (!product.sizes || typeof product.sizes !== "object") return false;
     const keys = Object.keys(product.sizes);
@@ -92,8 +103,10 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
   // 預設選第一個有貨組合
   useEffect(() => {
     if (isDual && dualVariant && colorDimIndex >= 0 && sizeDimIndex >= 0) {
-      const colorOptions = dualVariant.options[dualVariant.dimensions[colorDimIndex]] || [];
-      const sizeOptions = dualVariant.options[dualVariant.dimensions[sizeDimIndex]] || [];
+      const colorOptions =
+        dualVariant.options[dualVariant.dimensions[colorDimIndex]] || [];
+      const sizeOptions =
+        dualVariant.options[dualVariant.dimensions[sizeDimIndex]] || [];
       for (const c of colorOptions) {
         for (const s of sizeOptions) {
           // 組合 key 要按照原本 dimensions 嘅順序
@@ -117,9 +130,18 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
 
   // 計算目前選中組合嘅庫存
   const getSelectedStock = (): number => {
-    if (isDual && dualVariant && selectedColor && selectedSize && colorDimIndex >= 0) {
+    if (
+      isDual &&
+      dualVariant &&
+      selectedColor &&
+      selectedSize &&
+      colorDimIndex >= 0
+    ) {
       // 組合 key 要按照原本 dimensions 嘅順序
-      const key = colorDimIndex === 0 ? `${selectedColor}|${selectedSize}` : `${selectedSize}|${selectedColor}`;
+      const key =
+        colorDimIndex === 0
+          ? `${selectedColor}|${selectedSize}`
+          : `${selectedSize}|${selectedColor}`;
       return dualVariant.combinations[key]?.qty ?? 0;
     }
     if (singleVariants && selectedSize) {
@@ -141,7 +163,8 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
       const imgIdx = dualVariant.optionImages?.[color] ?? 0;
       setCarouselIndex(imgIdx);
       // 自動選第一個有貨尺碼
-      const sizeOptions = dualVariant.options[dualVariant.dimensions[sizeDimIndex]] || [];
+      const sizeOptions =
+        dualVariant.options[dualVariant.dimensions[sizeDimIndex]] || [];
       for (const s of sizeOptions) {
         const key = colorDimIndex === 0 ? `${color}|${s}` : `${s}|${color}`;
         const combo = dualVariant.combinations[key];
@@ -167,7 +190,10 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
         setShowError(true);
         return;
       }
-      const variantKey = colorDimIndex === 0 ? `${selectedColor}|${selectedSize}` : `${selectedSize}|${selectedColor}`;
+      const variantKey =
+        colorDimIndex === 0
+          ? `${selectedColor}|${selectedSize}`
+          : `${selectedSize}|${selectedColor}`;
       onAddToCart(product, variantKey, qty);
     } else {
       if (!selectedSize) {
@@ -184,7 +210,10 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
       const sizeDim = dualVariant.dimensions[sizeDimIndex];
       const sizeOptions = dualVariant.options[sizeDim] || [];
       return sizeOptions.map((opt) => {
-        const key = colorDimIndex === 0 ? `${selectedColor}|${opt}` : `${opt}|${selectedColor}`;
+        const key =
+          colorDimIndex === 0
+            ? `${selectedColor}|${opt}`
+            : `${opt}|${selectedColor}`;
         const combo = dualVariant.combinations[key];
         return {
           name: opt,
@@ -245,15 +274,28 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
       {/* Fullscreen modal */}
       <div className="h-full flex flex-col max-w-[480px] mx-auto animate-slide-up">
         {/* Image Carousel Section - 全寬 1:1 */}
-        <div className="relative w-full aspect-square" style={{ backgroundColor: `${tmpl.card}` }}>
+        <div
+          className="relative w-full aspect-square"
+          style={{ backgroundColor: `${tmpl.card}` }}
+        >
           {/* Close button - 右上角 */}
           <button
             onClick={onClose}
             aria-label="關閉"
             className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-lg flex items-center justify-center text-zinc-600 hover:text-zinc-900 active:scale-95 transition-all"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
 
@@ -268,7 +310,9 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
               <div
                 key={idx}
                 className={`absolute inset-0 transition-opacity duration-300 ${
-                  idx === carouselIndex ? "opacity-100" : "opacity-0 pointer-events-none"
+                  idx === carouselIndex
+                    ? "opacity-100"
+                    : "opacity-0 pointer-events-none"
                 }`}
               >
                 {slide === "__VIDEO__" ? (
@@ -301,9 +345,7 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                   onClick={() => setCarouselIndex(idx)}
                   aria-label={`查看圖片 ${idx + 1}`}
                   className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    idx === carouselIndex
-                      ? "bg-white w-4"
-                      : "bg-white/50"
+                    idx === carouselIndex ? "bg-white w-4" : "bg-white/50"
                   }`}
                 />
               ))}
@@ -324,10 +366,16 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
               </span>
               {isOnSale && (
                 <>
-                  <span className="text-base line-through" style={{ color: tmpl.subtext }}>
+                  <span
+                    className="text-base line-through"
+                    style={{ color: tmpl.subtext }}
+                  >
                     {formatPrice(product.originalPrice!, currency)}
                   </span>
-                  <span className="px-2 py-0.5 text-xs font-bold rounded bg-red-500 text-white">
+                  <span
+                    className="px-2 py-0.5 text-xs font-bold rounded text-white"
+                    style={{ backgroundColor: tmpl.accent }}
+                  >
                     -{discountPct}%
                   </span>
                 </>
@@ -338,45 +386,66 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
           {/* 顏色（雙維 only，永遠顯示喺先） */}
           {isDual && dualVariant && colorDimIndex >= 0 && (
             <div>
-              <p className="text-sm font-semibold mb-3 pb-2" style={{ color: tmpl.text, borderBottom: `1px solid ${sectionBorder}` }}>
+              <p
+                className="text-sm font-semibold mb-3 pb-2"
+                style={{
+                  color: tmpl.text,
+                  borderBottom: `1px solid ${sectionBorder}`,
+                }}
+              >
                 顏色
                 {showError && !selectedColor && (
                   <span className="text-red-500 ml-1 font-normal">請選擇</span>
                 )}
               </p>
               <div className="flex gap-3 flex-wrap">
-                {(dualVariant.options[dualVariant.dimensions[colorDimIndex]] || []).map(
-                  (opt) => {
-                    const colorHex = getColorHex(opt);
-                    const isWhite = colorHex.toLowerCase() === "#fafafa" || opt.toLowerCase().includes("white") || opt.includes("白");
-                    return (
-                      <button
-                        key={opt}
-                        onClick={() => handleColorChange(opt)}
-                        aria-label={`選擇顏色 ${opt}`}
-                        className={`w-10 h-10 rounded-full transition-all flex-shrink-0 border-2 ${
+                {(
+                  dualVariant.options[dualVariant.dimensions[colorDimIndex]] ||
+                  []
+                ).map((opt) => {
+                  const colorHex = getColorHex(opt);
+                  const isWhite =
+                    colorHex.toLowerCase() === "#fafafa" ||
+                    opt.toLowerCase().includes("white") ||
+                    opt.includes("白");
+                  return (
+                    <button
+                      key={opt}
+                      onClick={() => handleColorChange(opt)}
+                      aria-label={`選擇顏色 ${opt}`}
+                      className={`w-10 h-10 rounded-full transition-all flex-shrink-0 border-2 ${
+                        selectedColor === opt ? "scale-110" : ""
+                      }`}
+                      style={{
+                        backgroundColor: colorHex,
+                        borderColor:
                           selectedColor === opt
-                            ? "scale-110"
-                            : ""
-                        }`}
-                        style={{
-                          backgroundColor: colorHex,
-                          borderColor: selectedColor === opt ? tmpl.accent : isWhite ? "#d4d4d8" : "#e4e4e7",
-                          boxShadow: selectedColor === opt ? `0 0 0 3px ${tmpl.accent}4D` : undefined,
-                        }}
-                      />
-                    );
-                  }
-                )}
+                            ? tmpl.accent
+                            : isWhite
+                              ? "#d4d4d8"
+                              : "#e4e4e7",
+                        boxShadow:
+                          selectedColor === opt
+                            ? `0 0 0 3px ${tmpl.accent}4D`
+                            : undefined,
+                      }}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* 尺碼（用文字顯示） */}
           <div>
-            <div className="flex items-center justify-between mb-3 pb-2" style={{ borderBottom: `1px solid ${sectionBorder}` }}>
+            <div
+              className="flex items-center justify-between mb-3 pb-2"
+              style={{ borderBottom: `1px solid ${sectionBorder}` }}
+            >
               <p className="text-sm font-semibold" style={{ color: tmpl.text }}>
-                {isDual && sizeDimIndex >= 0 ? dualVariant!.dimensions[sizeDimIndex] : variantLabel}
+                {isDual && sizeDimIndex >= 0
+                  ? dualVariant!.dimensions[sizeDimIndex]
+                  : variantLabel}
                 {showError && !selectedSize && (
                   <span className="text-red-500 ml-1 font-normal">請選擇</span>
                 )}
@@ -387,8 +456,18 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                   className="text-xs font-medium flex items-center gap-1"
                   style={{ color: tmpl.accent }}
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
                   </svg>
                   尺碼表
                 </button>
@@ -409,10 +488,20 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                   className="px-4 py-2.5 rounded-xl text-sm font-medium border transition-all flex-shrink-0"
                   style={
                     selectedSize === s.name
-                      ? { borderColor: tmpl.accent, backgroundColor: `${tmpl.accent}18`, color: tmpl.accent }
+                      ? {
+                          borderColor: tmpl.accent,
+                          backgroundColor: `${tmpl.accent}18`,
+                          color: tmpl.accent,
+                        }
                       : s.available
                         ? { borderColor: sectionBorder, color: tmpl.text }
-                        : { borderColor: `${tmpl.subtext}15`, color: `${tmpl.subtext}60`, backgroundColor: `${tmpl.subtext}08`, textDecoration: "line-through", cursor: "not-allowed" }
+                        : {
+                            borderColor: `${tmpl.subtext}15`,
+                            color: `${tmpl.subtext}60`,
+                            backgroundColor: `${tmpl.subtext}08`,
+                            textDecoration: "line-through",
+                            cursor: "not-allowed",
+                          }
                   }
                 >
                   {s.name}
@@ -436,7 +525,10 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                 onClick={() => setShowDescription(!showDescription)}
                 aria-label={showDescription ? "隱藏商品描述" : "展開商品描述"}
                 className="w-full flex items-center justify-between text-sm font-semibold pb-2"
-                style={{ color: tmpl.text, borderBottom: `1px solid ${sectionBorder}` }}
+                style={{
+                  color: tmpl.text,
+                  borderBottom: `1px solid ${sectionBorder}`,
+                }}
               >
                 <span>商品描述</span>
                 <svg
@@ -446,11 +538,18 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                   strokeWidth={2}
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
               {showDescription && (
-                <div className="mt-3 text-sm whitespace-pre-wrap" style={{ color: tmpl.subtext }}>
+                <div
+                  className="mt-3 text-sm whitespace-pre-wrap"
+                  style={{ color: tmpl.subtext }}
+                >
                   {product.description}
                 </div>
               )}
@@ -459,7 +558,15 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
 
           {/* 數量 stepper */}
           <div>
-            <p className="text-sm font-semibold mb-3 pb-2" style={{ color: tmpl.text, borderBottom: `1px solid ${sectionBorder}` }}>數量</p>
+            <p
+              className="text-sm font-semibold mb-3 pb-2"
+              style={{
+                color: tmpl.text,
+                borderBottom: `1px solid ${sectionBorder}`,
+              }}
+            >
+              數量
+            </p>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
@@ -468,11 +575,24 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                 className="w-10 h-10 rounded-xl border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
                 style={{ borderColor: sectionBorder, color: tmpl.text }}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 12h-15"
+                  />
                 </svg>
               </button>
-              <span className="text-lg font-semibold w-10 text-center" style={{ color: tmpl.text }}>
+              <span
+                className="text-lg font-semibold w-10 text-center"
+                style={{ color: tmpl.text }}
+              >
                 {qty}
               </span>
               <button
@@ -484,8 +604,18 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
                 className="w-10 h-10 rounded-xl border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
                 style={{ borderColor: sectionBorder, color: tmpl.text }}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4.5v15m7.5-7.5h-15"
+                  />
                 </svg>
               </button>
             </div>
@@ -496,17 +626,28 @@ export default function ProductSheet({ product, currency = "HKD", onClose, onAdd
         </div>
 
         {/* 固定底部 CTA */}
-        <div className="absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 py-4" style={{ backgroundColor: tmpl.bg, borderTop: `1px solid ${sectionBorder}` }}>
+        <div
+          className="absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 py-4"
+          style={{
+            backgroundColor: tmpl.bg,
+            borderTop: `1px solid ${sectionBorder}`,
+          }}
+        >
           <button
             onClick={handleAdd}
             className="w-full py-4 rounded-xl text-base font-semibold transition-all active:scale-[0.98]"
             style={
               canAdd
-                ? { backgroundColor: tmpl.accent, color: "#FFFFFF", boxShadow: `0 10px 15px -3px ${tmpl.accent}4D` }
+                ? {
+                    backgroundColor: tmpl.accent,
+                    color: "#FFFFFF",
+                    boxShadow: `0 10px 15px -3px ${tmpl.accent}4D`,
+                  }
                 : { backgroundColor: `${tmpl.subtext}30`, color: tmpl.subtext }
             }
           >
-            加入購物車{canAdd ? ` ${formatPrice(product.price * qty, currency)}` : ""}
+            加入購物車
+            {canAdd ? ` ${formatPrice(product.price * qty, currency)}` : ""}
           </button>
         </div>
       </div>
