@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { formatPrice, type OrderConfirmConfig } from "@/lib/biolink-helpers";
 import { buildMerchantNotifyUrl } from "@/lib/whatsapp-notify";
 import { useTemplate } from "@/lib/template-context";
@@ -50,6 +51,7 @@ export default function OrderConfirmation({
   orderConfirmMessage,
 }: Props) {
   const tmpl = useTemplate();
+  const pathname = usePathname();
   const currency = order.currency || "HKD";
   const config = orderConfirmMessage || {
     thanks: "多謝訂購！",
@@ -399,10 +401,22 @@ export default function OrderConfirmation({
             </a>
           )}
 
+          {/* Track order link */}
+          <a
+            href={`${pathname}/order/${order.orderId}`}
+            className="block mt-4 w-full py-3.5 rounded-xl font-medium text-sm text-center active:scale-[0.98] transition-transform"
+            style={{
+              backgroundColor: `${tmpl.accent}15`,
+              color: tmpl.accent,
+            }}
+          >
+            📦 追蹤訂單
+          </a>
+
           {/* Continue shopping button */}
           <button
             onClick={onClose}
-            className="mt-4 w-full py-3.5 rounded-xl font-medium text-sm active:scale-[0.98] transition-transform"
+            className="mt-3 w-full py-3.5 rounded-xl font-medium text-sm active:scale-[0.98] transition-transform"
             style={{
               backgroundColor: `${tmpl.text}15`,
               color: `${tmpl.text}CC`,
