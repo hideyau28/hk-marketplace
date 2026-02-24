@@ -229,52 +229,24 @@ function getDemos(isZh: boolean) {
       handle: "hypedrops",
       href: "/hypedrops",
       desc: isZh ? "型格街頭潮流" : "Streetwear & sneakers",
-      gradient: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)",
-      textColor: "#fff",
-      accent: "#FF9500",
-      images: [
-        "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=200&q=80",
-        "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=200&q=80",
-      ],
     },
     {
       name: "日和雜貨",
       handle: "nichiyori",
       href: "/nichiyori",
       desc: isZh ? "溫暖日系生活" : "Japanese lifestyle",
-      gradient: "linear-gradient(135deg, #F5F0EB 0%, #E8DDD3 100%)",
-      textColor: "#3D2E1E",
-      accent: "#8B7355",
-      images: [
-        "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=200&q=80",
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&q=80",
-      ],
     },
     {
       name: "綠日 Green Day",
       handle: "greenday",
       href: "/greenday",
       desc: isZh ? "清新植物小店" : "Plants & living",
-      gradient: "linear-gradient(135deg, #EFF7EE 0%, #CCE8CC 100%)",
-      textColor: "#1A3D1A",
-      accent: "#3A7D44",
-      images: [
-        "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=200&q=80",
-        "https://images.unsplash.com/photo-1517093728432-a0440f8d45af?w=200&q=80",
-      ],
     },
     {
       name: "花語甜室",
       handle: "petitfleur",
       href: "/petitfleur",
       desc: isZh ? "花藝甜品禮盒" : "Floral & pastries",
-      gradient: "linear-gradient(135deg, #FFF0F5 0%, #FFE0EB 100%)",
-      textColor: "#8B2252",
-      accent: "#D4447C",
-      images: [
-        "https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=200&q=80",
-        "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=200&q=80",
-      ],
     },
   ];
 }
@@ -1738,92 +1710,22 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   <div
                     style={{
                       height: 280,
-                      background: d.gradient,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: 24,
-                      position: "relative",
+                      overflow: "hidden",
+                      background: "#f5f5f5",
                     }}
                   >
-                    <div
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/demos/${d.handle}.png`}
+                      alt={d.name}
                       style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 10,
-                        background: d.accent,
-                        opacity: 0.2,
-                        marginBottom: 12,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "top",
+                        display: "block",
                       }}
                     />
-                    <div
-                      style={{
-                        fontSize: 18,
-                        fontWeight: 800,
-                        color: d.textColor,
-                        marginBottom: 4,
-                        textAlign: "center",
-                      }}
-                    >
-                      {d.name}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: d.textColor,
-                        opacity: 0.6,
-                        marginBottom: 16,
-                      }}
-                    >
-                      @{d.handle}
-                    </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      {d.images.map((img, n) => (
-                        <div
-                          key={n}
-                          style={{
-                            width: 60,
-                            height: 60,
-                            borderRadius: 8,
-                            background: `${d.accent}30`,
-                            overflow: "hidden",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={img}
-                            alt=""
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              display: "block",
-                            }}
-                            onError={(e) => {
-                              (
-                                e.currentTarget as HTMLImageElement
-                              ).style.display = "none";
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <div
-                      style={{
-                        marginTop: 12,
-                        padding: "6px 16px",
-                        borderRadius: 6,
-                        background: d.accent,
-                        color: "#fff",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: "0.04em",
-                      }}
-                    >
-                      {isZh ? "進入商店" : "Shop Now"}
-                    </div>
                   </div>
                   <div
                     style={{ padding: "12px 16px 16px", textAlign: "center" }}
