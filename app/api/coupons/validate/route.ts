@@ -9,28 +9,51 @@ type Body = {
   code?: string;
   subtotal?: number;
   deliveryFee?: number;
+  tenantId?: string; // biolink context — pass tenant ID directly
 };
 
 function assertPositiveNumber(value: unknown, field: string) {
   if (typeof value !== "number" || Number.isNaN(value) || value < 0) {
-    throw new ApiError(400, "BAD_REQUEST", `${field} must be a non-negative number`);
+    throw new ApiError(
+      400,
+      "BAD_REQUEST",
+      `${field} must be a non-negative number`,
+    );
   }
 }
 
 export const POST = withApi(async (req) => {
-  const tenantId = await getTenantId(req);
-
-  // Plan gating: coupon feature requires lite+ plan
-  const allowed = await hasFeature(tenantId, "coupon");
-  if (!allowed) {
-    throw new ApiError(403, "FORBIDDEN", "Coupon feature is not available on your current plan");
-  }
-
   let body: Body;
   try {
     body = (await req.json()) as Body;
   } catch {
     throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
+  }
+
+  // Resolve tenant: biolink passes tenantId in body, admin/customer uses request context
+  let tenantId: string;
+  if (body.tenantId && typeof body.tenantId === "string") {
+    // Verify tenant exists
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: body.tenantId },
+      select: { id: true, status: true },
+    });
+    if (!tenant || tenant.status !== "active") {
+      throw new ApiError(404, "NOT_FOUND", "Tenant not found");
+    }
+    tenantId = tenant.id;
+  } else {
+    tenantId = await getTenantId(req);
+  }
+
+  // Plan gating: coupon feature requires lite+ plan
+  const allowed = await hasFeature(tenantId, "coupon");
+  if (!allowed) {
+    throw new ApiError(
+      403,
+      "FORBIDDEN",
+      "Coupon feature is not available on your current plan",
+    );
   }
 
   const rawCode = (body.code || "").trim().toUpperCase();
@@ -65,7 +88,11 @@ export const POST = withApi(async (req) => {
 
   if (coupon.minOrder !== null && coupon.minOrder !== undefined) {
     if (subtotal < coupon.minOrder) {
-      throw new ApiError(400, "BAD_REQUEST", `Minimum order $${coupon.minOrder} required`);
+      throw new ApiError(
+        400,
+        "BAD_REQUEST",
+        `Minimum order $${coupon.minOrder} required`,
+      );
     }
   }
 
