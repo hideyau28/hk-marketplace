@@ -1084,7 +1084,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         }}
       >
         <Link
-          href="/"
+          href={`/${locale}`}
           style={{
             fontSize: 22,
             fontWeight: 800,
