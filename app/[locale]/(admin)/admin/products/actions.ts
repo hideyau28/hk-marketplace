@@ -53,7 +53,8 @@ function getApiBaseUrl() {
   if (vercelUrl) return `https://${vercelUrl}`;
 
   const zeaburUrl = process.env.ZEABUR_URL || process.env.ZEABUR_DOMAIN;
-  if (zeaburUrl) return zeaburUrl.startsWith("http") ? zeaburUrl : `https://${zeaburUrl}`;
+  if (zeaburUrl)
+    return zeaburUrl.startsWith("http") ? zeaburUrl : `https://${zeaburUrl}`;
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is required");
@@ -85,10 +86,16 @@ async function getAdminAuthHeaders(): Promise<Record<string, string>> {
   return {};
 }
 
-export async function fetchProducts(active?: boolean): Promise<FetchProductsResult> {
+export async function fetchProducts(
+  active?: boolean,
+): Promise<FetchProductsResult> {
   const authHeaders = await getAdminAuthHeaders();
   if (Object.keys(authHeaders).length === 0) {
-    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
+    return {
+      ok: false,
+      code: "CONFIG_ERROR",
+      message: "No admin credentials available",
+    };
   }
 
   try {
@@ -106,7 +113,9 @@ export async function fetchProducts(active?: boolean): Promise<FetchProductsResu
       cache: "no-store",
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<{ products: Product[] }>;
+    const json = (await response.json()) as
+      | ApiErrorResponse
+      | ApiSuccessResponse<{ products: Product[] }>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -121,7 +130,11 @@ export async function fetchProducts(active?: boolean): Promise<FetchProductsResu
     return { ok: true, data: result.data.products };
   } catch (error) {
     console.error("Failed to fetch products:", error);
-    return { ok: false, code: "NETWORK_ERROR", message: "Failed to fetch products" };
+    return {
+      ok: false,
+      code: "NETWORK_ERROR",
+      message: "Failed to fetch products",
+    };
   }
 }
 
@@ -131,6 +144,7 @@ export async function createProduct(
     title: string;
     price: number;
     originalPrice?: number | null;
+    description?: string | null;
     imageUrl?: string;
     images?: string[];
     videoUrl?: string | null;
@@ -147,11 +161,15 @@ export async function createProduct(
     inventoryMode?: string;
     sku?: string;
   },
-  locale?: string
+  locale?: string,
 ): Promise<CreateProductResult> {
   const authHeaders = await getAdminAuthHeaders();
   if (Object.keys(authHeaders).length === 0) {
-    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
+    return {
+      ok: false,
+      code: "CONFIG_ERROR",
+      message: "No admin credentials available",
+    };
   }
 
   try {
@@ -168,7 +186,9 @@ export async function createProduct(
       body: JSON.stringify(data),
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Product>;
+    const json = (await response.json()) as
+      | ApiErrorResponse
+      | ApiSuccessResponse<Product>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -184,7 +204,11 @@ export async function createProduct(
     return { ok: true, data: result.data };
   } catch (error) {
     console.error("Failed to create product:", error);
-    return { ok: false, code: "NETWORK_ERROR", message: "Failed to create product" };
+    return {
+      ok: false,
+      code: "NETWORK_ERROR",
+      message: "Failed to create product",
+    };
   }
 }
 
@@ -195,6 +219,7 @@ export async function updateProduct(
     title?: string;
     price?: number;
     originalPrice?: number | null;
+    description?: string | null;
     imageUrl?: string | null;
     images?: string[];
     videoUrl?: string | null;
@@ -211,11 +236,15 @@ export async function updateProduct(
     inventoryMode?: string;
     sku?: string;
   },
-  locale?: string
+  locale?: string,
 ): Promise<UpdateProductResult> {
   const authHeaders = await getAdminAuthHeaders();
   if (Object.keys(authHeaders).length === 0) {
-    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
+    return {
+      ok: false,
+      code: "CONFIG_ERROR",
+      message: "No admin credentials available",
+    };
   }
 
   try {
@@ -229,7 +258,9 @@ export async function updateProduct(
       body: JSON.stringify(data),
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Product>;
+    const json = (await response.json()) as
+      | ApiErrorResponse
+      | ApiSuccessResponse<Product>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -245,17 +276,25 @@ export async function updateProduct(
     return { ok: true, data: result.data };
   } catch (error) {
     console.error("Failed to update product:", error);
-    return { ok: false, code: "NETWORK_ERROR", message: "Failed to update product" };
+    return {
+      ok: false,
+      code: "NETWORK_ERROR",
+      message: "Failed to update product",
+    };
   }
 }
 
 export async function toggleFeatured(
   productId: string,
-  featured: boolean
+  featured: boolean,
 ): Promise<ToggleFeaturedResult> {
   const authHeaders = await getAdminAuthHeaders();
   if (Object.keys(authHeaders).length === 0) {
-    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
+    return {
+      ok: false,
+      code: "CONFIG_ERROR",
+      message: "No admin credentials available",
+    };
   }
 
   try {
@@ -269,7 +308,9 @@ export async function toggleFeatured(
       body: JSON.stringify({ featured }),
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Product>;
+    const json = (await response.json()) as
+      | ApiErrorResponse
+      | ApiSuccessResponse<Product>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -284,17 +325,25 @@ export async function toggleFeatured(
     return { ok: true };
   } catch (error) {
     console.error("Failed to toggle featured:", error);
-    return { ok: false, code: "NETWORK_ERROR", message: "Failed to toggle featured" };
+    return {
+      ok: false,
+      code: "NETWORK_ERROR",
+      message: "Failed to toggle featured",
+    };
   }
 }
 
 export async function toggleHidden(
   productId: string,
-  hidden: boolean
+  hidden: boolean,
 ): Promise<ToggleHiddenResult> {
   const authHeaders = await getAdminAuthHeaders();
   if (Object.keys(authHeaders).length === 0) {
-    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
+    return {
+      ok: false,
+      code: "CONFIG_ERROR",
+      message: "No admin credentials available",
+    };
   }
 
   try {
@@ -308,7 +357,9 @@ export async function toggleHidden(
       body: JSON.stringify({ hidden }),
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Product>;
+    const json = (await response.json()) as
+      | ApiErrorResponse
+      | ApiSuccessResponse<Product>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -323,20 +374,28 @@ export async function toggleHidden(
     return { ok: true };
   } catch (error) {
     console.error("Failed to toggle visibility:", error);
-    return { ok: false, code: "NETWORK_ERROR", message: "Failed to toggle visibility" };
+    return {
+      ok: false,
+      code: "NETWORK_ERROR",
+      message: "Failed to toggle visibility",
+    };
   }
 }
 
 export async function toggleHotSelling(
   productId: string,
   currentBadges: string[],
-  add: boolean
+  add: boolean,
 ): Promise<ToggleHotSellingResult> {
   const authHeaders = await getAdminAuthHeaders();
   const HOT_SELLING_BADGE = "今期熱賣";
 
   if (Object.keys(authHeaders).length === 0) {
-    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
+    return {
+      ok: false,
+      code: "CONFIG_ERROR",
+      message: "No admin credentials available",
+    };
   }
 
   try {
@@ -360,7 +419,9 @@ export async function toggleHotSelling(
       body: JSON.stringify({ promotionBadges: newBadges }),
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Product>;
+    const json = (await response.json()) as
+      | ApiErrorResponse
+      | ApiSuccessResponse<Product>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -375,7 +436,11 @@ export async function toggleHotSelling(
     return { ok: true };
   } catch (error) {
     console.error("Failed to toggle hot selling:", error);
-    return { ok: false, code: "NETWORK_ERROR", message: "Failed to toggle hot selling" };
+    return {
+      ok: false,
+      code: "NETWORK_ERROR",
+      message: "Failed to toggle hot selling",
+    };
   }
 }
 
@@ -392,15 +457,22 @@ export async function syncVariants(
     active?: boolean;
     sortOrder?: number;
   }[],
-  locale?: string
+  locale?: string,
 ): Promise<SyncVariantsResult> {
   const authHeaders = await getAdminAuthHeaders();
   if (Object.keys(authHeaders).length === 0) {
-    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
+    return {
+      ok: false,
+      code: "CONFIG_ERROR",
+      message: "No admin credentials available",
+    };
   }
 
   try {
-    const url = new URL(`/api/admin/products/${productId}/variants/sync`, getApiBaseUrl());
+    const url = new URL(
+      `/api/admin/products/${productId}/variants/sync`,
+      getApiBaseUrl(),
+    );
     const response = await fetch(url.toString(), {
       method: "PUT",
       headers: {
@@ -410,7 +482,9 @@ export async function syncVariants(
       body: JSON.stringify({ variants }),
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<any>;
+    const json = (await response.json()) as
+      | ApiErrorResponse
+      | ApiSuccessResponse<any>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -425,19 +499,27 @@ export async function syncVariants(
     return { ok: true };
   } catch (error) {
     console.error("Failed to sync variants:", error);
-    return { ok: false, code: "NETWORK_ERROR", message: "Failed to sync variants" };
+    return {
+      ok: false,
+      code: "NETWORK_ERROR",
+      message: "Failed to sync variants",
+    };
   }
 }
 
 export async function updatePrice(
   productId: string,
   price: number,
-  originalPrice?: number | null
+  originalPrice?: number | null,
 ): Promise<UpdatePriceResult> {
   const authHeaders = await getAdminAuthHeaders();
 
   if (Object.keys(authHeaders).length === 0) {
-    return { ok: false, code: "CONFIG_ERROR", message: "No admin credentials available" };
+    return {
+      ok: false,
+      code: "CONFIG_ERROR",
+      message: "No admin credentials available",
+    };
   }
 
   try {
@@ -456,7 +538,9 @@ export async function updatePrice(
       body: JSON.stringify(body),
     });
 
-    const json = (await response.json()) as ApiErrorResponse | ApiSuccessResponse<Product>;
+    const json = (await response.json()) as
+      | ApiErrorResponse
+      | ApiSuccessResponse<Product>;
 
     if (!response.ok) {
       const errorData = json as ApiErrorResponse;
@@ -471,6 +555,10 @@ export async function updatePrice(
     return { ok: true };
   } catch (error) {
     console.error("Failed to update price:", error);
-    return { ok: false, code: "NETWORK_ERROR", message: "Failed to update price" };
+    return {
+      ok: false,
+      code: "NETWORK_ERROR",
+      message: "Failed to update price",
+    };
   }
 }
