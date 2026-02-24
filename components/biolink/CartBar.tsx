@@ -21,11 +21,13 @@ export default function CartBar({
 }: Props) {
   const tmpl = useTemplate();
   const [popping, setPopping] = useState(false);
+  const [pulsing, setPulsing] = useState(false);
   const prevCountRef = useRef(count);
 
   useEffect(() => {
     if (count > prevCountRef.current) {
       setPopping(true);
+      setPulsing(true);
     }
     prevCountRef.current = count;
   }, [count]);
@@ -45,13 +47,22 @@ export default function CartBar({
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-40">
+      <div
+        className="fixed bottom-0 left-0 right-0 z-40"
+        style={{ animation: "cartBarIn 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}
+      >
         <div className="max-w-[480px] mx-auto">
           <div
             className="mx-3 mb-3 flex items-center justify-between px-4 py-3 rounded-2xl border shadow-2xl shadow-black/50"
             style={{
               backgroundColor: tmpl.card,
               borderColor: tmpl.subtext + "20",
+              animation: pulsing
+                ? "cartBarPulse 0.5s ease-out forwards"
+                : undefined,
+            }}
+            onAnimationEnd={(e) => {
+              if (e.animationName === "cartBarPulse") setPulsing(false);
             }}
           >
             <div className="flex items-center gap-3">
@@ -100,6 +111,30 @@ export default function CartBar({
       </div>
 
       <style jsx>{`
+        @keyframes cartBarIn {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        @keyframes cartBarPulse {
+          0% {
+            transform: scale(1);
+          }
+          30% {
+            transform: scale(1.028);
+          }
+          65% {
+            transform: scale(0.988);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
         @keyframes badgePop {
           0% {
             transform: scale(1);

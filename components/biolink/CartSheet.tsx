@@ -11,7 +11,11 @@ type Props = {
   items: BioCartItem[];
   currency: string;
   freeShippingThreshold: number | null;
-  onUpdateQty: (productId: string, variant: string | undefined, delta: number) => void;
+  onUpdateQty: (
+    productId: string,
+    variant: string | undefined,
+    delta: number,
+  ) => void;
   onRemoveItem: (productId: string, variant: string | undefined) => void;
   onClearCart: () => void;
   onCheckout: () => void;
@@ -43,16 +47,26 @@ export default function CartSheet({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        style={{ animation: "backdropFade 0.25s ease-out" }}
+        onClick={onClose}
+      />
 
       {/* Sheet */}
       <div
         className="relative w-full max-w-[480px] max-h-[80vh] rounded-t-3xl overflow-y-auto"
-        style={{ backgroundColor: tmpl.bg, animation: "slideUp 0.3s ease-out" }}
+        style={{
+          backgroundColor: tmpl.bg,
+          animation: "sheetSlideUp 0.38s cubic-bezier(0.32,0.72,0,1)",
+        }}
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: tmpl.subtext + "40" }} />
+          <div
+            className="w-10 h-1 rounded-full"
+            style={{ backgroundColor: tmpl.subtext + "40" }}
+          />
         </div>
 
         {/* Header */}
@@ -68,7 +82,10 @@ export default function CartSheet({
               onClick={onClose}
               aria-label="關閉購物車"
               className="w-8 h-8 rounded-full flex items-center justify-center text-sm hover:opacity-80 transition"
-              style={{ backgroundColor: tmpl.subtext + "20", color: tmpl.subtext }}
+              style={{
+                backgroundColor: tmpl.subtext + "20",
+                color: tmpl.subtext,
+              }}
             >
               ✕
             </button>
@@ -94,7 +111,12 @@ export default function CartSheet({
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: tmpl.text }}>{item.name}</p>
+                  <p
+                    className="text-sm font-medium truncate"
+                    style={{ color: tmpl.text }}
+                  >
+                    {item.name}
+                  </p>
                   {item.variant && (
                     <p className="text-xs" style={{ color: tmpl.subtext }}>
                       {item.variantLabel || item.variant.replace(/\|/g, " · ")}
@@ -106,21 +128,34 @@ export default function CartSheet({
                   {/* Qty controls */}
                   <div className="flex items-center gap-2 mt-1.5">
                     <button
-                      onClick={() => onUpdateQty(item.productId, item.variant, -1)}
+                      onClick={() =>
+                        onUpdateQty(item.productId, item.variant, -1)
+                      }
                       aria-label="減少數量"
                       className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold hover:opacity-80 active:scale-95 transition"
-                      style={{ backgroundColor: tmpl.subtext + "20", color: tmpl.subtext }}
+                      style={{
+                        backgroundColor: tmpl.subtext + "20",
+                        color: tmpl.subtext,
+                      }}
                     >
                       −
                     </button>
-                    <span className="text-sm font-medium tabular-nums w-5 text-center" style={{ color: tmpl.text }}>
+                    <span
+                      className="text-sm font-medium tabular-nums w-5 text-center"
+                      style={{ color: tmpl.text }}
+                    >
                       {item.qty}
                     </span>
                     <button
-                      onClick={() => onUpdateQty(item.productId, item.variant, 1)}
+                      onClick={() =>
+                        onUpdateQty(item.productId, item.variant, 1)
+                      }
                       aria-label="增加數量"
                       className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold hover:opacity-80 active:scale-95 transition"
-                      style={{ backgroundColor: tmpl.subtext + "20", color: tmpl.subtext }}
+                      style={{
+                        backgroundColor: tmpl.subtext + "20",
+                        color: tmpl.subtext,
+                      }}
                     >
                       +
                     </button>
@@ -134,7 +169,10 @@ export default function CartSheet({
                     onClick={() => onRemoveItem(item.productId, item.variant)}
                     aria-label={`移除 ${item.name}`}
                     className="w-6 h-6 rounded-full flex items-center justify-center text-xs hover:bg-red-500/20 hover:text-red-400 active:scale-95 transition"
-                    style={{ backgroundColor: tmpl.subtext + "20", color: tmpl.subtext }}
+                    style={{
+                      backgroundColor: tmpl.subtext + "20",
+                      color: tmpl.subtext,
+                    }}
                   >
                     ✕
                   </button>
@@ -144,9 +182,14 @@ export default function CartSheet({
           </div>
 
           {/* Subtotal */}
-          <div className="mt-4 pt-4 border-t" style={{ borderColor: tmpl.subtext + "20" }}>
+          <div
+            className="mt-4 pt-4 border-t"
+            style={{ borderColor: tmpl.subtext + "20" }}
+          >
             <div className="flex items-center justify-between">
-              <span className="text-sm" style={{ color: tmpl.subtext }}>小計</span>
+              <span className="text-sm" style={{ color: tmpl.subtext }}>
+                小計
+              </span>
               <span className="text-lg font-bold" style={{ color: tmpl.text }}>
                 {formatPrice(cartTotal, currency)}
               </span>
@@ -192,9 +235,21 @@ export default function CartSheet({
       </div>
 
       <style jsx>{`
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+        @keyframes sheetSlideUp {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+        @keyframes backdropFade {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
       `}</style>
     </div>
