@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 
@@ -17,17 +18,6 @@ const T = {
     trustBadge1: "0% 佣金",
     trustBadge2: "免費開始",
     trustBadge3: "2 分鐘開店",
-    mockupName: "maysshop",
-    mockupDesc: "飾物・手作・代購",
-    mockupProduct1: "玫瑰金手鏈",
-    mockupPrice1: "$168",
-    mockupProduct2: "極簡耳環",
-    mockupPrice2: "$88",
-    mockupProduct3: "珍珠頸鏈",
-    mockupPrice3: "$238",
-    mockupProduct4: "銀色戒指",
-    mockupPrice4: "$128",
-    mockupCta: "立即選購",
   },
   en: {
     heroBadge: "\uD83D\uDD25 Built for HK Instagram Sellers",
@@ -41,22 +31,82 @@ const T = {
     trustBadge1: "0% Commission",
     trustBadge2: "Free to Start",
     trustBadge3: "2 Min Setup",
-    mockupName: "maysshop",
-    mockupDesc: "Jewelry · Handmade · Buying service",
-    mockupProduct1: "Rose Gold Bracelet",
-    mockupPrice1: "$168",
-    mockupProduct2: "Minimal Earrings",
-    mockupPrice2: "$88",
-    mockupProduct3: "Pearl Necklace",
-    mockupPrice3: "$238",
-    mockupProduct4: "Silver Ring",
-    mockupPrice4: "$128",
-    mockupCta: "Shop Now",
   },
 };
 
-/* ─── Phone Mockup ─── */
-function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
+/* ─── Demo store data for phone carousel ─── */
+function getStores(isZh: boolean) {
+  return [
+    {
+      name: "petitfleur",
+      desc: isZh ? "花藝甜品禮盒" : "Floral & pastries",
+      avatar: "P",
+      accent: "#D4447C",
+      cta: isZh ? "立即選購" : "Shop Now",
+      products: [
+        { img: "https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=120&q=80", name: isZh ? "玫瑰花束" : "Rose Bouquet", price: "$288" },
+        { img: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=120&q=80", name: isZh ? "草莓蛋糕" : "Strawberry Cake", price: "$168" },
+        { img: "https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=120&q=80", name: isZh ? "乾花擺設" : "Dried Flowers", price: "$128" },
+        { img: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=120&q=80", name: isZh ? "馬卡龍禮盒" : "Macaron Box", price: "$198" },
+      ],
+    },
+    {
+      name: "hypedrops",
+      desc: isZh ? "型格街頭潮流" : "Streetwear & sneakers",
+      avatar: "H",
+      accent: "#FF9500",
+      cta: isZh ? "立即選購" : "Shop Now",
+      products: [
+        { img: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=120&q=80", name: isZh ? "限量波鞋" : "Limited Sneakers", price: "$1,280" },
+        { img: "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=120&q=80", name: isZh ? "潮流 Tee" : "Street Tee", price: "$380" },
+        { img: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=120&q=80", name: isZh ? "聯名衛衣" : "Collab Hoodie", price: "$680" },
+        { img: "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=120&q=80", name: isZh ? "棒球帽" : "Baseball Cap", price: "$280" },
+      ],
+    },
+    {
+      name: "nichiyori",
+      desc: isZh ? "溫暖日系生活" : "Japanese lifestyle",
+      avatar: "N",
+      accent: "#8B7355",
+      cta: isZh ? "立即選購" : "Shop Now",
+      products: [
+        { img: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=120&q=80", name: isZh ? "復古太陽眼鏡" : "Retro Sunglasses", price: "$198" },
+        { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=120&q=80", name: isZh ? "極簡手錶" : "Minimal Watch", price: "$468" },
+        { img: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=120&q=80", name: isZh ? "日系手袋" : "Canvas Tote", price: "$128" },
+        { img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=120&q=80", name: isZh ? "陶瓷杯" : "Ceramic Mug", price: "$88" },
+      ],
+    },
+    {
+      name: "greenday",
+      desc: isZh ? "清新植物小店" : "Plants & living",
+      avatar: "G",
+      accent: "#3A7D44",
+      cta: isZh ? "立即選購" : "Shop Now",
+      products: [
+        { img: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=120&q=80", name: isZh ? "龜背芋" : "Monstera", price: "$168" },
+        { img: "https://images.unsplash.com/photo-1517093728432-a0440f8d45af?w=120&q=80", name: isZh ? "仙人掌組合" : "Cactus Set", price: "$88" },
+        { img: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=120&q=80", name: isZh ? "小盆栽" : "Mini Plant", price: "$58" },
+        { img: "https://images.unsplash.com/photo-1517093728432-a0440f8d45af?w=120&q=80", name: isZh ? "植物掛畫" : "Plant Print", price: "$128" },
+      ],
+    },
+  ];
+}
+
+/* ─── Phone Mockup (auto-carousel) ─── */
+function PhoneMockup({ locale }: { locale: Locale }) {
+  const isZh = locale === "zh-HK";
+  const stores = getStores(isZh);
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIdx((prev) => (prev + 1) % stores.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [stores.length]);
+
+  const store = stores[idx];
+
   return (
     <div className="hero-phone-wrap">
       <div className="hero-phone-frame">
@@ -67,133 +117,146 @@ function PhoneMockup({ t }: { t: (typeof T)["zh-HK"] }) {
         <div className="hero-phone-screen">
           <div style={{ height: 48 }} />
 
-          {/* Store header */}
-          <div
-            style={{ textAlign: "center" as const, padding: "8px 16px 12px" }}
-          >
+          {/* Fade wrapper — re-mounts on store change */}
+          <div key={idx} style={{ animation: "phoneFadeIn 0.5s ease-out" }}>
+            {/* Store header */}
             <div
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
-                background: "#FF9500",
-                margin: "0 auto 6px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#fff",
-                fontWeight: 800,
-                fontSize: 16,
+                textAlign: "center" as const,
+                padding: "8px 16px 12px",
               }}
             >
-              M
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  background: store.accent,
+                  margin: "0 auto 6px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  fontWeight: 800,
+                  fontSize: 16,
+                }}
+              >
+                {store.avatar}
+              </div>
+              <div style={{ color: "#fff", fontSize: 13, fontWeight: 700 }}>
+                {store.name}
+              </div>
+              <div
+                style={{
+                  color: "rgba(255,255,255,0.4)",
+                  fontSize: 10,
+                  marginTop: 2,
+                }}
+              >
+                {store.desc}
+              </div>
             </div>
-            <div style={{ color: "#fff", fontSize: 13, fontWeight: 700 }}>
-              {t.mockupName}
-            </div>
+
+            {/* Product grid 2x2 */}
             <div
               style={{
-                color: "rgba(255,255,255,0.4)",
-                fontSize: 10,
-                marginTop: 2,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 6,
+                padding: "4px 10px",
               }}
             >
-              {t.mockupDesc}
+              {store.products.map((p, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    borderRadius: 8,
+                    overflow: "hidden",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={p.img}
+                    alt=""
+                    style={{
+                      width: "100%",
+                      height: 48,
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display =
+                        "none";
+                    }}
+                  />
+                  <div style={{ padding: "4px 6px" }}>
+                    <div
+                      style={{
+                        color: "#fff",
+                        fontSize: 8,
+                        fontWeight: 600,
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {p.name}
+                    </div>
+                    <div
+                      style={{
+                        color: store.accent,
+                        fontSize: 9,
+                        fontWeight: 700,
+                        marginTop: 1,
+                        fontFamily: "'JetBrains Mono', monospace",
+                      }}
+                    >
+                      {p.price}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA button */}
+            <div style={{ padding: "8px 10px" }}>
+              <div
+                style={{
+                  background: store.accent,
+                  borderRadius: 8,
+                  padding: "7px",
+                  textAlign: "center" as const,
+                  color: "#fff",
+                  fontSize: 10,
+                  fontWeight: 700,
+                }}
+              >
+                {store.cta}
+              </div>
             </div>
           </div>
 
-          {/* Product grid 2x2 */}
+          {/* Dot indicators */}
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 6,
-              padding: "4px 10px",
+              display: "flex",
+              justifyContent: "center",
+              gap: 4,
+              padding: "4px 0 6px",
             }}
           >
-            {[
-              {
-                img: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=120&q=80",
-                name: t.mockupProduct1,
-                price: t.mockupPrice1,
-              },
-              {
-                img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=120&q=80",
-                name: t.mockupProduct2,
-                price: t.mockupPrice2,
-              },
-              {
-                img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=120&q=80",
-                name: t.mockupProduct3,
-                price: t.mockupPrice3,
-              },
-              {
-                img: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=120&q=80",
-                name: t.mockupProduct4,
-                price: t.mockupPrice4,
-              },
-            ].map((p, i) => (
+            {stores.map((_, i) => (
               <div
                 key={i}
                 style={{
-                  background: "rgba(255,255,255,0.06)",
-                  borderRadius: 8,
-                  overflow: "hidden",
+                  width: 4,
+                  height: 4,
+                  borderRadius: "50%",
+                  background:
+                    i === idx ? store.accent : "rgba(255,255,255,0.2)",
+                  transition: "background 0.3s",
                 }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.img}
-                  alt={p.name}
-                  style={{
-                    width: "100%",
-                    height: 48,
-                    objectFit: "cover",
-                    display: "block",
-                  }}
-                />
-                <div style={{ padding: "4px 6px" }}>
-                  <div
-                    style={{
-                      color: "#fff",
-                      fontSize: 8,
-                      fontWeight: 600,
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    {p.name}
-                  </div>
-                  <div
-                    style={{
-                      color: "#FF9500",
-                      fontSize: 9,
-                      fontWeight: 700,
-                      marginTop: 1,
-                      fontFamily: "'JetBrains Mono', monospace",
-                    }}
-                  >
-                    {p.price}
-                  </div>
-                </div>
-              </div>
+              />
             ))}
-          </div>
-
-          {/* CTA button */}
-          <div style={{ padding: "8px 10px" }}>
-            <div
-              style={{
-                background: "#FF9500",
-                borderRadius: 8,
-                padding: "7px",
-                textAlign: "center" as const,
-                color: "#fff",
-                fontSize: 10,
-                fontWeight: 700,
-              }}
-            >
-              {t.mockupCta}
-            </div>
           </div>
         </div>
       </div>
@@ -239,6 +302,10 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
         @keyframes heroPulse {
           0%, 100% { opacity: 0.6; }
           50% { opacity: 1; }
+        }
+        @keyframes phoneFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
         @keyframes floatIn1 {
           from { opacity: 0; transform: translate(-20px, 10px) scale(0.8); }
@@ -602,8 +669,8 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
           </div>
         </div>
 
-        {/* Phone Mockup */}
-        <PhoneMockup t={t} />
+        {/* Phone Mockup — auto-carousel of 4 demo stores */}
+        <PhoneMockup locale={locale as Locale} />
       </div>
     </section>
   );
