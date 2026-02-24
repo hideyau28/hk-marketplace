@@ -713,6 +713,119 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         }}
       />
 
+      {/* ─── SOCIAL PROOF (White bg) ─── */}
+      <section
+        className="lp-section scroll-reveal"
+        style={{
+          padding: "64px 24px",
+          background: "#fff",
+          borderBottom: "1px solid #F3F4F6",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 900,
+            margin: "0 auto",
+            textAlign: "center" as const,
+          }}
+        >
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              background: "#FFF8F0",
+              border: "1.5px solid rgba(255,149,0,0.2)",
+              borderRadius: 32,
+              padding: "10px 24px",
+              marginBottom: 40,
+            }}
+          >
+            <span style={{ fontSize: 22 }}>🏪</span>
+            <span style={{ fontSize: 16, fontWeight: 800, color: "#1A1A1A" }}>
+              已有 <span style={{ color: "#FF9500" }}>200+</span> 間 IG 店使用
+              WoWlix
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 16,
+              justifyContent: "center",
+              flexWrap: "wrap" as const,
+            }}
+          >
+            {[
+              {
+                quote: "用咗之後，訂單再都唔會亂咗！",
+                name: "May · @maysshop",
+                avatar: "M",
+              },
+              {
+                quote: "2 分鐘開完店，放入 IG Bio 即刻有人落單",
+                name: "Vivian · 手作甜品店",
+                avatar: "V",
+              },
+              {
+                quote: "0% 抽成係真嘅，慳返好多！",
+                name: "Ken · 波鞋代購",
+                avatar: "K",
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                style={{
+                  flex: "1 1 240px",
+                  maxWidth: 300,
+                  background: "#FAFAFA",
+                  border: "1px solid #EBEBEB",
+                  borderRadius: 16,
+                  padding: "20px",
+                  textAlign: "left" as const,
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 14,
+                    color: "#374151",
+                    lineHeight: 1.6,
+                    marginBottom: 14,
+                    fontStyle: "italic" as const,
+                  }}
+                >
+                  &ldquo;{item.quote}&rdquo;
+                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      background: "linear-gradient(135deg, #FF9500, #FFB347)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#fff",
+                      fontWeight: 800,
+                      fontSize: 13,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.avatar}
+                  </div>
+                  <span
+                    style={{ fontSize: 12, color: "#9CA3AF", fontWeight: 600 }}
+                  >
+                    {item.name}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── PRICING (White bg) ─── */}
       <section
         id="pricing"
