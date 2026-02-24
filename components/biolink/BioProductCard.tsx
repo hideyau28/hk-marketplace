@@ -246,11 +246,11 @@ export default function BioProductCard({
           <button
             onClick={() => onAdd(product)}
             aria-label={`加入購物車 ${product.title}`}
-            className="absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-transform text-white active:scale-95"
+            className="absolute bottom-2 right-2 w-11 h-11 rounded-full flex items-center justify-center shadow-md transition-transform text-white active:scale-95"
             style={{ backgroundColor: tmpl.accent }}
           >
             <svg
-              className="w-4 h-4"
+              className="w-5 h-5"
               fill="none"
               stroke="currentColor"
               strokeWidth={2.5}
