@@ -543,21 +543,82 @@ function PlanCard({ plan }: { plan: Plan }) {
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          gap: 10,
+          gap: 8,
           marginBottom: 24,
         }}
       >
         {plan.features.map((f, i) => (
           <div
             key={i}
-            style={{ display: "flex", gap: 10, fontSize: 14, lineHeight: 1.5 }}
+            style={{
+              display: "flex",
+              gap: 10,
+              fontSize: 14,
+              lineHeight: 1.5,
+              alignItems: "flex-start",
+            }}
           >
-            <span style={{ color: "#FF9500", flexShrink: 0, fontSize: 16 }}>
-              ✓
-            </span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              style={{ flexShrink: 0, marginTop: 2 }}
+            >
+              <circle
+                cx="8"
+                cy="8"
+                r="7.5"
+                fill="rgba(255,149,0,0.12)"
+                stroke="none"
+              />
+              <path
+                d="M4.5 8.5L6.5 10.5L11.5 5.5"
+                stroke="#FF9500"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
             <span>{f}</span>
           </div>
         ))}
+        {plan.noFeatures.length > 0 && (
+          <>
+            <div
+              style={{ height: 1, background: "#F0F0F0", margin: "4px 0" }}
+            />
+            {plan.noFeatures.map((f, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                  alignItems: "flex-start",
+                  opacity: 0.35,
+                }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  style={{ flexShrink: 0, marginTop: 2 }}
+                >
+                  <path
+                    d="M5 8h6"
+                    stroke="#666"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span style={{ textDecoration: "line-through" }}>{f}</span>
+              </div>
+            ))}
+          </>
+        )}
       </div>
       <button
         style={{
