@@ -60,6 +60,10 @@ export default function BioProductCard({
     ? Math.round((1 - product.price / product.originalPrice!) * 100)
     : 0;
 
+  // Badge priority: discount > low stock > NEW. Max 2 badges per card.
+  // If all 3 active, drop NEW (lowest priority) to avoid visual noise.
+  const showNewBadge = isNewProduct && !(isOnSale && !!lowStock);
+
   return (
     <div
       className="overflow-hidden"
@@ -134,7 +138,7 @@ export default function BioProductCard({
         {!soldOut && (
           <div className="absolute top-2 left-0 right-0 px-2 z-10 grid grid-cols-3 items-center">
             <div className="flex justify-start">
-              {isNewProduct && <NewBadge accentColor={tmpl.accent} />}
+              {showNewBadge && <NewBadge accentColor={tmpl.accent} />}
             </div>
             <div className="flex justify-center">
               {lowStock && (
