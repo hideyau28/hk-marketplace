@@ -2,7 +2,22 @@
 
 import Link from "next/link";
 import { usePathname, useParams, useRouter } from "next/navigation";
-import { LayoutDashboard, LayoutGrid, Package, ShoppingCart, Users, Settings, LogOut, X, ScrollText, Ticket, CreditCard, Receipt, RefreshCw } from "lucide-react";
+import {
+  LayoutDashboard,
+  LayoutGrid,
+  Package,
+  ShoppingCart,
+  Users,
+  Settings,
+  LogOut,
+  X,
+  ScrollText,
+  Ticket,
+  CreditCard,
+  Receipt,
+  RefreshCw,
+  BarChart3,
+} from "lucide-react";
 import { useSidebar } from "@/components/admin/SidebarContext";
 import { getDict, type Locale } from "@/lib/i18n";
 import { useTenantBranding } from "@/lib/tenant-branding";
@@ -15,7 +30,8 @@ export default function AdminSidebar() {
   const router = useRouter();
   const locale = (params.locale as string) || "en";
   const t = getDict(locale as Locale);
-  const { branding: tenantBranding, loading: brandingLoading } = useTenantBranding();
+  const { branding: tenantBranding, loading: brandingLoading } =
+    useTenantBranding();
 
   // Guard: don't render if not in SidebarProvider context
   if (!sidebar) {
@@ -26,22 +42,84 @@ export default function AdminSidebar() {
 
   // biolink 模式只顯示基本功能，fullstore 顯示全部
   const allNavItems = [
-    { href: "/admin", label: t.admin.sidebar.dashboard, icon: LayoutDashboard, biolink: true },
-    { href: "/admin/products", label: t.admin.sidebar.products, icon: Package, biolink: true },
-    { href: "/admin/homepage", label: "首頁管理", icon: LayoutGrid, biolink: false },
-    { href: "/admin/orders", label: t.admin.sidebar.orders, icon: ShoppingCart, biolink: true },
-    { href: "/admin/cart-recovery", label: t.admin.sidebar.cartRecovery, icon: RefreshCw, biolink: true },
-    { href: "/admin/customers", label: t.admin.sidebar.customers, icon: Users, biolink: true },
-    { href: "/admin/payments", label: "付款方式", icon: CreditCard, biolink: false },
-    { href: "/admin/coupons", label: t.admin.sidebar.coupons, icon: Ticket, biolink: false },
-    { href: "/admin/billing", label: t.admin.sidebar.billing, icon: Receipt, biolink: true },
-    { href: "/admin/logs", label: t.admin.sidebar.logs, icon: ScrollText, biolink: false },
-    { href: "/admin/settings", label: t.admin.sidebar.settings, icon: Settings, biolink: true },
+    {
+      href: "/admin",
+      label: t.admin.sidebar.dashboard,
+      icon: LayoutDashboard,
+      biolink: true,
+    },
+    {
+      href: "/admin/products",
+      label: t.admin.sidebar.products,
+      icon: Package,
+      biolink: true,
+    },
+    {
+      href: "/admin/homepage",
+      label: "首頁管理",
+      icon: LayoutGrid,
+      biolink: false,
+    },
+    {
+      href: "/admin/orders",
+      label: t.admin.sidebar.orders,
+      icon: ShoppingCart,
+      biolink: true,
+    },
+    {
+      href: "/admin/cart-recovery",
+      label: t.admin.sidebar.cartRecovery,
+      icon: RefreshCw,
+      biolink: true,
+    },
+    {
+      href: "/admin/customers",
+      label: t.admin.sidebar.customers,
+      icon: Users,
+      biolink: true,
+    },
+    {
+      href: "/admin/analytics",
+      label: "數據分析",
+      icon: BarChart3,
+      biolink: true,
+    },
+    {
+      href: "/admin/payments",
+      label: "付款方式",
+      icon: CreditCard,
+      biolink: false,
+    },
+    {
+      href: "/admin/coupons",
+      label: t.admin.sidebar.coupons,
+      icon: Ticket,
+      biolink: false,
+    },
+    {
+      href: "/admin/billing",
+      label: t.admin.sidebar.billing,
+      icon: Receipt,
+      biolink: true,
+    },
+    {
+      href: "/admin/logs",
+      label: t.admin.sidebar.logs,
+      icon: ScrollText,
+      biolink: false,
+    },
+    {
+      href: "/admin/settings",
+      label: t.admin.sidebar.settings,
+      icon: Settings,
+      biolink: true,
+    },
   ];
 
-  const navItems = tenantBranding.mode === "fullstore"
-    ? allNavItems
-    : allNavItems.filter((item) => item.biolink);
+  const navItems =
+    tenantBranding.mode === "fullstore"
+      ? allNavItems
+      : allNavItems.filter((item) => item.biolink);
 
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -79,9 +157,10 @@ export default function AdminSidebar() {
         <nav className="p-4 space-y-2">
           {navItems.map((item) => {
             const fullHref = `/${locale}${item.href}`;
-            const isActive = item.href === "/admin"
-              ? pathname === fullHref
-              : pathname === fullHref || pathname.startsWith(fullHref + "/");
+            const isActive =
+              item.href === "/admin"
+                ? pathname === fullHref
+                : pathname === fullHref || pathname.startsWith(fullHref + "/");
             const Icon = item.icon;
 
             return (
