@@ -53,21 +53,56 @@ export default function ImageUpload({
       const formData = new FormData();
       formData.append("file", compressed);
 
-      const response = await fetch("/api/admin/upload", {
-        method: "POST",
-        body: formData,
-      });
+      console.log("[ImageUpload] Starting upload, file size:", compressed.size);
+
+      let response: Response;
+      try {
+        response = await fetch("/api/admin/upload", {
+          method: "POST",
+          body: formData,
+        });
+      } catch (fetchErr) {
+        // TypeError = network failure (CORS, offline, DNS, etc.)
+        console.error("[ImageUpload] fetch failed:", fetchErr);
+        setError("網絡錯誤，請重試");
+        return;
+      }
+
+      console.log("[ImageUpload] Response status:", response.status);
+
+      if (!response.ok) {
+        const body = await response.text();
+        console.error("[ImageUpload] Non-OK response:", response.status, body);
+
+        if (response.status === 401 || response.status === 403) {
+          setError("登入已過期，請重新登入");
+        } else if (response.status >= 500) {
+          setError("伺服器錯誤，請稍後重試");
+        } else {
+          // Try to parse error message from JSON body
+          try {
+            const data = JSON.parse(body);
+            setError(data.error?.message || "Upload failed");
+          } catch {
+            setError(`Upload failed (${response.status})`);
+          }
+        }
+        return;
+      }
 
       const data = await response.json();
 
-      if (!response.ok || !data.ok) {
+      if (!data.ok) {
+        console.error("[ImageUpload] API returned ok:false:", data);
         throw new Error(data.error?.message || "Upload failed");
       }
 
       const url = data.data.url;
+      console.log("[ImageUpload] Upload success:", url);
       setPreview(url);
       onUpload(url);
     } catch (err) {
+      console.error("[ImageUpload] Unexpected error:", err);
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setIsUploading(false);
