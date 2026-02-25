@@ -142,27 +142,21 @@ export default function BioProductCard({
 
         {soldOut && <SoldOutOverlay />}
 
-        {/* Badges — 同一行：NEW 左、剩X件 中、-X% 右 */}
-        {!soldOut && (
-          <div className="absolute top-2 left-0 right-0 px-2 z-10 grid grid-cols-3 items-center">
-            <div className="flex justify-start">
-              {showNewBadge && <NewBadge accentColor={tmpl.accent} />}
-            </div>
-            <div className="flex justify-center">
-              {lowStock && (
-                <LowStockBadge count={lowStock} accentColor={tmpl.accent} />
-              )}
-            </div>
-            <div className="flex justify-end">
-              {isOnSale && (
-                <span
-                  className="rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
-                  style={{ backgroundColor: tmpl.accent }}
-                >
-                  -{discountPct}%
-                </span>
-              )}
-            </div>
+        {/* Badges — 左上角垂直排列，唔會同右上角 heart 撞 */}
+        {!soldOut && (showNewBadge || lowStock || isOnSale) && (
+          <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
+            {isOnSale && (
+              <span
+                className="rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
+                style={{ backgroundColor: tmpl.accent }}
+              >
+                -{discountPct}%
+              </span>
+            )}
+            {showNewBadge && <NewBadge accentColor={tmpl.accent} />}
+            {lowStock && (
+              <LowStockBadge count={lowStock} accentColor={tmpl.accent} />
+            )}
           </div>
         )}
 
