@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Camera, Plus, Eye, Copy, Check, Star, Edit, GripVertical } from "lucide-react";
+import { Camera, Plus, Eye, Copy, Check, Star, Edit, GripVertical, Loader2 } from "lucide-react";
+import { compressImage, isAcceptedImageType } from "@/lib/compress-image";
 import {
   DndContext,
   closestCenter,
@@ -218,12 +219,55 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
   const [quickSort, setQuickSort] = useState<QuickSort>("manual");
   const [confirmBatchDelete, setConfirmBatchDelete] = useState(false);
 
+  const [bannerUrl, setBannerUrl] = useState(tenant.coverPhoto);
+  const [avatarUrl, setAvatarUrl] = useState(tenant.logoUrl);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   const isZh = locale === "zh-HK";
   const storeUrl = `wowlix.com/${tenant.slug}`;
   const brandColor = tenant.brandColor || "#FF9500";
   const tmpl = getCoverTemplate(tenant.coverTemplate);
   // Admin header banner：自訂 cover → template default banner
-  const headerBanner = tenant.coverPhoto || tmpl.defaultBanner;
+  const headerBanner = bannerUrl || tmpl.defaultBanner;
+
+  // 上傳圖片 → save to tenant-settings
+  const handleInlineUpload = async (
+    file: File,
+    field: "coverPhoto" | "logo",
+    setUploading: (v: boolean) => void,
+    setUrl: (url: string) => void,
+  ) => {
+    if (!isAcceptedImageType(file) || file.size > 10 * 1024 * 1024) return;
+    setUploading(true);
+    try {
+      const compressed = await compressImage(file);
+      const formData = new FormData();
+      formData.append("file", compressed);
+      const uploadRes = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok || !uploadData.ok) throw new Error("Upload failed");
+      const url: string = uploadData.data.url;
+
+      // Persist to tenant settings
+      await fetch("/api/admin/tenant-settings", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ [field]: url }),
+      });
+
+      setUrl(url);
+    } catch (err) {
+      console.error(`[BioLinkDashboard] ${field} upload failed:`, err);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   // dnd-kit sensors — activationConstraint prevents accidental drags
   const pointerSensor = useSensor(PointerSensor, {
@@ -403,9 +447,54 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
 
   return (
     <div className={`px-4 ${isEditMode && selectedCount > 0 ? "pb-[70px]" : "pb-4"}`}>
+      {/* Hidden file inputs for banner / avatar upload */}
+      <input
+        ref={bannerInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleInlineUpload(f, "coverPhoto", setUploadingBanner, setBannerUrl);
+          e.target.value = "";
+        }}
+      />
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleInlineUpload(f, "logo", setUploadingAvatar, setAvatarUrl);
+          e.target.value = "";
+        }}
+      />
+
       {/* Cover / Header */}
       <div className="relative rounded-2xl overflow-hidden mb-6 -mx-4 -mt-0">
-        {/* Banner image */}
+        {/* Banner image — clickable to upload */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => !uploadingBanner && bannerInputRef.current?.click()}
+          onKeyDown={(e) => { if (e.key === "Enter") bannerInputRef.current?.click(); }}
+          className="absolute inset-0 z-[1] cursor-pointer group"
+          aria-label={isZh ? "更換封面圖" : "Change banner"}
+        >
+          {/* Camera overlay — visible on hover / uploading */}
+          <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${
+            uploadingBanner ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          }`}>
+            <div className="bg-black/50 rounded-full p-3">
+              {uploadingBanner ? (
+                <Loader2 size={24} className="text-white animate-spin" />
+              ) : (
+                <Camera size={24} className="text-white" />
+              )}
+            </div>
+          </div>
+        </div>
         <Image
           src={headerBanner}
           alt="Store banner"
@@ -415,26 +504,43 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
         />
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-black/40" />
-        <div className="relative px-6 py-8 text-center text-white">
-          {/* Avatar */}
-          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 text-2xl font-bold overflow-hidden relative">
-            {tenant.logoUrl ? (
-              <Image src={tenant.logoUrl} alt={tenant.name} fill className="object-cover" sizes="64px" />
+        <div className="relative px-6 py-8 text-center text-white z-[2] pointer-events-none">
+          {/* Avatar — clickable to upload */}
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => { e.stopPropagation(); if (!uploadingAvatar) avatarInputRef.current?.click(); }}
+            onKeyDown={(e) => { if (e.key === "Enter") avatarInputRef.current?.click(); }}
+            className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 text-2xl font-bold overflow-hidden relative cursor-pointer pointer-events-auto group/avatar"
+            aria-label={isZh ? "更換頭像" : "Change avatar"}
+          >
+            {avatarUrl ? (
+              <Image src={avatarUrl} alt={tenant.name} fill className="object-cover" sizes="64px" />
             ) : (
               tenant.name.charAt(0).toUpperCase()
             )}
+            {/* Avatar camera overlay */}
+            <div className={`absolute inset-0 rounded-full flex items-center justify-center transition-opacity bg-black/40 ${
+              uploadingAvatar ? "opacity-100" : "opacity-0 group-hover/avatar:opacity-100"
+            }`}>
+              {uploadingAvatar ? (
+                <Loader2 size={18} className="text-white animate-spin" />
+              ) : (
+                <Camera size={18} className="text-white" />
+              )}
+            </div>
           </div>
           <h2 className="text-xl font-bold">{tenant.name}</h2>
           <button
             onClick={handleCopyLink}
-            className="inline-flex items-center gap-1.5 mt-2 text-sm text-white/80 hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 mt-2 text-sm text-white/80 hover:text-white transition-colors pointer-events-auto"
           >
             <span>{storeUrl}</span>
             {copied ? <Check size={14} /> : <Copy size={14} />}
           </button>
 
           {!isEmpty && (
-            <div className="mt-4 flex items-center justify-center gap-3">
+            <div className="mt-4 flex items-center justify-center gap-3 pointer-events-auto">
               <button
                 onClick={handlePreview}
                 className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
