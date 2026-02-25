@@ -482,17 +482,13 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
           className="absolute inset-0 z-[1] cursor-pointer group"
           aria-label={isZh ? "更換封面圖" : "Change banner"}
         >
-          {/* Camera overlay — visible on hover / uploading */}
-          <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${
-            uploadingBanner ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-          }`}>
-            <div className="bg-black/50 rounded-full p-3">
-              {uploadingBanner ? (
-                <Loader2 size={24} className="text-white animate-spin" />
-              ) : (
-                <Camera size={24} className="text-white" />
-              )}
-            </div>
+          {/* Always-visible camera button — bottom-right of banner */}
+          <div className="absolute bottom-3 right-3 w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-md transition-colors group-hover:bg-white">
+            {uploadingBanner ? (
+              <Loader2 size={20} className="text-zinc-700 animate-spin" />
+            ) : (
+              <Camera size={20} className="text-zinc-700" />
+            )}
           </div>
         </div>
         <Image
@@ -519,14 +515,12 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
             ) : (
               tenant.name.charAt(0).toUpperCase()
             )}
-            {/* Avatar camera overlay */}
-            <div className={`absolute inset-0 rounded-full flex items-center justify-center transition-opacity bg-black/40 ${
-              uploadingAvatar ? "opacity-100" : "opacity-0 group-hover/avatar:opacity-100"
-            }`}>
+            {/* Always-visible camera button — bottom-right of avatar */}
+            <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center border border-zinc-200">
               {uploadingAvatar ? (
-                <Loader2 size={18} className="text-white animate-spin" />
+                <Loader2 size={12} className="text-zinc-700 animate-spin" />
               ) : (
-                <Camera size={18} className="text-white" />
+                <Camera size={12} className="text-zinc-700" />
               )}
             </div>
           </div>
