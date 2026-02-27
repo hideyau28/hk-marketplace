@@ -172,6 +172,7 @@ export default function HeroSection({ locale = "zh-HK" }: { locale?: Locale }) {
         /* ─── Section ─── */
         .hero-section {
           position: relative;
+          z-index: 0; /* contain child stacking contexts below nav (z-index: 100) */
           overflow: hidden;
           background: #0D0D0D;
           padding: 64px 20px 80px;
