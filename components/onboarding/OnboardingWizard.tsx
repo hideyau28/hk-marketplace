@@ -41,8 +41,8 @@ const t = {
     emailPlaceholder: "e.g. hello@myshop.com",
     emailFormatError: "Invalid email format",
     password: "Password *",
-    passwordPlaceholder: "At least 8 characters",
-    passwordMinError: "At least 8 characters",
+    passwordPlaceholder: "At least 8 chars, with a number",
+    passwordMinError: "At least 8 chars with 1 number",
     confirmPassword: "Confirm Password *",
     confirmPasswordPlaceholder: "Re-enter your password",
     passwordMismatch: "Passwords do not match",
@@ -149,8 +149,8 @@ const t = {
     emailPlaceholder: "例如 hello@myshop.com",
     emailFormatError: "電郵格式唔啱",
     password: "密碼 *",
-    passwordPlaceholder: "最少 8 個字",
-    passwordMinError: "最少 8 個字",
+    passwordPlaceholder: "最少 8 個字，包含數字",
+    passwordMinError: "密碼需要最少 8 個字，包含至少 1 個數字",
     confirmPassword: "確認密碼 *",
     confirmPasswordPlaceholder: "再輸入一次密碼",
     passwordMismatch: "密碼不一致",
@@ -272,6 +272,7 @@ function getOnboardingPlans(isZh: boolean) {
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/;
 const WHATSAPP_REGEX = /^[0-9]{8}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_REGEX = /^(?=.*\d).{8,}$/;
 
 function nameToSlug(name: string): string {
   return name
@@ -649,7 +650,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     // Skip password validation if signed up with Google
     if (!googleEmail) {
       if (!data.password) newErrors.password = labels.required;
-      else if (data.password.length < 8)
+      else if (!PASSWORD_REGEX.test(data.password))
         newErrors.password = labels.passwordMinError;
 
       if (!data.confirmPassword) newErrors.confirmPassword = labels.required;
@@ -1003,17 +1004,10 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   <h2 className="text-xl font-bold text-zinc-900">
                     {labels.storeInfo}
                   </h2>
-                  <p className="text-zinc-500 text-sm mt-1">
-                    {labels.storeInfoSub}
-                  </p>
                 </div>
 
                 {/* Store section */}
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                    {labels.storeSection}
-                  </p>
-
                   {/* Store name */}
                   <div>
                     <label className="block text-sm font-medium text-zinc-700 mb-1">
