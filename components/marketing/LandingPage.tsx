@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { MessageCircle, ClipboardList, Wallet, TrendingDown } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import HeroSection from "@/components/marketing/sections/HeroSection";
 
@@ -18,16 +19,12 @@ const T = {
     painTitle: "你係咪都遇到呢啲問題？",
     painSub1: "用 IG DM 做生意",
     painSub2: "愈做愈辛苦",
-    pain1Icon: "💬",
     pain1Title: "DM 覆到手軟",
     pain1Desc: "一個人根本做唔晒",
-    pain2Icon: "📋",
     pain2Title: "訂單亂晒龍",
     pain2Desc: "成日漏單出錯單",
-    pain3Icon: "💸",
     pain3Title: "收錢好麻煩",
     pain3Desc: "逐個對數好煩",
-    pain4Icon: "📉",
     pain4Title: "生意做唔大",
     pain4Desc: "永遠困喺 DM",
 
@@ -128,16 +125,12 @@ const T = {
     painTitle: "Sound familiar?",
     painSub1: "Running a business on IG DMs",
     painSub2: "gets harder every day",
-    pain1Icon: "💬",
     pain1Title: "DM overload",
     pain1Desc: "Impossible to handle alone",
-    pain2Icon: "📋",
     pain2Title: "Orders in chaos",
     pain2Desc: "Missing orders constantly",
-    pain3Icon: "💸",
     pain3Title: "Payment headaches",
     pain3Desc: "Checking payments one by one",
-    pain4Icon: "📉",
     pain4Title: "Can't scale up",
     pain4Desc: "Forever stuck in DMs",
 
@@ -276,10 +269,10 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
   };
 
   const painCards = [
-    { icon: t.pain1Icon, title: t.pain1Title, desc: t.pain1Desc },
-    { icon: t.pain2Icon, title: t.pain2Title, desc: t.pain2Desc },
-    { icon: t.pain3Icon, title: t.pain3Title, desc: t.pain3Desc },
-    { icon: t.pain4Icon, title: t.pain4Title, desc: t.pain4Desc },
+    { Icon: MessageCircle, title: t.pain1Title, desc: t.pain1Desc },
+    { Icon: ClipboardList, title: t.pain2Title, desc: t.pain2Desc },
+    { Icon: Wallet, title: t.pain3Title, desc: t.pain3Desc },
+    { Icon: TrendingDown, title: t.pain4Title, desc: t.pain4Desc },
   ];
 
   const howSteps = [
@@ -585,8 +578,20 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   minHeight: 120,
                 }}
               >
-                <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 8 }}>
-                  {card.icon}
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: "50%",
+                    background: "#FFF3E0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 12,
+                    flexShrink: 0,
+                  }}
+                >
+                  <card.Icon size={26} color="#FF9500" strokeWidth={2} />
                 </div>
                 <div
                   style={{
