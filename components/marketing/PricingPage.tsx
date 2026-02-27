@@ -1140,6 +1140,10 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             padding-top: 48px !important;
             padding-bottom: 48px !important;
           }
+          /* hero needs extra top clearance for the fixed nav (~57px) */
+          .pricing-page section.pricing-hero {
+            padding-top: 88px !important;
+          }
         }
       `}</style>
 
@@ -1150,7 +1154,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 100,
+          zIndex: 1000,
           padding: "16px 24px",
           display: "flex",
           alignItems: "center",
@@ -1234,6 +1238,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
       {/* HERO */}
       <section
+        className="pricing-hero"
         style={{
           padding: "120px 24px 80px",
           textAlign: "center",
@@ -1790,7 +1795,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   fontSize: 14,
                   fontWeight: 700,
                   position: "sticky",
-                  top: 0,
+                  top: 57, /* offset for fixed nav bar */
                   zIndex: 10,
                 }}
               >
