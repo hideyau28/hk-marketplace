@@ -38,7 +38,7 @@ const t = {
     required: "Required",
     accountSection: "Your Account",
     email: "Email *",
-    emailPlaceholder: "e.g. hello@myshop.com",
+    emailPlaceholder: "",
     emailFormatError: "Invalid email format",
     password: "Password *",
     passwordPlaceholder: "At least 8 chars, with a number",
@@ -146,7 +146,7 @@ const t = {
     required: "必填",
     accountSection: "帳戶資料",
     email: "電郵地址 *",
-    emailPlaceholder: "例如 hello@myshop.com",
+    emailPlaceholder: "",
     emailFormatError: "電郵格式唔啱",
     password: "密碼 *",
     passwordPlaceholder: "最少 8 個字，包含數字",
@@ -1136,7 +1136,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
 
                   {/* Password — hidden when using Google */}
                   {!googleEmail && (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium text-zinc-700 mb-1">
                         {labels.password}
