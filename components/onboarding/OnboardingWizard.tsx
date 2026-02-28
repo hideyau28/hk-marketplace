@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Sparkles, Check, Circle } from "lucide-react";
 import StepIndicator from "./StepIndicator";
 import { COVER_TEMPLATES } from "@/lib/cover-templates";
 import type { Locale } from "@/lib/i18n";
@@ -96,6 +96,11 @@ const t = {
     openMyStore: "Open my store",
     goToAdmin: "Go to admin dashboard",
     paymentReminder: "Remember to add your payment details in Settings → Payment Methods",
+    checklistStoreCreated: "Store created",
+    checklistPaymentSet: "Payment methods set up",
+    checklistNextProduct: "Next: Upload your first product",
+    checklistNextShipping: "Next: Set up delivery methods",
+    templateLabel: "Theme:",
     // Google signup
     signUpWithGoogle: "Sign up with Google",
     orDivider: "or",
@@ -204,6 +209,11 @@ const t = {
     openMyStore: "開啟我的店",
     goToAdmin: "去管理後台",
     paymentReminder: "記得去「設定 → 收款方式」加入你嘅收款資料",
+    checklistStoreCreated: "店舖已建立",
+    checklistPaymentSet: "收款方式已設定",
+    checklistNextProduct: "下一步：上傳第一件商品",
+    checklistNextShipping: "下一步：設定送貨方式",
+    templateLabel: "風格：",
     // Google signup
     signUpWithGoogle: "以 Google 註冊",
     orDivider: "或",
@@ -1536,30 +1546,49 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
             {/* ======== STEP 6: Done ======== */}
             {step === 6 && (
               <div className="space-y-5 text-center">
-                <div className="text-4xl">🎉</div>
+                <Sparkles className="w-10 h-10 text-[#FF9500] mx-auto" strokeWidth={1.5} />
                 <h2 className="text-xl font-bold text-zinc-900">
                   {labels.congrats}
                 </h2>
 
-                {/* Store preview card */}
-                <div className="rounded-xl overflow-hidden border border-zinc-200">
+                {/* Checklist + template preview card */}
+                <div className="rounded-xl border border-zinc-200 overflow-hidden">
+                  {/* Template preview header */}
                   <div
-                    className="h-20"
+                    className="px-4 py-3 flex items-center gap-2"
                     style={{
                       background:
                         selectedTemplate?.headerGradient ||
                         "linear-gradient(135deg, #FFFFFF, #F0F5EE)",
+                      color: selectedTemplate?.text || "#18181B",
                     }}
-                  />
-                  <div className="p-3 text-left">
-                    <p className="font-semibold text-zinc-900">
+                  >
+                    <p className="font-semibold text-sm" style={{ color: selectedTemplate?.text || "#18181B" }}>
                       {data.shopName}
                     </p>
-                    {data.tagline && (
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        {data.tagline}
-                      </p>
-                    )}
+                    <span className="text-xs opacity-70" style={{ color: selectedTemplate?.subtext || "#71717A" }}>
+                      {labels.templateLabel} {locale === "zh-HK" ? selectedTemplate?.label : selectedTemplate?.labelEn}
+                    </span>
+                  </div>
+
+                  {/* Checklist */}
+                  <div className="p-4 space-y-2.5 text-left">
+                    <div className="flex items-center gap-2.5">
+                      <Check className="w-4 h-4 text-emerald-500 shrink-0" strokeWidth={2.5} />
+                      <span className="text-sm text-zinc-700">{labels.checklistStoreCreated}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <Check className="w-4 h-4 text-emerald-500 shrink-0" strokeWidth={2.5} />
+                      <span className="text-sm text-zinc-700">{labels.checklistPaymentSet}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <Circle className="w-4 h-4 text-zinc-300 shrink-0" strokeWidth={2} />
+                      <span className="text-sm text-zinc-500">{labels.checklistNextProduct}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <Circle className="w-4 h-4 text-zinc-300 shrink-0" strokeWidth={2} />
+                      <span className="text-sm text-zinc-500">{labels.checklistNextShipping}</span>
+                    </div>
                   </div>
                 </div>
 
