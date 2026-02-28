@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { DollarSign } from "lucide-react";
 import StepIndicator from "./StepIndicator";
 import { COVER_TEMPLATES } from "@/lib/cover-templates";
 import type { Locale } from "@/lib/i18n";
@@ -38,7 +39,7 @@ const t = {
     required: "Required",
     accountSection: "Your Account",
     email: "Email *",
-    emailPlaceholder: "e.g. hello@myshop.com",
+    emailPlaceholder: "",
     emailFormatError: "Invalid email format",
     password: "Password *",
     passwordPlaceholder: "At least 8 characters",
@@ -55,7 +56,7 @@ const t = {
     whatsappFormatError: "Must be 8 digits",
     // Step 4: Payment methods
     fpsTitle: "Payment Setup",
-    fpsSub: "How customers pay you",
+    fpsSub: "Set up at least one payment method",
     paymentSelectHint: "Select at least one method",
     fpsLabel: "FPS",
     fpsDesc: "Customers transfer via FPS",
@@ -146,7 +147,7 @@ const t = {
     required: "必填",
     accountSection: "帳戶資料",
     email: "電郵地址 *",
-    emailPlaceholder: "例如 hello@myshop.com",
+    emailPlaceholder: "",
     emailFormatError: "電郵格式唔啱",
     password: "密碼 *",
     passwordPlaceholder: "最少 8 個字",
@@ -163,7 +164,7 @@ const t = {
     whatsappFormatError: "需要 8 位數字",
     // Step 4: Payment methods
     fpsTitle: "收款設定",
-    fpsSub: "客人點樣畀錢你",
+    fpsSub: "先設定其中一個收款方式",
     paymentSelectHint: "至少揀一個收款方式",
     fpsLabel: "FPS 轉數快",
     fpsDesc: "客人用 FPS 轉賬",
@@ -330,7 +331,6 @@ function PaymentMethodCard({
   id,
   label,
   desc,
-  icon,
   selected,
   onToggle,
   children,
@@ -338,7 +338,6 @@ function PaymentMethodCard({
   id: string;
   label: string;
   desc: string;
-  icon: string;
   selected: boolean;
   onToggle: () => void;
   children?: React.ReactNode;
@@ -372,7 +371,6 @@ function PaymentMethodCard({
             </svg>
           )}
         </div>
-        <span className="text-xl flex-shrink-0" aria-hidden>{icon}</span>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-zinc-900 text-sm">{label}</p>
           <p className="text-xs text-zinc-500">{desc}</p>
@@ -1142,7 +1140,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
 
                   {/* Password — hidden when using Google */}
                   {!googleEmail && (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium text-zinc-700 mb-1">
                         {labels.password}
@@ -1262,8 +1260,8 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
             {step === 4 && (
               <div className="space-y-5">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600 text-lg font-bold mb-3">
-                    $
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3" style={{ background: "#FF9500" }}>
+                    <DollarSign className="w-6 h-6 text-white" strokeWidth={2.5} />
                   </div>
                   <h2 className="text-xl font-bold text-zinc-900">
                     {labels.fpsTitle}
@@ -1284,7 +1282,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     id="fps"
                     label={labels.fpsLabel}
                     desc={labels.fpsDesc}
-                    icon="💸"
                     selected={data.selectedPayments.includes("fps")}
                     onToggle={() => {
                       const sel = data.selectedPayments.includes("fps")
@@ -1333,7 +1330,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     id="payme"
                     label={labels.paymeLabel}
                     desc={labels.paymeDesc}
-                    icon="📱"
                     selected={data.selectedPayments.includes("payme")}
                     onToggle={() => {
                       const sel = data.selectedPayments.includes("payme")
@@ -1364,7 +1360,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     id="alipay_hk"
                     label={labels.alipayLabel}
                     desc={labels.alipayDesc}
-                    icon="🅰️"
                     selected={data.selectedPayments.includes("alipay_hk")}
                     onToggle={() => {
                       const sel = data.selectedPayments.includes("alipay_hk")
