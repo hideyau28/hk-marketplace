@@ -28,7 +28,7 @@ const t = {
     storeInfoSub: "Tell us about your shop",
     storeSection: "Your Store",
     storeName: "Store Name *",
-    storeNamePlaceholder: "e.g. May's Fashion",
+    storeNamePlaceholder: "",
     storeUrl: "Store URL",
     slugChecking: "Checking...",
     slugAvailable: "Available!",
@@ -67,6 +67,12 @@ const t = {
     fpsId: "FPS Phone / ID *",
     fpsIdPlaceholder: "e.g. 91234567 or FPS ID",
     fpsIdHint: "Your FPS registered phone or ID",
+    fpsUseWhatsapp: "Use my WhatsApp number for FPS",
+    fpsUseWhatsappHint: "Auto-filled from previous step",
+    fpsUsePhone: "Use a different FPS phone number",
+    fpsUseId: "Use FPS ID",
+    fpsPhonePlaceholder: "e.g. 91234567",
+    fpsIdOnlyPlaceholder: "e.g. FPS123456",
     fpsAccountName: "Account Name (optional)",
     fpsAccountNamePlaceholder: "e.g. Chan Tai Man",
     uploadQr: "Upload QR Code",
@@ -141,7 +147,7 @@ const t = {
     storeInfoSub: "設定你嘅小店",
     storeSection: "你嘅店",
     storeName: "店鋪名稱 *",
-    storeNamePlaceholder: "例如：May's Fashion",
+    storeNamePlaceholder: "",
     storeUrl: "店舖網址",
     slugChecking: "檢查中...",
     slugAvailable: "可以用！",
@@ -180,6 +186,12 @@ const t = {
     fpsId: "FPS 收款電話 / ID *",
     fpsIdPlaceholder: "例如 91234567 或 FPS ID",
     fpsIdHint: "你登記 FPS 嘅電話或 ID",
+    fpsUseWhatsapp: "用上一步嘅 WhatsApp 號碼收 FPS",
+    fpsUseWhatsappHint: "自動帶入，唔使再輸入",
+    fpsUsePhone: "另輸入 FPS 收款電話號碼",
+    fpsUseId: "輸入 FPS ID",
+    fpsPhonePlaceholder: "例如 91234567",
+    fpsIdOnlyPlaceholder: "例如 FPS123456",
     fpsAccountName: "收款人名稱（選填）",
     fpsAccountNamePlaceholder: "例如：陳大文",
     uploadQr: "上傳 QR Code",
@@ -494,6 +506,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     templateId: "mochi",
     tagline: "",
   });
+  const [fpsMode, setFpsMode] = useState<"whatsapp" | "phone" | "id">("whatsapp");
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
   const [slugReason, setSlugReason] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -684,7 +697,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     if (data.selectedPayments.length === 0) {
       newErrors.selectedPayments = labels.paymentAtLeastOne;
     }
-    if (data.selectedPayments.includes("fps") && !data.fpsId.trim()) {
+    if (data.selectedPayments.includes("fps") && fpsMode !== "whatsapp" && !data.fpsId.trim()) {
       newErrors.fpsId = labels.required;
     }
     if (data.selectedPayments.includes("payme") && !data.paymeQrUrl) {
@@ -742,7 +755,9 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
           googleAuth: !!googleEmail,
           whatsapp: data.whatsapp.trim(),
           paymentMethods: data.selectedPayments,
-          fpsId: data.selectedPayments.includes("fps") ? data.fpsId.trim() : undefined,
+          fpsId: data.selectedPayments.includes("fps")
+            ? (fpsMode === "whatsapp" ? data.whatsapp.trim() : data.fpsId.trim())
+            : undefined,
           fpsAccountName: data.selectedPayments.includes("fps") ? (data.fpsAccountName.trim() || undefined) : undefined,
           paymeQrUrl: data.selectedPayments.includes("payme") ? data.paymeQrUrl : undefined,
           alipayQrUrl: data.selectedPayments.includes("alipay_hk") ? data.alipayQrUrl : undefined,
@@ -1295,24 +1310,85 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     }}
                   >
                     {data.selectedPayments.includes("fps") && (
-                      <div className="space-y-2 mt-3 pt-3 border-t border-zinc-100">
-                        <div>
-                          <label className="block text-sm font-medium text-zinc-700 mb-1">
-                            {labels.fpsId}
-                          </label>
+                      <div className="space-y-3 mt-3 pt-3 border-t border-zinc-100">
+                        {/* Radio option 1: use WhatsApp number */}
+                        <label className="flex items-start gap-2.5 cursor-pointer">
                           <input
-                            type="text"
-                            value={data.fpsId}
-                            onChange={(e) => update("fpsId", e.target.value)}
-                            placeholder={labels.fpsIdPlaceholder}
-                            className={inputClass("fpsId")}
+                            type="radio"
+                            name="fpsMode"
+                            value="whatsapp"
+                            checked={fpsMode === "whatsapp"}
+                            onChange={() => { setFpsMode("whatsapp"); update("fpsId", ""); }}
+                            className="mt-0.5 accent-[#FF9500]"
                           />
-                          {errors.fpsId ? (
-                            <p className="text-red-500 text-xs mt-1">{errors.fpsId}</p>
-                          ) : (
-                            <p className="text-zinc-400 text-xs mt-1">{labels.fpsIdHint}</p>
-                          )}
-                        </div>
+                          <div>
+                            <p className="text-sm font-medium text-zinc-800">{labels.fpsUseWhatsapp}</p>
+                            {fpsMode === "whatsapp" && data.whatsapp && (
+                              <p className="text-xs text-zinc-500 mt-0.5">
+                                {labels.fpsUseWhatsappHint}
+                                {" · "}
+                                <span className="font-mono text-zinc-700">{data.whatsapp}</span>
+                              </p>
+                            )}
+                          </div>
+                        </label>
+
+                        {/* Radio option 2: different phone number */}
+                        <label className="flex items-start gap-2.5 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="fpsMode"
+                            value="phone"
+                            checked={fpsMode === "phone"}
+                            onChange={() => { setFpsMode("phone"); update("fpsId", ""); }}
+                            className="mt-0.5 accent-[#FF9500]"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-zinc-800">{labels.fpsUsePhone}</p>
+                            {fpsMode === "phone" && (
+                              <input
+                                type="tel"
+                                value={data.fpsId}
+                                onChange={(e) => update("fpsId", e.target.value.replace(/\D/g, "").slice(0, 8))}
+                                placeholder={labels.fpsPhonePlaceholder}
+                                maxLength={8}
+                                className={`mt-2 ${inputClass("fpsId")}`}
+                                autoFocus
+                              />
+                            )}
+                          </div>
+                        </label>
+
+                        {/* Radio option 3: FPS ID */}
+                        <label className="flex items-start gap-2.5 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="fpsMode"
+                            value="id"
+                            checked={fpsMode === "id"}
+                            onChange={() => { setFpsMode("id"); update("fpsId", ""); }}
+                            className="mt-0.5 accent-[#FF9500]"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-zinc-800">{labels.fpsUseId}</p>
+                            {fpsMode === "id" && (
+                              <input
+                                type="text"
+                                value={data.fpsId}
+                                onChange={(e) => update("fpsId", e.target.value)}
+                                placeholder={labels.fpsIdOnlyPlaceholder}
+                                className={`mt-2 ${inputClass("fpsId")}`}
+                                autoFocus
+                              />
+                            )}
+                          </div>
+                        </label>
+
+                        {errors.fpsId && (
+                          <p className="text-red-500 text-xs">{errors.fpsId}</p>
+                        )}
+
+                        {/* Account name (optional) */}
                         <div>
                           <label className="block text-sm font-medium text-zinc-700 mb-1">
                             {labels.fpsAccountName}
