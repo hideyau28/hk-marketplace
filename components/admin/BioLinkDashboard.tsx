@@ -99,11 +99,8 @@ function SortableProductCard({
   return (
     <div ref={setNodeRef} style={style} {...attributes} className="relative">
       <div
-        onClick={() => {
-          if (isEditMode) return;
-          onTap();
-        }}
-        className={isEditMode ? "" : "cursor-pointer"}
+        onClick={() => onTap()}
+        className="cursor-pointer"
       >
         {/* Image — aspect-square to match storefront */}
         <div
@@ -509,13 +506,22 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
                 {isZh ? "預覽" : "Preview"}
               </button>
 
-              <button
-                onClick={() => setEditMenuOpen(true)}
-                className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
-              >
-                <Edit size={14} />
-                {isZh ? "編輯" : "Edit"}
-              </button>
+              {isEditMode ? (
+                <button
+                  onClick={exitEditMode}
+                  className="inline-flex items-center gap-1.5 bg-white text-zinc-900 text-sm font-semibold px-4 py-2 rounded-full transition-colors hover:bg-white/90"
+                >
+                  {isZh ? "完成" : "Done"}
+                </button>
+              ) : (
+                <button
+                  onClick={() => setEditMenuOpen(true)}
+                  className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
+                >
+                  <Edit size={14} />
+                  {isZh ? "編輯" : "Edit"}
+                </button>
+              )}
 
               <button
                 onClick={handleNewProduct}
@@ -572,7 +578,7 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
                 )}
               </button>
               <button
-                onClick={() => { setEditMenuOpen(false); router.push(`/${locale}/admin/products`); }}
+                onClick={() => { setEditMenuOpen(false); enterEditMode(); }}
                 className="flex items-center justify-between w-full px-5 py-4 text-left text-zinc-900 hover:bg-zinc-50 transition-colors min-h-[56px]"
               >
                 <span className="text-sm font-medium">{isZh ? "編輯商品" : "Edit Products"}</span>
