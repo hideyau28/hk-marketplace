@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MessageCircle, ClipboardList, Wallet, TrendingDown } from "lucide-react";
+import { MessageCircle, ClipboardList, Wallet, TrendingDown, Store, Palette, ShoppingBag } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import HeroSection from "@/components/marketing/sections/HeroSection";
 
@@ -276,24 +276,9 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
   ];
 
   const howSteps = [
-    {
-      num: t.howStep1Num,
-      title: t.howStep1Title,
-      desc: t.howStep1Desc,
-      icon: "✏️",
-    },
-    {
-      num: t.howStep2Num,
-      title: t.howStep2Title,
-      desc: t.howStep2Desc,
-      icon: "🎨",
-    },
-    {
-      num: t.howStep3Num,
-      title: t.howStep3Title,
-      desc: t.howStep3Desc,
-      icon: "🚀",
-    },
+    { title: t.howStep1Title, desc: t.howStep1Desc, Icon: Store },
+    { title: t.howStep2Title, desc: t.howStep2Desc, Icon: Palette },
+    { title: t.howStep3Title, desc: t.howStep3Desc, Icon: ShoppingBag },
   ];
 
   const plans = [
@@ -389,7 +374,6 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
 
         /* ─── Mobile responsive ─── */
         @media (max-width: 640px) {
-          .lp-how-grid { grid-template-columns: 1fr !important; }
           .lp-plan-grid { grid-template-columns: 1fr !important; }
           .lp-pain-grid { grid-template-columns: repeat(2, 1fr) !important; }
           .lp-testimonial-grid { grid-template-columns: 1fr !important; }
@@ -612,118 +596,107 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         </div>
       </section>
 
-      {/* ─── Gradient: White → Dark ─── */}
-      <div
-        style={{
-          height: 80,
-          background: "linear-gradient(to bottom, #fff, #0D0D0D)",
-        }}
-      />
-
-      {/* ─── HOW IT WORKS (Dark bg) ─── */}
+      {/* ─── HOW IT WORKS (Light bg) ─── */}
       <section
         id="how-it-works"
         className="lp-section scroll-reveal"
-        style={{ padding: "80px 24px", background: "#0D0D0D" }}
+        style={{ padding: "60px 24px", background: "#FFF3E0" }}
       >
         <div
           style={{
-            maxWidth: 900,
+            maxWidth: 720,
             margin: "0 auto",
             textAlign: "center" as const,
           }}
         >
           <h2
             style={{
-              fontSize: "clamp(28px, 5vw, 42px)",
+              fontSize: "clamp(24px, 4vw, 36px)",
               fontWeight: 900,
-              color: "#fff",
-              marginBottom: 48,
+              color: "#1A1A1A",
+              marginBottom: 40,
             }}
           >
             {t.howTitle}
           </h2>
 
+          {/* Steps row — flex on all screen sizes */}
           <div
-            className="lp-how-grid"
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 20,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 12,
             }}
           >
             {howSteps.map((step, i) => (
-              <div
-                key={i}
-                className="how-step"
-                style={{
-                  padding: "32px 24px",
-                  background: "#161616",
-                  borderRadius: 20,
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  textAlign: "left" as const,
-                  transition: "all 0.3s",
-                  animationDelay: `${i * 200}ms`,
-                }}
-              >
+              <div key={i} style={{ display: "contents" }}>
                 <div
+                  className="how-step"
                   style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: "50%",
-                    background: "rgba(255,149,0,0.1)",
                     display: "flex",
+                    flexDirection: "column" as const,
                     alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 20,
+                    textAlign: "center" as const,
+                    flex: "1 1 0",
+                    minWidth: 0,
+                    animationDelay: `${i * 150}ms`,
                   }}
                 >
-                  <span
+                  <div
                     style={{
-                      fontSize: 64,
-                      fontWeight: 900,
-                      color: "#FF9500",
-                      fontFamily: "'JetBrains Mono', monospace",
-                      lineHeight: 1,
+                      width: 60,
+                      height: 60,
+                      borderRadius: "50%",
+                      background: "#FFE0B2",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 12,
+                      flexShrink: 0,
                     }}
                   >
-                    {step.num}
-                  </span>
+                    <step.Icon size={26} color="#FF9500" strokeWidth={2} />
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 800,
+                      color: "#1A1A1A",
+                      marginBottom: 4,
+                    }}
+                  >
+                    {step.title}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#888",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {step.desc}
+                  </div>
                 </div>
-                <div
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 900,
-                    color: "#fff",
-                    marginBottom: 6,
-                    letterSpacing: "0.01em",
-                  }}
-                >
-                  {step.title}
-                </div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: "rgba(255,255,255,0.38)",
-                    lineHeight: 1.5,
-                    fontWeight: 400,
-                  }}
-                >
-                  {step.desc}
-                </div>
+                {i < 2 && (
+                  <div
+                    style={{
+                      fontSize: 18,
+                      color: "#FF9500",
+                      fontWeight: 700,
+                      flexShrink: 0,
+                      opacity: 0.6,
+                      paddingBottom: 28,
+                    }}
+                  >
+                    →
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </section>
-
-      {/* ─── Gradient: Dark → White ─── */}
-      <div
-        style={{
-          height: 80,
-          background: "linear-gradient(to bottom, #0D0D0D, #fff)",
-        }}
-      />
 
       {/* ─── SOCIAL PROOF (White bg) ─── */}
       <section
