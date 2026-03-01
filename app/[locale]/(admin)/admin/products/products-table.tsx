@@ -651,7 +651,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
               {searchQuery ? "No products match your search." : "No data available."}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3">
               {paginatedProducts.map((product) => {
                 const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
                 const discountPercent = isOnSale
@@ -677,7 +677,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                           alt={product.title}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          sizes="50vw"
                         />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center text-zinc-300">
@@ -685,18 +685,20 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                         </div>
                       )}
 
-                      {/* NEW badge — top-left */}
-                      {isNew && (
-                        <span className="absolute top-2 left-2 rounded bg-blue-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                          NEW
-                        </span>
-                      )}
-
-                      {/* Discount badge — top-right */}
-                      {isOnSale && (
-                        <span className="absolute top-2 right-2 rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                          -{discountPercent}%
-                        </span>
+                      {/* Badges — 左上角垂直排列，discount 優先，NEW 次之 */}
+                      {(isOnSale || isNew) && (
+                        <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
+                          {isOnSale && (
+                            <span className="rounded px-1.5 py-0.5 text-[10px] font-bold text-white bg-red-500">
+                              -{discountPercent}%
+                            </span>
+                          )}
+                          {isNew && (
+                            <span className="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white bg-green-500">
+                              NEW
+                            </span>
+                          )}
+                        </div>
                       )}
 
                       {/* Hidden overlay badge */}
