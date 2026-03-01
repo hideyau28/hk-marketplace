@@ -146,10 +146,7 @@ export default function BioProductCard({
         {!soldOut && (showNewBadge || lowStock || isOnSale) && (
           <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
             {isOnSale && (
-              <span
-                className="rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
-                style={{ backgroundColor: tmpl.accent }}
-              >
+              <span className="rounded px-1.5 py-0.5 text-[10px] font-bold text-white bg-red-500">
                 -{discountPct}%
               </span>
             )}

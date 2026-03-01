@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Camera, Plus, Eye, Copy, Check, Star, Edit, GripVertical, Loader2 } from "lucide-react";
+import { Camera, Plus, Eye, Copy, Check, Star, Edit, GripVertical, Loader2, ChevronRight, X } from "lucide-react";
 import { compressImage, isAcceptedImageType } from "@/lib/compress-image";
 import {
   DndContext,
@@ -223,6 +223,7 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
   const [avatarUrl, setAvatarUrl] = useState(tenant.logoUrl);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [editMenuOpen, setEditMenuOpen] = useState(false);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -473,24 +474,6 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
 
       {/* Cover / Header */}
       <div className="relative rounded-2xl overflow-hidden mb-6 -mx-4 -mt-0">
-        {/* Banner image — clickable to upload */}
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => !uploadingBanner && bannerInputRef.current?.click()}
-          onKeyDown={(e) => { if (e.key === "Enter") bannerInputRef.current?.click(); }}
-          className="absolute inset-0 z-[1] cursor-pointer group"
-          aria-label={isZh ? "更換封面圖" : "Change banner"}
-        >
-          {/* Always-visible camera button — bottom-right of banner */}
-          <div className="absolute bottom-3 right-3 w-11 h-11 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-md transition-colors group-hover:bg-white">
-            {uploadingBanner ? (
-              <Loader2 size={20} className="text-zinc-700 animate-spin" />
-            ) : (
-              <Camera size={20} className="text-zinc-700" />
-            )}
-          </div>
-        </div>
         <Image
           src={headerBanner}
           alt="Store banner"
@@ -500,41 +483,28 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
         />
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-black/40" />
-        <div className="relative px-6 py-8 text-center text-white z-[2] pointer-events-none">
-          {/* Avatar — clickable to upload */}
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={(e) => { e.stopPropagation(); if (!uploadingAvatar) avatarInputRef.current?.click(); }}
-            onKeyDown={(e) => { if (e.key === "Enter") avatarInputRef.current?.click(); }}
-            className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 text-2xl font-bold overflow-hidden relative cursor-pointer pointer-events-auto group/avatar"
-            aria-label={isZh ? "更換頭像" : "Change avatar"}
-          >
-            {avatarUrl ? (
+        <div className="relative px-6 py-8 text-center text-white z-[2]">
+          {/* Avatar */}
+          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 text-2xl font-bold overflow-hidden relative">
+            {uploadingAvatar ? (
+              <Loader2 size={24} className="text-white animate-spin" />
+            ) : avatarUrl ? (
               <Image src={avatarUrl} alt={tenant.name} fill className="object-cover" sizes="64px" />
             ) : (
               tenant.name.charAt(0).toUpperCase()
             )}
-            {/* Always-visible camera button — bottom-right of avatar */}
-            <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center border border-zinc-200">
-              {uploadingAvatar ? (
-                <Loader2 size={12} className="text-zinc-700 animate-spin" />
-              ) : (
-                <Camera size={12} className="text-zinc-700" />
-              )}
-            </div>
           </div>
           <h2 className="text-xl font-bold">{tenant.name}</h2>
           <button
             onClick={handleCopyLink}
-            className="inline-flex items-center gap-1.5 mt-2 text-sm text-white/80 hover:text-white transition-colors pointer-events-auto"
+            className="inline-flex items-center gap-1.5 mt-2 text-sm text-white/80 hover:text-white transition-colors"
           >
             <span>{storeUrl}</span>
             {copied ? <Check size={14} /> : <Copy size={14} />}
           </button>
 
           {!isEmpty && (
-            <div className="mt-4 flex items-center justify-center gap-3 pointer-events-auto">
+            <div className="mt-4 flex items-center justify-center gap-3">
               <button
                 onClick={handlePreview}
                 className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
@@ -544,24 +514,11 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
               </button>
 
               <button
-                onClick={() => (isEditMode ? exitEditMode() : enterEditMode())}
-                className={`inline-flex items-center gap-1.5 ${
-                  isEditMode
-                    ? "bg-white text-zinc-900 hover:bg-white/90"
-                    : "bg-white/20 hover:bg-white/30 text-white"
-                } text-sm font-medium px-4 py-2 rounded-full transition-colors`}
+                onClick={() => setEditMenuOpen(true)}
+                className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
               >
-                {isEditMode ? (
-                  <>
-                    <Check size={14} />
-                    {isZh ? "完成" : "Done"}
-                  </>
-                ) : (
-                  <>
-                    <Edit size={14} />
-                    {isZh ? "編輯" : "Edit"}
-                  </>
-                )}
+                <Edit size={14} />
+                {isZh ? "編輯" : "Edit"}
               </button>
 
               <button
@@ -575,6 +532,60 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
           )}
         </div>
       </div>
+
+      {/* Edit bottom sheet */}
+      {editMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end"
+          onClick={() => setEditMenuOpen(false)}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+          <div
+            className="relative w-full bg-white rounded-t-2xl shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <span className="text-base font-semibold text-zinc-900">
+                {isZh ? "編輯" : "Edit"}
+              </span>
+              <button
+                onClick={() => setEditMenuOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 transition-colors"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="divide-y divide-zinc-100 pb-6">
+              <button
+                onClick={() => { setEditMenuOpen(false); avatarInputRef.current?.click(); }}
+                className="flex items-center justify-between w-full px-5 py-4 text-left text-zinc-900 hover:bg-zinc-50 transition-colors min-h-[56px]"
+              >
+                <span className="text-sm font-medium">{isZh ? "編輯頭像" : "Edit Avatar"}</span>
+                <ChevronRight size={16} className="text-zinc-400" />
+              </button>
+              <button
+                onClick={() => { setEditMenuOpen(false); bannerInputRef.current?.click(); }}
+                className="flex items-center justify-between w-full px-5 py-4 text-left text-zinc-900 hover:bg-zinc-50 transition-colors min-h-[56px]"
+              >
+                <span className="text-sm font-medium">{isZh ? "編輯 Banner" : "Edit Banner"}</span>
+                {uploadingBanner ? (
+                  <Loader2 size={16} className="text-zinc-400 animate-spin" />
+                ) : (
+                  <ChevronRight size={16} className="text-zinc-400" />
+                )}
+              </button>
+              <button
+                onClick={() => { setEditMenuOpen(false); router.push(`/${locale}/admin/products`); }}
+                className="flex items-center justify-between w-full px-5 py-4 text-left text-zinc-900 hover:bg-zinc-50 transition-colors min-h-[56px]"
+              >
+                <span className="text-sm font-medium">{isZh ? "編輯商品" : "Edit Products"}</span>
+                <ChevronRight size={16} className="text-zinc-400" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick sort bar — edit mode only */}
       {isEditMode && !isEmpty && (
