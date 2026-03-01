@@ -103,14 +103,12 @@ function SortableProductCard({
           if (isEditMode) return;
           onTap();
         }}
-        className={isEditMode ? "" : "cursor-pointer"}
+        className={`rounded-xl overflow-hidden border ${
+          isSelected ? "border-[#FF9500] ring-2 ring-[#FF9500]/30" : "border-zinc-200"
+        } bg-white ${product.hidden ? "opacity-50" : ""} ${isEditMode ? "" : "cursor-pointer"}`}
       >
-        {/* Image — aspect-square to match storefront */}
-        <div
-          className={`relative aspect-square w-full rounded-xl overflow-hidden bg-zinc-100 border ${
-            isSelected ? "border-[#FF9500] ring-2 ring-[#FF9500]/30" : "border-zinc-200"
-          } ${product.hidden ? "opacity-50" : ""}`}
-        >
+        {/* Image — 1:1 aspect ratio to match storefront */}
+        <div className="relative aspect-square w-full bg-zinc-100">
           {product.imageUrl || product.images?.[0] ? (
             <Image
               src={product.imageUrl || product.images[0]}
@@ -168,11 +166,11 @@ function SortableProductCard({
           )}
         </div>
 
-        {/* Info */}
-        <div className="mt-1.5">
-          <p className="text-xs text-zinc-600 truncate">{product.title}</p>
-          <div className="flex items-center gap-1">
-            <span className="text-sm font-semibold text-zinc-900">${product.price}</span>
+        {/* Info — p-3 padding matches BioProductCard */}
+        <div className="p-3">
+          <p className="text-sm font-semibold leading-snug text-zinc-900 mb-1 truncate">{product.title}</p>
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold text-base text-zinc-900">${product.price}</span>
             {product.originalPrice && product.originalPrice > product.price && (
               <span className="text-xs text-zinc-400 line-through">${product.originalPrice}</span>
             )}
@@ -572,7 +570,7 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
                 )}
               </button>
               <button
-                onClick={() => { setEditMenuOpen(false); router.push(`/${locale}/admin/products`); }}
+                onClick={() => { setEditMenuOpen(false); }}
                 className="flex items-center justify-between w-full px-5 py-4 text-left text-zinc-900 hover:bg-zinc-50 transition-colors min-h-[56px]"
               >
                 <span className="text-sm font-medium">{isZh ? "編輯商品" : "Edit Products"}</span>
