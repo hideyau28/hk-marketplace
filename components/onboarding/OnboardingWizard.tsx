@@ -52,8 +52,8 @@ const t = {
     whatsappSub: "Customers will reach you here",
     whatsapp: "WhatsApp Number *",
     whatsappPlaceholder: "e.g. 91234567",
-    whatsappHint: "8-digit HK number, no +852",
-    whatsappFormatError: "Must be 8 digits",
+    whatsappHint: "Enter your WhatsApp number",
+    whatsappFormatError: "Please enter a valid number",
     // Step 4: Payment methods
     fpsTitle: "Payment Setup",
     fpsSub: "Set up at least one payment method",
@@ -171,8 +171,8 @@ const t = {
     whatsappSub: "客人會用呢個號碼搵你",
     whatsapp: "WhatsApp 號碼 *",
     whatsappPlaceholder: "例如 91234567",
-    whatsappHint: "8 位香港號碼，不需要 +852",
-    whatsappFormatError: "需要 8 位數字",
+    whatsappHint: "輸入你嘅 WhatsApp 號碼",
+    whatsappFormatError: "請輸入有效號碼",
     // Step 4: Payment methods
     fpsTitle: "收款設定",
     fpsSub: "先設定其中一個收款方式",
@@ -293,9 +293,18 @@ function getOnboardingPlans(isZh: boolean) {
 
 // --- Validation patterns ---
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/;
-const WHATSAPP_REGEX = /^[0-9]{8}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*\d).{8,}$/;
+
+// --- WhatsApp dial codes ---
+const DIAL_CODES = [
+  { code: "+852", label: "+852 香港" },
+  { code: "+86", label: "+86 中國" },
+  { code: "+886", label: "+886 台灣" },
+  { code: "+853", label: "+853 澳門" },
+  { code: "+65", label: "+65 新加坡" },
+  { code: "+60", label: "+60 馬來西亞" },
+];
 
 function nameToSlug(name: string): string {
   return name
@@ -320,6 +329,7 @@ interface OnboardingData {
   password: string;
   confirmPassword: string;
   whatsapp: string;
+  whatsappDialCode: string;
   selectedPayments: string[]; // "fps" | "payme" | "alipay_hk"
   fpsId: string;
   fpsAccountName: string;
@@ -498,6 +508,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     password: "",
     confirmPassword: "",
     whatsapp: "",
+    whatsappDialCode: "+852",
     selectedPayments: [],
     fpsId: "",
     fpsAccountName: "",
@@ -525,7 +536,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
       const saved = sessionStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.data) setData(parsed.data);
+        if (parsed.data) setData((prev) => ({ ...prev, ...parsed.data }));
       }
     } catch (error) {
       console.error("Failed to restore onboarding state:", error);
@@ -687,7 +698,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     const newErrors: Record<string, string> = {};
     const wa = data.whatsapp.trim();
     if (!wa) newErrors.whatsapp = labels.required;
-    else if (!WHATSAPP_REGEX.test(wa)) newErrors.whatsapp = labels.whatsappFormatError;
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -753,10 +763,10 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
           email: data.email.trim().toLowerCase(),
           password: googleEmail ? undefined : data.password,
           googleAuth: !!googleEmail,
-          whatsapp: data.whatsapp.trim(),
+          whatsapp: `${data.whatsappDialCode}${data.whatsapp.trim()}`,
           paymentMethods: data.selectedPayments,
           fpsId: data.selectedPayments.includes("fps")
-            ? (fpsMode === "whatsapp" ? data.whatsapp.trim() : data.fpsId.trim())
+            ? (fpsMode === "whatsapp" ? `${data.whatsappDialCode}${data.whatsapp.trim()}` : data.fpsId.trim())
             : undefined,
           fpsAccountName: data.selectedPayments.includes("fps") ? (data.fpsAccountName.trim() || undefined) : undefined,
           paymeQrUrl: data.selectedPayments.includes("payme") ? data.paymeQrUrl : undefined,
@@ -1228,20 +1238,27 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   <label className="block text-sm font-medium text-zinc-700 mb-1">
                     {labels.whatsapp}
                   </label>
-                  <input
-                    type="tel"
-                    value={data.whatsapp}
-                    onChange={(e) =>
-                      update(
-                        "whatsapp",
-                        e.target.value.replace(/\D/g, "").slice(0, 8)
-                      )
-                    }
-                    placeholder={labels.whatsappPlaceholder}
-                    maxLength={8}
-                    className={inputClass("whatsapp")}
-                    autoFocus
-                  />
+                  <div className="flex">
+                    <select
+                      value={data.whatsappDialCode}
+                      onChange={(e) => update("whatsappDialCode", e.target.value)}
+                      className="rounded-l-xl border border-r-0 border-zinc-300 bg-zinc-50 px-2 py-3 text-sm text-zinc-700 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/40 min-w-[110px]"
+                    >
+                      {DIAL_CODES.map((d) => (
+                        <option key={d.code} value={d.code}>{d.label}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      value={data.whatsapp}
+                      onChange={(e) =>
+                        update("whatsapp", e.target.value.replace(/\D/g, ""))
+                      }
+                      placeholder={labels.whatsappPlaceholder}
+                      className={`flex-1 rounded-r-xl border border-zinc-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#FF9500]/40 ${errors.whatsapp ? "border-red-400" : ""}`}
+                      autoFocus
+                    />
+                  </div>
                   {errors.whatsapp ? (
                     <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>
                   ) : (
@@ -1320,7 +1337,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                               <p className="text-xs text-zinc-500 mt-0.5">
                                 {labels.fpsUseWhatsappHint}
                                 {" · "}
-                                <span className="font-mono text-zinc-700">{data.whatsapp}</span>
+                                <span className="font-mono text-zinc-700">{data.whatsappDialCode}{data.whatsapp}</span>
                               </p>
                             )}
                           </div>
@@ -1685,16 +1702,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] leading-[48px]"
                 >
                   {labels.goToAdmin} &rarr;
-                </a>
-
-                {/* Secondary CTA: Open my store */}
-                <a
-                  href={`https://wowlix.com/${createdSlug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-3 rounded-xl border-2 border-[#FF9500] text-[#FF9500] font-semibold text-base hover:bg-[#FF9500]/5 transition-colors min-h-[48px] leading-[48px]"
-                >
-                  {labels.openMyStore} &rarr;
                 </a>
 
                 {/* Billing CTA for paid plans */}
