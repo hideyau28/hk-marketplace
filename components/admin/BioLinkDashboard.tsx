@@ -117,7 +117,7 @@ function SortableProductCard({
               alt={product.title}
               fill
               className="object-cover"
-              sizes="(max-width: 480px) 33vw, 160px"
+              sizes="(max-width: 480px) 50vw, 240px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-zinc-300">
@@ -145,29 +145,25 @@ function SortableProductCard({
             </div>
           )}
 
-          {/* NEW + Featured badges — top-left (below hidden) */}
-          {!product.hidden && !isEditMode && (
-            <div className="absolute top-2 left-2 z-10 flex gap-1">
+          {/* Badges — top-left 垂直排列：discount → NEW → 精選，同 storefront 一致 */}
+          {!product.hidden && !isEditMode && (isOnSale || isNewProduct || product.featured) && (
+            <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
+              {isOnSale && (
+                <span className="rounded px-1.5 py-0.5 text-[10px] font-bold text-white bg-red-500">
+                  -{discountPct}%
+                </span>
+              )}
               {isNewProduct && (
-                <span className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded bg-emerald-500 text-white">
+                <span className="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-green-500 text-white">
                   NEW
                 </span>
               )}
               {product.featured && (
-                <span className="bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                <span className="rounded px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-white flex items-center gap-0.5">
                   <Star size={8} fill="white" />
                   精選
                 </span>
               )}
-            </div>
-          )}
-
-          {/* Discount badge — top-right */}
-          {isOnSale && !product.hidden && !isEditMode && (
-            <div className="absolute top-2 right-2 z-10">
-              <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                -{discountPct}%
-              </span>
             </div>
           )}
         </div>
@@ -632,7 +628,7 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={products.map((p) => p.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {products.map((product) => (
                 <SortableProductCard
                   key={product.id}
