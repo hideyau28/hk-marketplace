@@ -304,6 +304,7 @@ const DIAL_CODES = [
   { code: "+853", label: "+853 澳門" },
   { code: "+65", label: "+65 新加坡" },
   { code: "+60", label: "+60 馬來西亞" },
+  { code: "other", label: "其他 / Other" },
 ];
 
 function nameToSlug(name: string): string {
@@ -330,6 +331,7 @@ interface OnboardingData {
   confirmPassword: string;
   whatsapp: string;
   whatsappDialCode: string;
+  whatsappCustomDialCode: string;
   selectedPayments: string[]; // "fps" | "payme" | "alipay_hk"
   fpsId: string;
   fpsAccountName: string;
@@ -509,6 +511,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     confirmPassword: "",
     whatsapp: "",
     whatsappDialCode: "+852",
+    whatsappCustomDialCode: "",
     selectedPayments: [],
     fpsId: "",
     fpsAccountName: "",
@@ -651,11 +654,14 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
   // --- Step navigation ---
   const goNext = () => {
     setDirection(1);
+    setGlobalError("");
     setStep((s) => Math.min(s + 1, TOTAL_STEPS) as OnboardingStep);
   };
 
   const goBack = () => {
     setDirection(-1);
+    setGlobalError("");
+    setErrors({});
     setStep((s) => Math.max(s - 1, 1) as OnboardingStep);
   };
 
@@ -697,7 +703,19 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
   const validateStep3 = (): boolean => {
     const newErrors: Record<string, string> = {};
     const wa = data.whatsapp.trim();
-    if (!wa) newErrors.whatsapp = labels.required;
+    if (!wa) {
+      newErrors.whatsapp = labels.required;
+    } else if (wa.length < 6) {
+      newErrors.whatsapp = labels.whatsappFormatError;
+    }
+    if (data.whatsappDialCode === "other") {
+      const custom = data.whatsappCustomDialCode.trim();
+      if (!custom) {
+        newErrors.whatsappCustomDialCode = labels.required;
+      } else if (!/^\+\d{1,4}$/.test(custom)) {
+        newErrors.whatsappCustomDialCode = isZh ? "格式：+ 加 1-4 位數字" : "Format: + followed by 1-4 digits";
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -763,10 +781,10 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
           email: data.email.trim().toLowerCase(),
           password: googleEmail ? undefined : data.password,
           googleAuth: !!googleEmail,
-          whatsapp: `${data.whatsappDialCode}${data.whatsapp.trim()}`,
+          whatsapp: `${effectiveDialCode}${data.whatsapp.trim()}`,
           paymentMethods: data.selectedPayments,
           fpsId: data.selectedPayments.includes("fps")
-            ? (fpsMode === "whatsapp" ? `${data.whatsappDialCode}${data.whatsapp.trim()}` : data.fpsId.trim())
+            ? (fpsMode === "whatsapp" ? data.whatsapp.trim() : data.fpsId.trim())
             : undefined,
           fpsAccountName: data.selectedPayments.includes("fps") ? (data.fpsAccountName.trim() || undefined) : undefined,
           paymeQrUrl: data.selectedPayments.includes("payme") ? data.paymeQrUrl : undefined,
@@ -866,6 +884,12 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     setBillingRedirecting(false);
     window.location.href = `/${locale}/admin/billing`;
   };
+
+  // 計算實際區號（處理 "other" 情況）
+  const effectiveDialCode =
+    data.whatsappDialCode === "other"
+      ? data.whatsappCustomDialCode.trim()
+      : data.whatsappDialCode;
 
   const inputClass = (field: string) =>
     `w-full px-3 py-2.5 rounded-xl border text-[16px] ${
@@ -1241,7 +1265,10 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   <div className="flex">
                     <select
                       value={data.whatsappDialCode}
-                      onChange={(e) => update("whatsappDialCode", e.target.value)}
+                      onChange={(e) => {
+                        update("whatsappDialCode", e.target.value);
+                        if (e.target.value !== "other") update("whatsappCustomDialCode", "");
+                      }}
                       className="rounded-l-xl border border-r-0 border-zinc-300 bg-zinc-50 px-2 py-3 text-sm text-zinc-700 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/40 min-w-[110px]"
                     >
                       {DIAL_CODES.map((d) => (
@@ -1259,6 +1286,32 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                       autoFocus
                     />
                   </div>
+                  {/* Custom dial code input when "Other" is selected */}
+                  {data.whatsappDialCode === "other" && (
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={data.whatsappCustomDialCode}
+                        onChange={(e) => {
+                          // 只接受 + 開頭 + 最多 4 位數字
+                          const raw = e.target.value;
+                          const cleaned = raw.startsWith("+")
+                            ? "+" + raw.slice(1).replace(/\D/g, "").slice(0, 4)
+                            : raw.replace(/\D/g, "").slice(0, 4)
+                              ? "+" + raw.replace(/\D/g, "").slice(0, 4)
+                              : raw === "+" ? "+" : "";
+                          update("whatsappCustomDialCode", cleaned);
+                        }}
+                        placeholder={isZh ? "例如 +44" : "e.g. +44"}
+                        className={`w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] ${
+                          errors.whatsappCustomDialCode ? "border-red-400" : "border-zinc-300"
+                        }`}
+                      />
+                      {errors.whatsappCustomDialCode && (
+                        <p className="text-red-500 text-xs mt-1">{errors.whatsappCustomDialCode}</p>
+                      )}
+                    </div>
+                  )}
                   {errors.whatsapp ? (
                     <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>
                   ) : (
@@ -1337,7 +1390,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                               <p className="text-xs text-zinc-500 mt-0.5">
                                 {labels.fpsUseWhatsappHint}
                                 {" · "}
-                                <span className="font-mono text-zinc-700">{data.whatsappDialCode}{data.whatsapp}</span>
+                                <span className="font-mono text-zinc-700">{data.whatsapp}</span>
                               </p>
                             )}
                           </div>
