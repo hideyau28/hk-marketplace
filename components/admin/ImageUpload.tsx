@@ -53,8 +53,6 @@ export default function ImageUpload({
       const formData = new FormData();
       formData.append("file", compressed);
 
-      console.log("[ImageUpload] Starting upload, file size:", compressed.size);
-
       let response: Response;
       try {
         response = await fetch("/api/admin/upload", {
@@ -67,8 +65,6 @@ export default function ImageUpload({
         setError("網絡錯誤，請重試");
         return;
       }
-
-      console.log("[ImageUpload] Response status:", response.status);
 
       if (!response.ok) {
         const body = await response.text();
@@ -98,7 +94,6 @@ export default function ImageUpload({
       }
 
       const url = data.data.url;
-      console.log("[ImageUpload] Upload success:", url);
       setPreview(url);
       onUpload(url);
     } catch (err) {

@@ -710,7 +710,6 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
   const validateStep3 = (): boolean => {
     const newErrors: Record<string, string> = {};
     const wa = data.whatsapp.trim();
-    console.log('validateStep3:', { dialCode: data.whatsappDialCode, wa, waLength: wa.length });
     if (!wa) {
       newErrors.whatsapp = labels.required;
     } else if (data.whatsappDialCode === "+852" && (wa.length < 6 || wa.length > 11)) {
