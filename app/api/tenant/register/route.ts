@@ -18,7 +18,7 @@ const RESERVED_SLUGS = new Set([
 ]);
 
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/;
-const WHATSAPP_REGEX = /^[0-9]{8}$/;
+const WHATSAPP_REGEX = /^\+?\d{6,15}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const POST = withApi(async (req: Request) => {
@@ -52,7 +52,7 @@ export const POST = withApi(async (req: Request) => {
   }
 
   if (whatsapp && typeof whatsapp === "string" && whatsapp.trim() && !WHATSAPP_REGEX.test(whatsapp.trim())) {
-    throw new ApiError(400, "BAD_REQUEST", "WhatsApp 號碼需要 8 位數字");
+    throw new ApiError(400, "BAD_REQUEST", "請輸入有效 WhatsApp 號碼");
   }
 
   if (!email || typeof email !== "string" || !EMAIL_REGEX.test(email.trim())) {
