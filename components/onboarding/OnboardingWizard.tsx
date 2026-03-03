@@ -296,6 +296,12 @@ const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*\d).{8,}$/;
 
+// Strip leading dial code digits from a phone number (e.g. "+852","85297363147" → "97363147")
+const stripDialCode = (phone: string, dialCode: string): string => {
+  const digits = dialCode.replace("+", "");
+  return digits && phone.startsWith(digits) ? phone.slice(digits.length) : phone;
+};
+
 // --- WhatsApp dial codes ---
 const DIAL_CODES = [
   { code: "+852", label: "+852 香港" },
@@ -655,6 +661,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
   const goNext = () => {
     setDirection(1);
     setGlobalError("");
+    setErrors({});
     setStep((s) => Math.min(s + 1, TOTAL_STEPS) as OnboardingStep);
   };
 
@@ -705,6 +712,8 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
     const wa = data.whatsapp.trim();
     if (!wa) {
       newErrors.whatsapp = labels.required;
+    } else if (data.whatsappDialCode === "+852" && wa.length !== 8) {
+      newErrors.whatsapp = isZh ? "WhatsApp 號碼需要 8 位數字" : "WhatsApp number must be 8 digits";
     } else if (wa.length < 6) {
       newErrors.whatsapp = labels.whatsappFormatError;
     }
@@ -784,7 +793,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
           whatsapp: `${effectiveDialCode}${data.whatsapp.trim()}`,
           paymentMethods: data.selectedPayments,
           fpsId: data.selectedPayments.includes("fps")
-            ? (fpsMode === "whatsapp" ? data.whatsapp.trim() : data.fpsId.trim())
+            ? (fpsMode === "whatsapp" ? stripDialCode(data.whatsapp.trim(), effectiveDialCode) : data.fpsId.trim())
             : undefined,
           fpsAccountName: data.selectedPayments.includes("fps") ? (data.fpsAccountName.trim() || undefined) : undefined,
           paymeQrUrl: data.selectedPayments.includes("payme") ? data.paymeQrUrl : undefined,
@@ -1390,7 +1399,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                               <p className="text-xs text-zinc-500 mt-0.5">
                                 {labels.fpsUseWhatsappHint}
                                 {" · "}
-                                <span className="font-mono text-zinc-700">{data.whatsapp}</span>
+                                <span className="font-mono text-zinc-700">{stripDialCode(data.whatsapp, effectiveDialCode)}</span>
                               </p>
                             )}
                           </div>
