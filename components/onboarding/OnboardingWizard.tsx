@@ -710,11 +710,12 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
   const validateStep3 = (): boolean => {
     const newErrors: Record<string, string> = {};
     const wa = data.whatsapp.trim();
+    console.log('validateStep3:', { dialCode: data.whatsappDialCode, wa, waLength: wa.length });
     if (!wa) {
       newErrors.whatsapp = labels.required;
-    } else if (data.whatsappDialCode === "+852" && wa.length !== 8) {
-      newErrors.whatsapp = isZh ? "WhatsApp 號碼需要 8 位數字" : "WhatsApp number must be 8 digits";
-    } else if (wa.length < 6) {
+    } else if (data.whatsappDialCode === "+852" && (wa.length < 6 || wa.length > 11)) {
+      newErrors.whatsapp = labels.whatsappFormatError;
+    } else if (data.whatsappDialCode !== "+852" && (wa.length < 6 || wa.length > 15)) {
       newErrors.whatsapp = labels.whatsappFormatError;
     }
     if (data.whatsappDialCode === "other") {
@@ -766,6 +767,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
       setStep(2);
       return;
     }
+    setErrors({});
     if (!validateStep3()) {
       setDirection(-1);
       setStep(3);
