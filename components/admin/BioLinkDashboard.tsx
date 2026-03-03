@@ -570,7 +570,7 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
                 )}
               </button>
               <button
-                onClick={() => { setEditMenuOpen(false); }}
+                onClick={() => { setEditMenuOpen(false); setIsEditMode(true); }}
                 className="flex items-center justify-between w-full px-5 py-4 text-left text-zinc-900 hover:bg-zinc-50 transition-colors min-h-[56px]"
               >
                 <span className="text-sm font-medium">{isZh ? "編輯商品" : "Edit Products"}</span>
