@@ -90,9 +90,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const storeName = await getStoreName();
 
   return {
-    title: `${storeName} - Sports Gear for Hong Kong`,
+    title: `${storeName} — WoWlix`,
     description:
-      "Shop the latest sports apparel and gear from Nike, Adidas, Puma and more.",
+      "WoWlix — The all-in-one store builder for Hong Kong Instagram merchants | 香港 IG 小店一站式開店平台，一條 Link 將 Follower 變成生意",
     manifest: "/manifest.json",
     icons: {
       icon: "/favicon.svg",
