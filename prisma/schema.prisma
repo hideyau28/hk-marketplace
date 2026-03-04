@@ -371,15 +371,17 @@ model Tenant {
 }
 
 model TenantAdmin {
-  id           String   @id @default(cuid())
-  tenantId     String
-  tenant       Tenant   @relation(fields: [tenantId], references: [id])
-  email        String   @unique
-  name         String?
-  passwordHash String?
-  role         String   @default("owner")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                  String    @id @default(cuid())
+  tenantId            String
+  tenant              Tenant    @relation(fields: [tenantId], references: [id])
+  email               String    @unique
+  name                String?
+  passwordHash        String?
+  role                String    @default("owner")
+  resetToken          String?
+  resetTokenExpiresAt DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@index([tenantId])
 }
