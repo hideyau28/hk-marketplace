@@ -6,7 +6,17 @@ import { useEffect, useState, useRef } from "react";
 import { type Locale, locales } from "@/lib/i18n";
 import type { Translations } from "@/lib/translations";
 import { getCartItemCount, getCart } from "@/lib/cart";
-import { Moon, ShoppingCart, Sun, Menu, Search, User, LogOut, ShoppingBag, ChevronDown } from "lucide-react";
+import {
+  Moon,
+  ShoppingCart,
+  Sun,
+  Menu,
+  Search,
+  User,
+  LogOut,
+  ShoppingBag,
+  ChevronDown,
+} from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
 import { useTenantBranding } from "@/lib/tenant-branding";
@@ -25,7 +35,17 @@ function swapLocale(pathname: string, nextLocale: Locale) {
   return "/" + nextLocale + "/" + parts.join("/");
 }
 
-export default function TopNav({ locale, t, storeName: initialStoreName = "May's Shop" }: { locale: Locale; t: Translations; storeName?: string }) {
+export default function TopNav({
+  locale,
+  t,
+  storeName: initialStoreName = "May's Shop",
+  languages,
+}: {
+  locale: Locale;
+  t: Translations;
+  storeName?: string;
+  languages?: string[];
+}) {
   const pathname = usePathname() || `/${locale}`;
   const router = useRouter();
   const [cartCount, setCartCount] = useState(0);
@@ -35,16 +55,20 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
   const [cartBounce, setCartBounce] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [storeLogo, setStoreLogo] = useState<string | null>(null);
-  const [storeName, setStoreName] = useState(initialStoreName);
+  const storeName = initialStoreName;
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { resolved, cycleMode } = useTheme();
   const { user, loading: authLoading, logout } = useAuth();
-  const { branding: tenantBranding } = useTenantBranding();
+  const { branding: tenantBranding, loading: brandingLoading } =
+    useTenantBranding();
 
   // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
         setUserMenuOpen(false);
       }
     };
@@ -88,27 +112,13 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
     };
   }, []);
 
-  // Use tenant branding as fallback for store name and logo
+  // Use tenant branding for logo only (store name is already correct from SSR prop).
   useEffect(() => {
-    if (tenantBranding.name && storeName === initialStoreName) {
-      setStoreName(tenantBranding.name);
-    }
+    if (brandingLoading) return;
     if (tenantBranding.logoUrl && !storeLogo) {
       setStoreLogo(tenantBranding.logoUrl);
     }
-  }, [tenantBranding.name, tenantBranding.logoUrl]);
-
-  useEffect(() => {
-    fetch("/api/store-settings")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.data) {
-          if (data.data.storeLogo) setStoreLogo(data.data.storeLogo);
-          if (data.data.storeName) setStoreName(data.data.storeName);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  }, [brandingLoading, tenantBranding.logoUrl]);
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -142,7 +152,10 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
           </Link>
 
           {/* Desktop search bar */}
-          <form onSubmit={handleSearchSubmit} className="hidden flex-1 md:block">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="hidden flex-1 md:block"
+          >
             <input
               name="q"
               placeholder={t.nav.search}
@@ -173,16 +186,21 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
               {resolved === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             {/* User menu */}
-            {!authLoading && (
-              user ? (
+            {!authLoading &&
+              (user ? (
                 <div ref={userMenuRef} className="relative">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
                   >
                     <User size={14} />
-                    <span className="max-w-[80px] truncate">{user.name || user.phone.replace("+852", "")}</span>
-                    <ChevronDown size={12} className={`transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+                    <span className="max-w-[80px] truncate">
+                      {user.name || user.phone.replace("+852", "")}
+                    </span>
+                    <ChevronDown
+                      size={12}
+                      className={`transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                    />
                   </button>
                   {userMenuOpen && (
                     <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900 z-50">
@@ -221,17 +239,18 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
                   <User size={14} />
                   {locale === "zh-HK" ? "登入" : "Login"}
                 </Link>
-              )
-            )}
+              ))}
           </div>
 
-          {/* Language toggle - always visible */}
-          <Link
-            href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
-            className="text-xs text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
-          >
-            {locale === "zh-HK" ? "EN" : "繁"}
-          </Link>
+          {/* Language toggle - hidden when tenant has only 1 language */}
+          {(!languages || languages.length > 1) && (
+            <Link
+              href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
+              className="text-xs text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
+            >
+              {locale === "zh-HK" ? "EN" : "繁"}
+            </Link>
+          )}
 
           {/* Cart - always visible, opens drawer */}
           <button
@@ -263,7 +282,13 @@ export default function TopNav({ locale, t, storeName: initialStoreName = "May's
       </div>
 
       {/* Mobile Menu Drawer */}
-      <MobileMenu locale={locale} t={t} isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MobileMenu
+        locale={locale}
+        t={t}
+        isOpen={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        languages={languages}
+      />
 
       {/* Search Overlay */}
       <SearchOverlay

@@ -1,0 +1,331 @@
+<!--
+  P0 Fix Plan — 2026-02-24
+  Based on docs/ui-review.html
+-->
+<pre style="font-family:monospace;white-space:pre-wrap;max-width:960px;margin:auto;padding:2rem;">
+# P0 Fix Plan — 2026-02-24
+
+Based on: docs/ui-review.html
+Status: PLAN ONLY — 未開始改 code
+
+---
+
+## Issue 1: Homepage 大片空白 + 底部疑似重複
+
+### 問題描述
+Homepage 中段有巨大黑色空白區域（約佔 40% viewport），底部出現類似 hero 嘅 section。
+
+### Root Cause
+- **File:** `components/marketing/LandingPage.tsx`
+- **Line 300-301:** 多個 section 用 `.scroll-reveal` class（opacity: 0, translateY: 24px）
+- **Line 671-716:** `FINAL CTA` section 嘅內容（深色背景 + 大 headline + 橙色 CTA button）同 Hero section 視覺非常相似，構成「重複」觀感
+- **空白成因：** `.scroll-reveal` sections 需要 JS scroll event 觸發 `.scroll-visible` 先會出現。Puppeteer screenshot 唔一定觸發所有 scroll event，導致中間 sections 保持 opacity: 0 — 呈現為大片空白。真實用戶使用瀏覽器時，如果 JS 載入慢或 IntersectionObserver 未 fire，一樣會出現短暫空白閃爍
+- **注意：** FINAL CTA (L671-716) 係 intentional 嘅 closing CTA，唔係 bug duplicate。但視覺上同 hero 太似，令截圖誤判為 duplicate
+
+### 修復方案
+1. 將 `.scroll-reveal` 嘅初始 opacity 改為 1（`opacity: 0` → `opacity: 1`），純用 animation 做 reveal effect，避免 content invisible fallback
+2. 或者加 `&lt;noscript&gt;` / CSS-only fallback: `.scroll-reveal { opacity: 1; }` 作為 no-JS/slow-JS fallback
+3. FINAL CTA section 保留但調整視覺差異化：改用唔同 headline size 或加 testimonial 區分
+
+### 影響範圍
+- `/` (Homepage landing page only)
+- 所有 locale
+
+### 風險評估: Low
+- 純 CSS 改動
+- 唔影響功能
+
+### PR: 1 PR
+
+---
+
+## Issue 2: Pricing 底部重複整個 pricing section
+
+### 問題描述
+Pricing page 底部出現重複嘅 pricing content。
+
+### Root Cause
+- **File:** `components/marketing/PricingPage.tsx` (1411 行)
+- **Line 940-977:** PLAN CARDS section — 3 個 pricing tier cards
+- **Line 1264-1319:** FINAL CTA section — 深色背景 + "仲用 Google Form 接單？" headline + CTA button
+- **同 Issue 1 一樣：** FINAL CTA 唔係 duplicate pricing cards。但 PricingPage 喺 PLAN CARDS (L940) 之後仲有 Calculator (L991)、Scenario cards (L1004)、Theme cards (L1080)、Feature table (L1178)、FAQ (L1254)、FINAL CTA (L1264) — 頁面太長（~27000px），加上 mobile 上每個 section padding 80px，令底部 CTA 需要 scroll 極長先到
+- **真正問題：** 頁面缺乏 section 之間嘅視覺節奏同分隔，所有 section 背景交替用 `#FAFAFA` 同 `#fff`，太相似
+
+### 修復方案
+1. 審視各 section 嘅 mobile 體驗：考慮喺 mobile 隱藏或折疊 Scenario cards + Theme cards（呢兩個 section 價值較低）
+2. 增加 section divider 或明確嘅背景色差異
+3. FINAL CTA 保留（係 standard marketing pattern）
+
+### 影響範圍
+- `/pricing` page
+- 所有 locale
+
+### 風險評估: Low
+- 純 UI/layout 改動
+- 唔影響 pricing logic
+
+### PR: 1 PR（可同 Issue 1 合併，因為兩個都係 marketing page 改動）
+
+---
+
+## Issue 3: 品牌色調分裂（3 頁 3 種風格）
+
+### 問題描述
+Landing page 用黑底，Pricing page 用白底，Store pages 用暖米色。三個頁面三種色調，品牌 identity 分裂。
+
+### Root Cause
+- **File:** `app/globals.css` L5-35 — 定義咗 CSS variables（`--tmpl-accent`, `--primary`, olive palette 等）
+- **File:** `components/marketing/LandingPage.tsx` L295 — 整個 component 用 inline `style={{ color: "#1A1A1A" }}`，hardcoded `#0D0D0D`, `#FF9500`, `#111` 等
+- **File:** `components/marketing/PricingPage.tsx` L614-620, L941 — 用 inline `background: "#FAFAFA"`, `#1A1A1A`, `#0A0A0A`
+- **File:** `components/marketing/LandingPage.tsx` L296-318 — 所有 CSS 都寫喺 `&lt;style&gt;` tag 入面，冇用 globals.css 嘅 variables
+- **核心問題：** Marketing pages 完全繞過 design token system，所有顏色 hardcoded inline
+
+### 修復方案
+1. 喺 `globals.css` 加入 marketing color tokens：`--mkt-bg`, `--mkt-surface`, `--mkt-text`, `--mkt-accent` (=#FF9500)
+2. 逐步將 LandingPage.tsx 同 PricingPage.tsx 嘅 inline color 替換為 CSS variable references
+3. 長期：統一 dark marketing theme — Landing + Pricing 共用同一套色盤
+4. **注意：** 呢個係最大嘅改動，建議分兩步：
+   - Step A: 抽取 color variables（唔改視覺）
+   - Step B: 統一 Landing/Pricing 色盤
+
+### 影響範圍
+- `/` (Landing)
+- `/pricing`
+- `app/globals.css`
+- 唔影響 store pages（store pages 已經用 `--tmpl-accent`）
+
+### 風險評估: Medium
+- 涉及兩個大 file（LandingPage 793 行, PricingPage 1411 行）
+- Inline style 替換容易出 regression
+- 建議分階段做
+
+### PR: 2 PRs
+- PR-3A: 加 CSS variables + 喺 globals.css 定義 marketing palette
+- PR-3B: 替換 inline colors → CSS variables
+
+---
+
+## Issue 4: 已售完商品仍顯示 `+` button
+
+### 問題描述
+Store page 上已售完嘅產品仍然顯示 `+` 加入購物車 button，雖然 disabled 但視覺上仍然可見，誤導用戶。
+
+### Root Cause
+- **File:** `components/biolink/BioProductCard.tsx`
+- **Line 180-192:** Button render logic
+  ```
+  &lt;button
+    onClick={() => !soldOut && onAdd(product)}
+    disabled={soldOut}
+    className={`... ${soldOut ? "bg-zinc-300 text-zinc-400 cursor-not-allowed" : "text-white active:scale-95"}`}
+    style={soldOut ? undefined : { backgroundColor: tmpl.accent }}
+  &gt;
+  ```
+- **Line 99:** `SoldOutOverlay` 已經 render 喺圖片上面（✓ 正確）
+- **問題：** Sold-out 時 button 用 `bg-zinc-300` 灰色顯示，視覺上仲係一個 button 形狀，用戶直覺會試㩒
+
+### 修復方案
+1. Sold-out 時完全隱藏 `+` button（`{!soldOut && &lt;button ...&gt;}`）
+2. 或者將 sold-out button 改為純文字「已售完」（唔係 button 形狀）
+3. 產品圖片加 `grayscale` filter 增強視覺區分
+
+### 影響範圍
+- 所有 store pages (`/[slug]`)
+- `components/biolink/BioProductCard.tsx` 單一 file
+- `components/biolink/SoldOutOverlay.tsx`（可能需要調整 overlay 樣式）
+
+### 風險評估: Low
+- 單一 file 改動
+- 純 UI，唔影響 cart logic
+
+### PR: 1 PR
+
+---
+
+## Issue 5: Badge 顏色唔跟 template accent
+
+### 問題描述
+NEW badge 永遠綠色（`bg-emerald-500`），折扣 badge 永遠紅色（`bg-red-500`），無論店鋪嘅 template accent color 係咩。導致 badge 同品牌色衝突（e.g. 粉紅店舖出現綠色 badge）。
+
+### Root Cause
+
+**NEW Badge:**
+- **File:** `components/biolink/NewBadge.tsx` L5
+  - `bg-emerald-500` hardcoded
+
+**Discount Badge（`-X%`）— 分散喺 6+ 個 files：**
+- **File:** `components/biolink/BioProductCard.tsx` L112 — `bg-red-500`
+- **File:** `components/ProductCard.tsx` L225 — `bg-red-500`
+- **File:** `components/home/SaleZone.tsx` L73 — `bg-red-500`
+- **File:** `components/home/SportsApparel.tsx` L91 — `bg-red-500`
+- **File:** `components/home/FeaturedSneakers.tsx` L91 — `bg-red-500`
+- **File:** `components/home/KidsSection.tsx` L91 — `bg-red-500`
+- **File:** `components/home/RecommendedGrid.tsx` L91 — `bg-red-500`
+- **File:** `components/ProductDetailClient.tsx` L188 — `bg-red-500`
+- **File:** `components/ProductImageCarousel.tsx` L117 — `bg-red-500`
+- **File:** `components/biolink/ProductSheet.tsx` L330 — `bg-red-500`
+
+**Low Stock Badge:**
+- **File:** `components/biolink/LowStockBadge.tsx` L9 — `bg-[#FF9500]` hardcoded
+
+### 修復方案
+1. `NewBadge.tsx`: 接受 `accentColor` prop（或讀 `useTemplate()` context），fallback 到 `emerald-500`
+2. Discount badge: 建立共用 `DiscountBadge` component，接受 accent color prop
+   - 考慮到 store pages (biolink) 同 admin/home pages 係唔同 context，可以分兩套：
+     - Biolink stores: 用 `useTemplate()` 嘅 accent color
+     - Home/admin: 保持 `bg-red-500`（因為 home page 冇 per-store template）
+3. `LowStockBadge.tsx`: 同 NewBadge 一樣接受 accent color
+
+### 影響範圍
+- 所有 store pages（biolink 系列 components）
+- Home page sections（SaleZone, SportsApparel, FeaturedSneakers, KidsSection, RecommendedGrid）
+- Product detail pages
+
+### 風險評估: Medium
+- 涉及 10+ files
+- 需要確保 home page 同 biolink store page 嘅 badge 各自用正確 color source
+- 建議先只改 biolink 系列（store pages），home page 保持現狀
+
+### PR: 1 PR（只改 biolink store 相關 components）
+
+---
+
+## Issue 6: 產品圖 aspect ratio 失控
+
+### 問題描述
+部分店鋪（nichiyori, greenday）嘅產品圖只佔 card 下半部分，上半截大片空白。
+
+### Root Cause
+- **File:** `components/biolink/BioProductCard.tsx` L68-69
+  ```
+  className="relative aspect-square overflow-hidden cursor-pointer"
+  ```
+- **Line 77-87:** Image 用 `fill` + `object-cover`，理論上應該填滿
+- **Image component:** Next.js `&lt;Image fill className="object-cover" /&gt;`
+- **實際問題：** 圖片本身 aspect ratio 唔係 1:1（例如 portrait 或 landscape），而 `object-cover` 應該正確裁切。如果出現空白，可能係：
+  1. 圖片 URL 實際返回嘅圖片有大量 transparent/white padding
+  2. 或者 Next.js Image loader 嘅 `sizes` hint 導致載入錯誤 resolution
+  3. 或者圖片仲未載入完成時嘅 placeholder 狀態
+
+### 修復方案
+1. 確認 `object-cover` 已經正確套用（現有 code 看起來正確）
+2. 加 `object-center` 確保裁切居中
+3. 加 placeholder/blur 防止載入前空白
+4. 實際測試：直接喺瀏覽器 inspect 確認係圖片內容問題定係 CSS 問題
+
+### 影響範圍
+- 所有 store pages
+- `components/biolink/BioProductCard.tsx` 單一 file
+
+### 風險評估: Low
+- 可能只需要加一個 class
+- 需要實際 inspect 先確認 root cause
+
+### PR: 1 PR
+
+---
+
+## Issue 7: Broken image fallback 缺失
+
+### 問題描述
+Hypedrops 嘅 Snapback Cap 產品圖載入失敗時顯示 broken image icon，冇 graceful fallback。
+
+### Root Cause
+- **File:** `components/biolink/BioProductCard.tsx` L77-87
+  ```
+  &lt;Image
+    src={src}
+    alt={...}
+    fill
+    className="object-cover ..."
+    sizes="..."
+  /&gt;
+  ```
+  **冇 `onError` handler**
+- **Line 90-97:** 已經有 no-image placeholder（camera icon），但只喺 `!heroImage` 時顯示
+- **問題：** 有 URL 但 URL 返回 404/error 嘅情況冇處理
+
+### 修復方案
+1. 加 `onError` handler 到 `&lt;Image&gt;` component：
+   ```tsx
+   const [imgError, setImgError] = useState(false);
+   &lt;Image onError={() => setImgError(true)} ... /&gt;
+   ```
+2. `imgError` 時 render 同 no-image 一樣嘅 placeholder（camera icon + brand-colored background）
+3. 同時檢查 `ProductImageCarousel.tsx` (L135-146) 同 `SaleZone.tsx` (L76-82) 加同樣嘅 fallback
+
+### 影響範圍
+- 所有 store pages
+- `components/biolink/BioProductCard.tsx`
+- `components/ProductImageCarousel.tsx`
+- `components/home/SaleZone.tsx`
+
+### 風險評估: Low
+- 加 error handler 唔影響正常 flow
+- 純 enhancement
+
+### PR: 1 PR
+
+---
+
+## Issue 8: `+` button 顏色唔跟 accent
+
+### 問題描述
+Nichiyori 同 Petitfleur 嘅 `+` button 用啡色而非 template accent color。AddToCartButton 用 hardcoded `bg-olive-600`。
+
+### Root Cause
+- **File:** `components/add-to-cart-button.tsx` L24-25
+  ```tsx
+  const buttonClass =
+    className ?? "rounded-2xl bg-olive-600 px-4 py-3 text-white font-semibold hover:bg-olive-700";
+  ```
+  Hardcoded `bg-olive-600`（即 `--color-olive-600: #5c7c3a`），唔讀 `--tmpl-accent`
+- **對比：** `BioProductCard.tsx` L187 正確用 `tmpl.accent`
+- **對比：** `ProductCard.tsx` L243 正確用 `var(--tmpl-accent, #2D6A4F)`
+- **問題本質：** `AddToCartButton` 係 product detail page 嘅 component，冇接入 template context
+
+### 修復方案
+1. 將 `AddToCartButton` 嘅 default className 改為用 CSS variable：
+   ```tsx
+   "rounded-2xl px-4 py-3 text-white font-semibold"
+   style={{ backgroundColor: 'var(--tmpl-accent, #5c7c3a)' }}
+   ```
+2. 或者接受 `accentColor` prop
+
+### 影響範圍
+- Product detail page 嘅 "加入購物車" button
+- `components/add-to-cart-button.tsx` 單一 file
+
+### 風險評估: Low
+- 單一 file 改動
+- 現有 callers 如果有傳 `className` 唔受影響（因為 `??` fallback）
+
+### PR: 1 PR
+
+---
+
+## 建議執行順序
+
+按 dependency 同 impact 排序：
+
+| 順序 | Issue | 原因 | PR |
+|------|-------|------|-----|
+| 1 | **#4 — Sold-out button** | 最簡單、影響用戶體驗最直接、0 dependency | PR-1 |
+| 2 | **#7 — Broken image fallback** | 簡單加 onError，防止 broken UI | PR-2 |
+| 3 | **#8 — `+` button color** | 單 file 改動，即時改善 template 一致性 | PR-3 |
+| 4 | **#6 — Image aspect ratio** | 需先 inspect 確認 root cause，可能一行搞掂 | PR-4 |
+| 5 | **#5 — Badge 顏色跟 template** | 涉及 10+ files，但改動 pattern 一致 | PR-5 |
+| 6 | **#1+#2 — Homepage/Pricing 空白+重複** | Marketing pages 嘅 CSS 調整，需要仔細測試 | PR-6 |
+| 7 | **#3 — 品牌色調統一** | 最大改動，依賴 #1+#2 先處理完 marketing pages | PR-7a + PR-7b |
+
+**Total: 8 PRs**（如果 #1+#2 合併則 7 PRs）
+
+---
+
+## 驗證方式
+
+每個 PR 完成後：
+1. `npm run ci:build` — 確保 build green
+2. `npx ts-node scripts/screenshot.ts [affected-url]` — 截圖對比
+3. 瀏覽器 manual check（特別係 marketing pages 嘅 scroll reveal）
+</pre>

@@ -263,14 +263,16 @@ export default function BioLinkPage({ tenant, products }: Props) {
           onCartClick={() => cartCount > 0 && setShowCart(true)}
         />
 
-        {/* Language toggle — always visible at top-right over cover */}
-        <Link
-          href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
-          className="absolute top-3 right-3 z-40 text-xs px-2 py-0.5 rounded-full backdrop-blur-sm transition-colors"
-          style={{ color: tmpl.subtext, backgroundColor: `${tmpl.bg}80` }}
-        >
-          {locale === "zh-HK" ? "EN" : "繁"}
-        </Link>
+        {/* Language toggle — hidden when tenant has only 1 language */}
+        {(!tenant.languages || tenant.languages.length > 1) && (
+          <Link
+            href={swapLocale(pathname, locale === "zh-HK" ? "en" : "zh-HK")}
+            className="absolute top-3 right-3 z-40 text-xs px-2 py-0.5 rounded-full backdrop-blur-sm transition-colors"
+            style={{ color: tmpl.subtext, backgroundColor: `${tmpl.bg}80` }}
+          >
+            {locale === "zh-HK" ? "EN" : "繁"}
+          </Link>
+        )}
 
         <CoverPhoto url={tenant.coverPhoto} />
         <ProfileSection tenant={tenant} />
@@ -360,6 +362,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
           onClose={() => setShowCart(false)}
           items={cart.items}
           currency={currency}
+          languages={tenant.languages}
           freeShippingThreshold={tenant.freeShippingThreshold}
           onUpdateQty={handleUpdateQty}
           onRemoveItem={handleRemoveItem}
@@ -385,6 +388,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
             order={orderResult}
             onClose={handleConfirmationClose}
             orderConfirmMessage={orderConfirmMessage}
+            languages={tenant.languages}
           />
         )}
 

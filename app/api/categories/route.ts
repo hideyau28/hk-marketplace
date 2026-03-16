@@ -16,6 +16,20 @@ export const GET = withApi(async (req) => {
       children: {
         where: { active: true },
         orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        include: {
+          _count: {
+            select: {
+              products: {
+                where: { active: true, hidden: false, deletedAt: null },
+              },
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          products: { where: { active: true, hidden: false, deletedAt: null } },
+        },
       },
     },
   });

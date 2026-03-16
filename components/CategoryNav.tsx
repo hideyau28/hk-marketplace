@@ -8,6 +8,7 @@ type CategoryNavProps = {
   locale: Locale;
 };
 
+// Hardcoded Nike subcategories — only shown for maysshop tenant
 const CATEGORIES: { key: CategoryFilter; label: string; labelEn: string }[] = [
   { key: null, label: "全部", labelEn: "All" },
   { key: "Air Jordan", label: "Air Jordan", labelEn: "Air Jordan" },
@@ -31,10 +32,18 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
   const isProductsPage = pathname?.startsWith(`/${locale}/products`);
 
   // Get current filter state (or defaults if no context)
-  const filters = filterContext?.filters || { shoeType: null, hot: false, sale: false, category: null };
+  const filters = filterContext?.filters || {
+    shoeType: null,
+    hot: false,
+    sale: false,
+    category: null,
+  };
 
   // Handle main pill click (hot/sale/shoeType)
-  const handlePillClick = (type: "hot" | "sale" | "shoeType", value?: "adult" | "womens" | "kids") => {
+  const handlePillClick = (
+    type: "hot" | "sale" | "shoeType",
+    value?: "adult" | "womens" | "kids",
+  ) => {
     if (isProductsPage && filterContext) {
       // On products page: update context state directly
       if (type === "hot") {
@@ -48,11 +57,26 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
       // On homepage: navigate to products page (filter will be applied there)
       if (filterContext) {
         if (type === "hot") {
-          filterContext.setFilters({ shoeType: null, hot: true, sale: false, category: null });
+          filterContext.setFilters({
+            shoeType: null,
+            hot: true,
+            sale: false,
+            category: null,
+          });
         } else if (type === "sale") {
-          filterContext.setFilters({ shoeType: null, hot: false, sale: true, category: null });
+          filterContext.setFilters({
+            shoeType: null,
+            hot: false,
+            sale: true,
+            category: null,
+          });
         } else if (type === "shoeType" && value) {
-          filterContext.setFilters({ shoeType: value, hot: false, sale: false, category: null });
+          filterContext.setFilters({
+            shoeType: value,
+            hot: false,
+            sale: false,
+            category: null,
+          });
         }
       }
       router.push(`/${locale}/products`);
@@ -67,7 +91,12 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
     } else {
       // On homepage: navigate to products page with category
       if (filterContext) {
-        filterContext.setFilters({ shoeType: null, hot: false, sale: false, category });
+        filterContext.setFilters({
+          shoeType: null,
+          hot: false,
+          sale: false,
+          category,
+        });
       }
       router.push(`/${locale}/products`);
     }
@@ -110,7 +139,11 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
                 ? "text-white"
                 : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
-            style={filters.shoeType === "adult" ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
+            style={
+              filters.shoeType === "adult"
+                ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" }
+                : undefined
+            }
           >
             {isZh ? "男裝" : "Men"}
           </button>
@@ -123,7 +156,11 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
                 ? "text-white"
                 : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
-            style={filters.shoeType === "womens" ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
+            style={
+              filters.shoeType === "womens"
+                ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" }
+                : undefined
+            }
           >
             {isZh ? "女裝" : "Women"}
           </button>
@@ -136,7 +173,11 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
                 ? "text-white"
                 : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
-            style={filters.shoeType === "kids" ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
+            style={
+              filters.shoeType === "kids"
+                ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" }
+                : undefined
+            }
           >
             {isZh ? "童裝" : "Kids"}
           </button>
@@ -155,7 +196,11 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
                     ? "text-white"
                     : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                 }`}
-                style={isActive ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
+                style={
+                  isActive
+                    ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" }
+                    : undefined
+                }
               >
                 {isZh ? cat.label : cat.labelEn}
               </button>

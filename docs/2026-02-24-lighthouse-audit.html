@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Lighthouse Audit — 2026-02-24</title>
+<style>
+body { font-family: monospace; max-width: 1000px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+th, td { border: 1px solid #ccc; padding: 6px 12px; text-align: left; }
+th { background: #f5f5f5; }
+.good { color: #16a34a; }
+.warn { color: #d97706; }
+.bad  { color: #dc2626; }
+h1 { border-bottom: 2px solid #333; }
+h2 { border-bottom: 1px solid #ccc; margin-top: 40px; }
+pre { background: #f8f8f8; padding: 12px; overflow-x: auto; }
+</style>
+</head><body><pre>
+# Lighthouse Performance Audit — 2026-02-24
+
+**Tool:** Lighthouse 13.0.3 via npx
+**Mode:** Headless Chrome, mobile simulation (Lighthouse default)
+**Date:** 2026-02-24
+**Pages audited:** 4
+
+---
+
+## Score Summary
+
+| Page              | URL                                    | Score | Grade |
+|-------------------|----------------------------------------|-------|-------|
+| Homepage          | https://www.wowlix.com/               |  94   |  🟢   |
+| HYPEDROPS         | https://www.wowlix.com/hypedrops      |  87   |  🟡   |
+| Pricing           | https://www.wowlix.com/pricing        |  79   |  🟡   |
+| petitfleur        | https://www.wowlix.com/petitfleur     |  68   |  🔴   |
+
+Score bands: 🟢 90–100 (Good) · 🟡 50–89 (Needs Improvement) · 🔴 0–49 (Poor)
+
+---
+
+## Core Web Vitals Detail
+
+| Metric                        | petitfleur | hypedrops | Homepage | Pricing  | Target    |
+|-------------------------------|-----------|-----------|----------|----------|-----------|
+| Performance Score             | 68 🔴     | 87 🟡     | 94 🟢    | 79 🟡    | ≥90       |
+| FCP (First Contentful Paint)  | 3.4 s 🔴  | 2.0 s 🟡  | 1.1 s 🟢 | 3.1 s 🔴 | ≤1.8 s    |
+| LCP (Largest Contentful Paint)| 5.0 s 🔴  | 3.7 s 🟡  | 2.7 s 🟡 | 4.0 s 🔴 | ≤2.5 s    |
+| TBT (Total Blocking Time)     | 30 ms 🟢  | 10 ms 🟢  | 0 ms 🟢  | 20 ms 🟢 | ≤200 ms   |
+| CLS (Cumulative Layout Shift) | 0.00 🟢   | 0.001 🟢  | 0.00 🟢  | 0.071 🟡 | ≤0.10     |
+| Speed Index                   | 7.7 s 🔴  | 2.9 s 🟢  | 4.2 s 🟡 | 3.8 s 🟡 | ≤3.4 s    |
+| TTI (Time to Interactive)     | 5.0 s 🟡  | 3.7 s 🟢  | 2.7 s 🟢 | 4.6 s 🟡 | ≤3.8 s    |
+| TTFB (Server Response)        | 160 ms 🟢 | 180 ms 🟢 | 60 ms 🟢 | 60 ms 🟢 | ≤600 ms   |
+| Network Requests              | 41        | 39        | 35       | 58 🔴    |           |
+| Total Transfer Size           | 572 KB    | 503 KB    | 355 KB   | 1,990 KB 🔴 |        |
+
+---
+
+## Per-Page Analysis
+
+### 1. Homepage — Score 94 🟢
+
+**URL:** https://www.wowlix.com/
+**FCP 1.1 s · LCP 2.7 s · TBT 0 ms · CLS 0 · SI 4.2 s**
+
+Best performer. TTFB is 60 ms (edge-cached), no render-blocking resources, zero TBT.
+
+**Issues:**
+
+| Issue                | Impact     | Detail                                      |
+|----------------------|------------|---------------------------------------------|
+| Unused JavaScript    | -450 ms    | 90 KB wasted across Next.js chunks          |
+
+**Top unused JS chunks:**
+- `f962edfe727b46e4.js` — 70 KB total, 27 KB wasted (39%)
+- `9d5e44543ca04f7e.js` — 44 KB total, 37 KB wasted (84%)
+- `2eebb4169a47f438.js` — 26 KB total, 26 KB wasted (100%) — likely unused route bundle
+
+**Largest requests:**
+- `f962edfe727b46e4.js` — 70 KB (vendor bundle)
+- `9d5e44543ca04f7e.js` — 44 KB
+- GeistMonoVF font — 31 KB
+- GeistVF font — 28 KB
+
+**Root cause:** Speed Index 4.2 s is moderate despite great FCP — scroll-reveal animations
+hide sections until JS runs, meaning the page appears "incomplete" to SI measurement.
+
+---
+
+### 2. HYPEDROPS — Score 87 🟡
+
+**URL:** https://www.wowlix.com/hypedrops
+**FCP 2.0 s · LCP 3.7 s · TBT 10 ms · CLS 0.001 · SI 2.9 s**
+
+Good overall. Speed Index 2.9 s is the best among all stores. Main drag is FCP/LCP.
+
+**Issues:**
+
+| Issue                | Impact     | Detail                                      |
+|----------------------|------------|---------------------------------------------|
+| Unused JavaScript    | -410 ms    | 62 KB wasted                                |
+| Inter font (Google)  | -          | 48 KB font file loaded from fonts.gstatic   |
+
+**Top unused JS chunks:**
+- `f962edfe727b46e4.js` — 70 KB total, 25 KB wasted (36%)
+- `9d5e44543ca04f7e.js` — 44 KB total, 37 KB wasted (84%)
+
+**Largest requests:**
+- `f962edfe727b46e4.js` — 70 KB
+- **Inter font (Google Fonts)** — 48 KB 🔴
+- `9d5e44543ca04f7e.js` — 44 KB
+- Unsplash product image via _next/image — 38 KB
+
+**Root cause:** The hypedrops template loads Inter from fonts.gstatic.com (external). This
+adds a DNS lookup + TLS handshake + font download before text renders (FOIT risk). Using
+next/font would self-host and eliminate external roundtrip.
+
+---
+
+### 3. Pricing Page — Score 79 🟡
+
+**URL:** https://www.wowlix.com/pricing
+**FCP 3.1 s · LCP 4.0 s · TBT 20 ms · CLS 0.071 · SI 3.8 s**
+
+Second worst. The pricing page has a critical font bloat problem.
+
+**Issues:**
+
+| Issue                | Impact     | Detail                                              |
+|----------------------|------------|-----------------------------------------------------|
+| Unused CSS           | -420 ms    | **131 KB** from DM Sans Google Fonts CSS file 🚨    |
+| Unused JavaScript    | -210 ms    | 91 KB wasted                                        |
+| CLS 0.071            | Minor      | Layout shift (likely font swap or image load)       |
+
+**Largest requests (🚨 total 1,990 KB — 3.5× other pages):**
+- DM Sans Google Fonts CSS — **131 KB** (blocked, 100% unused at parse time)
+- Noto Sans TC weight file × 7 — **71–83 KB each = ~525 KB total** 🔴🔴
+- `f962edfe727b46e4.js` — 70 KB (same as all pages)
+- 58 total network requests (vs 35–41 for other pages)
+
+**Root cause:** 🚨 The pricing page loads DM Sans + Noto Sans TC via
+`<link href="https://fonts.googleapis.com">`. Noto Sans TC is a CJK font with many weights —
+7 separate woff2 files are downloaded (each 71–83 KB). This adds ~525 KB of font payloads
+and a 131 KB render-blocking CSS file, explaining why FCP/LCP both exceed 3 s despite
+good TTFB.
+
+**Quick fix:** Replace the `<link>` Google Fonts import in PricingPage.tsx with next/font,
+and only load the weights actually used (300, 500 only). Estimated saving: ~420 ms + 400+ KB.
+
+---
+
+### 4. petitfleur — Score 68 🔴
+
+**URL:** https://www.wowlix.com/petitfleur
+**FCP 3.4 s · LCP 5.0 s · TBT 30 ms · CLS 0 · SI 7.7 s**
+
+Worst performer. FCP and LCP both in red zone; SI 7.7 s is very poor.
+
+**Issues:**
+
+| Issue                       | Impact     | Detail                                              |
+|-----------------------------|------------|-----------------------------------------------------|
+| Unused JavaScript           | -210 ms    | 63 KB wasted                                        |
+| Cormorant Garamond font     | -          | 37 KB from fonts.gstatic.com (external roundtrip)   |
+| Product images (Unsplash)   | -          | 37 KB + 31 KB via _next/image — LCP candidate       |
+
+**Largest requests:**
+- `f962edfe727b46e4.js` — 70 KB
+- `9d5e44543ca04f7e.js` — 44 KB
+- **Cormorant Garamond font (gstatic)** — 37 KB 🔴
+- Unsplash product image #1 — 37 KB (likely the LCP element)
+- Unsplash product image #2 — 31 KB
+- GeistMonoVF — 31 KB
+- GeistVF — 28 KB
+
+**Root cause 1 (FCP 3.4 s):** Cormorant Garamond is loaded from fonts.gstatic.com — external
+DNS + TLS before any text renders. Self-hosting via next/font would eliminate the roundtrip.
+
+**Root cause 2 (LCP 5.0 s):** The LCP element is a product image from Unsplash via
+`_next/image`. At 37 KB with mobile network simulation, discovery + download takes ~2–3 s
+after FCP. Adding `priority` prop to the first product image would trigger early preload.
+
+**Root cause 3 (SI 7.7 s):** Speed Index measures visual completeness — petitfleur's
+auto-carousel product cards cycle images every 3 s, and placeholders for broken images
+show initially then swap. This makes the page appear "changing" throughout the measurement
+window, inflating SI.
+
+---
+
+## Cross-Page Observations
+
+### Consistent across all pages
+
+- **`9d5e44543ca04f7e.js`** — 44 KB total, **37 KB wasted** (84%) on every single page.
+  This chunk is loaded but nearly entirely unused. Likely a large vendor bundle included
+  globally. Worth investigating with `next/bundle-analyzer`.
+
+- **`f962edfe727b46e4.js`** — 70 KB total, 25–28 KB wasted (36–40%) on all pages.
+  Partially used but could be code-split further.
+
+- **TBT is excellent across all pages (0–30 ms)** — the app is not JS-heavy on the main
+  thread. React hydration is clean.
+
+- **CLS is excellent (≤0.071)** — no significant layout shifts except a minor one on
+  pricing page (likely font swap).
+
+- **TTFB is excellent** — 60–180 ms across all pages, indicating good edge caching and
+  fast server response.
+
+---
+
+## Priority Recommendations
+
+### P1 — High Impact (fix soon)
+
+| # | Issue                                | Pages          | Est. Saving     | Fix                                               |
+|---|--------------------------------------|----------------|-----------------|---------------------------------------------------|
+| 1 | Noto Sans TC via Google Fonts (7×)   | Pricing        | ~500 KB / ~1 s  | Switch to `next/font/google` with subset + 2 weights only |
+| 2 | DM Sans Google Fonts CSS 131 KB      | Pricing        | ~420 ms / 131 KB| Switch to `next/font/google` (eliminates CSS link) |
+| 3 | LCP image not preloaded (petitfleur) | petitfleur     | ~1–2 s LCP      | Add `priority` prop to first product card image   |
+
+### P2 — Medium Impact (plan this sprint)
+
+| # | Issue                                | Pages              | Est. Saving     | Fix                                               |
+|---|--------------------------------------|--------------------|-----------------|---------------------------------------------------|
+| 4 | External Google Fonts (Inter, Cormorant) | hypedrops, petitfleur | ~200–500 ms FCP | Migrate to `next/font/google` self-hosting    |
+| 5 | `9d5e44543ca04f7e.js` 84% unused     | All pages          | ~37 KB / ~200 ms| Run `@next/bundle-analyzer`, identify + lazy-load |
+| 6 | `f962edfe727b46e4.js` 36% unused     | All pages          | ~25 KB / ~150 ms| Same bundle analysis                              |
+
+### P3 — Nice to Have
+
+| # | Issue                              | Pages          | Fix                                                  |
+|---|------------------------------------|----------------|------------------------------------------------------|
+| 7 | SI 7.7 s petitfleur (carousel)     | petitfleur     | Reduce auto-carousel speed or pause on first load    |
+| 8 | CLS 0.071 pricing                  | Pricing        | Add `font-display: swap` or size reservation for font |
+| 9 | 58 requests on pricing             | Pricing        | Font consolidation will naturally reduce this to ~40 |
+
+---
+
+## Quick Wins Summary
+
+Biggest bang-for-buck fix: **pricing page Google Fonts → next/font**
+
+```tsx
+// PricingPage.tsx — BEFORE (slow)
+// External <link> in _document or layout for DM Sans + Noto Sans TC
+
+// AFTER (fast)
+import { DM_Sans, Noto_Sans_TC } from 'next/font/google';
+const dmSans = DM_Sans({ subsets: ['latin'], weight: ['300', '500'] });
+const notoSansTC = Noto_Sans_TC({ subsets: ['chinese-traditional'], weight: ['300', '500'] });
+// Eliminates 131 KB CSS + reduces font payload from ~525 KB to ~100 KB
+```
+
+Second quick win: **add `priority` to first product card image**
+
+```tsx
+// BioProductCard.tsx
+<Image
+  src={src}
+  alt={...}
+  fill
+  priority={i === 0 && isFirstCard}  // preload hero image of first card
+  ...
+/>
+```
+
+---
+
+## Raw Scores for CI Budgets
+
+```
+homepage:   94  FCP=1.1s  LCP=2.7s  TBT=0ms    CLS=0.000  SI=4.2s
+hypedrops:  87  FCP=2.0s  LCP=3.7s  TBT=10ms   CLS=0.001  SI=2.9s
+pricing:    79  FCP=3.1s  LCP=4.0s  TBT=20ms   CLS=0.071  SI=3.8s
+petitfleur: 68  FCP=3.4s  LCP=5.0s  TBT=30ms   CLS=0.000  SI=7.7s
+```
+
+---
+
+Report generated: 2026-02-24
+Lighthouse version: 13.0.3
+Raw JSON: /tmp/lh-audit/{petitfleur,hypedrops,homepage,pricing}.json
+</pre></body></html>

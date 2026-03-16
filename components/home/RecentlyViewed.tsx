@@ -21,7 +21,17 @@ type Product = {
 
 const RECENT_VIEWS_KEY = "hk-market-recent-views";
 
-function RecentCardItem({ product, locale, isFirst, isLast }: { product: Product; locale: Locale; isFirst: boolean; isLast: boolean }) {
+function RecentCardItem({
+  product,
+  locale,
+  isFirst,
+  isLast,
+}: {
+  product: Product;
+  locale: Locale;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
   const { format: formatPrice } = useCurrency();
   const { showToast } = useToast();
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -64,7 +74,9 @@ function RecentCardItem({ product, locale, isFirst, isLast }: { product: Product
   };
 
   return (
-    <div className={`group shrink-0 snap-start flex flex-col ${isFirst ? "ml-4" : ""} ${isLast ? "mr-4" : ""}`}>
+    <div
+      className={`group shrink-0 snap-start flex flex-col ${isFirst ? "ml-4" : ""} ${isLast ? "mr-4" : ""}`}
+    >
       <div className="relative w-[120px]">
         <Link href={`/${locale}/product/${product.id}`}>
           <div className="overflow-hidden rounded-lg bg-white border border-zinc-200/50 shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 dark:border-zinc-800">
@@ -93,8 +105,19 @@ function RecentCardItem({ product, locale, isFirst, isLast }: { product: Product
             style={{ backgroundColor: "var(--tmpl-accent, #2D6A4F)" }}
             aria-label="Add to cart"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              className="w-4 h-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+              />
             </svg>
           </button>
         )}
@@ -112,13 +135,25 @@ function RecentCardItem({ product, locale, isFirst, isLast }: { product: Product
               onClick={(e) => e.stopPropagation()}
               className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium px-1 py-0.5 pr-3 rounded cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus:outline-none"
             >
-              <option value="">尺碼</option>
+              <option value="">{locale === "zh-HK" ? "尺碼" : "Size"}</option>
               {availableSizes.map((size) => (
-                <option key={size} value={size}>{size}</option>
+                <option key={size} value={size}>
+                  {size}
+                </option>
               ))}
             </select>
-            <svg className="absolute right-0.5 top-1/2 -translate-y-1/2 w-2 h-2 text-zinc-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <svg
+              className="absolute right-0.5 top-1/2 -translate-y-1/2 w-2 h-2 text-zinc-500 pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </div>
         )}

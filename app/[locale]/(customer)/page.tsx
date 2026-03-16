@@ -2,6 +2,8 @@ import { getDict, type Locale } from "@/lib/i18n";
 import { prisma } from "@/lib/prisma";
 import { getStoreName } from "@/lib/get-store-name";
 import { getServerTenantId, isPlatformMode } from "@/lib/tenant";
+import { getTenantInfo } from "@/lib/get-tenant-info";
+import { getSEOContent } from "@/lib/tenant-content";
 import HeroCarouselCMS from "@/components/home/HeroCarouselCMS";
 import RecommendedGrid from "@/components/home/RecommendedGrid";
 import FeaturedSneakers from "@/components/home/FeaturedSneakers";
@@ -68,13 +70,18 @@ export async function generateMetadata({
   const tenantSlug = headersList.get("x-tenant-slug") || "maysshop";
 
   const storeName = await getStoreName();
+  const seo = getSEOContent(tenantSlug);
 
-  const title = `${storeName} - 香港波鞋專門店`;
-  const description =
-    locale === "zh-HK"
+  // Tenant-specific SEO uses static content; default falls back to locale-aware copy
+  const isCustomTenant = tenantSlug !== "maysshop";
+  const title = seo.title.replace("{storeName}", storeName);
+  const description = isCustomTenant
+    ? seo.description
+    : locale === "zh-HK"
       ? "探索最新波鞋及運動裝備，正品保證！"
       : "Shop the latest sneakers and sports gear. 100% authentic!";
   const canonicalUrl = `https://${tenantSlug}.wowlix.com/${locale}`;
+  const ogImage = seo.ogImage;
 
   return {
     title,
@@ -86,6 +93,9 @@ export async function generateMetadata({
       siteName: storeName,
       type: "website",
       locale: locale === "zh-HK" ? "zh_HK" : "en_US",
+      images: ogImage
+        ? [{ url: ogImage, width: 1200, height: 630, alt: storeName }]
+        : undefined,
     },
   };
 }

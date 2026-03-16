@@ -21,12 +21,24 @@ type Product = {
   stock?: number;
 };
 
-function SaleCardItem({ product, locale, isFirst, isLast }: { product: Product; locale: Locale; isFirst: boolean; isLast: boolean }) {
+function SaleCardItem({
+  product,
+  locale,
+  isFirst,
+  isLast,
+}: {
+  product: Product;
+  locale: Locale;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
   const { format: formatPrice } = useCurrency();
   const { showToast } = useToast();
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [showCartIcon, setShowCartIcon] = useState(false);
-  const discount = Math.round((1 - product.price / product.originalPrice) * 100);
+  const discount = Math.round(
+    (1 - product.price / product.originalPrice) * 100,
+  );
 
   const availableSizes = useMemo(() => {
     if (!product.sizes || typeof product.sizes !== "object") return [];
@@ -65,7 +77,9 @@ function SaleCardItem({ product, locale, isFirst, isLast }: { product: Product; 
   };
 
   return (
-    <div className={`group shrink-0 snap-start flex flex-col ${isFirst ? "pl-4" : ""} ${isLast ? "pr-4" : ""}`}>
+    <div
+      className={`group shrink-0 snap-start flex flex-col ${isFirst ? "pl-4" : ""} ${isLast ? "pr-4" : ""}`}
+    >
       <div className="relative">
         <Link href={`/${locale}/product/${product.id}`}>
           <div className="w-[200px] md:w-[240px] overflow-hidden rounded-2xl bg-white border border-zinc-100 dark:border-zinc-800 dark:bg-zinc-900">
@@ -83,7 +97,9 @@ function SaleCardItem({ product, locale, isFirst, isLast }: { product: Product; 
               <WishlistHeart productId={product.id} size="md" />
             </div>
             <div className="p-3 flex flex-col">
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                {product.brand}
+              </p>
               <h3 className="text-sm font-medium text-zinc-900 line-clamp-2 dark:text-zinc-100">
                 {product.title}
               </h3>
@@ -98,8 +114,19 @@ function SaleCardItem({ product, locale, isFirst, isLast }: { product: Product; 
             style={{ backgroundColor: "var(--tmpl-accent, #2D6A4F)" }}
             aria-label="Add to cart"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              className="w-4 h-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+              />
             </svg>
           </button>
         )}
@@ -122,13 +149,25 @@ function SaleCardItem({ product, locale, isFirst, isLast }: { product: Product; 
               onClick={(e) => e.stopPropagation()}
               className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium px-2 py-1 pr-5 rounded-lg cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus:outline-none"
             >
-              <option value="">尺碼</option>
+              <option value="">{locale === "zh-HK" ? "尺碼" : "Size"}</option>
               {availableSizes.map((size) => (
-                <option key={size} value={size}>{size}</option>
+                <option key={size} value={size}>
+                  {size}
+                </option>
               ))}
             </select>
-            <svg className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <svg
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </div>
         )}
@@ -154,7 +193,11 @@ export default function SaleZone({
 
   return (
     <section className="py-6">
-      <SectionTitle title={title} viewAllText={viewAllText} viewAllHref={`/${locale}/products?sale=true`} />
+      <SectionTitle
+        title={title}
+        viewAllText={viewAllText}
+        viewAllHref={`/${locale}/products?sale=true`}
+      />
       <div className="overflow-x-auto scrollbar-hide snap-x [-webkit-overflow-scrolling:touch]">
         <div className="flex gap-3">
           {displayProducts.map((product, idx) => (

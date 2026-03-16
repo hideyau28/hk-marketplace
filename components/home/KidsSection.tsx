@@ -23,13 +23,36 @@ type Product = {
 
 function CartIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      className="w-4 h-4"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+      />
     </svg>
   );
 }
 
-function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { product: Product; locale: Locale; isFirst: boolean; isLast: boolean; isTopSeller?: boolean }) {
+function KidsCardItem({
+  product,
+  locale,
+  isFirst,
+  isLast,
+  isTopSeller,
+}: {
+  product: Product;
+  locale: Locale;
+  isFirst: boolean;
+  isLast: boolean;
+  isTopSeller?: boolean;
+}) {
   const { format: formatPrice } = useCurrency();
   const { showToast } = useToast();
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -42,7 +65,8 @@ function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { produ
       .map(([size]) => size);
   }, [product.sizes]);
 
-  const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
+  const isOnSale =
+    product.originalPrice != null && product.originalPrice > product.price;
 
   const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     e.preventDefault();
@@ -74,9 +98,13 @@ function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { produ
   };
 
   return (
-    <div className={`group shrink-0 snap-start ${isFirst ? "ml-4" : ""} ${isLast ? "mr-4" : ""}`}>
+    <div
+      className={`group shrink-0 snap-start ${isFirst ? "ml-4" : ""} ${isLast ? "mr-4" : ""}`}
+    >
       {/* Large card: 220px mobile, 280px desktop - all content inside card border */}
-      <div className={`w-[220px] min-w-[220px] md:w-[280px] md:min-w-[280px] overflow-hidden rounded-xl bg-white border shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 ${isOnSale ? "border-red-200 ring-1 ring-red-200 dark:border-red-900/50 dark:ring-red-900/50" : "border-zinc-200/50 dark:border-zinc-800"}`}>
+      <div
+        className={`w-[220px] min-w-[220px] md:w-[280px] md:min-w-[280px] overflow-hidden rounded-xl bg-white border shadow-sm hover:shadow-md transition-shadow dark:bg-zinc-900 ${isOnSale ? "border-red-200 ring-1 ring-red-200 dark:border-red-900/50 dark:ring-red-900/50" : "border-zinc-200/50 dark:border-zinc-800"}`}
+      >
         <Link href={`/${locale}/product/${product.id}`}>
           <div className="relative aspect-[4/5] overflow-hidden bg-zinc-50 dark:bg-zinc-800">
             <Image
@@ -89,7 +117,9 @@ function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { produ
             <WishlistHeart productId={product.id} size="sm" />
             {isTopSeller && (
               <span className="absolute top-2 left-2 px-2 py-0.5 text-xs font-semibold rounded text-white bg-red-500 z-10">
-                {locale.startsWith("zh") ? "\uD83D\uDD25 \u71B1\u8CE3" : "\uD83D\uDD25 Hot"}
+                {locale.startsWith("zh")
+                  ? "\uD83D\uDD25 \u71B1\u8CE3"
+                  : "\uD83D\uDD25 Hot"}
               </span>
             )}
             {/* Cart icon - shows after size selection */}
@@ -97,7 +127,10 @@ function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { produ
               <button
                 onClick={handleAddToCart}
                 className="absolute bottom-2 right-2 w-8 h-8 rounded-full text-white flex items-center justify-center shadow-lg hover:brightness-90 transition-all z-10"
-                style={{ backgroundColor: "var(--tmpl-accent, #2D6A4F)", animation: "fadeIn 0.2s ease-out" }}
+                style={{
+                  backgroundColor: "var(--tmpl-accent, #2D6A4F)",
+                  animation: "fadeIn 0.2s ease-out",
+                }}
                 aria-label="Add to cart"
               >
                 <CartIcon />
@@ -105,7 +138,9 @@ function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { produ
             )}
           </div>
           <div className="p-3 pb-1 flex flex-col">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">{product.brand}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {product.brand}
+            </p>
             <h3 className="text-sm font-medium text-zinc-900 line-clamp-2 leading-tight min-h-[2.5rem] dark:text-zinc-100">
               {product.title}
             </h3>
@@ -119,11 +154,17 @@ function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { produ
           <div className="flex flex-col leading-tight">
             {isOnSale ? (
               <>
-                <span className="text-[10px] text-zinc-400 line-through">{formatPrice(product.originalPrice!)}</span>
-                <span className="text-base font-bold text-red-600">{formatPrice(product.price)}</span>
+                <span className="text-[10px] text-zinc-400 line-through">
+                  {formatPrice(product.originalPrice!)}
+                </span>
+                <span className="text-base font-bold text-red-600">
+                  {formatPrice(product.price)}
+                </span>
               </>
             ) : (
-              <span className="text-base font-bold text-zinc-900 dark:text-zinc-100">{formatPrice(product.price)}</span>
+              <span className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                {formatPrice(product.price)}
+              </span>
             )}
           </div>
           {availableSizes.length > 0 && (
@@ -144,13 +185,25 @@ function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { produ
                 onMouseDown={(e) => e.stopPropagation()}
                 className="appearance-none bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium px-2 py-1 pr-5 rounded-lg cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors focus:outline-none"
               >
-                <option value="">尺碼</option>
+                <option value="">{locale === "zh-HK" ? "尺碼" : "Size"}</option>
                 {availableSizes.map((size) => (
-                  <option key={size} value={size}>{size}</option>
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
                 ))}
               </select>
-              <svg className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <svg
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-500 pointer-events-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </div>
           )}
@@ -158,8 +211,14 @@ function KidsCardItem({ product, locale, isFirst, isLast, isTopSeller }: { produ
       </div>
       <style jsx>{`
         @keyframes fadeIn {
-          from { opacity: 0; transform: scale(0.8); }
-          to { opacity: 1; transform: scale(1); }
+          from {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
         }
       `}</style>
     </div>
@@ -190,7 +249,10 @@ export default function KidsSection({
       <SectionTitle
         title={title}
         viewAllText={viewAllText}
-        viewAllHref={viewAllHref || `/${locale}/products?shoeType=grade_school,preschool,toddler`}
+        viewAllHref={
+          viewAllHref ||
+          `/${locale}/products?shoeType=grade_school,preschool,toddler`
+        }
       />
       <div className="overflow-x-auto scrollbar-hide [-webkit-overflow-scrolling:touch]">
         <div className="flex gap-4 snap-x snap-mandatory">

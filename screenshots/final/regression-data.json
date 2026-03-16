@@ -1,0 +1,129 @@
+{
+  "timestamp": "2026-02-24T18:30:38.389Z",
+  "build": {
+    "pass": true,
+    "errors": 0
+  },
+  "stores": [
+    {
+      "store": "hypedrops",
+      "status": 200,
+      "loadTime": 7836,
+      "brokenImages": 0,
+      "totalImages": 7,
+      "hasWishlistIcon": false,
+      "hasUpsellSection": false,
+      "hasCartBar": false,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "consoleWarnings": [],
+      "screenshot": "/Users/ngyau/hk-marketplace/screenshots/final/hypedrops.png"
+    },
+    {
+      "store": "nichiyori",
+      "status": 200,
+      "loadTime": 1877,
+      "brokenImages": 0,
+      "totalImages": 7,
+      "hasWishlistIcon": false,
+      "hasUpsellSection": false,
+      "hasCartBar": false,
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "screenshot": "/Users/ngyau/hk-marketplace/screenshots/final/nichiyori.png"
+    },
+    {
+      "store": "greenday",
+      "status": 200,
+      "loadTime": 2515,
+      "brokenImages": 0,
+      "totalImages": 6,
+      "hasWishlistIcon": false,
+      "hasUpsellSection": false,
+      "hasCartBar": false,
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()",
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "consoleWarnings": [],
+      "screenshot": "/Users/ngyau/hk-marketplace/screenshots/final/greenday.png"
+    },
+    {
+      "store": "petitfleur",
+      "status": 200,
+      "loadTime": 1997,
+      "brokenImages": 0,
+      "totalImages": 9,
+      "hasWishlistIcon": false,
+      "hasUpsellSection": false,
+      "hasCartBar": false,
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "screenshot": "/Users/ngyau/hk-marketplace/screenshots/final/petitfleur.png"
+    }
+  ],
+  "pages": [
+    {
+      "page": "landing",
+      "status": 200,
+      "loadTime": 3153,
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "checks": {
+        "hero_section": true,
+        "social_proof": true,
+        "template_preview": false
+      },
+      "screenshot": "/Users/ngyau/hk-marketplace/screenshots/final/landing-desktop.png"
+    },
+    {
+      "page": "pricing",
+      "status": 200,
+      "loadTime": 3338,
+      "consoleErrors": [],
+      "consoleWarnings": [],
+      "checks": {
+        "pricing_cards": true,
+        "feature_list": false,
+        "recommended_badge": false
+      },
+      "screenshot": "/Users/ngyau/hk-marketplace/screenshots/final/pricing-desktop.png"
+    }
+  ],
+  "checkout": {
+    "steps": {
+      "load_store": {
+        "pass": true,
+        "note": "petitfleur loaded"
+      },
+      "click_product": {
+        "pass": false,
+        "note": "No product card found"
+      },
+      "add_to_cart": {
+        "pass": false,
+        "note": "Add to cart button not found"
+      },
+      "go_to_checkout": {
+        "pass": false,
+        "note": "Checkout button not found"
+      }
+    },
+    "hasCouponInput": false,
+    "consoleErrors": [],
+    "screenshot": "/Users/ngyau/hk-marketplace/screenshots/final/checkout-flow.png"
+  },
+  "features": [
+    {
+      "feature": "F7 Order Tracking",
+      "pass": true,
+      "note": "Route responded with 404"
+    },
+    {
+      "feature": "Landing 3-step animation",
+      "pass": true,
+      "note": "Steps content found"
+    }
+  ]
+}

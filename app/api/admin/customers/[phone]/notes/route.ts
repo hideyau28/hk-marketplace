@@ -1,8 +1,9 @@
 export const runtime = "nodejs";
 
 import { ApiError, ok, withApi } from "@/lib/api/route-helpers";
+import { authenticateAdmin } from "@/lib/auth/admin-auth";
+import { hasFeature } from "@/lib/plan";
 import { prisma } from "@/lib/prisma";
-import { getTenantId } from "@/lib/tenant";
 
 type RouteContext = { params: Promise<{ phone: string }> };
 
@@ -11,7 +12,12 @@ export const GET = withApi(
   async (req: Request, ctx: RouteContext) => {
     const { phone } = await ctx.params;
     const decodedPhone = decodeURIComponent(phone);
-    const tenantId = await getTenantId(req);
+    const { tenantId } = await authenticateAdmin(req);
+
+    const allowed = await hasFeature(tenantId, "crm");
+    if (!allowed) {
+      throw new ApiError(403, "FORBIDDEN", "CRM feature requires Pro plan");
+    }
 
     const notes = await prisma.customerNote.findMany({
       where: { tenantId, phone: decodedPhone },
@@ -28,7 +34,12 @@ export const POST = withApi(
   async (req: Request, ctx: RouteContext) => {
     const { phone } = await ctx.params;
     const decodedPhone = decodeURIComponent(phone);
-    const tenantId = await getTenantId(req);
+    const { tenantId } = await authenticateAdmin(req);
+
+    const allowed = await hasFeature(tenantId, "crm");
+    if (!allowed) {
+      throw new ApiError(403, "FORBIDDEN", "CRM feature requires Pro plan");
+    }
 
     let body: unknown = null;
     try {

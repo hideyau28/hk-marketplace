@@ -3,7 +3,21 @@ import type { Locale } from "@/lib/i18n";
 import type { Translations } from "@/lib/translations";
 import { Instagram } from "lucide-react";
 
-export default function Footer({ locale, t, storeName = "May's Shop", hideBranding = false, whatsappNumber, instagramUrl }: { locale: Locale; t: Translations; storeName?: string; hideBranding?: boolean; whatsappNumber?: string | null; instagramUrl?: string | null }) {
+export default function Footer({
+  locale,
+  t,
+  storeName = "May's Shop",
+  hideBranding = false,
+  whatsappNumber,
+  instagramUrl,
+}: {
+  locale: Locale;
+  t: Translations;
+  storeName?: string;
+  hideBranding?: boolean;
+  whatsappNumber?: string | null;
+  instagramUrl?: string | null;
+}) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -12,8 +26,8 @@ export default function Footer({ locale, t, storeName = "May's Shop", hideBrandi
         {/* Brand */}
         <h3 className="text-lg font-bold mb-3">{storeName}</h3>
 
-        {/* Links - Single line with · separator */}
-        <div className="flex justify-center items-center gap-1 mb-4 text-sm">
+        {/* Links — wraps gracefully on narrow screens */}
+        <div className="flex flex-wrap justify-center items-center gap-x-1 gap-y-0.5 mb-4 text-sm">
           <Link
             href={`/${locale}/about`}
             className="text-zinc-400 hover:text-zinc-200 transition-colors"
@@ -26,6 +40,27 @@ export default function Footer({ locale, t, storeName = "May's Shop", hideBrandi
             className="text-zinc-400 hover:text-zinc-200 transition-colors"
           >
             {t.footer.contact}
+          </Link>
+          <span className="text-zinc-600">·</span>
+          <Link
+            href={`/${locale}/faq`}
+            className="text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            FAQ
+          </Link>
+          <span className="text-zinc-600">·</span>
+          <Link
+            href={`/${locale}/shipping`}
+            className="text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            Shipping
+          </Link>
+          <span className="text-zinc-600">·</span>
+          <Link
+            href={`/${locale}/returns`}
+            className="text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            Returns
           </Link>
           <span className="text-zinc-600">·</span>
           <Link
@@ -48,7 +83,11 @@ export default function Footer({ locale, t, storeName = "May's Shop", hideBrandi
           <div className="flex justify-center gap-3 mb-4">
             {instagramUrl && (
               <a
-                href={instagramUrl.startsWith("http") ? instagramUrl : `https://instagram.com/${instagramUrl.replace(/^@/, "")}`}
+                href={
+                  instagramUrl.startsWith("http")
+                    ? instagramUrl
+                    : `https://instagram.com/${instagramUrl.replace(/^@/, "")}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-11 h-11 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-zinc-600 transition-colors"
@@ -65,7 +104,12 @@ export default function Footer({ locale, t, storeName = "May's Shop", hideBrandi
                 className="w-11 h-11 rounded-full bg-zinc-700 dark:bg-zinc-600 flex items-center justify-center hover:bg-[#25D366] transition-colors"
                 aria-label="WhatsApp"
               >
-                <svg viewBox="0 0 32 32" className="h-5 w-5 text-white" fill="currentColor" aria-hidden="true">
+                <svg
+                  viewBox="0 0 32 32"
+                  className="h-5 w-5 text-white"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <path d="M16 2.4c-7.5 0-13.6 6.1-13.6 13.6 0 2.4.6 4.8 1.8 6.9L2 30l7.3-2.1c2 1.1 4.3 1.7 6.7 1.7 7.5 0 13.6-6.1 13.6-13.6S23.5 2.4 16 2.4zm7.9 19.1c-.3.9-1.5 1.6-2.5 1.8-.7.1-1.6.2-4.7-.9-4.2-1.5-6.8-5.2-7-5.5-.2-.3-1.7-2.2-1.7-4.2s1-3 1.3-3.4c.3-.4.7-.5 1-.5h.7c.2 0 .5 0 .7.6.3.7.9 2.4 1 2.6.1.2.1.4 0 .6-.1.2-.2.4-.4.6-.2.2-.4.4-.5.5-.2.2-.4.4-.2.7.2.3.9 1.5 1.9 2.4 1.3 1.2 2.5 1.6 2.9 1.8.4.2.6.2.8 0 .2-.2 1-1.1 1.3-1.5.3-.4.5-.3.9-.2.4.1 2.5 1.2 2.9 1.4.4.2.7.3.8.5.1.2.1.9-.2 1.8z" />
                 </svg>
               </a>

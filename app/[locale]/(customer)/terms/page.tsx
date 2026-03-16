@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import type { Locale } from "@/lib/i18n";
 import { getStoreName } from "@/lib/get-store-name";
+import { getTenantInfo } from "@/lib/get-tenant-info";
 
 export async function generateMetadata({
   params,
@@ -25,8 +25,117 @@ export default async function TermsPage({
 }) {
   const { locale } = await params;
   const storeName = await getStoreName();
+  const tenant = await getTenantInfo();
   const isZh = locale === "zh-HK";
 
+  // Bull Kicks / non-default tenants: English-only terms
+  if (tenant.slug !== "maysshop") {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 pb-32">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-6">
+          Terms of Service
+        </h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">
+          Last updated: 17 March 2026
+        </p>
+
+        <div className="prose prose-zinc dark:prose-invert prose-sm max-w-none space-y-6">
+          <section>
+            <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+              1. Introduction
+            </h2>
+            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              Welcome to {storeName} (the &ldquo;Store&rdquo;). By accessing or
+              using this Store, you agree to be bound by these Terms of Service.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+              2. Products &amp; Authenticity
+            </h2>
+            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              All products sold through {storeName} are authenticated before
+              shipping. We guarantee authenticity and provide a Certificate of
+              Authenticity with each order.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+              3. Orders &amp; Payments
+            </h2>
+            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              All orders are subject to confirmation. We reserve the right to
+              refuse or cancel orders due to stock unavailability or pricing
+              errors. Payment is processed securely via our payment providers.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+              4. Shipping &amp; Delivery
+            </h2>
+            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              All orders ship from Hong Kong. Import duties and VAT are the
+              buyer&apos;s responsibility. See our Shipping Policy page for
+              details on shipping options and delivery times.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+              5. Returns &amp; Refunds
+            </h2>
+            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              All items are final sale due to their limited-edition nature.
+              Returns are accepted only for wrong item or wrong size shipped.
+              See our Returns Policy page for full details.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+              6. Intellectual Property
+            </h2>
+            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              All content on this Store, including text, images, logos, and
+              designs, is protected by intellectual property laws. Unauthorised
+              reproduction or distribution is prohibited.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+              7. Disclaimer
+            </h2>
+            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              The Store is provided on an &ldquo;as is&rdquo; basis. We do not
+              guarantee uninterrupted or error-free service. To the fullest
+              extent permitted by law, we shall not be liable for any indirect
+              or consequential losses.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+              8. Contact Us
+            </h2>
+            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+              If you have any questions about these Terms, please contact us via
+              WhatsApp or email. See our Contact page for details.
+            </p>
+          </section>
+
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            {storeName} is operated independently. Powered by Wowlix.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // maysshop — original bilingual content
   if (isZh) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 pb-32">

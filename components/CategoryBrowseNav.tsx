@@ -10,7 +10,13 @@ type Category = {
   name: string;
   slug: string;
   imageUrl: string | null;
-  children: { id: string; name: string; slug: string }[];
+  _count?: { products: number };
+  children: {
+    id: string;
+    name: string;
+    slug: string;
+    _count?: { products: number };
+  }[];
 };
 
 type CategoryBrowseNavProps = {
@@ -27,7 +33,18 @@ export default function CategoryBrowseNav({ locale }: CategoryBrowseNavProps) {
       .then((r) => r.json())
       .then((res) => {
         if (res?.ok && res.data?.categories) {
-          setCategories(res.data.categories);
+          // Filter out categories with no visible products
+          const withProducts = (res.data.categories as Category[]).filter(
+            (cat) => {
+              const own = cat._count?.products ?? 0;
+              const childTotal = cat.children.reduce(
+                (sum, c) => sum + (c._count?.products ?? 0),
+                0,
+              );
+              return own + childTotal > 0;
+            },
+          );
+          setCategories(withProducts);
         }
       })
       .catch(() => {});
@@ -61,7 +78,11 @@ export default function CategoryBrowseNav({ locale }: CategoryBrowseNavProps) {
                         ? "text-white"
                         : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                     }`}
-                    style={isActive ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
+                    style={
+                      isActive
+                        ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" }
+                        : undefined
+                    }
                   >
                     {cat.name}
                   </Link>
@@ -77,7 +98,12 @@ export default function CategoryBrowseNav({ locale }: CategoryBrowseNavProps) {
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                   )}
@@ -98,7 +124,14 @@ export default function CategoryBrowseNav({ locale }: CategoryBrowseNavProps) {
                               ? "text-white"
                               : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
                           }`}
-                          style={isChildActive ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" } : undefined}
+                          style={
+                            isChildActive
+                              ? {
+                                  backgroundColor:
+                                    "var(--tmpl-accent, #2D6A4F)",
+                                }
+                              : undefined
+                          }
                         >
                           {child.name}
                         </Link>

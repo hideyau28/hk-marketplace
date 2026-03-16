@@ -18,6 +18,8 @@ type NotifyOrderData = {
   total: number;
   paymentProofUrl?: string | null;
   deliveryAddress?: string | null;
+  currency?: string;
+  languages?: string[];
 };
 
 /**
@@ -26,25 +28,27 @@ type NotifyOrderData = {
  */
 export function buildMerchantNotifyUrl(
   merchantWhatsApp: string,
-  order: NotifyOrderData
+  order: NotifyOrderData,
 ): string {
+  const isZh = (order.languages || ["zh-HK"]).includes("zh-HK");
+  const currencySymbol = order.currency === "USD" ? "US$" : "$";
+
   const items = order.items
     .map(
       (i) =>
-        `· ${i.name} × ${i.qty} — $${(i.unitPrice * i.qty).toLocaleString("en-HK")}`
+        `· ${i.name} × ${i.qty} — ${currencySymbol}${(i.unitPrice * i.qty).toLocaleString()}`,
     )
     .join("\n");
 
   const paymentLabel =
     order.paymentMethod === "fps"
-      ? "FPS 轉帳"
+      ? (isZh ? "FPS 轉帳" : "FPS Transfer")
       : order.paymentMethod === "payme"
         ? "PayMe"
-        : "信用卡";
+        : (isZh ? "信用卡" : "Credit Card");
 
-  const addressLine = order.deliveryAddress ? `\n送貨地址：${order.deliveryAddress}` : "";
-
-  const message = `Hi! 我已落單，以下係訂單資料：
+  const message = isZh
+    ? `Hi! 我已落單，以下係訂單資料：
 
 訂單：#${order.orderNumber}
 姓名：${order.customer.name}
@@ -53,9 +57,21 @@ export function buildMerchantNotifyUrl(
 商品：
 ${items}
 
-送貨：${order.deliveryLabel}${addressLine}
+送貨：${order.deliveryLabel}${order.deliveryAddress ? `\n送貨地址：${order.deliveryAddress}` : ""}
 付款：${paymentLabel}
-合計：$${order.total.toLocaleString("en-HK")}${order.paymentProofUrl ? `\n付款截圖：${order.paymentProofUrl}` : ""}`;
+合計：$${order.total.toLocaleString("en-HK")}${order.paymentProofUrl ? `\n付款截圖：${order.paymentProofUrl}` : ""}`
+    : `Hi! I've placed an order. Details below:
+
+Order: #${order.orderNumber}
+Name: ${order.customer.name}
+Phone: ${order.customer.phone}
+
+Items:
+${items}
+
+Delivery: ${order.deliveryLabel}${order.deliveryAddress ? `\nAddress: ${order.deliveryAddress}` : ""}
+Payment: ${paymentLabel}
+Total: ${currencySymbol}${order.total.toLocaleString()}${order.paymentProofUrl ? `\nPayment proof: ${order.paymentProofUrl}` : ""}`;
 
   const encoded = encodeURIComponent(message);
   const phone = merchantWhatsApp.replace(/\D/g, "");

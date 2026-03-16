@@ -91,6 +91,8 @@ export type TenantForBioLink = {
   stripeOnboarded: boolean;
   // Checkout settings
   currency: string;
+  region?: string;
+  languages?: string[];
   deliveryOptions: DeliveryOption[];
   freeShippingThreshold: number | null;
   orderConfirmMessage: OrderConfirmConfig;
@@ -169,17 +171,23 @@ export function getDualVariantData(
   return null;
 }
 
-export function getVariantLabel(product: ProductForBioLink): string {
+export function getVariantLabel(
+  product: ProductForBioLink,
+  languages?: string[],
+): string {
+  const isZh = (languages || ["zh-HK"]).includes("zh-HK");
   // 雙維 — 用第二維嘅名做 label
   if (isDualVariant(product.sizes))
-    return product.sizes.dimensions[1] || "款式";
+    return product.sizes.dimensions[1] || (isZh ? "款式" : "Style");
   // If has ProductVariant relation, generic label
-  if (product.variants && product.variants.length > 0) return "款式";
+  if (product.variants && product.variants.length > 0)
+    return isZh ? "款式" : "Style";
   // 用 sizeSystem 做 label（商戶自訂選項名稱）
   if (product.sizeSystem) return product.sizeSystem;
   // Fallback: if has sizes, use generic label
-  if (product.sizes && Object.keys(product.sizes).length > 0) return "尺碼";
-  return "款式";
+  if (product.sizes && Object.keys(product.sizes).length > 0)
+    return isZh ? "尺碼" : "Size";
+  return isZh ? "款式" : "Style";
 }
 
 export function isSoldOut(product: ProductForBioLink): boolean {
@@ -265,6 +273,7 @@ export function getAvatarFallback(tenant: { name: string }): string {
 
 const CURRENCIES: Record<string, { symbol: string; code: string }> = {
   HKD: { symbol: "$", code: "HKD" },
+  USD: { symbol: "US$", code: "USD" },
   TWD: { symbol: "NT$", code: "TWD" },
   SGD: { symbol: "S$", code: "SGD" },
   MYR: { symbol: "RM", code: "MYR" },

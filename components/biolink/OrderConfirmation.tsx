@@ -43,19 +43,24 @@ type Props = {
   order: OrderResult;
   onClose: () => void;
   orderConfirmMessage?: OrderConfirmConfig;
+  languages?: string[];
 };
 
 export default function OrderConfirmation({
   order,
   onClose,
   orderConfirmMessage,
+  languages,
 }: Props) {
   const tmpl = useTemplate();
   const pathname = usePathname();
   const currency = order.currency || "HKD";
+  const isZh = (languages || ["zh-HK"]).includes("zh-HK");
   const config = orderConfirmMessage || {
-    thanks: "多謝訂購！",
-    whatsappTemplate: "你好！我落咗單 #{orderNumber}",
+    thanks: isZh ? "多謝訂購！" : "Thank you for your order!",
+    whatsappTemplate: isZh
+      ? "你好！我落咗單 #{orderNumber}"
+      : "Hi! I just placed order #{orderNumber}",
   };
 
   // Build WhatsApp link using tenant's custom template
@@ -142,13 +147,20 @@ export default function OrderConfirmation({
               {config.thanks}
             </h2>
             <p className="text-sm mt-1" style={{ color: tmpl.subtext }}>
-              訂單編號：{order.orderNumber}
+              {isZh ? "訂單編號：" : "Order #"}
+              {order.orderNumber}
             </p>
             <p
               className="text-xs mt-0.5"
               style={{ color: `${tmpl.subtext}99` }}
             >
-              {hasPaymentProof ? "狀態：等待商戶確認" : "狀態：待確認付款"}
+              {hasPaymentProof
+                ? isZh
+                  ? "狀態：等待商戶確認"
+                  : "Status: Awaiting confirmation"
+                : isZh
+                  ? "狀態：待確認付款"
+                  : "Status: Pending payment"}
             </p>
           </div>
 
@@ -189,7 +201,9 @@ export default function OrderConfirmation({
               >
                 {order.delivery && (
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span style={{ color: tmpl.subtext }}>送貨方式</span>
+                    <span style={{ color: tmpl.subtext }}>
+                      {isZh ? "送貨方式" : "Delivery"}
+                    </span>
                     <span style={{ color: `${tmpl.text}B3` }}>
                       {order.delivery.label}
                     </span>
@@ -197,7 +211,9 @@ export default function OrderConfirmation({
                 )}
                 {order.delivery?.address && (
                   <div className="flex items-start justify-between text-sm mb-1">
-                    <span style={{ color: tmpl.subtext }}>送貨地址</span>
+                    <span style={{ color: tmpl.subtext }}>
+                      {isZh ? "送貨地址" : "Address"}
+                    </span>
                     <span
                       className="text-right max-w-[60%]"
                       style={{ color: `${tmpl.text}B3` }}
@@ -208,7 +224,9 @@ export default function OrderConfirmation({
                 )}
                 {order.delivery?.fee != null && order.delivery.fee > 0 && (
                   <div className="flex items-center justify-between text-sm mb-1">
-                    <span style={{ color: tmpl.subtext }}>運費</span>
+                    <span style={{ color: tmpl.subtext }}>
+                      {isZh ? "運費" : "Shipping"}
+                    </span>
                     <span style={{ color: `${tmpl.text}B3` }}>
                       {formatPrice(order.delivery.fee, currency)}
                     </span>
@@ -216,7 +234,7 @@ export default function OrderConfirmation({
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm" style={{ color: tmpl.subtext }}>
-                    合計
+                    {isZh ? "合計" : "Total"}
                   </span>
                   <span
                     className="font-bold text-lg"
@@ -258,10 +276,14 @@ export default function OrderConfirmation({
                 </svg>
               </div>
               <p className="text-sm font-medium" style={{ color: tmpl.text }}>
-                訂單已提交，等待商戶確認
+                {isZh
+                  ? "訂單已提交，等待商戶確認"
+                  : "Order submitted, awaiting confirmation"}
               </p>
               <p className="text-xs mt-1" style={{ color: tmpl.subtext }}>
-                商戶收到你嘅付款截圖後會確認訂單
+                {isZh
+                  ? "商戶收到你嘅付款截圖後會確認訂單"
+                  : "The merchant will confirm your order after reviewing your payment"}
               </p>
             </div>
           )}
@@ -279,11 +301,11 @@ export default function OrderConfirmation({
                 className="text-sm font-medium text-center mb-4"
                 style={{ color: tmpl.text }}
               >
-                請用 FPS 轉帳{" "}
+                {isZh ? "請用 FPS 轉帳" : "Please transfer via FPS"}{" "}
                 <span className="font-bold" style={{ color: tmpl.accent }}>
                   {formatPrice(order.total, currency)}
-                </span>{" "}
-                到：
+                </span>
+                {isZh ? " 到：" : ":"}
               </p>
 
               {order.fpsInfo.qrCode && (
@@ -317,7 +339,7 @@ export default function OrderConfirmation({
                   className="text-center text-sm mt-1"
                   style={{ color: `${tmpl.text}B3` }}
                 >
-                  收款人:{" "}
+                  {isZh ? "收款人:" : "Recipient:"}{" "}
                   <span className="font-medium" style={{ color: tmpl.text }}>
                     {order.fpsInfo.accountName}
                   </span>
@@ -339,7 +361,7 @@ export default function OrderConfirmation({
                 className="text-sm font-medium text-center mb-4"
                 style={{ color: tmpl.text }}
               >
-                請用 PayMe 付款{" "}
+                {isZh ? "請用 PayMe 付款" : "Please pay via PayMe"}{" "}
                 <span className="font-bold" style={{ color: tmpl.accent }}>
                   {formatPrice(order.total, currency)}
                 </span>
@@ -364,7 +386,7 @@ export default function OrderConfirmation({
                   rel="noreferrer"
                   className="block w-full py-3 rounded-xl bg-[#EC1C24] text-white font-bold text-sm text-center active:scale-[0.98] transition-transform"
                 >
-                  打開 PayMe
+                  {isZh ? "打開 PayMe" : "Open PayMe"}
                 </a>
               )}
             </div>
@@ -380,7 +402,9 @@ export default function OrderConfirmation({
               }}
             >
               <p className="text-sm" style={{ color: tmpl.subtext }}>
-                請 WhatsApp 聯絡店主完成付款
+                {isZh
+                  ? "請 WhatsApp 聯絡店主完成付款"
+                  : "Please contact the store via WhatsApp to complete payment"}
               </p>
             </div>
           )}
@@ -397,7 +421,7 @@ export default function OrderConfirmation({
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
                 <path d="M12 0C5.373 0 0 5.373 0 12c0 2.118.553 4.107 1.518 5.833L0 24l6.334-1.476A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6c-1.876 0-3.653-.502-5.18-1.38l-.37-.22-3.849.898.975-3.562-.242-.384A9.543 9.543 0 012.4 12c0-5.302 4.298-9.6 9.6-9.6s9.6 4.298 9.6 9.6-4.298 9.6-9.6 9.6z" />
               </svg>
-              💬 WhatsApp 聯絡店主
+              {isZh ? "💬 WhatsApp 聯絡店主" : "💬 WhatsApp Store"}
             </a>
           )}
 
@@ -410,7 +434,7 @@ export default function OrderConfirmation({
               color: tmpl.accent,
             }}
           >
-            📦 追蹤訂單
+            {isZh ? "📦 追蹤訂單" : "📦 Track Order"}
           </a>
 
           {/* Continue shopping button */}
@@ -422,7 +446,7 @@ export default function OrderConfirmation({
               color: `${tmpl.text}CC`,
             }}
           >
-            🛍️ 繼續購物
+            {isZh ? "🛍️ 繼續購物" : "🛍️ Continue Shopping"}
           </button>
         </div>
       </div>

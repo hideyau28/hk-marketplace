@@ -10,6 +10,7 @@ type Props = {
   onClose: () => void;
   items: BioCartItem[];
   currency: string;
+  languages?: string[];
   freeShippingThreshold: number | null;
   onUpdateQty: (
     productId: string,
@@ -26,6 +27,7 @@ export default function CartSheet({
   onClose,
   items,
   currency,
+  languages,
   freeShippingThreshold,
   onUpdateQty,
   onRemoveItem,
@@ -33,6 +35,7 @@ export default function CartSheet({
   onCheckout,
 }: Props) {
   const tmpl = useTemplate();
+  const isZh = (languages || ["zh-HK"]).includes("zh-HK");
 
   if (!open) return null;
 
@@ -76,11 +79,11 @@ export default function CartSheet({
         >
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-base" style={{ color: tmpl.text }}>
-              購物車（{cartCount} 件）
+              {isZh ? `購物車（${cartCount} 件）` : `Cart (${cartCount})`}
             </h2>
             <button
               onClick={onClose}
-              aria-label="關閉購物車"
+              aria-label={isZh ? "關閉購物車" : "Close cart"}
               className="w-8 h-8 rounded-full flex items-center justify-center text-sm hover:opacity-80 transition"
               style={{
                 backgroundColor: tmpl.subtext + "20",
@@ -132,7 +135,7 @@ export default function CartSheet({
                         onUpdateQty(item.productId, item.variant, -1)
                       }
                       aria-label="減少數量"
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold hover:opacity-80 active:scale-95 transition"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold hover:opacity-80 active:scale-95 transition"
                       style={{
                         backgroundColor: tmpl.subtext + "20",
                         color: tmpl.subtext,
@@ -151,7 +154,7 @@ export default function CartSheet({
                         onUpdateQty(item.productId, item.variant, 1)
                       }
                       aria-label="增加數量"
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold hover:opacity-80 active:scale-95 transition"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold hover:opacity-80 active:scale-95 transition"
                       style={{
                         backgroundColor: tmpl.subtext + "20",
                         color: tmpl.subtext,
@@ -188,7 +191,7 @@ export default function CartSheet({
           >
             <div className="flex items-center justify-between">
               <span className="text-sm" style={{ color: tmpl.subtext }}>
-                小計
+                {isZh ? "小計" : "Subtotal"}
               </span>
               <span className="text-lg font-bold" style={{ color: tmpl.text }}>
                 {formatPrice(cartTotal, currency)}
@@ -201,13 +204,17 @@ export default function CartSheet({
             <div className="mt-3">
               {freeShippingReached ? (
                 <p className="text-sm text-green-400 font-medium">
-                  🎉 滿 {formatPrice(freeShippingThreshold, currency)} 免運費！
+                  {isZh
+                    ? `🎉 滿 ${formatPrice(freeShippingThreshold, currency)} 免運費！`
+                    : `🎉 Free shipping on orders over ${formatPrice(freeShippingThreshold, currency)}!`}
                 </p>
               ) : (
                 freeShippingDiff != null &&
                 freeShippingDiff > 0 && (
                   <p className="text-sm" style={{ color: tmpl.subtext }}>
-                    仲差 {formatPrice(freeShippingDiff, currency)} 就免運費
+                    {isZh
+                      ? `仲差 ${formatPrice(freeShippingDiff, currency)} 就免運費`
+                      : `${formatPrice(freeShippingDiff, currency)} away from free shipping`}
                   </p>
                 )
               )}
@@ -220,7 +227,7 @@ export default function CartSheet({
             className="mt-5 w-full py-4 rounded-2xl font-bold text-base active:scale-[0.98] transition-transform"
             style={{ backgroundColor: tmpl.accent, color: tmpl.text }}
           >
-            去結帳　{formatPrice(cartTotal, currency)}
+            {isZh ? "去結帳" : "Checkout"}　{formatPrice(cartTotal, currency)}
           </button>
 
           {/* Clear cart */}
@@ -229,7 +236,7 @@ export default function CartSheet({
             className="mt-3 w-full py-2.5 text-sm font-medium hover:opacity-70 transition-colors"
             style={{ color: tmpl.subtext }}
           >
-            🗑️ 清空購物車
+            {isZh ? "🗑️ 清空購物車" : "🗑️ Clear Cart"}
           </button>
         </div>
       </div>

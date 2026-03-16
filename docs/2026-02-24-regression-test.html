@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<title>Regression Test Report — 2026-02-24</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 960px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.7; }
+  h1 { border-bottom: 3px solid #FF9500; padding-bottom: 8px; }
+  h2 { color: #FF9500; margin-top: 40px; }
+  h3 { margin-top: 24px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; font-size: 14px; }
+  th { background: #f5f5f5; font-weight: 600; }
+  .pass { color: #16a34a; font-weight: 700; }
+  .fail { color: #dc2626; font-weight: 700; }
+  .warn { color: #d97706; font-weight: 700; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+  .badge-pass { background: #dcfce7; color: #16a34a; }
+  .badge-warn { background: #fef3c7; color: #d97706; }
+  .badge-fail { background: #fecaca; color: #dc2626; }
+  code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  .score-up { color: #16a34a; }
+  .score-same { color: #999; }
+  .summary-box { background: #f0fdf4; border: 2px solid #16a34a; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; }
+  .summary-box h2 { color: #16a34a; margin: 0 0 8px; }
+  pre { background: #f9fafb; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>Regression Test Report — 2026-02-24</h1>
+<p>Post-PR #270–#307 smoke check (35 PRs).</p>
+
+<!-- ═══════════ 1. BUILD ═══════════ -->
+<h2>1. Build Check</h2>
+<table>
+  <tr><th>Item</th><th>Result</th><th>Notes</th></tr>
+  <tr><td><code>npm run ci:build</code></td><td class="pass">&#9989; 0 errors, 0 type errors</td><td></td></tr>
+  <tr><td>Prisma generate</td><td class="pass">&#9989; OK</td><td></td></tr>
+  <tr><td>Static pages (75/75)</td><td class="pass">&#9989; OK</td><td>~70ms generation</td></tr>
+  <tr><td>Build time</td><td class="pass">&#9989; ~4.8s compile</td><td></td></tr>
+</table>
+
+<p><span class="badge badge-pass">&#9989; PASS</span></p>
+
+<!-- ═══════════ 2. DEMO STORES ═══════════ -->
+<h2>2. Demo Store Smoke Tests</h2>
+
+<h3>2.1 HYPEDROPS <code>/hypedrops</code></h3>
+<table>
+  <tr><th>Check</th><th>Result</th><th>Notes</th></tr>
+  <tr><td>HTTP status</td><td class="pass">200 OK</td><td></td></tr>
+  <tr><td>Broken images</td><td class="pass">0</td><td>All 7 product images render</td></tr>
+  <tr><td>Template bg</td><td class="pass">rgb(13,13,13) dark</td><td>Correct — Midnight template</td></tr>
+  <tr><td>Template font</td><td class="pass">Inter</td><td></td></tr>
+  <tr><td>Product count</td><td class="pass">7 products</td><td></td></tr>
+  <tr><td>Search bar</td><td class="pass">Hidden</td><td>Correct — &lt;10 products</td></tr>
+  <tr><td>Category filters</td><td class="pass">Visible</td><td>全部/波鞋/衛衣/褲/配件/Tee</td></tr>
+  <tr><td>Badges</td><td class="pass">-11%, NEW, 剩3件</td><td>All render correctly</td></tr>
+  <tr><td>Console errors</td><td class="warn">1</td><td>RSC prefetch 404 — non-critical</td></tr>
+</table>
+<p><span class="badge badge-pass">&#9989; PASS</span></p>
+
+<h3>2.2 日和雜貨 <code>/nichiyori</code></h3>
+<table>
+  <tr><th>Check</th><th>Result</th><th>Notes</th></tr>
+  <tr><td>HTTP status</td><td class="pass">200 OK</td><td></td></tr>
+  <tr><td>Broken images</td><td class="warn">1 — Cover photo</td><td>Unsplash URL 404</td></tr>
+  <tr><td>Template bg</td><td class="pass">rgb(250,247,242) warm</td><td>Correct — Linen template</td></tr>
+  <tr><td>Template font</td><td class="pass">Lato</td><td></td></tr>
+  <tr><td>Product count</td><td class="pass">6 products</td><td></td></tr>
+  <tr><td>Search bar</td><td class="pass">Hidden</td><td>Correct — &lt;10 products</td></tr>
+  <tr><td>Product 1 (乾花花束)</td><td class="warn">Missing image</td><td>No image uploaded in admin</td></tr>
+  <tr><td>Product 2 (手捏陶瓷杯)</td><td class="pass">Image renders</td><td></td></tr>
+  <tr><td>Console errors</td><td class="warn">2</td><td>Cover photo 404 + RSC</td></tr>
+</table>
+<p><span class="badge badge-warn">&#9888; WARNING — store data issues (cover photo + 1 product image)</span></p>
+
+<h3>2.3 綠日 Green Day <code>/greenday</code></h3>
+<table>
+  <tr><th>Check</th><th>Result</th><th>Notes</th></tr>
+  <tr><td>HTTP status</td><td class="pass">200 OK</td><td></td></tr>
+  <tr><td>Broken images</td><td class="pass">0</td><td>All product images render</td></tr>
+  <tr><td>Template bg</td><td class="pass">rgb(255,255,255) white</td><td>Correct — Nature template</td></tr>
+  <tr><td>Template font</td><td class="pass">Inter</td><td></td></tr>
+  <tr><td>Product count</td><td class="pass">7 products</td><td></td></tr>
+  <tr><td>Search bar</td><td class="pass">Hidden</td><td>Correct — &lt;10 products</td></tr>
+  <tr><td>Cover photo</td><td class="pass">Beautiful fruit/veg</td><td></td></tr>
+  <tr><td>Category filters</td><td class="pass">Visible</td><td>全部/茶/穀物/小食/油/超級食</td></tr>
+  <tr><td>Console errors</td><td class="warn">2</td><td>RSC prefetch — non-critical</td></tr>
+</table>
+<p><span class="badge badge-pass">&#9989; PASS</span></p>
+
+<h3>2.4 花語甜室 Petit Fleur <code>/petitfleur</code></h3>
+<table>
+  <tr><th>Check</th><th>Result</th><th>Notes</th></tr>
+  <tr><td>HTTP status</td><td class="pass">200 OK</td><td></td></tr>
+  <tr><td>Broken images</td><td class="pass">0</td><td>All 8 products perfect</td></tr>
+  <tr><td>Template bg</td><td class="pass">rgb(253,242,244) pink</td><td>Correct — Blossom template</td></tr>
+  <tr><td>Template font</td><td class="pass">Lato</td><td></td></tr>
+  <tr><td>Product count</td><td class="pass">8 products</td><td></td></tr>
+  <tr><td>Search bar</td><td class="pass">Hidden</td><td>Correct — &lt;10 products</td></tr>
+  <tr><td>Badges</td><td class="pass">NEW + -15%</td><td>Renders correctly</td></tr>
+  <tr><td>Console errors</td><td class="pass">0</td><td>Cleanest store</td></tr>
+</table>
+<p><span class="badge badge-pass">&#9989; PASS — best performing store</span></p>
+
+<!-- ═══════════ 3. LANDING + PRICING ═══════════ -->
+<h2>3. Landing + Pricing Page</h2>
+
+<h3>3.1 Landing Page <code>/</code></h3>
+<table>
+  <tr><th>Feature</th><th>Result</th><th>Notes</th></tr>
+  <tr><td>Page loads</td><td class="pass">200 OK</td><td></td></tr>
+  <tr><td>Hero headline</td><td class="pass">&#9989;</td><td>"一條 Link 將 Follower 變成生意"</td></tr>
+  <tr><td>Hero badge</td><td class="pass">&#9989;</td><td>"專為香港 IG 店主而設"</td></tr>
+  <tr><td>Trust badges</td><td class="pass">&#9989;</td><td>0% 佣金 / 免費開始 / 2 分鐘開店</td></tr>
+  <tr><td>CTA buttons</td><td class="pass">&#9989;</td><td>"免費開店 →" + "睇定價"</td></tr>
+  <tr><td>Phone mockup carousel</td><td class="pass">&#9989;</td><td>Real demo store screenshots rotate every 4s</td></tr>
+  <tr><td>Floating notifications</td><td class="pass">&#9989;</td><td>"新訂單!" / "PayMe 待確認" / "新訂單 +1"</td></tr>
+  <tr><td>Dot indicators</td><td class="pass">&#9989;</td><td>4 dots below phone frame</td></tr>
+  <tr><td>Console errors</td><td class="pass">0</td><td></td></tr>
+  <tr><td>Broken images</td><td class="pass">0</td><td></td></tr>
+</table>
+<p><span class="badge badge-pass">&#9989; PASS</span></p>
+
+<h3>3.2 Pricing Page <code>/zh-HK/pricing</code></h3>
+<table>
+  <tr><th>Feature</th><th>Result</th><th>Notes</th></tr>
+  <tr><td>Page loads</td><td class="pass">200 OK</td><td></td></tr>
+  <tr><td>Nav bar</td><td class="pass">&#9989;</td><td>WoWlix logo + 繁/EN + 免費開店</td></tr>
+  <tr><td>Hero badges</td><td class="pass">&#9989;</td><td>0% 平台抽成 / $0 起 / 2 分鐘開店 with icons</td></tr>
+  <tr><td>3-Step mini flow</td><td class="pass">&#9989;</td><td>上貨 / 分享 Link / 收單</td></tr>
+  <tr><td>Plan cards (3)</td><td class="pass">&#9989;</td><td>Free / Lite / Pro</td></tr>
+  <tr><td>"Most popular" badge</td><td class="pass">&#9989;</td><td>Pro card — "★ 最受歡迎 ★" with glow</td></tr>
+  <tr><td>Calculator</td><td class="pass">&#9989;</td><td>Slider + bar chart renders</td></tr>
+  <tr><td>4 Theme demo cards</td><td class="pass">&#9989;</td><td>All 4 screenshot thumbnails render</td></tr>
+  <tr><td>Feature table</td><td class="pass">&#9989;</td><td>Checkmarks render</td></tr>
+  <tr><td>FAQ</td><td class="pass">&#9989;</td><td></td></tr>
+  <tr><td>Console errors</td><td class="pass">0</td><td></td></tr>
+  <tr><td>Broken images</td><td class="pass">0</td><td></td></tr>
+</table>
+<p><span class="badge badge-pass">&#9989; PASS</span></p>
+
+<!-- ═══════════ 4. CHECKOUT ═══════════ -->
+<h2>4. Checkout Flow</h2>
+<p>Store: 花語甜室 (petitfleur)</p>
+<table>
+  <tr><th>Step</th><th>Result</th><th>Notes</th></tr>
+  <tr><td>Tap + on 法式馬卡龍</td><td class="pass">&#9989;</td><td>Product added</td></tr>
+  <tr><td>"已加入購物車" toast</td><td class="pass">&#9989;</td><td>Toast appears at bottom</td></tr>
+  <tr><td>Cart bar appears</td><td class="pass">&#9989;</td><td>Shows "1 &middot; $328" + "結帳"</td></tr>
+  <tr><td>Cart count badge</td><td class="pass">&#9989;</td><td>"1" on cart icon</td></tr>
+  <tr><td>Console errors</td><td class="pass">0</td><td></td></tr>
+</table>
+<p><em>Stopped at cart bar (did not submit order).</em></p>
+<p><span class="badge badge-pass">&#9989; PASS</span></p>
+
+<!-- ═══════════ 5. CONSOLE AUDIT ═══════════ -->
+<h2>5. Console Error Audit</h2>
+
+<h3>Summary</h3>
+<table>
+  <tr><th>Page</th><th>Errors</th><th>Warnings</th><th>Severity</th></tr>
+  <tr><td>hypedrops</td><td>1</td><td>0</td><td>Low — RSC prefetch</td></tr>
+  <tr><td>nichiyori</td><td>2</td><td>0</td><td>Medium — cover photo 404</td></tr>
+  <tr><td>greenday</td><td>2</td><td>0</td><td>Low — RSC prefetch</td></tr>
+  <tr><td>petitfleur</td><td>0</td><td>0</td><td class="pass">Clean</td></tr>
+  <tr><td>Landing</td><td>0</td><td>0</td><td class="pass">Clean</td></tr>
+  <tr><td>Pricing</td><td>0</td><td>0</td><td class="pass">Clean</td></tr>
+  <tr><td>Checkout</td><td>0</td><td>0</td><td class="pass">Clean</td></tr>
+</table>
+
+<h3>Critical (affects functionality)</h3>
+<p><strong>None.</strong></p>
+
+<h3>Warnings (non-critical)</h3>
+<table>
+  <tr><th>Issue</th><th>Pages</th><th>Action</th></tr>
+  <tr><td>RSC <code>_rsc=</code> prefetch 404 + ERR_ABORTED</td><td>hypedrops, nichiyori, greenday</td><td>Next.js internal — safe to ignore</td></tr>
+  <tr><td>Cover photo 404 (nichiyori)</td><td>nichiyori</td><td><strong>Fix in admin:</strong> update cover photo URL</td></tr>
+  <tr><td>Product image missing (乾花花束)</td><td>nichiyori</td><td><strong>Fix in admin:</strong> upload product image</td></tr>
+</table>
+
+<!-- ═══════════ 6. SCORECARD ═══════════ -->
+<h2>6. Updated Store Scorecard</h2>
+
+<h3>Screenshots saved to <code>screenshots/regression/</code></h3>
+<pre>
+hypedrops.png / hypedrops-full.png
+nichiyori.png / nichiyori-full.png
+greenday.png  / greenday-full.png
+petitfleur.png / petitfleur-full.png
+landing.png / landing-v2.png (with carousel)
+pricing.png / pricing-themes.png
+checkout-1-added.png / checkout-2-cart.png
+</pre>
+
+<h3>Score Comparison (Previous → Current)</h3>
+<table>
+  <tr><th>Store</th><th>Brand</th><th>Images</th><th>Template</th><th>Overall</th><th>Change</th><th>Level</th></tr>
+  <tr>
+    <td><strong>HYPEDROPS</strong></td>
+    <td>9/10</td><td>7→<strong>8</strong>/10</td><td>8→<strong>9</strong>/10</td>
+    <td><strong>8.7/10</strong></td>
+    <td class="score-up">+0.7</td><td>Shopify-tier</td>
+  </tr>
+  <tr>
+    <td><strong>日和雜貨</strong></td>
+    <td>8/10</td><td>5/10</td><td>7/10</td>
+    <td><strong>6.5/10</strong></td>
+    <td class="score-same">+0.0</td><td>Pinkoi-tier</td>
+  </tr>
+  <tr>
+    <td><strong>綠日 Green Day</strong></td>
+    <td>6→<strong>7</strong>/10</td><td>4→<strong>7</strong>/10</td><td>6→<strong>7</strong>/10</td>
+    <td><strong>7.0/10</strong></td>
+    <td class="score-up">+2.0</td><td>SHOPLINE-tier</td>
+  </tr>
+  <tr>
+    <td><strong>花語甜室</strong></td>
+    <td>9/10</td><td>9/10</td><td>7→<strong>9</strong>/10</td>
+    <td><strong>9.0/10</strong></td>
+    <td class="score-up">+0.5</td><td>Premium</td>
+  </tr>
+</table>
+
+<h4>Score Changes Explained</h4>
+<ul>
+  <li><strong>HYPEDROPS (+0.7)</strong>: All images sharp, category filters visible, dark theme polished. Template consistency improved.</li>
+  <li><strong>日和雜貨 (+0.0)</strong>: Cover photo still broken, 1 product still missing image. Store data issues — code works correctly.</li>
+  <li><strong>綠日 Green Day (+2.0)</strong>: Biggest improvement. All product images loading, beautiful cover photo, category filters. Was "below SHOPLINE", now SHOPLINE-tier.</li>
+  <li><strong>花語甜室 (+0.5)</strong>: Already excellent. Search bar removal = cleaner layout. Badges (NEW, -15%) perfect.</li>
+</ul>
+
+<!-- ═══════════ SUMMARY ═══════════ -->
+<div class="summary-box">
+  <h2>Overall: &#9989; PASS</h2>
+  <p><strong>0 critical issues. 0 code bugs found.</strong></p>
+  <p>2 store data issues on nichiyori (admin panel fix, not code).</p>
+</div>
+
+<h3>Recommended Follow-ups</h3>
+<table>
+  <tr><th>Priority</th><th>Action</th></tr>
+  <tr><td><strong>P1</strong></td><td>Fix nichiyori cover photo — replace dead Unsplash URL in admin panel</td></tr>
+  <tr><td><strong>P1</strong></td><td>Upload product image for nichiyori 乾花花束</td></tr>
+  <tr><td><strong>P2</strong></td><td>Investigate RSC prefetch 404s (Next.js internal, low priority)</td></tr>
+</table>
+
+</body>
+</html>

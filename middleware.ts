@@ -15,7 +15,8 @@ function isPlatformBare(hostname: string): boolean {
   const host = hostname.split(":")[0];
   const parts = host.split(".");
   if (parts.length === 2 && parts[0] === PLATFORM_ROOT) return true;
-  if (parts.length === 3 && parts[0] === "www" && parts[1] === PLATFORM_ROOT) return true;
+  if (parts.length === 3 && parts[0] === "www" && parts[1] === PLATFORM_ROOT)
+    return true;
   return false;
 }
 
@@ -90,11 +91,21 @@ export function middleware(request: NextRequest) {
   let tenantSlug = resolveSlugFromHostname(request.headers.get("host") || "");
 
   // Dev fallback: ?tenant=slug query param (localhost only)
+  // Persists via __dev_tenant cookie so the entire dev session stays on the
+  // chosen tenant (page navigations, client-side API fetches, RSC requests).
+  // To switch tenant: ?tenant=other-slug  To reset: ?tenant=maysshop
   const host = request.headers.get("host") || "";
+  let devTenantCookieChanged = false;
   if (host.startsWith("localhost") || host.startsWith("127.0.0.1")) {
     const tenantParam = request.nextUrl.searchParams.get("tenant");
     if (tenantParam) {
       tenantSlug = tenantParam;
+      devTenantCookieChanged = true;
+    } else {
+      const cookieVal = request.cookies.get("__dev_tenant")?.value;
+      if (cookieVal) {
+        tenantSlug = cookieVal;
+      }
     }
   }
 
@@ -142,7 +153,10 @@ export function middleware(request: NextRequest) {
   }
 
   // --- Admin redirect: /admin → /en/admin ---
-  if (!isApiRoute && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
+  if (
+    !isApiRoute &&
+    (pathname === "/admin" || pathname.startsWith("/admin/"))
+  ) {
     const adminUrl = new URL(`/zh-HK${pathname}`, request.url);
     return NextResponse.redirect(adminUrl);
   }
@@ -182,11 +196,23 @@ export function middleware(request: NextRequest) {
     requestHeaders.set("x-is-platform", "true");
   }
 
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+
+  // Persist dev tenant cookie so client-side fetches resolve correctly
+  if (devTenantCookieChanged) {
+    response.cookies.set("__dev_tenant", tenantSlug, {
+      path: "/",
+      httpOnly: false,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24, // 24h
+    });
+  }
+
+  return response;
 }
 
 export const config = {

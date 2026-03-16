@@ -23,11 +23,13 @@ export default function MobileMenu({
   t,
   isOpen,
   onClose,
+  languages,
 }: {
   locale: Locale;
   t: Translations;
   isOpen: boolean;
   onClose: () => void;
+  languages?: string[];
 }) {
   const pathname = usePathname() || `/${locale}`;
   const { resolved, setMode } = useTheme();
@@ -46,7 +48,9 @@ export default function MobileMenu({
   };
 
   const getThemeLabel = () => {
-    return resolved === "light" ? t.mobileMenu.lightMode : t.mobileMenu.darkMode;
+    return resolved === "light"
+      ? t.mobileMenu.lightMode
+      : t.mobileMenu.darkMode;
   };
 
   if (!isOpen) return null;
@@ -82,16 +86,21 @@ export default function MobileMenu({
           <div className="flex-1 overflow-y-auto py-2">
             {/* Settings Section */}
             <div className="px-2">
-              {/* Language Row */}
-              <button
-                onClick={handleLanguageToggle}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              >
-                <Globe size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
-                <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
-                  {getLanguageLabel()}
-                </span>
-              </button>
+              {/* Language Row — hidden when tenant has only 1 language */}
+              {(!languages || languages.length > 1) && (
+                <button
+                  onClick={handleLanguageToggle}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                >
+                  <Globe
+                    size={18}
+                    className="flex-shrink-0 text-zinc-500 dark:text-zinc-400"
+                  />
+                  <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
+                    {getLanguageLabel()}
+                  </span>
+                </button>
+              )}
 
               {/* Theme Row */}
               <button
@@ -99,15 +108,20 @@ export default function MobileMenu({
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
                 {resolved === "light" ? (
-                  <Sun size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                  <Sun
+                    size={18}
+                    className="flex-shrink-0 text-zinc-500 dark:text-zinc-400"
+                  />
                 ) : (
-                  <Moon size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                  <Moon
+                    size={18}
+                    className="flex-shrink-0 text-zinc-500 dark:text-zinc-400"
+                  />
                 )}
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {getThemeLabel()}
                 </span>
               </button>
-
             </div>
 
             {/* Divider */}
@@ -121,7 +135,10 @@ export default function MobileMenu({
                 onClick={onClose}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
-                <Package size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                <Package
+                  size={18}
+                  className="flex-shrink-0 text-zinc-500 dark:text-zinc-400"
+                />
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {t.mobileMenu.myOrders}
                 </span>
@@ -133,7 +150,10 @@ export default function MobileMenu({
                 onClick={onClose}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
-                <Heart size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                <Heart
+                  size={18}
+                  className="flex-shrink-0 text-zinc-500 dark:text-zinc-400"
+                />
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {t.mobileMenu.myWishlist}
                 </span>
@@ -145,7 +165,10 @@ export default function MobileMenu({
                 onClick={onClose}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
-                <Search size={18} className="flex-shrink-0 text-zinc-500 dark:text-zinc-400" />
+                <Search
+                  size={18}
+                  className="flex-shrink-0 text-zinc-500 dark:text-zinc-400"
+                />
                 <span className="flex-1 text-left text-sm text-zinc-900 dark:text-zinc-100">
                   {t.mobileMenu.trackOrder}
                 </span>

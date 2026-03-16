@@ -1,0 +1,105 @@
+# Checkout Flow Test Report
+**Date:** 2026-02-24
+**Stores tested:** hypedrops, nichiyori, greenday, petitfleur
+
+---
+
+## HYPEDROPS
+**URL:** https://www.wowlix.com/hypedrops
+**Result:** 10 Pass / 0 Issue / 0 Fail — 10.9s
+
+| Step | Name | Status | Detail | Screenshot | Time |
+|------|------|--------|--------|------------|------|
+| 1 | 開店頁 + 等待載入 | ✅ Pass | 頁面標題: HYPEDROPS | WoWlix | `screenshots/checkout-2026-02-24/hypedrops/01-store-load.png` | 3828ms |
+| 2 | 產品載入確認 | ✅ Pass | 發現 7 件有貨產品 | `screenshots/checkout-2026-02-24/hypedrops/02-products-loaded.png` | 368ms |
+| 3 | 點入第一件產品詳情頁 | ✅ Pass | ProductSheet 已開啟 | `screenshots/checkout-2026-02-24/hypedrops/03-product-sheet.png` | 116ms |
+| 4 | Size selector（有則揀，無則跳過） | ✅ Pass | 已選: US 7剩2 | `screenshots/checkout-2026-02-24/hypedrops/04-variant.png` | 672ms |
+| 5 | 加入購物車 | ✅ Pass | Cart bar: "1$1,680結帳" | `screenshots/checkout-2026-02-24/hypedrops/05-cart-updated.png` | 320ms |
+| 6 | 開 Checkout（CartBar → CartSheet → CheckoutPage） | ✅ Pass | CheckoutPage 已開啟，顯示「聯絡資料」 | `screenshots/checkout-2026-02-24/hypedrops/06b-checkout-page.png` | 1430ms |
+| 7 | 填寫客人資料 | ✅ Pass | 姓名: "測試客人", 電話: "91234567" | `screenshots/checkout-2026-02-24/hypedrops/07-customer-info.png` | 1197ms |
+| 8 | 揀送貨方式 | ✅ Pass | 已選: "面交（旺角）（免運費）" | `screenshots/checkout-2026-02-24/hypedrops/08-delivery.png` | 880ms |
+| 9 | 揀 FPS 付款方式 | ✅ Pass | 已選: "轉數快 FPS（手動確認）" | `screenshots/checkout-2026-02-24/hypedrops/09-payment-selected.png` | 1383ms |
+| 10 | 確認 FPS 收款資料 | ✅ Pass | 已顯示: 轉帳金額, 收款人, FPS ID/帳號 | `screenshots/checkout-2026-02-24/hypedrops/10-fps-details.png` | 579ms |
+
+### Console Errors
+- `Failed to load resource: the server responded with a status of 404 ()`
+
+---
+
+## NICHIYORI
+**URL:** https://www.wowlix.com/nichiyori
+**Result:** 9 Pass / 1 Issue / 0 Fail — 11.8s
+
+| Step | Name | Status | Detail | Screenshot | Time |
+|------|------|--------|--------|------------|------|
+| 1 | 開店頁 + 等待載入 | ✅ Pass | 頁面標題: 日和雜貨 | WoWlix | `screenshots/checkout-2026-02-24/nichiyori/01-store-load.png` | 2646ms |
+| 2 | 產品載入確認 | ✅ Pass | 發現 6 件有貨產品 | `screenshots/checkout-2026-02-24/nichiyori/02-products-loaded.png` | 77ms |
+| 3 | 點入第一件產品詳情頁 | ✅ Pass | ProductSheet 已開啟 | `screenshots/checkout-2026-02-24/nichiyori/03-product-sheet.png` | 64ms |
+| 4 | Size selector（有則揀，無則跳過） | ⚠️ Issue | 冇 variant buttons — 可能係無款式產品 | `screenshots/checkout-2026-02-24/nichiyori/04-variant.png` | 555ms |
+| 5 | 加入購物車 | ✅ Pass | Cart bar: "1$168結帳" | `screenshots/checkout-2026-02-24/nichiyori/05-cart-updated.png` | 2847ms |
+| 6 | 開 Checkout（CartBar → CartSheet → CheckoutPage） | ✅ Pass | CheckoutPage 已開啟，顯示「聯絡資料」 | `screenshots/checkout-2026-02-24/nichiyori/06b-checkout-page.png` | 1356ms |
+| 7 | 填寫客人資料 | ✅ Pass | 姓名: "測試客人", 電話: "91234567" | `screenshots/checkout-2026-02-24/nichiyori/07-customer-info.png` | 1283ms |
+| 8 | 揀送貨方式 | ✅ Pass | 已選: "面交（中環）（免運費）" | `screenshots/checkout-2026-02-24/nichiyori/08-delivery.png` | 907ms |
+| 9 | 揀 FPS 付款方式 | ✅ Pass | 已選: "轉數快 FPS（手動確認）" | `screenshots/checkout-2026-02-24/nichiyori/09-payment-selected.png` | 1406ms |
+| 10 | 確認 FPS 收款資料 | ✅ Pass | 已顯示: 轉帳金額, 收款人, FPS ID/帳號 | `screenshots/checkout-2026-02-24/nichiyori/10-fps-details.png` | 590ms |
+
+### Console Errors
+- `Failed to load resource: the server responded with a status of 404 ()`
+- `Failed to load resource: the server responded with a status of 404 ()`
+- `Failed to load resource: the server responded with a status of 404 ()`
+- `Failed to load resource: the server responded with a status of 404 ()`
+- `Failed to load resource: the server responded with a status of 404 ()`
+- `Failed to load resource: the server responded with a status of 404 ()`
+
+---
+
+## GREENDAY
+**URL:** https://www.wowlix.com/greenday
+**Result:** 9 Pass / 1 Issue / 0 Fail — 13.5s
+
+| Step | Name | Status | Detail | Screenshot | Time |
+|------|------|--------|--------|------------|------|
+| 1 | 開店頁 + 等待載入 | ✅ Pass | 頁面標題: 綠日 Green Day | WoWlix | `screenshots/checkout-2026-02-24/greenday/01-store-load.png` | 3268ms |
+| 2 | 產品載入確認 | ✅ Pass | 發現 7 件有貨產品 | `screenshots/checkout-2026-02-24/greenday/02-products-loaded.png` | 272ms |
+| 3 | 點入第一件產品詳情頁 | ✅ Pass | ProductSheet 已開啟 | `screenshots/checkout-2026-02-24/greenday/03-product-sheet.png` | 93ms |
+| 4 | Size selector（有則揀，無則跳過） | ⚠️ Issue | 冇 variant buttons — 可能係無款式產品 | `screenshots/checkout-2026-02-24/greenday/04-variant.png` | 740ms |
+| 5 | 加入購物車 | ✅ Pass | Cart bar: "1$168結帳" | `screenshots/checkout-2026-02-24/greenday/05-cart-updated.png` | 3277ms |
+| 6 | 開 Checkout（CartBar → CartSheet → CheckoutPage） | ✅ Pass | CheckoutPage 已開啟，顯示「聯絡資料」 | `screenshots/checkout-2026-02-24/greenday/06b-checkout-page.png` | 1538ms |
+| 7 | 填寫客人資料 | ✅ Pass | 姓名: "測試客人", 電話: "91234567" | `screenshots/checkout-2026-02-24/greenday/07-customer-info.png` | 1305ms |
+| 8 | 揀送貨方式 | ✅ Pass | 已選: "面交（觀塘）（免運費）" | `screenshots/checkout-2026-02-24/greenday/08-delivery.png` | 928ms |
+| 9 | 揀 FPS 付款方式 | ✅ Pass | 已選: "轉數快 FPS（手動確認）" | `screenshots/checkout-2026-02-24/greenday/09-payment-selected.png` | 1430ms |
+| 10 | 確認 FPS 收款資料 | ✅ Pass | 已顯示: 轉帳金額, 收款人, FPS ID/帳號 | `screenshots/checkout-2026-02-24/greenday/10-fps-details.png` | 590ms |
+
+### Console Errors
+- `Failed to load resource: the server responded with a status of 404 ()`
+- `Failed to load resource: the server responded with a status of 404 ()`
+
+---
+
+## PETITFLEUR
+**URL:** https://www.wowlix.com/petitfleur
+**Result:** 9 Pass / 1 Issue / 0 Fail — 12.9s
+
+| Step | Name | Status | Detail | Screenshot | Time |
+|------|------|--------|--------|------------|------|
+| 1 | 開店頁 + 等待載入 | ✅ Pass | 頁面標題: 花語甜室 | WoWlix | `screenshots/checkout-2026-02-24/petitfleur/01-store-load.png` | 3078ms |
+| 2 | 產品載入確認 | ✅ Pass | 發現 8 件有貨產品 | `screenshots/checkout-2026-02-24/petitfleur/02-products-loaded.png` | 292ms |
+| 3 | 點入第一件產品詳情頁 | ✅ Pass | ProductSheet 已開啟 | `screenshots/checkout-2026-02-24/petitfleur/03-product-sheet.png` | 67ms |
+| 4 | Size selector（有則揀，無則跳過） | ⚠️ Issue | 冇 variant buttons — 可能係無款式產品 | `screenshots/checkout-2026-02-24/petitfleur/04-variant.png` | 818ms |
+| 5 | 加入購物車 | ✅ Pass | Cart bar: "1$328結帳" | `screenshots/checkout-2026-02-24/petitfleur/05-cart-updated.png` | 2981ms |
+| 6 | 開 Checkout（CartBar → CartSheet → CheckoutPage） | ✅ Pass | CheckoutPage 已開啟，顯示「聯絡資料」 | `screenshots/checkout-2026-02-24/petitfleur/06b-checkout-page.png` | 1479ms |
+| 7 | 填寫客人資料 | ✅ Pass | 姓名: "測試客人", 電話: "91234567" | `screenshots/checkout-2026-02-24/petitfleur/07-customer-info.png` | 1121ms |
+| 8 | 揀送貨方式 | ✅ Pass | 已選: "自取（銅鑼灣）（免運費）" | `screenshots/checkout-2026-02-24/petitfleur/08-delivery.png` | 913ms |
+| 9 | 揀 FPS 付款方式 | ✅ Pass | 已選: "轉數快 FPS（手動確認）" | `screenshots/checkout-2026-02-24/petitfleur/09-payment-selected.png` | 1408ms |
+| 10 | 確認 FPS 收款資料 | ✅ Pass | 已顯示: 轉帳金額, 收款人, FPS ID/帳號 | `screenshots/checkout-2026-02-24/petitfleur/10-fps-details.png` | 638ms |
+
+---
+
+## Summary
+
+| Store | Pass | Issue | Fail | Time |
+|-------|------|-------|------|------|
+| hypedrops | 10/10 | 0 | 0 | 10.9s |
+| nichiyori | 9/10 | 1 | 0 | 11.8s |
+| greenday | 9/10 | 1 | 0 | 13.5s |
+| petitfleur | 9/10 | 1 | 0 | 12.9s |

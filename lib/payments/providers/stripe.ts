@@ -8,8 +8,8 @@ import { registerProvider } from "../registry";
  */
 const stripeProvider: PaymentProviderDefinition = {
   id: "stripe",
-  name: "Credit / Debit Card",
-  nameZh: "信用卡 / 扣賬卡",
+  name: "Card / Apple Pay / Google Pay",
+  nameZh: "信用卡 / Apple Pay / Google Pay",
   icon: "💳",
   type: "online",
   configFields: [], // 用 Tenant 現有 Stripe 設定

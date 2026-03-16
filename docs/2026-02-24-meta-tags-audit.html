@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Meta Tags Audit — 2026-02-24</title>
+<style>
+body { font-family: monospace; max-width: 1000px; margin: 40px auto; padding: 0 20px; line-height: 1.7; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 13px; }
+th, td { border: 1px solid #ccc; padding: 5px 10px; text-align: left; }
+th { background: #f5f5f5; }
+.good { color: #16a34a; font-weight: bold; }
+.warn { color: #d97706; font-weight: bold; }
+.bad  { color: #dc2626; font-weight: bold; }
+pre { background: #f8f8f8; border: 1px solid #ddd; padding: 12px; overflow-x: auto; font-size: 12px; }
+h1 { border-bottom: 2px solid #333; }
+h2 { border-bottom: 1px solid #ccc; margin-top: 40px; }
+h3 { margin-top: 28px; }
+</style>
+</head><body><pre>
+# Meta Tags / Open Graph Audit — 2026-02-24
+
+**Method:** curl + python3 HTML parsing of live pages
+**Date:** 2026-02-24
+**Pages audited:** 6
+
+---
+
+## Scorecard
+
+| Field              | /  | /pricing | /hypedrops | /nichiyori | /greenday | /petitfleur |
+|--------------------|----|---------|-----------|-----------:|----------:|------------:|
+| title              | ✅ | ✅      | ✅        | ✅        | ✅        | ✅          |
+| meta description   | ✅ | ✅      | ✅        | ✅        | ✅        | ✅          |
+| og:title           | ✅ | ⚠️      | ⚠️        | ⚠️        | ⚠️        | ⚠️          |
+| og:description     | ✅ | ✅      | ✅        | ✅        | ✅        | ✅          |
+| og:image           | ❌ | ✅      | ✅        | ✅        | ✅        | ✅          |
+| og:url             | ✅ | ❌      | ❌        | ❌        | ❌        | ❌          |
+| og:type            | ✅ | ❌      | ✅        | ✅        | ✅        | ✅          |
+| og:site_name       | ✅ | ❌      | ❌        | ❌        | ❌        | ❌          |
+| og:locale          | ✅ | ❌      | ❌        | ❌        | ❌        | ❌          |
+| twitter:card       | ⚠️ | ✅      | ✅        | ✅        | ✅        | ✅          |
+| twitter:image      | ❌ | ✅      | ✅        | ✅        | ✅        | ✅          |
+| canonical          | ✅ | ❌      | ❌        | ❌        | ❌        | ❌          |
+
+**Legend:** ✅ present & correct · ⚠️ present but wrong/incomplete · ❌ missing
+
+---
+
+## Actual Values (from live curl)
+
+### Homepage https://www.wowlix.com/
+
+| Tag              | Value                                                              | Status |
+|------------------|--------------------------------------------------------------------|--------|
+| title            | WoWlix — Turn Followers into Customers                            | ✅     |
+| description      | Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。  | ✅     |
+| og:title         | WoWlix — Turn Followers into Customers                            | ✅     |
+| og:description   | Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。           | ✅     |
+| og:image         | ❌ missing                                                         | ❌     |
+| og:url           | https://wowlix.com                                                 | ✅     |
+| og:type          | website                                                            | ✅     |
+| og:site_name     | WoWlix                                                             | ✅     |
+| og:locale        | zh_HK                                                              | ✅     |
+| twitter:card     | summary (not summary_large_image)                                  | ⚠️     |
+| twitter:image    | ❌ missing                                                         | ❌     |
+| canonical        | https://wowlix.com                                                 | ✅     |
+
+**Root cause:** `app/[locale]/(customer)/page.tsx` openGraph block has no `images` key.
+When a child page defines its own openGraph, it replaces (not merges) the root layout's
+`openGraph.images`. Result: no og:image despite `/og-default.png` existing.
+
+---
+
+### Pricing https://www.wowlix.com/pricing
+
+| Tag              | Value                                                              | Status |
+|------------------|--------------------------------------------------------------------|--------|
+| title            | Pricing | WoWlix — IG Shop Builder                                  | ✅     |
+| description      | 0% platform fee, $0 to start. Free / Lite $78 / Pro $198...       | ✅     |
+| og:title         | "Pricing " (trailing space, brand stripped)                       | ⚠️     |
+| og:description   | 0% platform fee, $0 to start. Free / Lite $78 / Pro $198...       | ✅     |
+| og:image         | https://wowlix.com/og-default.png (inherited from root layout)    | ✅     |
+| og:url           | ❌ missing                                                         | ❌     |
+| og:type          | ❌ missing                                                         | ❌     |
+| og:site_name     | ❌ missing                                                         | ❌     |
+| twitter:card     | summary_large_image                                                | ✅     |
+| twitter:image    | https://wowlix.com/og-default.png                                 | ✅     |
+| canonical        | ❌ missing                                                         | ❌     |
+
+**Root cause 1:** `app/[locale]/(marketing)/pricing/page.tsx` only exports
+`{ title, description }` — no openGraph. og:image comes from root layout inheritance.
+
+**Root cause 2 (og:title garbled):** Next.js auto-generates og:title from the title string.
+The `|` in "Pricing | WoWlix" causes Next.js to split on the template separator, leaving
+"Pricing " as the og:title portion — likely a title template (`%s | WoWlix`) in a parent
+layout applying to the og:title derivation.
+
+---
+
+### Store Pages: hypedrops / nichiyori / greenday / petitfleur
+
+All 4 store pages share the same pattern. Showing hypedrops as representative:
+
+| Tag              | Value (hypedrops)                                                  | Status |
+|------------------|--------------------------------------------------------------------|--------|
+| title            | HYPEDROPS | WoWlix                                                    | ✅     |
+| description      | 香港街頭潮流選物｜波鞋・衛衣・配件                                  | ✅     |
+| og:title         | HYPEDROPS (store name only, no "| WoWlix" brand suffix)           | ⚠️     |
+| og:description   | 香港街頭潮流選物｜波鞋・衛衣・配件                                  | ✅     |
+| og:image         | https://images.unsplash.com/...?w=800&q=80 (store cover photo)    | ✅     |
+| og:url           | ❌ missing                                                         | ❌     |
+| og:type          | website                                                            | ✅     |
+| og:site_name     | ❌ missing                                                         | ❌     |
+| twitter:card     | summary_large_image                                                | ✅     |
+| twitter:image    | https://images.unsplash.com/...?w=800&q=80                        | ✅     |
+| canonical        | ❌ missing                                                         | ❌     |
+
+| Store       | og:image URL (live)                                              |
+|-------------|------------------------------------------------------------------|
+| hypedrops   | images.unsplash.com/photo-1556906781-9a412961c28c?w=800&q=80    |
+| nichiyori   | images.unsplash.com/photo-1616627577385-5c0c4dab60fa?w=800&q=80 |
+| greenday    | images.unsplash.com/photo-1490818387583-1baba5e638af?w=800&q=80 |
+| petitfleur  | images.unsplash.com/photo-1488477181946-6428a0291777?w=800&q=80 |
+
+**Note:** og:image uses HTML entity `&amp;` in raw HTML — correct for attribute encoding.
+Facebook/Twitter crawlers handle this correctly. Not a bug.
+
+**Root cause (og:title incomplete):** `app/[locale]/[slug]/page.tsx` sets
+`openGraph: { title: tenant.name }` — just the bare store name without the " | WoWlix"
+brand suffix that appears in the `<title>` tag.
+
+**Root cause (og:url, og:site_name, canonical missing):** Not set in generateMetadata.
+
+---
+
+## Issues by Priority
+
+### P1 — Breaks social sharing previews
+
+#### Issue 1: Homepage og:image missing
+**Impact:** WhatsApp/iMessage/LinkedIn/Slack link previews show no image for the most
+important marketing page. Low trust, low click-through.
+
+**Fix:** Add `images` to homepage openGraph in `app/[locale]/(customer)/page.tsx`:
+```typescript
+// in isPlatformMode() block:
+openGraph: {
+  title: "WoWlix — Turn Followers into Customers",
+  description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
+  url: "https://wowlix.com",
+  siteName: "WoWlix",
+  locale: "zh_HK",
+  type: "website",
+  images: [{ url: "https://wowlix.com/og-default.png", width: 1200, height: 630 }],  // ADD
+},
+twitter: {
+  card: "summary_large_image",  // ADD (currently "summary")
+  images: ["https://wowlix.com/og-default.png"],  // ADD
+},
+```
+
+#### Issue 2: Homepage twitter:card = "summary" instead of "summary_large_image"
+**Impact:** Twitter/X shows small square thumbnail instead of large card.
+**Fix:** Same as Issue 1 — add twitter config to homepage metadata.
+
+---
+
+### P2 — Missing fields, reduced SEO/social quality
+
+#### Issue 3: Pricing og:title garbled ("Pricing " with trailing space)
+**Impact:** Social cards show "Pricing" as title instead of full brand string.
+
+**Fix:** In `app/[locale]/(marketing)/pricing/page.tsx`, replace simple export with full
+metadata including explicit openGraph:
+
+```typescript
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Pricing | WoWlix — IG Shop Builder",
+  description: "0% platform fee, $0 to start. Free / Lite $78 / Pro $198 plans for IG shops.",
+  alternates: {
+    canonical: "https://wowlix.com/pricing",
+  },
+  openGraph: {
+    title: "Pricing | WoWlix — IG Shop Builder",   // explicit, no auto-derive
+    description: "0% platform fee, $0 to start. Free / Lite $78 / Pro $198 plans for IG shops.",
+    url: "https://wowlix.com/pricing",
+    siteName: "WoWlix",
+    type: "website",
+    images: [{ url: "https://wowlix.com/og-default.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://wowlix.com/og-default.png"],
+  },
+};
+```
+
+#### Issue 4: Store pages missing og:url, og:site_name, canonical
+**Impact:** Social platforms can't canonicalize shared links; SEO signal diluted.
+
+**Fix:** In `app/[locale]/[slug]/page.tsx` generateMetadata:
+
+```typescript
+const pageUrl = `https://www.wowlix.com/${slug}`;
+
+return {
+  title,
+  description,
+  alternates: { canonical: pageUrl },     // ADD
+  openGraph: {
+    title: `${tenant.name} | WoWlix`,     // ADD brand suffix
+    description,
+    images: [ogImage],
+    type: "website",
+    url: pageUrl,                          // ADD
+    siteName: "WoWlix",                    // ADD
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${tenant.name} | WoWlix`,     // ADD brand suffix (consistency)
+    description,
+    images: [ogImage],
+  },
+};
+```
+
+---
+
+### P3 — Nice to have
+
+#### Issue 5: og:locale missing on store pages
+**Impact:** Minor — social crawlers may misdetect language.
+**Fix:** Add `locale: "zh_HK"` to openGraph (or determine from store locale setting).
+
+#### Issue 6: www vs non-www canonical inconsistency
+**Impact:** Minor — homepage canonical is `https://wowlix.com` (no www) but the actual
+URL is `https://www.wowlix.com/`. Should pick one and be consistent.
+**Current:** canonical = `https://wowlix.com`, live URL = `https://www.wowlix.com/`.
+The 307 redirect on og-default.png suggests www → non-www redirect might be in place.
+**Fix:** Verify redirect config, then make canonical consistent.
+
+---
+
+## Fix Summary (what to change)
+
+| File                                                    | Change                                              | Priority |
+|---------------------------------------------------------|-----------------------------------------------------|----------|
+| `app/[locale]/(customer)/page.tsx`                     | Add og:image + twitter:card to homepage metadata    | P1       |
+| `app/[locale]/(marketing)/pricing/page.tsx`            | Expand to full metadata object (og + twitter + canonical) | P2  |
+| `app/[locale]/[slug]/page.tsx`                         | Add og:url, og:site_name, canonical, brand suffix   | P2       |
+
+**Unchanged (already correct):**
+- All store pages: og:image ✅, og:description ✅, twitter:card ✅, og:type ✅
+- Homepage: og:title ✅, og:description ✅, og:url ✅, og:site_name ✅, canonical ✅
+- Root layout: og:image fallback ✅ (used by pricing page via inheritance)
+
+---
+
+## Social Share Preview Quality (current state)
+
+| Page        | Twitter/X         | Facebook/WhatsApp | iMessage/Slack  |
+|-------------|-------------------|-------------------|-----------------|
+| Homepage    | Small thumb ⚠️    | No image ❌       | No image ❌     |
+| Pricing     | Large image ✅    | Large image ✅    | Broken title ⚠️ |
+| Store pages | Large image ✅    | Large image ✅    | No canonical ⚠️ |
+
+---
+
+## Code Locations
+
+| Page         | Metadata file                                                    |
+|--------------|------------------------------------------------------------------|
+| Homepage     | `app/[locale]/(customer)/page.tsx` lines 18-81                  |
+| Pricing      | `app/[locale]/(marketing)/pricing/page.tsx` lines 4-8           |
+| Store pages  | `app/[locale]/[slug]/page.tsx` lines 123-157                    |
+| Root fallback| `app/layout.tsx` lines 19-48                                    |
+
+---
+
+Report generated: 2026-02-24
+Method: curl -s -L $URL | python3 HTML parser
+Live og-default.png: https://wowlix.com/og-default.png → 200 OK (after redirect)
+</pre></body></html>

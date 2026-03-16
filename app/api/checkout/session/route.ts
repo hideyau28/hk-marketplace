@@ -34,35 +34,48 @@ export const POST = withApi(async (req) => {
   const orderId = (body?.orderId || "").trim();
   if (!orderId) throw new ApiError(400, "BAD_REQUEST", "orderId is required");
 
-  const order = await prisma.order.findFirst({ where: { id: orderId, tenantId } });
+  const order = await prisma.order.findFirst({
+    where: { id: orderId, tenantId },
+  });
   if (!order) throw new ApiError(404, "NOT_FOUND", "Order not found");
 
   const amounts: any = order.amounts;
   const currency = String(amounts?.currency || "HKD").toLowerCase();
 
   const items: any[] = Array.isArray(order.items) ? (order.items as any[]) : [];
-  if (items.length === 0) throw new ApiError(400, "BAD_REQUEST", "Order has no items");
+  if (items.length === 0)
+    throw new ApiError(400, "BAD_REQUEST", "Order has no items");
 
-  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((it) => {
-    const name = String(it?.name || it?.title || "Item");
-    const unitPrice = Number(it?.unitPrice ?? it?.price);
-    const quantity = Number(it?.quantity ?? it?.qty);
-    if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
-      throw new ApiError(400, "BAD_REQUEST", `Invalid unitPrice for item: ${name}`);
-    }
-    if (!Number.isFinite(quantity) || quantity <= 0) {
-      throw new ApiError(400, "BAD_REQUEST", `Invalid quantity for item: ${name}`);
-    }
+  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map(
+    (it) => {
+      const name = String(it?.name || it?.title || "Item");
+      const unitPrice = Number(it?.unitPrice ?? it?.price);
+      const quantity = Number(it?.quantity ?? it?.qty);
+      if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
+        throw new ApiError(
+          400,
+          "BAD_REQUEST",
+          `Invalid unitPrice for item: ${name}`,
+        );
+      }
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        throw new ApiError(
+          400,
+          "BAD_REQUEST",
+          `Invalid quantity for item: ${name}`,
+        );
+      }
 
-    return {
-      price_data: {
-        currency,
-        product_data: { name },
-        unit_amount: Math.round(unitPrice * 100),
-      },
-      quantity: Math.floor(quantity),
-    };
-  });
+      return {
+        price_data: {
+          currency,
+          product_data: { name },
+          unit_amount: Math.round(unitPrice * 100),
+        },
+        quantity: Math.floor(quantity),
+      };
+    },
+  );
 
   // Delivery fee from order amounts (skip if zero / free shipping)
   const deliveryFee = Number(amounts?.deliveryFee ?? 0);
@@ -111,34 +124,54 @@ export const POST = withApi(async (req) => {
     metadata: {
       orderId,
     },
+    // Force 3D Secure for all card payments (ME market compliance)
+    payment_method_options: {
+      card: {
+        request_three_d_secure: "any",
+      },
+    },
   });
 
   // Track as a payment attempt (canonical record)
-  await prisma.paymentAttempt.create({
-    data: {
-      provider: "STRIPE",
-      tenantId,
-      status: "CREATED",
-      orderId,
-      amount: typeof session.amount_total === "number" ? session.amount_total : null,
-      currency: typeof session.currency === "string" ? session.currency : null,
-      stripeCheckoutSessionId: session.id,
-      stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : null,
-      lastEventType: "checkout.session.created",
-      lastEvent: session as unknown as import("@prisma/client").Prisma.InputJsonValue,
-    },
-  }).catch(() => null);
+  await prisma.paymentAttempt
+    .create({
+      data: {
+        provider: "STRIPE",
+        tenantId,
+        status: "CREATED",
+        orderId,
+        amount:
+          typeof session.amount_total === "number"
+            ? session.amount_total
+            : null,
+        currency:
+          typeof session.currency === "string" ? session.currency : null,
+        stripeCheckoutSessionId: session.id,
+        stripePaymentIntentId:
+          typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : null,
+        lastEventType: "checkout.session.created",
+        lastEvent:
+          session as unknown as import("@prisma/client").Prisma.InputJsonValue,
+      },
+    })
+    .catch(() => null);
 
   // Legacy fields (for backward compatibility)
   await prisma.order.update({
     where: { id: orderId },
     data: {
       stripeCheckoutSessionId: session.id,
-      stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : undefined,
+      stripePaymentIntentId:
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : undefined,
     },
   });
 
-  if (!session.url) throw new ApiError(500, "INTERNAL", "Stripe session URL missing");
+  if (!session.url)
+    throw new ApiError(500, "INTERNAL", "Stripe session URL missing");
 
   return ok(req, { url: session.url });
 });

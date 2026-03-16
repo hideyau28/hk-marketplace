@@ -51,6 +51,8 @@ export default async function SlugPage({ params }: PageProps) {
         stripeOnboarded: true,
         // Checkout settings
         currency: true,
+        region: true,
+        languages: true,
         deliveryOptions: true,
         freeShippingThreshold: true,
         orderConfirmMessage: true,
@@ -62,6 +64,15 @@ export default async function SlugPage({ params }: PageProps) {
   }
 
   if (!tenant) notFound();
+
+  // Fetch hero banners for the biolink store
+  const heroBanners = await prisma.homepageBanner
+    .findMany({
+      where: { tenantId: tenant.id, active: true, position: "hero" },
+      orderBy: { sortOrder: "asc" },
+      take: 1,
+    })
+    .catch(() => []);
 
   const products = await prisma.product
     .findMany({
@@ -124,11 +135,19 @@ export default async function SlugPage({ params }: PageProps) {
     variants: p.variants,
   }));
 
+  // Use HomepageBanner hero image as coverPhoto fallback
+  const heroBanner = heroBanners[0] ?? null;
+  const resolvedCoverPhoto =
+    tenant.coverPhoto || (heroBanner?.imageUrl ?? null);
+
   // Parse JSON checkout settings with defaults, resolve legacy template IDs
   const tenantForBioLink = {
     ...tenant,
+    coverPhoto: resolvedCoverPhoto,
     coverTemplate: resolveTemplateId(tenant.coverTemplate || tenant.template),
     currency: tenant.currency || "HKD",
+    region: tenant.region || "HK",
+    languages: tenant.languages || ["zh-HK", "en"],
     deliveryOptions:
       (tenant.deliveryOptions as DeliveryOption[] | null) ||
       DEFAULT_DELIVERY_OPTIONS,

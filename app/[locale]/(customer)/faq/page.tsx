@@ -1,0 +1,70 @@
+import type { Metadata } from "next";
+import { getStoreName } from "@/lib/get-store-name";
+import { getTenantInfo } from "@/lib/get-tenant-info";
+import { getFAQContent } from "@/lib/tenant-content";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const storeName = await getStoreName();
+  const isZh = locale === "zh-HK";
+  return {
+    title: isZh ? `常見問題 - ${storeName}` : `FAQ - ${storeName}`,
+    description: isZh
+      ? `${storeName} 常見問題`
+      : `Frequently asked questions about ${storeName}`,
+  };
+}
+
+export default async function FAQPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const storeName = await getStoreName();
+  const tenant = await getTenantInfo();
+  const faqs = getFAQContent(tenant.slug);
+  const isZh = locale === "zh-HK";
+
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-10 pb-32">
+      <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+        {isZh ? "常見問題" : "Frequently Asked Questions"}
+      </h1>
+      <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8">
+        {isZh
+          ? `以下係關於 ${storeName} 嘅常見問題。`
+          : `Common questions about shopping with ${storeName}.`}
+      </p>
+
+      <div className="space-y-6">
+        {faqs.map((faq, index) => (
+          <details
+            key={index}
+            className="group border border-zinc-200 dark:border-zinc-800 rounded-lg"
+          >
+            <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 rounded-lg transition-colors">
+              <span>{faq.question}</span>
+              <svg
+                className="h-4 w-4 shrink-0 text-zinc-400 transition-transform group-open:rotate-180"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div className="px-4 pb-4 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              {faq.answer}
+            </div>
+          </details>
+        ))}
+      </div>
+    </div>
+  );
+}
