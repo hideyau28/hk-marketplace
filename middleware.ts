@@ -92,29 +92,23 @@ export function middleware(request: NextRequest) {
   // Resolve slug from subdomain or ?tenant= dev fallback
   let tenantSlug = resolveSlugFromHostname(request.headers.get("host") || "");
 
-  // ?tenant=slug query param override (localhost + *.vercel.app preview URLs)
+  // ?tenant=slug query param override — accepted on any domain.
+  // Only selects which tenant's public storefront to display; no security risk.
   // Persists via __dev_tenant cookie so the entire session stays on the
   // chosen tenant (page navigations, client-side API fetches, RSC requests).
   // To switch tenant: ?tenant=other-slug  To reset: ?tenant=maysshop
-  const host = request.headers.get("host") || "";
-  const allowTenantParam =
-    host.startsWith("localhost") ||
-    host.startsWith("127.0.0.1") ||
-    host.endsWith(".vercel.app");
   let devTenantCookieChanged = false;
   let tenantOverridden = false;
-  if (allowTenantParam) {
-    const tenantParam = request.nextUrl.searchParams.get("tenant");
-    if (tenantParam) {
-      tenantSlug = tenantParam;
-      devTenantCookieChanged = true;
+  const tenantParam = request.nextUrl.searchParams.get("tenant");
+  if (tenantParam) {
+    tenantSlug = tenantParam;
+    devTenantCookieChanged = true;
+    tenantOverridden = true;
+  } else {
+    const cookieVal = request.cookies.get("__dev_tenant")?.value;
+    if (cookieVal) {
+      tenantSlug = cookieVal;
       tenantOverridden = true;
-    } else {
-      const cookieVal = request.cookies.get("__dev_tenant")?.value;
-      if (cookieVal) {
-        tenantSlug = cookieVal;
-        tenantOverridden = true;
-      }
     }
   }
 
