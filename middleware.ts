@@ -17,6 +17,8 @@ function isPlatformBare(hostname: string): boolean {
   if (parts.length === 2 && parts[0] === PLATFORM_ROOT) return true;
   if (parts.length === 3 && parts[0] === "www" && parts[1] === PLATFORM_ROOT)
     return true;
+  // *.vercel.app preview/production URLs — treat as platform bare domain
+  if (host.endsWith(".vercel.app")) return true;
   return false;
 }
 
@@ -90,28 +92,36 @@ export function middleware(request: NextRequest) {
   // Resolve slug from subdomain or ?tenant= dev fallback
   let tenantSlug = resolveSlugFromHostname(request.headers.get("host") || "");
 
-  // Dev fallback: ?tenant=slug query param (localhost only)
-  // Persists via __dev_tenant cookie so the entire dev session stays on the
+  // ?tenant=slug query param override (localhost + *.vercel.app preview URLs)
+  // Persists via __dev_tenant cookie so the entire session stays on the
   // chosen tenant (page navigations, client-side API fetches, RSC requests).
   // To switch tenant: ?tenant=other-slug  To reset: ?tenant=maysshop
   const host = request.headers.get("host") || "";
+  const allowTenantParam =
+    host.startsWith("localhost") ||
+    host.startsWith("127.0.0.1") ||
+    host.endsWith(".vercel.app");
   let devTenantCookieChanged = false;
-  if (host.startsWith("localhost") || host.startsWith("127.0.0.1")) {
+  let tenantOverridden = false;
+  if (allowTenantParam) {
     const tenantParam = request.nextUrl.searchParams.get("tenant");
     if (tenantParam) {
       tenantSlug = tenantParam;
       devTenantCookieChanged = true;
+      tenantOverridden = true;
     } else {
       const cookieVal = request.cookies.get("__dev_tenant")?.value;
       if (cookieVal) {
         tenantSlug = cookieVal;
+        tenantOverridden = true;
       }
     }
   }
 
   // --- Platform bare domain detection ---
+  // Skip if ?tenant= or cookie already resolved the slug (e.g. demo links on Vercel)
   const isPlatform = isPlatformBare(request.headers.get("host") || "");
-  if (isPlatform) {
+  if (isPlatform && !tenantOverridden) {
     tenantSlug = DEFAULT_SLUG;
   }
 
