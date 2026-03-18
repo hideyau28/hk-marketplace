@@ -6,6 +6,7 @@ import { useFilters, type CategoryFilter } from "@/lib/filter-context";
 
 type CategoryNavProps = {
   locale: Locale;
+  tenantSlug?: string;
 };
 
 // Hardcoded Nike subcategories — only shown for maysshop tenant
@@ -22,7 +23,10 @@ const CATEGORIES: { key: CategoryFilter; label: string; labelEn: string }[] = [
   { key: "Sandals", label: "Sandals", labelEn: "Sandals" },
 ];
 
-export default function CategoryNav({ locale }: CategoryNavProps) {
+// Subcategory pills only for sneaker tenants
+const SNEAKER_SLUGS = new Set(["maysshop", "solemena-test"]);
+
+export default function CategoryNav({ locale, tenantSlug }: CategoryNavProps) {
   const router = useRouter();
   const pathname = usePathname();
   const filterContext = useFilters();
@@ -183,30 +187,32 @@ export default function CategoryNav({ locale }: CategoryNavProps) {
           </button>
         </div>
 
-        {/* Category pills row */}
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide mt-2 -mx-4 px-4">
-          {CATEGORIES.map((cat) => {
-            const isActive = filters.category === cat.key;
-            return (
-              <button
-                key={cat.key || "all"}
-                onClick={() => handleCategoryClick(cat.key)}
-                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors shrink-0 ${
-                  isActive
-                    ? "text-white"
-                    : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                }`}
-                style={
-                  isActive
-                    ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" }
-                    : undefined
-                }
-              >
-                {isZh ? cat.label : cat.labelEn}
-              </button>
-            );
-          })}
-        </div>
+        {/* Category pills row — sneaker subcategories, only for maysshop / solemena-test */}
+        {SNEAKER_SLUGS.has(tenantSlug ?? "") && (
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide mt-2 -mx-4 px-4">
+            {CATEGORIES.map((cat) => {
+              const isActive = filters.category === cat.key;
+              return (
+                <button
+                  key={cat.key || "all"}
+                  onClick={() => handleCategoryClick(cat.key)}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors shrink-0 ${
+                    isActive
+                      ? "text-white"
+                      : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  }`}
+                  style={
+                    isActive
+                      ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" }
+                      : undefined
+                  }
+                >
+                  {isZh ? cat.label : cat.labelEn}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

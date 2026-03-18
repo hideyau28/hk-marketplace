@@ -203,6 +203,14 @@ export default async function Home({
     return <LandingPage locale={l} />;
   }
 
+  // Fetch tenant region for conditional UI (TrustBar etc.)
+  const tenantRow = await prisma.tenant
+    .findUnique({
+      where: { id: tenantId },
+      select: { region: true },
+    })
+    .catch(() => null);
+
   const PAID_STATUSES = ["PAID", "FULFILLING", "SHIPPED", "COMPLETED"] as const;
   const hpNow = new Date();
   const start30 = new Date(
@@ -349,7 +357,9 @@ export default async function Home({
           return (
             <div key={`banner-${banner.id}`}>
               <HeroCarouselCMS slides={carouselSlides} locale={l} />
-              {idx === firstBannerIndex && <TrustBar locale={l} />}
+              {idx === firstBannerIndex && (
+                <TrustBar locale={l} region={tenantRow?.region} />
+              )}
             </div>
           );
         }

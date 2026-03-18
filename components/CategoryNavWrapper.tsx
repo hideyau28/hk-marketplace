@@ -40,7 +40,9 @@ export default function CategoryNavWrapper({
 
   return (
     <>
-      {showCategoryNav && <CategoryNav locale={locale} />}
+      {showCategoryNav && (
+        <CategoryNav locale={locale} tenantSlug={tenantSlug} />
+      )}
       {showBrowseNav && <CategoryBrowseNav locale={locale} />}
     </>
   );

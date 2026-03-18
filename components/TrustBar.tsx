@@ -23,7 +23,16 @@ const TRUST_ITEMS = [
   },
 ] as const;
 
-export default function TrustBar({ locale }: { locale: string }) {
+export default function TrustBar({
+  locale,
+  region,
+}: {
+  locale: string;
+  region?: string | null;
+}) {
+  // Only show for sneaker stores (ME region)
+  if (region !== "ME") return null;
+
   const isZh = locale === "zh-HK";
 
   return (

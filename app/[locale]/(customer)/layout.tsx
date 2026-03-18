@@ -55,6 +55,7 @@ export default async function CustomerLayout({
         where: { id: tenantId },
         select: {
           slug: true,
+          region: true,
           templateId: true,
           hideBranding: true,
           plan: true,
@@ -136,6 +137,7 @@ export default async function CustomerLayout({
                   hideBranding={effectiveHideBranding}
                   whatsappNumber={storeSettings?.whatsappNumber}
                   instagramUrl={storeSettings?.instagramUrl}
+                  region={tenantRow?.region}
                 />
                 <BottomTab t={t} />
                 <WelcomePopup config={welcomePopupConfig} />

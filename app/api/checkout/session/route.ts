@@ -109,8 +109,7 @@ export const POST = withApi(async (req) => {
 
   const locale = (body.locale || "zh-HK").trim();
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-  if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is required");
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || new URL(req.url).origin;
 
   const successUrl = `${baseUrl}/${locale}/orders/${orderId}?payment=success`;
   const cancelUrl = `${baseUrl}/${locale}/checkout?orderId=${orderId}&payment=cancel`;
