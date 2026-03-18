@@ -117,6 +117,24 @@ async function main() {
     console.log(`✅ Hero banner created`);
   }
 
+  // ── 5. Fix "Hot Right Now" section cardSize → "small" for consistent cards ──
+  const hotSection = await prisma.homepageSection.findFirst({
+    where: { tenantId: tenant.id, title: "Hot Right Now" },
+  });
+  if (hotSection && hotSection.cardSize === "large") {
+    await prisma.homepageSection.update({
+      where: { id: hotSection.id },
+      data: { cardSize: "small" },
+    });
+    console.log(`✅ "Hot Right Now" cardSize changed from "large" → "small"`);
+  } else if (hotSection) {
+    console.log(
+      `ℹ️  "Hot Right Now" cardSize already "${hotSection.cardSize}" — no change`,
+    );
+  } else {
+    console.log(`⚠️  "Hot Right Now" section not found`);
+  }
+
   console.log("\nDone! All solemena-test settings updated to Bull Kicks.");
 }
 

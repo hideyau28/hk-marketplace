@@ -324,7 +324,7 @@ async function main() {
     {
       title: "Hot Right Now",
       type: "product_grid",
-      cardSize: "large",
+      cardSize: "small",
       sortOrder: 1,
       filterType: "featured",
       filterValue: "true",
