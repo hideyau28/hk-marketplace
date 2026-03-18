@@ -196,7 +196,7 @@ export function middleware(request: NextRequest) {
   // --- Forward tenant slug via request header ---
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-tenant-slug", tenantSlug);
-  if (isPlatform) {
+  if (isPlatform && !tenantOverridden) {
     requestHeaders.set("x-is-platform", "true");
   }
 
