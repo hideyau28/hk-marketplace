@@ -82,7 +82,7 @@ function SaleCardItem({
     >
       <div className="relative">
         <Link href={`/${locale}/product/${product.id}`}>
-          <div className="w-[200px] md:w-[240px] overflow-hidden rounded-2xl bg-white border border-zinc-100 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="w-[160px] min-w-[160px] md:w-[180px] md:min-w-[180px] overflow-hidden rounded-xl bg-white border border-zinc-100 dark:border-zinc-800 dark:bg-zinc-900">
             <div className="relative aspect-square overflow-hidden">
               <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                 -{discount}%
@@ -92,7 +92,7 @@ function SaleCardItem({
                 alt={product.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform"
-                sizes="(max-width: 768px) 200px, 240px"
+                sizes="(max-width: 768px) 160px, 180px"
               />
               <WishlistHeart productId={product.id} size="md" />
             </div>
@@ -132,7 +132,7 @@ function SaleCardItem({
         )}
       </div>
       {/* Price row with size dropdown - outside Link */}
-      <div className="w-[200px] md:w-[240px] mt-1 px-3 flex items-center justify-between gap-1">
+      <div className="w-[160px] min-w-[160px] md:w-[180px] md:min-w-[180px] mt-1 px-3 flex items-center justify-between gap-1">
         <div className="flex items-center gap-2">
           <p className="text-xs text-zinc-400 line-through dark:text-zinc-500">
             {formatPrice(product.originalPrice)}
