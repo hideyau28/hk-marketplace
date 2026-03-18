@@ -13,6 +13,7 @@ import SaleZone from "@/components/home/SaleZone";
 import KidsSection from "@/components/home/KidsSection";
 import { Metadata } from "next";
 import LandingPage from "@/components/marketing/LandingPage";
+import TrustBar from "@/components/TrustBar";
 
 // Force dynamic rendering because we need headers() for tenant resolution
 export const dynamic = "force-dynamic";
@@ -316,9 +317,11 @@ export default async function Home({
       stock: p.stock,
     }));
 
+  const firstBannerIndex = renderItems.findIndex((i) => i.type === "banner");
+
   return (
     <div className="pb-16">
-      {renderItems.map((item) => {
+      {renderItems.map((item, idx) => {
         if (item.type === "banner") {
           const banner = item.data;
 
@@ -344,11 +347,10 @@ export default async function Home({
           }));
 
           return (
-            <HeroCarouselCMS
-              key={`banner-${banner.id}`}
-              slides={carouselSlides}
-              locale={l}
-            />
+            <div key={`banner-${banner.id}`}>
+              <HeroCarouselCMS slides={carouselSlides} locale={l} />
+              {idx === firstBannerIndex && <TrustBar locale={l} />}
+            </div>
           );
         }
 

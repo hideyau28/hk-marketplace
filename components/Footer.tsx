@@ -117,6 +117,13 @@ export default function Footer({
           </div>
         )}
 
+        {/* Authenticity tagline */}
+        <p className="text-zinc-400 text-xs mb-3">
+          {locale === "zh-HK"
+            ? "所有波鞋經正品鑑定後出貨"
+            : "All sneakers are verified authentic before shipping"}
+        </p>
+
         {/* Copyright */}
         <p className="text-zinc-500 text-xs">
           © {currentYear} {storeName}. {t.footer.rights}

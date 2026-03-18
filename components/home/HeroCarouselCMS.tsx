@@ -53,74 +53,113 @@ export default function HeroCarouselCMS({
     <section className="pt-4">
       <div className="px-4">
         <div className="relative overflow-hidden rounded-3xl">
-        {/* Slides Container */}
-        <div
-          className="flex transition-transform duration-500 ease-out"
-          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-        >
-          {slides.map((slide) => {
-            const Inner = (
-              <div className="relative w-full shrink-0 aspect-[16/9] md:aspect-auto md:h-[280px] overflow-hidden">
-                {!slide.imageUrl && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-olive-600 to-olive-700" />
-                )}
-                {/* Background Image */}
-                {slide.imageUrl && (
-                  <Image
-                    src={slide.imageUrl}
-                    alt={slide.title}
-                    fill
-                    className="object-cover"
-                    sizes="100vw"
-                    priority={activeIndex === 0}
-                  />
-                )}
-
-                {/* Dark Overlay for Text Readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/30" />
-
-                {/* Content - NO button, just title and subtitle */}
-                <div className="relative flex h-full flex-col items-center justify-center p-6 text-center">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                    {slide.title}
-                  </h2>
-                  {slide.subtitle && (
-                    <p className="text-sm md:text-base text-white/90">
-                      {slide.subtitle}
-                    </p>
+          {/* Slides Container */}
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+          >
+            {slides.map((slide) => {
+              const Inner = (
+                <div className="relative w-full shrink-0 aspect-[16/9] md:aspect-auto md:h-[280px] overflow-hidden">
+                  {!slide.imageUrl && (
+                    <>
+                      {/* Rich gradient background for text-only hero */}
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)",
+                        }}
+                      />
+                      {/* Subtle geometric accent line */}
+                      <div
+                        className="absolute inset-0 opacity-[0.07]"
+                        style={{
+                          backgroundImage:
+                            "repeating-linear-gradient(45deg, transparent, transparent 40px, white 40px, white 41px)",
+                        }}
+                      />
+                    </>
                   )}
+                  {/* Background Image */}
+                  {slide.imageUrl && (
+                    <Image
+                      src={slide.imageUrl}
+                      alt={slide.title}
+                      fill
+                      className="object-cover"
+                      sizes="100vw"
+                      priority={activeIndex === 0}
+                    />
+                  )}
+
+                  {/* Dark Overlay for Text Readability */}
+                  {slide.imageUrl && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/30" />
+                  )}
+
+                  {/* Content */}
+                  <div className="relative flex h-full flex-col items-center justify-center p-6 text-center">
+                    <h2
+                      className="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight"
+                      style={{
+                        fontFamily:
+                          "var(--font-bebas-neue), var(--font-montserrat), sans-serif",
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      {slide.title}
+                    </h2>
+                    {slide.subtitle && (
+                      <p className="text-sm md:text-base text-white/80 max-w-md">
+                        {slide.subtitle}
+                      </p>
+                    )}
+                    {/* CTA button for text-only hero */}
+                    {!slide.imageUrl && !slide.buttonLink && (
+                      <Link
+                        href={`/${locale}/products`}
+                        className="mt-4 inline-block rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 transition-colors"
+                      >
+                        Shop Now
+                      </Link>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
+              );
 
-            // If buttonLink exists, wrap in Link with locale prefix
-            return slide.buttonLink ? (
-              <Link key={slide.key} href={ensureLocalePrefix(slide.buttonLink, locale)} className="block w-full shrink-0">
-                {Inner}
-              </Link>
-            ) : (
-              <div key={slide.key} className="w-full shrink-0">
-                {Inner}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Dot Indicators */}
-        {slides.length > 1 && (
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveIndex(i)}
-                className={`h-2 w-2 rounded-full transition-all ${
-                  i === activeIndex ? "bg-white" : "bg-white/50"
-                }`}
-                aria-label={`Go to slide ${i + 1}`}
-              />
-            ))}
+              // If buttonLink exists, wrap in Link with locale prefix
+              return slide.buttonLink ? (
+                <Link
+                  key={slide.key}
+                  href={ensureLocalePrefix(slide.buttonLink, locale)}
+                  className="block w-full shrink-0"
+                >
+                  {Inner}
+                </Link>
+              ) : (
+                <div key={slide.key} className="w-full shrink-0">
+                  {Inner}
+                </div>
+              );
+            })}
           </div>
-        )}
+
+          {/* Dot Indicators */}
+          {slides.length > 1 && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveIndex(i)}
+                  className={`h-2 w-2 rounded-full transition-all ${
+                    i === activeIndex ? "bg-white" : "bg-white/50"
+                  }`}
+                  aria-label={`Go to slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

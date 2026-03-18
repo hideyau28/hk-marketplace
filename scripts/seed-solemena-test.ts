@@ -118,14 +118,14 @@ async function main() {
         "All orders ship from Hong Kong via Aramex Standard (3-7 business days, US$28) or DHL Express (1-2 business days, US$55). Import duties and customs fees are the buyer's responsibility.",
     },
     create: {
-      tenantId: tenant.id,
+      tenant: { connect: { id: tenant.id } },
       storeName: "SoleMENA",
       storeNameEn: "SoleMENA - Authenticated Sneakers",
       tagline: "From Asia to the Middle East. Every pair verified.",
       whatsappNumber: "+85291234567",
       instagramUrl: "https://instagram.com/solemena",
       shippingFee: 28,
-      freeShippingThreshold: null,
+      freeShippingThreshold: 99999,
       homeDeliveryFee: 28,
       homeDeliveryFreeAbove: 99999,
       sfLockerFee: 0,
@@ -175,7 +175,9 @@ async function main() {
   // Delete existing badges for idempotency
   await prisma.badge.deleteMany({ where: { tenantId: tenant.id } });
   for (const badge of badgeDefs) {
-    await prisma.badge.create({ data: { tenantId: tenant.id, ...badge } });
+    await prisma.badge.create({
+      data: { tenant: { connect: { id: tenant.id } }, ...badge },
+    });
   }
   console.log(`${badgeDefs.length} badges created`);
 
@@ -204,7 +206,7 @@ async function main() {
       where: { tenantId_slug: { tenantId: tenant.id, slug } },
       update: {},
       create: {
-        tenantId: tenant.id,
+        tenant: { connect: { id: tenant.id } },
         name: brand,
         slug,
         active: true,
@@ -225,14 +227,15 @@ async function main() {
       ? toUsd(src.originalPrice)
       : undefined;
 
+    const categoryId = src.brand ? (categoryMap[src.brand] ?? null) : null;
     const product = await prisma.product.create({
       data: {
-        tenantId: tenant.id,
+        tenant: { connect: { id: tenant.id } },
         title: src.title,
         sku: newSku,
         brand: src.brand,
         category: src.category,
-        categoryId: src.brand ? (categoryMap[src.brand] ?? null) : null,
+        ...(categoryId ? { categoryRel: { connect: { id: categoryId } } } : {}),
         price: usdPrice,
         originalPrice: usdOriginal,
         description: src.description,
@@ -259,8 +262,8 @@ async function main() {
       const variantSku = v.sku ? `SM-${v.sku}` : undefined;
       await prisma.productVariant.create({
         data: {
-          tenantId: tenant.id,
-          productId: product.id,
+          tenant: { connect: { id: tenant.id } },
+          product: { connect: { id: product.id } },
           name: v.name,
           sku: variantSku,
           price: v.price ? toUsd(v.price) : null,
@@ -309,7 +312,7 @@ async function main() {
 
   for (const pc of paymentConfigs) {
     await prisma.tenantPaymentConfig.create({
-      data: { tenantId: tenant.id, ...pc },
+      data: { tenant: { connect: { id: tenant.id } }, ...pc },
     });
   }
   console.log(`${paymentConfigs.length} payment methods configured`);
@@ -338,7 +341,12 @@ async function main() {
 
   for (const section of sectionDefs) {
     await prisma.homepageSection.create({
-      data: { tenantId: tenant.id, ...section, active: true, productIds: [] },
+      data: {
+        tenant: { connect: { id: tenant.id } },
+        ...section,
+        active: true,
+        productIds: [],
+      },
     });
   }
   console.log(`${sectionDefs.length} homepage sections created`);
