@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
   let locale = "en";
   if (stateParam) {
     try {
-      const stateObj = JSON.parse(Buffer.from(stateParam, "base64url").toString());
+      const stateObj = JSON.parse(
+        Buffer.from(stateParam, "base64url").toString(),
+      );
       isOnboarding = stateObj.onboarding === true;
       if (stateObj.locale && typeof stateObj.locale === "string") {
         locale = stateObj.locale;
@@ -34,7 +36,9 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const errorRedirect = isOnboarding ? `${baseUrl}/${locale}/start` : `${baseUrl}/${locale}/admin/login`;
+  const errorRedirect = isOnboarding
+    ? `${baseUrl}/${locale}/start`
+    : `${baseUrl}/${locale}/admin/login`;
 
   if (error) {
     console.error("[Google OAuth] Error from Google:", error);
@@ -78,9 +82,12 @@ export async function GET(request: NextRequest) {
     const tokens = await tokenRes.json();
 
     // Fetch user info from Google
-    const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
-      headers: { Authorization: `Bearer ${tokens.access_token}` },
-    });
+    const userInfoRes = await fetch(
+      "https://www.googleapis.com/oauth2/v2/userinfo",
+      {
+        headers: { Authorization: `Bearer ${tokens.access_token}` },
+      },
+    );
 
     if (!userInfoRes.ok) {
       console.error("[Google OAuth] Failed to fetch user info");
@@ -137,19 +144,42 @@ export async function GET(request: NextRequest) {
       return response;
     }
 
-    // Create admin session JWT
-    const token = await createSession();
+    // Look up existing TenantAdmin by Google email
+    const existingAdmin = await prisma.tenantAdmin.findUnique({
+      where: { email: (userInfo.email || "").toLowerCase() },
+    });
 
-    // BUG FIX: Must set cookie directly on the redirect response.
-    // Previously used setSessionCookie() which calls cookies() from next/headers,
-    // but cookies set that way are NOT carried over to NextResponse.redirect().
+    if (!existingAdmin) {
+      console.error(
+        "[Google OAuth] No TenantAdmin found for email:",
+        userInfo.email,
+      );
+      return NextResponse.redirect(`${errorRedirect}?error=no_account`);
+    }
+
+    // Create both session tokens: admin_session (middleware guard) + tenant-admin-token (tenant context)
+    const sessionToken = await createSession();
+    const adminToken = signToken({
+      tenantId: existingAdmin.tenantId,
+      adminId: existingAdmin.id,
+      email: existingAdmin.email,
+      role: existingAdmin.role,
+    });
+
     const redirectUrl = `${baseUrl}/${locale}/admin/products`;
     const response = NextResponse.redirect(redirectUrl);
-    response.cookies.set("admin_session", token, {
+    response.cookies.set("admin_session", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax", // "lax" required for OAuth flows (navigation from Google)
+      sameSite: "lax",
       maxAge: 60 * 60 * 24,
+      path: "/",
+    });
+    response.cookies.set("tenant-admin-token", adminToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
 

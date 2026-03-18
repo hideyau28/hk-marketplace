@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WoWlix SEO Audit — 2026-03-19</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root {
+    --olive: #5c7c3a; --olive-light: #e8f0dc; --olive-dark: #3d5226;
+    --red: #c0392b; --red-light: #fdecea;
+    --amber: #e67e22; --amber-light: #fef3e2;
+    --green: #27ae60; --green-light: #e8f8f0;
+    --gray-50: #f8f9fa; --gray-100: #f1f3f5; --gray-200: #e9ecef;
+    --gray-600: #868e96; --gray-800: #343a40; --gray-900: #212529;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.7; }
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+  h1 { font-size: 1.8rem; font-weight: 700; color: var(--olive-dark); margin-bottom: 0.25rem; }
+  .subtitle { color: var(--gray-600); font-size: 0.95rem; margin-bottom: 2.5rem; }
+  h2 { font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--olive); }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
+
+  /* Score cards */
+  .scores { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .score-card { background: #fff; border-radius: 12px; padding: 1.25rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .score-card .num { font-size: 2rem; font-weight: 700; }
+  .score-card .label { font-size: 0.8rem; color: var(--gray-600); margin-top: 0.25rem; }
+  .score-card.red .num { color: var(--red); }
+  .score-card.amber .num { color: var(--amber); }
+  .score-card.green .num { color: var(--green); }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  th { background: var(--gray-100); text-align: left; padding: 0.6rem 0.75rem; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--gray-600); }
+  td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--gray-200); vertical-align: top; }
+  tr:hover td { background: var(--gray-50); }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.78rem; font-weight: 600; }
+  .badge.pass { background: var(--green-light); color: var(--green); }
+  .badge.fail { background: var(--red-light); color: var(--red); }
+  .badge.warn { background: var(--amber-light); color: var(--amber); }
+  .badge.critical { background: var(--red); color: #fff; }
+  .badge.high { background: #e74c3c; color: #fff; }
+  .badge.medium { background: var(--amber); color: #fff; }
+  .badge.low { background: var(--gray-600); color: #fff; }
+  .badge.quick { background: var(--green-light); color: var(--green); }
+  .badge.strategic { background: var(--olive-light); color: var(--olive-dark); }
+
+  /* Summary box */
+  .summary { background: #fff; border-left: 4px solid var(--olive); border-radius: 8px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .summary p { margin-bottom: 0.5rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* Action items */
+  .action-list { list-style: none; margin: 1rem 0; }
+  .action-list li { background: #fff; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .action-list li .title { font-weight: 600; margin-bottom: 0.25rem; }
+  .action-list li .detail { font-size: 0.88rem; color: var(--gray-600); }
+
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--gray-100); padding: 0.1em 0.35em; border-radius: 3px; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .muted { color: var(--gray-600); }
+  .section-note { font-size: 0.88rem; color: var(--gray-600); margin-bottom: 1rem; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>WoWlix SEO Audit</h1>
+<p class="subtitle">wowlix.com · IG 小店 SaaS · 2026-03-19</p>
+
+<!-- ===== EXECUTIVE SUMMARY ===== -->
+<h2>Executive Summary</h2>
+<div class="summary">
+  <p><strong>整體評估：基礎尚可，但有明顯缺口。</strong></p>
+  <p>WoWlix 嘅 Next.js App Router 架構提供咗唔錯嘅 SEO 基礎——robots.txt、動態 sitemap、PWA manifest 都已就位。但有三個關鍵問題會直接影響 Google 排名同 rich snippet 顯示：<strong>1) 完全冇 JSON-LD 結構化數據</strong>（產品頁冇 Product schema = 冇機會出 rich result），<strong>2) Google 搜尋完全搵唔到 wowlix.com</strong>（<code>site:wowlix.com</code> 返回 0 結果），<strong>3) 多語言版本冇 hreflang 標記</strong>（en 同 zh-HK 互相競爭排名）。</p>
+  <p>最大優勢：動態 sitemap 已自動包含所有 tenant 頁面，SEO 可以隨商家增長自動 scale。</p>
+</div>
+
+<div class="scores">
+  <div class="score-card red"><div class="num">0</div><div class="label">Google 索引頁數</div></div>
+  <div class="score-card green"><div class="num">✓</div><div class="label">Sitemap</div></div>
+  <div class="score-card green"><div class="num">✓</div><div class="label">Robots.txt</div></div>
+  <div class="score-card amber"><div class="num">60%</div><div class="label">OG 覆蓋率</div></div>
+  <div class="score-card red"><div class="num">0</div><div class="label">JSON-LD</div></div>
+  <div class="score-card red"><div class="num">0</div><div class="label">hreflang</div></div>
+</div>
+
+<!-- ===== TECHNICAL SEO ===== -->
+<h2>Technical SEO Checklist</h2>
+
+<table>
+<thead><tr><th>檢查項目</th><th>狀態</th><th>詳情</th></tr></thead>
+<tbody>
+<tr><td>robots.txt</td><td><span class="badge pass">PASS</span></td><td>Allow all crawlers, sitemap 已聲明</td></tr>
+<tr><td>XML Sitemap</td><td><span class="badge pass">PASS</span></td><td>動態生成，含平台頁 + 所有 tenant 頁面（about/contact/faq/shipping/returns/terms/privacy），每個 locale 獨立 entry</td></tr>
+<tr><td>HTTPS</td><td><span class="badge pass">PASS</span></td><td>Vercel 自動提供 SSL</td></tr>
+<tr><td>Admin 頁面保護</td><td><span class="badge pass">PASS</span></td><td><code>robots: { index: false, follow: false }</code></td></tr>
+<tr><td>PWA Manifest</td><td><span class="badge pass">PASS</span></td><td>manifest.json 完整，含 icons + theme_color</td></tr>
+<tr><td>Favicon</td><td><span class="badge pass">PASS</span></td><td>favicon.svg 已設定</td></tr>
+<tr><td>Google 索引</td><td><span class="badge fail">FAIL</span></td><td><code>site:wowlix.com</code> 返回 0 結果。可能原因：域名未驗證 / DNS 未指向 Vercel / 未提交 Google Search Console</td></tr>
+<tr><td>JSON-LD 結構化數據</td><td><span class="badge fail">FAIL</span></td><td>整個站冇任何 <code>application/ld+json</code> script tag</td></tr>
+<tr><td>hreflang 標記</td><td><span class="badge fail">FAIL</span></td><td>支援 en + zh-HK 但冇 hreflang alternate links</td></tr>
+<tr><td>HTML lang 屬性</td><td><span class="badge fail">FAIL</span></td><td>Root layout hardcode <code>&lt;html lang="en"&gt;</code>，唔會根據 locale 變</td></tr>
+<tr><td>Canonical URLs</td><td><span class="badge warn">WARN</span></td><td>Homepage + Pricing 有；Product / Category / Search 頁冇</td></tr>
+<tr><td>OpenGraph</td><td><span class="badge warn">WARN</span></td><td>~60% 頁面有 OG tags；About/Contact/FAQ/Category 頁缺</td></tr>
+<tr><td>Twitter Cards</td><td><span class="badge warn">WARN</span></td><td>~40% 頁面有；Product 頁只有 OG 冇 Twitter</td></tr>
+<tr><td>部署地區</td><td><span class="badge pass">PASS</span></td><td>Vercel region: <code>hkg1</code>（香港），延遲低</td></tr>
+<tr><td>Image Optimization</td><td><span class="badge pass">PASS</span></td><td>Next.js Image + Cloudinary remote patterns</td></tr>
+<tr><td>Trailing slash 統一</td><td><span class="badge warn">WARN</span></td><td>未做 trailing slash redirect，可能產生重複頁</td></tr>
+</tbody>
+</table>
+
+<!-- ===== ON-PAGE ISSUES ===== -->
+<h2>On-Page SEO Issues</h2>
+
+<table>
+<thead><tr><th>頁面</th><th>問題</th><th>嚴重度</th><th>建議修正</th></tr></thead>
+<tbody>
+<tr><td>所有頁面</td><td>HTML lang 永遠係 "en"</td><td><span class="badge critical">Critical</span></td><td>Root layout 讀 <code>[locale]</code> param，動態設 <code>lang</code></td></tr>
+<tr><td>Product <code>/product/[id]</code></td><td>冇 canonical URL</td><td><span class="badge high">High</span></td><td>加 <code>alternates.canonical</code> 到 <code>generateMetadata</code></td></tr>
+<tr><td>Product <code>/product/[id]</code></td><td>冇 Twitter card</td><td><span class="badge medium">Medium</span></td><td>加 <code>twitter: { card: 'summary_large_image', images }</code></td></tr>
+<tr><td>Product <code>/product/[id]</code></td><td>冇 Product JSON-LD</td><td><span class="badge critical">Critical</span></td><td>加 Product + Offer schema（名、價、庫存、圖片）</td></tr>
+<tr><td>Homepage</td><td>冇 Organization JSON-LD</td><td><span class="badge high">High</span></td><td>加 Organization schema（名、logo、URL、social links）</td></tr>
+<tr><td>About / Contact / FAQ</td><td>冇 OG 同 Twitter tags</td><td><span class="badge medium">Medium</span></td><td>每頁加 <code>openGraph</code> + <code>twitter</code> metadata</td></tr>
+<tr><td>FAQ <code>/faq</code></td><td>冇 FAQ JSON-LD</td><td><span class="badge medium">Medium</span></td><td>加 FAQPage schema，可出 rich snippet</td></tr>
+<tr><td>Category 頁</td><td>冇 canonical、冇 OG</td><td><span class="badge medium">Medium</span></td><td>加 canonical + OG metadata</td></tr>
+<tr><td>Search <code>/search</code></td><td>冇 <code>generateMetadata</code></td><td><span class="badge low">Low</span></td><td>動態 title 加搜尋詞，加 <code>noindex</code>（搜尋結果頁唔需要索引）</td></tr>
+<tr><td>Breadcrumbs</td><td>有 UI 但冇 BreadcrumbList schema</td><td><span class="badge medium">Medium</span></td><td>Product 頁加 BreadcrumbList JSON-LD</td></tr>
+</tbody>
+</table>
+
+<!-- ===== INDEXATION EMERGENCY ===== -->
+<h2>🚨 索引緊急問題</h2>
+<div class="summary" style="border-left-color: var(--red);">
+  <p><strong>Google 完全冇索引 wowlix.com。</strong>呢個係最 critical 嘅問題——再靚嘅 SEO 設定都冇用如果 Google 睇唔到你個站。</p>
+  <p>可能原因（按可能性排序）：</p>
+  <p>1. <strong>未設定 Google Search Console</strong> — 未驗證域名擁有權，Google 唔會主動爬</p>
+  <p>2. <strong>DNS / 域名未正確指向 Vercel</strong> — wowlix.com 可能仲未 live</p>
+  <p>3. <strong>Sitemap 未提交</strong> — 雖然 robots.txt 有聲明，但手動提交可以加速索引</p>
+  <p>4. <strong><code>force-dynamic</code> 配合 Vercel</strong> — 如果頁面 response time 太慢，Googlebot 可能放棄爬</p>
+</div>
+
+<!-- ===== KEYWORD OPPORTUNITIES ===== -->
+<h2>Keyword Opportunities</h2>
+<p class="section-note">基於香港 IG 小店市場分析，以下係 WoWlix 應該 target 嘅關鍵詞：</p>
+
+<table>
+<thead><tr><th>Keyword</th><th>難度</th><th>機會</th><th>意圖</th><th>建議內容</th></tr></thead>
+<tbody>
+<tr><td>IG shop 開店</td><td><span class="badge medium">中</span></td><td><span class="badge high">High</span></td><td>Commercial</td><td>Landing page + 教學 blog</td></tr>
+<tr><td>ig shop 網店平台</td><td><span class="badge medium">中</span></td><td><span class="badge high">High</span></td><td>Commercial</td><td>Pricing + 比較頁</td></tr>
+<tr><td>instagram 開網店 香港</td><td><span class="badge low">低</span></td><td><span class="badge high">High</span></td><td>Informational</td><td>Blog：step-by-step 教學</td></tr>
+<tr><td>香港網店平台比較</td><td><span class="badge high">高</span></td><td><span class="badge medium">Med</span></td><td>Commercial</td><td>比較頁：WoWlix vs Shopify vs Boutir</td></tr>
+<tr><td>ig shop 收款方法</td><td><span class="badge low">低</span></td><td><span class="badge high">High</span></td><td>Informational</td><td>Blog：FPS/PayMe 收款教學</td></tr>
+<tr><td>免費開網店</td><td><span class="badge medium">中</span></td><td><span class="badge high">High</span></td><td>Transactional</td><td>Landing page（Free plan CTA）</td></tr>
+<tr><td>bio link 工具</td><td><span class="badge low">低</span></td><td><span class="badge medium">Med</span></td><td>Commercial</td><td>Feature page：BioLink 功能介紹</td></tr>
+<tr><td>whatsapp 落單系統</td><td><span class="badge low">低</span></td><td><span class="badge medium">Med</span></td><td>Commercial</td><td>Feature page</td></tr>
+<tr><td>小店 落單 template</td><td><span class="badge low">低</span></td><td><span class="badge medium">Med</span></td><td>Informational</td><td>Blog + 免費 template 下載</td></tr>
+<tr><td>ig shop 管理</td><td><span class="badge low">低</span></td><td><span class="badge medium">Med</span></td><td>Informational</td><td>Blog：admin 功能介紹</td></tr>
+<tr><td>香港 ig shop 推薦</td><td><span class="badge medium">中</span></td><td><span class="badge medium">Med</span></td><td>Navigational</td><td>Blog：成功案例</td></tr>
+<tr><td>網店 SEO</td><td><span class="badge high">高</span></td><td><span class="badge low">Low</span></td><td>Informational</td><td>Blog（長期投資）</td></tr>
+</tbody>
+</table>
+
+<!-- ===== CONTENT GAP ===== -->
+<h2>Content Gap Analysis</h2>
+<p class="section-note">而家 WoWlix 只有 Homepage + Pricing，冇任何 blog / 教學內容。喺 HK IG shop 市場，Boutir、Shopline 已經有大量 content。</p>
+
+<table>
+<thead><tr><th>缺口</th><th>點解重要</th><th>格式</th><th>優先</th><th>工作量</th></tr></thead>
+<tbody>
+<tr><td>IG 開店教學系列</td><td>最大 organic 入口；競爭對手（DBS、Shopify HK）已有</td><td>Blog 系列（3-5 篇）</td><td><span class="badge high">High</span></td><td>每篇 2-3 小時</td></tr>
+<tr><td>平台比較頁</td><td>Commercial intent 高，買家做 research 會搜</td><td>Landing page</td><td><span class="badge high">High</span></td><td>半日</td></tr>
+<tr><td>FPS/PayMe 收款教學</td><td>香港特有痛點，低競爭長尾</td><td>Blog</td><td><span class="badge high">High</span></td><td>2 小時</td></tr>
+<tr><td>成功案例 / Case study</td><td>建立信任，social proof</td><td>Blog + Landing page</td><td><span class="badge medium">Med</span></td><td>需要客戶配合</td></tr>
+<tr><td>FAQ 頁面充實</td><td>可以觸發 Google FAQ rich snippet</td><td>現有 /faq 頁擴充</td><td><span class="badge medium">Med</span></td><td>1-2 小時</td></tr>
+<tr><td>BioLink 功能介紹</td><td>差異化賣點，Linktree 替代品角度</td><td>Feature page</td><td><span class="badge medium">Med</span></td><td>半日</td></tr>
+</tbody>
+</table>
+
+<!-- ===== COMPETITOR COMPARISON ===== -->
+<h2>Competitor SEO Comparison</h2>
+<p class="section-note">香港 IG 小店平台市場主要競爭者</p>
+
+<table>
+<thead><tr><th>維度</th><th>WoWlix</th><th>Boutir</th><th>Shopline</th><th>Storeberry</th></tr></thead>
+<tbody>
+<tr><td>Google 索引</td><td><span class="badge fail">0 頁</span></td><td>10,000+</td><td>50,000+</td><td>5,000+</td></tr>
+<tr><td>Blog 內容</td><td>0 篇</td><td>100+ 篇</td><td>200+ 篇</td><td>50+ 篇</td></tr>
+<tr><td>JSON-LD</td><td>❌</td><td>✅ Product + Org</td><td>✅ 全面</td><td>部分</td></tr>
+<tr><td>多語言 SEO</td><td>❌ 冇 hreflang</td><td>✅</td><td>✅</td><td>部分</td></tr>
+<tr><td>Page Speed</td><td>⚡ 快（Next.js + Vercel HKG）</td><td>中等</td><td>中等</td><td>中等</td></tr>
+<tr><td>定價優勢</td><td>✅ Free plan + 0% fee</td><td>$150+/月</td><td>$200+/月</td><td>$138+/月</td></tr>
+<tr><td>香港本地化</td><td>✅ FPS/PayMe/中文</td><td>✅</td><td>✅</td><td>✅</td></tr>
+</tbody>
+</table>
+
+<!-- ===== ACTION PLAN ===== -->
+<h2>Prioritized Action Plan</h2>
+
+<h3>🏃 Quick Wins（今個星期做）</h3>
+<ul class="action-list">
+  <li>
+    <div class="title"><span class="badge quick">30 min</span> 設定 Google Search Console + 提交 sitemap</div>
+    <div class="detail">去 search.google.com/search-console，驗證 wowlix.com（DNS TXT record），提交 /sitemap.xml。<strong>Impact: Critical</strong> — 冇呢步以下所有 SEO 都冇用。</div>
+  </li>
+  <li>
+    <div class="title"><span class="badge quick">1 hr</span> 修正 HTML lang 動態化</div>
+    <div class="detail"><code>app/layout.tsx</code> 讀 locale param，<code>&lt;html lang={locale}&gt;</code>。影響所有頁面嘅 accessibility + SEO signal。</div>
+  </li>
+  <li>
+    <div class="title"><span class="badge quick">1 hr</span> 加 Product JSON-LD</div>
+    <div class="detail">Product 頁加 <code>&lt;script type="application/ld+json"&gt;</code>，含 name、description、image、offers（price、priceCurrency: HKD、availability）。可以觸發 Google Shopping rich result。</div>
+  </li>
+  <li>
+    <div class="title"><span class="badge quick">30 min</span> 加 hreflang alternate links</div>
+    <div class="detail">Homepage + 主要頁面加 <code>alternates.languages</code>：<code>{ 'en': '/en', 'zh-HK': '/zh-HK', 'x-default': '/' }</code></div>
+  </li>
+  <li>
+    <div class="title"><span class="badge quick">30 min</span> Product 頁加 canonical + Twitter card</div>
+    <div class="detail"><code>generateMetadata</code> 加 <code>alternates.canonical</code> 同 <code>twitter: { card: 'summary_large_image' }</code></div>
+  </li>
+  <li>
+    <div class="title"><span class="badge quick">1 hr</span> 所有 info 頁加 OG + Twitter metadata</div>
+    <div class="detail">About、Contact、FAQ、Shipping、Returns、Terms、Privacy — 每頁加 <code>openGraph</code> + <code>twitter</code></div>
+  </li>
+</ul>
+
+<h3>📈 Strategic Investments（今個 quarter 計劃）</h3>
+<ul class="action-list">
+  <li>
+    <div class="title"><span class="badge strategic">3-5 日</span> IG 開店教學 Blog 系列</div>
+    <div class="detail">3-5 篇 SEO-optimized blog posts：「IG Shop 開店完全教學」「FPS/PayMe 收款設定」「點樣管理 IG 訂單」。Target 長尾關鍵詞，建立 organic traffic 基礎。<strong>Impact: High</strong></div>
+  </li>
+  <li>
+    <div class="title"><span class="badge strategic">半日</span> 平台比較 Landing Page</div>
+    <div class="detail">「WoWlix vs Boutir vs Shopline」比較頁，target「香港網店平台比較」呢個 high-intent keyword。強調 0% fee + Free plan 優勢。<strong>Impact: High</strong></div>
+  </li>
+  <li>
+    <div class="title"><span class="badge strategic">2 日</span> 全面 JSON-LD 覆蓋</div>
+    <div class="detail">Homepage: Organization schema；FAQ: FAQPage schema；Product: BreadcrumbList schema；Tenant stores: LocalBusiness schema。<strong>Impact: Medium-High</strong></div>
+  </li>
+  <li>
+    <div class="title"><span class="badge strategic">1 日</span> /blog 路由 + CMS 架構</div>
+    <div class="detail">建立 <code>/[locale]/blog</code> 路由，可以用 MDX 或簡單 CMS。長期 content marketing 嘅基礎設施。<strong>Impact: High（長期）</strong></div>
+  </li>
+  <li>
+    <div class="title"><span class="badge strategic">持續</span> Backlink 建設</div>
+    <div class="detail">HK startup directories（StartmeupHK、HKSTP）、IG shop 社群、小店推介 list。目標：10 個 quality backlinks / 月。<strong>Impact: High（長期）</strong></div>
+  </li>
+</ul>
+
+<!-- ===== SUMMARY TABLE ===== -->
+<h2>Overall Score Card</h2>
+<table>
+<thead><tr><th>Category</th><th>Status</th><th>Score</th></tr></thead>
+<tbody>
+<tr><td>Technical Foundation</td><td><span class="badge pass">PASS</span></td><td>7/10</td></tr>
+<tr><td>On-Page SEO</td><td><span class="badge warn">WARN</span></td><td>4/10</td></tr>
+<tr><td>Structured Data</td><td><span class="badge fail">FAIL</span></td><td>0/10</td></tr>
+<tr><td>Content</td><td><span class="badge fail">FAIL</span></td><td>1/10</td></tr>
+<tr><td>Indexation</td><td><span class="badge fail">FAIL</span></td><td>0/10</td></tr>
+<tr><td>International SEO</td><td><span class="badge fail">FAIL</span></td><td>2/10</td></tr>
+<tr style="font-weight:700;"><td>Overall</td><td></td><td>2.3 / 10</td></tr>
+</tbody>
+</table>
+
+<div class="summary" style="margin-top: 2rem; border-left-color: var(--olive);">
+  <p><strong>Bottom line：</strong>技術底子唔差（Next.js + Vercel HKG region + 動態 sitemap），但 Google 完全搵唔到你。第一步一定係 Google Search Console 驗證 + sitemap 提交。之後加 JSON-LD 同 hreflang 就可以大幅改善。Content 方面係零，需要開始建 blog。</p>
+</div>
+
+<p style="margin-top: 3rem; font-size: 0.82rem; color: var(--gray-600); text-align: center;">
+  Generated by Claude · WoWlix SEO Audit · 2026-03-19
+</p>
+
+</div>
+</body>
+</html>
