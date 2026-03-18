@@ -13,7 +13,6 @@ import { FilterProvider } from "@/lib/filter-context";
 import { AuthProvider } from "@/lib/auth-context";
 import Analytics from "@/components/Analytics";
 import WelcomePopup from "@/components/WelcomePopup";
-import SocialProofPopup from "@/components/SocialProofPopup";
 import CartFlyAnimation from "@/components/CartFlyAnimation";
 import AdminPreviewBanner from "@/components/AdminPreviewBanner";
 import StorefrontTemplate from "@/components/StorefrontTemplate";
@@ -70,15 +69,6 @@ export default async function CustomerLayout({
       })
       .catch(() => null),
   ]);
-
-  // Fetch products for social proof popup
-  const socialProofProducts = await prisma.product
-    .findMany({
-      where: { active: true, hidden: false, stock: { gt: 0 }, deletedAt: null },
-      select: { id: true, title: true },
-      take: 50,
-    })
-    .catch(() => []);
 
   // Get store name with fallback
   const storeName = storeSettings?.storeName || "May's Shop";
@@ -141,7 +131,6 @@ export default async function CustomerLayout({
                 />
                 <BottomTab t={t} />
                 <WelcomePopup config={welcomePopupConfig} />
-                <SocialProofPopup products={socialProofProducts} />
                 <CartFlyAnimation />
               </div>
             </AuthProvider>

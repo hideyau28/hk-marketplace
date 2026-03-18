@@ -53,7 +53,6 @@ import OrderConfirmation from "./OrderConfirmation";
 import ProductSheet from "./ProductSheet";
 import ImageLightbox from "./ImageLightbox";
 import ScrollToTopFAB from "./ScrollToTopFAB";
-import SocialProofToast from "./SocialProofToast";
 
 function swapLocale(pathname: string, nextLocale: Locale) {
   const parts = pathname.split("/").filter(Boolean);
@@ -488,9 +487,6 @@ export default function BioLinkPage({ tenant, products }: Props) {
 
         {/* Scroll to top FAB */}
         <ScrollToTopFAB />
-
-        {/* Social proof toast — hot sale nudge */}
-        {products.length > 0 && <SocialProofToast products={products} />}
 
         {/* Image lightbox */}
         {lightbox && (
