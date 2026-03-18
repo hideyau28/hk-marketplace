@@ -233,6 +233,14 @@ export default function ProductDetailClient({
         )}
       </div>
 
+      {/* Stock urgency warning */}
+      {displayStock != null && displayStock > 0 && displayStock <= 5 && (
+        <div className="flex items-center gap-1.5 text-amber-600 text-sm font-medium">
+          <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          {locale === "zh-HK" ? "快將售罄" : "Almost Gone"}
+        </div>
+      )}
+
       {/* Trust badges */}
       <div className="flex flex-col gap-1 text-sm text-zinc-600 dark:text-zinc-400">
         <div>

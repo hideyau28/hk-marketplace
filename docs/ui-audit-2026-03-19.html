@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WoWlix UI Audit — 2026-03-19</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root {
+    --olive: #5c7c3a; --olive-light: #e8f0dc; --olive-dark: #3d5226;
+    --red: #c0392b; --red-light: #fdecea;
+    --amber: #e67e22; --amber-light: #fef3e2;
+    --green: #27ae60; --green-light: #e8f8f0;
+    --blue: #2980b9; --blue-light: #ebf5fb;
+    --gray-50: #f8f9fa; --gray-100: #f1f3f5; --gray-200: #e9ecef;
+    --gray-600: #868e96; --gray-800: #343a40; --gray-900: #212529;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.7; }
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+  h1 { font-size: 1.8rem; font-weight: 700; color: var(--olive-dark); margin-bottom: 0.25rem; }
+  .subtitle { color: var(--gray-600); font-size: 0.95rem; margin-bottom: 2.5rem; }
+  h2 { font-size: 1.25rem; font-weight: 700; color: var(--gray-800); margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--olive); }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
+  .summary { background: #fff; border-left: 4px solid var(--olive); border-radius: 8px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .summary p { margin-bottom: 0.5rem; }
+  .summary p:last-child { margin-bottom: 0; }
+  .alert { background: #fff; border-left: 4px solid var(--red); border-radius: 8px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  th { background: var(--gray-100); text-align: left; padding: 0.6rem 0.75rem; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--gray-600); }
+  td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--gray-200); vertical-align: top; }
+  tr:hover td { background: var(--gray-50); }
+  .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.78rem; font-weight: 600; }
+  .badge.critical { background: var(--red); color: #fff; }
+  .badge.high { background: #e74c3c; color: #fff; }
+  .badge.medium { background: var(--amber); color: #fff; }
+  .badge.low { background: var(--gray-600); color: #fff; }
+  .badge.pass { background: var(--green-light); color: var(--green); }
+  .badge.fail { background: var(--red-light); color: var(--red); }
+  .badge.warn { background: var(--amber-light); color: var(--amber); }
+  .badge.info { background: var(--blue-light); color: var(--blue); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--gray-100); padding: 0.1em 0.35em; border-radius: 3px; }
+  .section { background: #fff; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .section h3 { margin-top: 0; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+  .stat { text-align: center; padding: 1rem; }
+  .stat .num { font-size: 2rem; font-weight: 700; }
+  .stat .label { font-size: 0.8rem; color: var(--gray-600); }
+  ul.fix-list { list-style: none; margin: 0.75rem 0; }
+  ul.fix-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--gray-200); }
+  ul.fix-list li:last-child { border-bottom: none; }
+  ul.fix-list li strong { color: var(--gray-800); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>WoWlix UI Audit</h1>
+<p class="subtitle">Live screenshots + code review · 2026-03-19</p>
+
+<!-- ===== P0 BLOCKER ===== -->
+<h2>🚨 P0 Blocker: Homepage + Biolink 500 Error</h2>
+<div class="alert">
+  <p><strong>Homepage (<code>/zh-HK</code>) 同所有 Biolink 店面頁面都返回 500 error。</strong></p>
+  <p>呢個係最緊急嘅問題——客人同店主完全入唔到店面。Pricing page 同 Onboarding wizard 正常，所以問題應該係 DB connection 或者 tenant data fetching 出錯。</p>
+  <p><strong>建議即時檢查：</strong></p>
+  <p>1. Neon DB connection string 係咪仲有效（check Vercel env vars）</p>
+  <p>2. Homepage <code>force-dynamic</code> + DB query 有冇 timeout</p>
+  <p>3. Vercel runtime logs（我嘗試 check 但 timeout 咗）</p>
+</div>
+
+<!-- ===== PRICING / LANDING ===== -->
+<h2>1. Pricing / Landing Page</h2>
+<div class="summary">
+  <p><strong>整體評價：7/10 — 內容完整，設計一致，有幾個可以改善嘅地方。</strong></p>
+</div>
+
+<h3>✅ 做得好</h3>
+<div class="section">
+  <ul class="fix-list">
+    <li><strong>Hero section 有力</strong> — 「全港最平 IG 網店開店神器」直接講到 value prop，USP badges（0% 平台抽成 / $0 起 / 2 分鐘開店）清晰</li>
+    <li><strong>三步流程</strong> — 上貨 → 分享 Link → 收單，簡單易明</li>
+    <li><strong>費用比較 slider</strong> — 互動元素好，幫客人計到用其他平台要畀幾多，好有說服力</li>
+    <li><strong>4 款主題 preview</strong> — 直接展示唔同風格嘅店面，增加信心</li>
+    <li><strong>FAQ section</strong> — 常見問題齊全</li>
+    <li><strong>Footer</strong> — 產品/支援/法律 分類清晰</li>
+  </ul>
+</div>
+
+<h3>🔧 可以改善</h3>
+<table>
+<thead><tr><th>問題</th><th>位置</th><th>優先</th><th>建議</th></tr></thead>
+<tbody>
+<tr><td>缺少 social proof</td><td>Hero 下方</td><td><span class="badge high">High</span></td><td>加「已有 XX 間小店使用」或者真實店主 testimonial</td></tr>
+<tr><td>Hero CTA 按鈕太細</td><td>Hero section</td><td><span class="badge medium">Medium</span></td><td>加大按鈕 + 加 hover shadow；可以加副文案「30 秒搞掂」</td></tr>
+<tr><td>Pricing cards 冇 hover 效果</td><td>Plan 比較區</td><td><span class="badge low">Low</span></td><td>加 hover shadow + scale 微放大，增加互動感</td></tr>
+<tr><td>「查看完整定價 →」指去邊？</td><td>Plan CTA 下方</td><td><span class="badge medium">Medium</span></td><td>確認呢個 link 正確指向功能對比表</td></tr>
+<tr><td>Feature 比較表冇 sticky header</td><td>功能一覽</td><td><span class="badge low">Low</span></td><td>碌落時 plan 名 sticky，方便對比</td></tr>
+<tr><td>Footer 連結太少</td><td>Footer</td><td><span class="badge low">Low</span></td><td>加 IG / FAQ / Blog（之後有嘅話）</td></tr>
+<tr><td>冇 cookie consent banner</td><td>全站</td><td><span class="badge medium">Medium</span></td><td>如果將來要 comply PDPO（香港私隱條例），建議加</td></tr>
+</tbody>
+</table>
+
+<!-- ===== ONBOARDING ===== -->
+<h2>2. Onboarding Wizard</h2>
+<div class="summary">
+  <p><strong>整體評價：8/10 — 流程清晰，Step indicator 做得好。</strong></p>
+</div>
+
+<h3>✅ 做得好</h3>
+<div class="section">
+  <ul class="fix-list">
+    <li><strong>Plan 選擇清晰</strong> — Free / Lite / Pro 一目了然，每個 plan 嘅 features 用 checkmark 列出</li>
+    <li><strong>「最受歡迎」badge</strong> — Lite plan 有 highlight，引導用戶</li>
+    <li><strong>Step indicator</strong> — 底部有進度條「第 1 步（共 6 步）」</li>
+    <li><strong>Language toggle</strong> — 底部可以切換 English</li>
+    <li><strong>0% 平台抽成</strong> — 重複強調，強化 value prop</li>
+  </ul>
+</div>
+
+<h3>🔧 可以改善</h3>
+<table>
+<thead><tr><th>問題</th><th>位置</th><th>優先</th><th>建議</th></tr></thead>
+<tbody>
+<tr><td>Pro plan card 背景太暗</td><td>Step 1</td><td><span class="badge low">Low</span></td><td>深灰色背景同其他 card 風格唔一致，建議統一用淺色 + border</td></tr>
+<tr><td>冇返回按鈕</td><td>全部 steps</td><td><span class="badge medium">Medium</span></td><td>用戶可能想改之前嘅選擇，需要「← 上一步」</td></tr>
+<tr><td>「已有帳號？登入」位置弱</td><td>底部</td><td><span class="badge low">Low</span></td><td>現有位置 OK，但可以加粗或者用唔同顏色</td></tr>
+</tbody>
+</table>
+
+<!-- ===== ERROR PAGES ===== -->
+<h2>3. Error Pages (404 / 500)</h2>
+<div class="summary">
+  <p><strong>整體評價：6/10 — 有中文化但設計可以更好。</strong></p>
+</div>
+
+<table>
+<thead><tr><th>問題</th><th>優先</th><th>建議</th></tr></thead>
+<tbody>
+<tr><td>404 頁面太空</td><td><span class="badge medium">Medium</span></td><td>加插圖或 brand illustration，唔好淨係文字</td></tr>
+<tr><td>500 頁面「重試」按鈕</td><td><span class="badge low">Low</span></td><td>重試可能會一直 loop；加「返回首頁」選項</td></tr>
+<tr><td>404 「免費開店」CTA</td><td><span class="badge pass">Good</span></td><td>好嘅設計——將 404 流量導向開店</td></tr>
+<tr><td>WoWlix logo 500 頁有、404 冇</td><td><span class="badge low">Low</span></td><td>統一兩個 error page 嘅 branding</td></tr>
+</tbody>
+</table>
+
+<!-- ===== BIOLINK (CODE REVIEW) ===== -->
+<h2>4. Biolink Storefront（Code Review）</h2>
+<div class="summary">
+  <p><strong>因為 500 error 睇唔到 live 頁面，以下基於 code review。</strong></p>
+</div>
+
+<h3>已有功能 ✅</h3>
+<div class="section">
+  <ul class="fix-list">
+    <li><strong>Cover photo + template system</strong> — 4 款 theme（HYPEDROPS / 日和 / Green Day / 花語）</li>
+    <li><strong>Product grid</strong> — 產品卡片 + category pills + 搜尋</li>
+    <li><strong>Cart + Checkout</strong> — 完整購物流程</li>
+    <li><strong>WhatsApp FAB</strong> — 浮動 WhatsApp 按鈕</li>
+    <li><strong>Order tracking</strong> — 用電話號碼查訂單</li>
+    <li><strong>Multi-locale</strong> — en / zh-HK</li>
+  </ul>
+</div>
+
+<h3>已知 UI 問題（from backlog + code）</h3>
+<table>
+<thead><tr><th>問題</th><th>File</th><th>優先</th><th>今晚 2AM 會修</th></tr></thead>
+<tbody>
+<tr><td>產品 card 高度不統一</td><td>ProductCard.tsx</td><td><span class="badge high">High</span></td><td>✅ Batch A (A3)</td></tr>
+<tr><td>價錢格式不統一（HKD vs $）</td><td>多個 components</td><td><span class="badge high">High</span></td><td>✅ Batch A (A2/A9)</td></tr>
+<tr><td>減價產品冇特別標記</td><td>ProductCard.tsx</td><td><span class="badge medium">Medium</span></td><td>✅ Batch A (A4)</td></tr>
+<tr><td>冇庫存緊迫感提示</td><td>ProductCard + Detail</td><td><span class="badge medium">Medium</span></td><td>✅ Batch C (C3)</td></tr>
+<tr><td>冇信任 badge</td><td>Homepage + Detail</td><td><span class="badge medium">Medium</span></td><td>✅ Batch C (C1)</td></tr>
+<tr><td>Product card 冇 hover 效果</td><td>ProductCard.tsx</td><td><span class="badge low">Low</span></td><td>✅ Batch C (C5)</td></tr>
+<tr><td>加入 cart 冇 toast 確認</td><td>Cart logic</td><td><span class="badge medium">Medium</span></td><td>✅ Batch C (C4)</td></tr>
+<tr><td>冇返回頂部按鈕</td><td>Layout</td><td><span class="badge low">Low</span></td><td>✅ Batch C (C6)</td></tr>
+<tr><td>CategoryNav pills 順序唔啱</td><td>CategoryNav.tsx</td><td><span class="badge medium">Medium</span></td><td>✅ Batch B (B1)</td></tr>
+<tr><td>搜尋 tags 唔相關</td><td>Search page</td><td><span class="badge low">Low</span></td><td>✅ Batch B (B2)</td></tr>
+</tbody>
+</table>
+
+<!-- ===== ADMIN (CODE REVIEW) ===== -->
+<h2>5. Admin Dashboard（Code Review）</h2>
+<div class="summary">
+  <p><strong>Admin 頁面需要登入，無法 live preview。以下基於 code review。</strong></p>
+</div>
+
+<h3>已有功能 ✅</h3>
+<div class="section">
+  <ul class="fix-list">
+    <li><strong>Sidebar navigation</strong> — Products / Orders / Coupons / Analytics / Settings / Logs</li>
+    <li><strong>Products CRUD</strong> — Modal 編輯、圖片上傳、批量操作</li>
+    <li><strong>Orders table</strong> — 狀態 badge、payment attempts、fulfillment timestamps</li>
+    <li><strong>Google OAuth login</strong> — 最新 commit 修咗 cookie 設定</li>
+    <li><strong>Password reset flow</strong> — 完整嘅忘記密碼流程</li>
+  </ul>
+</div>
+
+<h3>已知 UI 問題（from backlog + code）</h3>
+<table>
+<thead><tr><th>問題</th><th>優先</th><th>今晚 2AM 會修</th></tr></thead>
+<tbody>
+<tr><td>Admin settings 副標題寫錯（"Manage product catalog..."）</td><td><span class="badge low">Low</span></td><td>✅ Batch A (A6)</td></tr>
+<tr><td>金額顯示 "HKD 899" 應改 "$899"</td><td><span class="badge medium">Medium</span></td><td>✅ Batch A (A9)</td></tr>
+<tr><td>訂單狀態未中文化</td><td><span class="badge medium">Medium</span></td><td>✅ Batch A (A5)</td></tr>
+<tr><td>Admin refresh 後產品列表可能空白（F5 bug）</td><td><span class="badge high">High</span></td><td>❌ 需要獨立 task</td></tr>
+<tr><td>Admin 設定頁 focus loss bug</td><td><span class="badge medium">Medium</span></td><td>❌ 需要獨立 task</td></tr>
+<tr><td>Product modal 冇 size format 指引</td><td><span class="badge low">Low</span></td><td>❌</td></tr>
+</tbody>
+</table>
+
+<!-- ===== DESIGN SYSTEM CONSISTENCY ===== -->
+<h2>6. Design System 一致性</h2>
+
+<table>
+<thead><tr><th>維度</th><th>狀態</th><th>備註</th></tr></thead>
+<tbody>
+<tr><td>Color palette</td><td><span class="badge pass">Good</span></td><td>Orange (#f97316) 為主色，Olive (#5c7c3a) 為 admin accent，一致</td></tr>
+<tr><td>Typography</td><td><span class="badge warn">Warn</span></td><td>Landing 用 system font，Biolink 用 Noto Sans TC，應統一</td></tr>
+<tr><td>Button styles</td><td><span class="badge pass">Good</span></td><td>Orange filled CTA 統一</td></tr>
+<tr><td>Border radius</td><td><span class="badge warn">Warn</span></td><td>Landing 用 rounded-xl，部分 card 用 rounded-lg，不一致</td></tr>
+<tr><td>Dark mode</td><td><span class="badge info">N/A</span></td><td>冇 dark mode（唔急）</td></tr>
+<tr><td>Responsive</td><td><span class="badge pass">Good</span></td><td>Mobile-first 設計，pricing cards stack correctly</td></tr>
+<tr><td>Loading states</td><td><span class="badge fail">Missing</span></td><td>冇 skeleton loading（Backlog S8）</td></tr>
+<tr><td>Empty states</td><td><span class="badge warn">Partial</span></td><td>部分頁面有，但 cart empty state 可以改善（加推薦產品）</td></tr>
+</tbody>
+</table>
+
+<!-- ===== SUMMARY ===== -->
+<h2>Summary: 今晚 2AM Task 覆蓋率</h2>
+
+<div class="grid-2">
+  <div class="stat" style="background:#fff;border-radius:12px;">
+    <div class="num" style="color:var(--green);">22/27</div>
+    <div class="label">UI issues 會被今晚 2AM task 修正</div>
+  </div>
+  <div class="stat" style="background:#fff;border-radius:12px;">
+    <div class="num" style="color:var(--red);">1</div>
+    <div class="label">P0 Blocker（500 error）需要即時人手處理</div>
+  </div>
+</div>
+
+<div class="summary" style="margin-top:1.5rem;">
+  <p><strong>最重要嘅下一步：</strong></p>
+  <p>1. <strong>即時</strong>：查 500 error 原因（Neon DB connection / env vars）</p>
+  <p>2. <strong>今晚 2AM</strong>：27 項自動優化（19 項 UI + 8 項 SEO）</p>
+  <p>3. <strong>之後</strong>：Admin F5 bug、Skeleton loading、Social proof、Blog 架構</p>
+</div>
+
+<p style="margin-top: 3rem; font-size: 0.82rem; color: var(--gray-600); text-align: center;">
+  Generated by Claude · WoWlix UI Audit · 2026-03-19
+</p>
+
+</div>
+</body>
+</html>

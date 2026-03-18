@@ -11,11 +11,26 @@ export async function generateMetadata({
   const { locale } = await params;
   const storeName = await getStoreName();
   const isZh = locale === "zh-HK";
+  const title = isZh ? `聯絡我們 - ${storeName}` : `Contact Us - ${storeName}`;
+  const description = isZh
+    ? `聯絡 ${storeName}，WhatsApp 或電郵查詢`
+    : `Contact ${storeName} via WhatsApp or email`;
+
   return {
-    title: isZh ? `聯絡我們 - ${storeName}` : `Contact Us - ${storeName}`,
-    description: isZh
-      ? `聯絡 ${storeName}，WhatsApp 或電郵查詢`
-      : `Contact ${storeName} via WhatsApp or email`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      siteName: storeName,
+      type: "website",
+      locale: locale === "zh-HK" ? "zh_HK" : "en_US",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
   };
 }
 

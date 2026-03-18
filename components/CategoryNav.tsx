@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
+import { SlidersHorizontal } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import { useFilters, type CategoryFilter } from "@/lib/filter-context";
 
@@ -111,6 +112,31 @@ export default function CategoryNav({ locale, tenantSlug }: CategoryNavProps) {
       <div className="mx-auto max-w-6xl px-4 py-2.5">
         {/* Main filter pills row */}
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          {/* 篩選 Browse All pill */}
+          <button
+            onClick={() => {
+              if (filterContext) {
+                filterContext.setFilters({ shoeType: null, hot: false, sale: false, category: null });
+              }
+              if (!isProductsPage) {
+                router.push(`/${locale}/products`);
+              }
+            }}
+            className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors shrink-0 flex items-center gap-1.5 ${
+              !filters.hot && !filters.sale && !filters.shoeType
+                ? "text-white"
+                : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+            }`}
+            style={
+              !filters.hot && !filters.sale && !filters.shoeType
+                ? { backgroundColor: "var(--tmpl-accent, #2D6A4F)" }
+                : undefined
+            }
+          >
+            <SlidersHorizontal size={14} />
+            {isZh ? "篩選" : "Filter"}
+          </button>
+
           {/* 熱賣 Hot pill */}
           <button
             onClick={() => handlePillClick("hot")}

@@ -936,7 +936,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-zinc-700 text-sm font-medium mb-2">
-                        售價 HKD *
+                        售價 ($) *
                       </label>
                       <input
                         type="number"
@@ -952,7 +952,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     </div>
                     <div>
                       <label className="block text-zinc-700 text-sm font-medium mb-2">
-                        原價 HKD
+                        原價 ($)
                       </label>
                       <input
                         type="number"

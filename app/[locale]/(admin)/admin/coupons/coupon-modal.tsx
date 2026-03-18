@@ -143,7 +143,7 @@ export default function CouponModal({ coupon, locale, onClose, onSaved }: Coupon
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.minOrder} (HKD)</label>
+              <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.minOrder} ($)</label>
               <input
                 type="number"
                 min="0"

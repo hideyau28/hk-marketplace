@@ -45,7 +45,7 @@ const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
   PAYMENT_REJECTED: { en: "Payment Rejected", zh: "已拒絕" },
   // Legacy statuses
   PAID: { en: "Paid", zh: "已付款" },
-  FULFILLING: { en: "Fulfilling", zh: "配送中" },
+  FULFILLING: { en: "Fulfilling", zh: "備貨中" },
   DISPUTED: { en: "Disputed", zh: "爭議中" },
 };
 

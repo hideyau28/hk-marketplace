@@ -21,7 +21,7 @@ const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
   CANCELLED: { en: "Cancelled", zh: "已取消" },
   REFUNDED: { en: "Refunded", zh: "已退款" },
   PAID: { en: "Paid", zh: "已付款" },
-  FULFILLING: { en: "Fulfilling", zh: "配送中" },
+  FULFILLING: { en: "Fulfilling", zh: "備貨中" },
   DISPUTED: { en: "Disputed", zh: "爭議中" },
 };
 

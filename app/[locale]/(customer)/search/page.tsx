@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 
 // Quick suggestion chips (static)
 const suggestions = {
-  "zh-HK": ["Air Jordan", "Dunk", "Air Max", "Air Force", "Running"],
-  en: ["Air Jordan", "Dunk", "Air Max", "Air Force", "Running"],
+  "zh-HK": ["Air Jordan", "Dunk", "Air Max", "New Balance", "Yeezy"],
+  en: ["Air Jordan", "Dunk", "Air Max", "New Balance", "Yeezy"],
 };
 
 export default async function SearchPage({

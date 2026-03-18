@@ -12,7 +12,7 @@ const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
   PENDING_CONFIRMATION: { en: "Awaiting Confirmation", zh: "待確認收款" },
   CONFIRMED: { en: "Confirmed", zh: "已確認" },
   PAID: { en: "Paid", zh: "已付款" },
-  FULFILLING: { en: "Fulfilling", zh: "配送中" },
+  FULFILLING: { en: "Fulfilling", zh: "備貨中" },
   SHIPPED: { en: "Shipped", zh: "已發貨" },
   COMPLETED: { en: "Completed", zh: "已完成" },
   CANCELLED: { en: "Cancelled", zh: "已取消" },

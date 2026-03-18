@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import type { Translations } from "@/lib/translations";
 
-export default function WhatsAppButton({ t }: { t: Translations }) {
+export default function WhatsAppButton({ t, whatsapp }: { t: Translations; whatsapp?: string }) {
   const pathname = usePathname();
   const [productName, setProductName] = useState<string | null>(null);
 
@@ -21,7 +21,10 @@ export default function WhatsAppButton({ t }: { t: Translations }) {
   const message = productName
     ? t.whatsapp.productMessage.replace("{name}", productName)
     : t.whatsapp.defaultMessage;
-  const href = `https://wa.me/?text=${encodeURIComponent(message)}`;
+  const phone = whatsapp?.replace(/\D/g, "");
+  const href = phone
+    ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+    : `https://wa.me/?text=${encodeURIComponent(message)}`;
 
   return (
     <a

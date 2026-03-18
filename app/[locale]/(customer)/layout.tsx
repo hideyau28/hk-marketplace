@@ -16,6 +16,7 @@ import WelcomePopup from "@/components/WelcomePopup";
 import CartFlyAnimation from "@/components/CartFlyAnimation";
 import AdminPreviewBanner from "@/components/AdminPreviewBanner";
 import StorefrontTemplate from "@/components/StorefrontTemplate";
+import ScrollToTop from "@/components/ScrollToTop";
 import { getServerTenantId, isPlatformMode } from "@/lib/tenant";
 
 // Force dynamic rendering because we need headers() for tenant resolution
@@ -130,6 +131,7 @@ export default async function CustomerLayout({
                   region={tenantRow?.region}
                 />
                 <BottomTab t={t} />
+                <ScrollToTop />
                 <WelcomePopup config={welcomePopupConfig} />
                 <CartFlyAnimation />
               </div>

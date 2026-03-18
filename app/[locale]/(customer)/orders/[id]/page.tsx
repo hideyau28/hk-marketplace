@@ -9,7 +9,7 @@ const STATUS_DISPLAY: Record<string, { en: string; zh: string }> = {
   PAID: { en: "Paid", zh: "已付款" },
   CREATED: { en: "Created", zh: "已建立" },
   PROCESSING: { en: "Processing", zh: "處理中" },
-  FULFILLING: { en: "Fulfilling", zh: "配送中" },
+  FULFILLING: { en: "Fulfilling", zh: "備貨中" },
   SHIPPED: { en: "Shipped", zh: "已發貨" },
   DELIVERED: { en: "Delivered", zh: "已送達" },
   COMPLETED: { en: "Completed", zh: "已完成" },

@@ -47,12 +47,21 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title: `${product.title} - ${storeName}`,
     description,
+    alternates: {
+      canonical: `https://wowlix.com/${locale}/product/${id}`,
+    },
     openGraph: {
       title: `${product.title} - ${storeName}`,
       description,
       siteName: storeName,
       type: "website",
       locale: locale === "zh-HK" ? "zh_HK" : "en_US",
+      images: product.imageUrl ? [product.imageUrl] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.title} - ${storeName}`,
+      description,
       images: product.imageUrl ? [product.imageUrl] : [],
     },
   };
@@ -150,6 +159,60 @@ export default async function ProductPage({ params }: { params: Promise<{ locale
   return (
     <div className="pb-40 pt-4">
       <span className="sr-only" data-product-name={p.title} />
+
+      {/* Product JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: p.title,
+            description: p.brand !== "—" ? `${p.title} by ${p.brand}` : p.title,
+            image: p.image || undefined,
+            ...(p.brand !== "—" && { brand: { "@type": "Brand", name: p.brand } }),
+            offers: {
+              "@type": "Offer",
+              price: p.price,
+              priceCurrency: "HKD",
+              availability: p.stock > 0
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
+              url: `https://wowlix.com/${locale}/product/${p.id}`,
+            },
+          }),
+        }}
+      />
+
+      {/* BreadcrumbList JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: locale === "zh-HK" ? "主頁" : "Home",
+                item: `https://wowlix.com/${locale}`,
+              },
+              ...(p.category ? [{
+                "@type": "ListItem",
+                position: 2,
+                name: categoryName,
+                item: `https://wowlix.com/${locale}/products?category=${p.category}`,
+              }] : []),
+              {
+                "@type": "ListItem",
+                position: p.category ? 3 : 2,
+                name: p.title,
+              },
+            ],
+          }),
+        }}
+      />
       {/* Breadcrumb - hidden on mobile, shown on desktop */}
       <div className="hidden md:flex items-center gap-2 text-sm text-zinc-500 mb-4 px-4">
         <Link href={`/${locale}`} className="hover:text-zinc-900 dark:hover:text-zinc-100">

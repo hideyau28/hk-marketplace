@@ -125,7 +125,7 @@ export default function VariantMatrixEditor({
           onChange={(e) => setBulkPrice(e.target.value)}
           disabled={disabled}
           className="w-28 rounded-lg border border-zinc-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
-          placeholder="HKD"
+          placeholder="$"
         />
         <button
           type="button"
@@ -146,7 +146,7 @@ export default function VariantMatrixEditor({
               {has2Dims && (
                 <th className="py-2 px-3 text-left font-medium">{option2Label || "選項 2"}</th>
               )}
-              <th className="py-2 px-3 text-right font-medium w-28">價錢 (HKD)</th>
+              <th className="py-2 px-3 text-right font-medium w-28">價錢 ($)</th>
               {inventoryMode === "limited" && (
                 <th className="py-2 px-3 text-right font-medium w-24">庫存</th>
               )}

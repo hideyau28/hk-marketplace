@@ -11,11 +11,26 @@ export async function generateMetadata({
   const { locale } = await params;
   const storeName = await getStoreName();
   const isZh = locale === "zh-HK";
+  const title = isZh ? `常見問題 - ${storeName}` : `FAQ - ${storeName}`;
+  const description = isZh
+    ? `${storeName} 常見問題`
+    : `Frequently asked questions about ${storeName}`;
+
   return {
-    title: isZh ? `常見問題 - ${storeName}` : `FAQ - ${storeName}`,
-    description: isZh
-      ? `${storeName} 常見問題`
-      : `Frequently asked questions about ${storeName}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      siteName: storeName,
+      type: "website",
+      locale: locale === "zh-HK" ? "zh_HK" : "en_US",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
   };
 }
 
@@ -32,6 +47,25 @@ export default async function FAQPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 pb-32">
+      {/* FAQ JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((faq) => ({
+              "@type": "Question",
+              name: faq.question,
+              acceptedAnswer: {
+                "@type": "Answer",
+                text: faq.answer,
+              },
+            })),
+          }),
+        }}
+      />
+
       <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
         {isZh ? "常見問題" : "Frequently Asked Questions"}
       </h1>

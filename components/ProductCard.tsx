@@ -170,7 +170,7 @@ export default function ProductCard({
   return (
     <div
       ref={cardRef}
-      className={`group flex flex-col h-full ${cardWidthClass} rounded-2xl border border-zinc-200/50 bg-white shadow-sm dark:bg-zinc-900 dark:border-zinc-800 ${
+      className={`group flex flex-col h-full ${cardWidthClass} rounded-2xl border border-zinc-200/50 bg-white shadow-sm dark:bg-zinc-900 dark:border-zinc-800 transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
         p.stock === 0
           ? "opacity-60 grayscale"
           : isOnSale
@@ -249,6 +249,15 @@ export default function ProductCard({
               <div className="absolute top-2 right-2">
                 <span className="rounded bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
                   -{discountPercent}%
+                </span>
+              </div>
+            )}
+
+            {/* Low stock warning */}
+            {p.stock != null && p.stock > 0 && p.stock <= 5 && (
+              <div className="absolute bottom-2 left-2">
+                <span className="rounded bg-amber-500 px-1.5 py-0.5 text-[10px] font-semibold text-white animate-pulse">
+                  {isZh ? "快將售罄" : "Almost Gone"}
                 </span>
               </div>
             )}

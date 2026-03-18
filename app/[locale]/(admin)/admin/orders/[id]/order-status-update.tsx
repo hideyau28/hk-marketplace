@@ -37,7 +37,7 @@ const STATUS_DISPLAY: Record<OrderStatus, { en: string; zh: string }> = {
   REFUNDED: { en: "Refunded", zh: "已退款" },
   PAYMENT_REJECTED: { en: "Payment Rejected", zh: "已拒絕" },
   PAID: { en: "Paid", zh: "已付款" },
-  FULFILLING: { en: "Fulfilling", zh: "配送中" },
+  FULFILLING: { en: "Fulfilling", zh: "備貨中" },
   DISPUTED: { en: "Disputed", zh: "爭議中" },
 };
 

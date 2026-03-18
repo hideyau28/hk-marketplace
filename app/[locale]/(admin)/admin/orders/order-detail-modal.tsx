@@ -216,7 +216,7 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                 <span className="text-lg">⚠️</span>
                 <h3 className="text-zinc-900 font-semibold">待確認收款</h3>
                 <span className="ml-auto text-xl font-bold text-zinc-900">
-                  {currency} {total}
+                  ${total}
                 </span>
               </div>
 
@@ -323,14 +323,14 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
               <div className="flex justify-between">
                 <span className="text-zinc-600">Subtotal:</span>
                 <span className="text-zinc-900">
-                  {currency} {amounts?.subtotal || 0}
+                  ${amounts?.subtotal || 0}
                 </span>
               </div>
               {amounts?.discount && (
                 <div className="flex justify-between">
                   <span className="text-zinc-600">Discount:</span>
                   <span className="text-zinc-900">
-                    -{currency} {amounts.discount}
+                    -${amounts.discount}
                   </span>
                 </div>
               )}
@@ -338,14 +338,14 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                 <div className="flex justify-between">
                   <span className="text-zinc-600">Delivery Fee:</span>
                   <span className="text-zinc-900">
-                    {currency} {amounts.deliveryFee}
+                    ${amounts.deliveryFee}
                   </span>
                 </div>
               )}
               <div className="flex justify-between border-t border-zinc-200 pt-2 font-semibold">
                 <span className="text-zinc-900">Total:</span>
                 <span className="text-zinc-900">
-                  {currency} {total}
+                  ${total}
                 </span>
               </div>
             </div>
@@ -462,7 +462,7 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                         <div className="flex justify-between">
                           <span className="text-zinc-600">Amount:</span>
                           <span className="text-zinc-900 font-medium">
-                            {attempt.currency} {(attempt.amount / 100).toFixed(2)}
+                            ${(attempt.amount / 100).toFixed(2)}
                           </span>
                         </div>
                       )}
@@ -617,7 +617,7 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
             <p className="text-zinc-600 text-sm mb-6">
               確認已收到{" "}
               <span className="font-bold text-zinc-900">
-                {currency} {total}
+                ${total}
               </span>
               ？
             </p>

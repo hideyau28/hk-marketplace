@@ -29,7 +29,14 @@ export async function generateMetadata({
     title: "WoWlix — Turn Followers into Customers",
     description:
       "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。免費開始。",
-    alternates: { canonical: "https://wowlix.com" },
+    alternates: {
+      canonical: "https://wowlix.com",
+      languages: {
+        en: "/en",
+        "zh-HK": "/zh-HK",
+        "x-default": "/",
+      },
+    },
     openGraph: {
       title: "WoWlix — Turn Followers into Customers",
       description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
@@ -323,6 +330,21 @@ export default async function Home({
 
   return (
     <div className="pb-16">
+      {/* Organization JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "WoWlix",
+            url: "https://wowlix.com",
+            logo: "https://wowlix.com/favicon.svg",
+            description: "Instagram 小店嘅最強武器。2 分鐘開店，一條連結搞掂所有嘢。",
+          }),
+        }}
+      />
+
       {renderItems.map((item, idx) => {
         if (item.type === "banner") {
           const banner = item.data;

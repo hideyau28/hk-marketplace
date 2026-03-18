@@ -63,7 +63,7 @@ export default function BottomTab({ t }: { t: Translations }) {
             <Link
               key={tab.key}
               href={href}
-              className={`flex flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-2 min-h-[44px] ${
+              className={`relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-2 min-h-[44px] ${
                 active ? "" : "text-zinc-500 dark:text-zinc-400"
               }`}
               style={active ? { color: "var(--tmpl-accent, #2D6A4F)" } : undefined}
@@ -71,6 +71,12 @@ export default function BottomTab({ t }: { t: Translations }) {
             >
               <tab.Icon size={18} />
               <span className="text-xs leading-tight font-medium">{label}</span>
+              {active && (
+                <span
+                  className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-6 rounded-full"
+                  style={{ backgroundColor: "var(--tmpl-accent, #2D6A4F)" }}
+                />
+              )}
             </Link>
           );
         })}

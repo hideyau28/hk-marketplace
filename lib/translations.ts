@@ -1051,7 +1051,7 @@ export const translations = {
         created: "建立時間",
         updated: "更新時間",
         paid: "付款時間",
-        fulfilling: "配送中",
+        fulfilling: "備貨中",
         shipped: "已發貨",
         completed: "已完成",
         cancelled: "已取消",

@@ -1,26 +1,10 @@
-import { ShieldCheck, Package, Plane, CreditCard } from "lucide-react";
+import { ShieldCheck, Truck, Package, CreditCard } from "lucide-react";
 
 const TRUST_ITEMS = [
-  {
-    icon: ShieldCheck,
-    labelEn: "100% Authenticated",
-    labelZh: "正品保證",
-  },
-  {
-    icon: Package,
-    labelEn: "Ships from Hong Kong",
-    labelZh: "香港直送",
-  },
-  {
-    icon: Plane,
-    labelEn: "3-7 Day Delivery",
-    labelZh: "3-7 日送達",
-  },
-  {
-    icon: CreditCard,
-    labelEn: "Secure Payment",
-    labelZh: "安全付款",
-  },
+  { icon: ShieldCheck, labelEn: "100% Authenticated", labelZh: "正品保證" },
+  { icon: Truck, labelEn: "Free Shipping", labelZh: "免運費" },
+  { icon: Package, labelEn: "Ships from Hong Kong", labelZh: "香港直送" },
+  { icon: CreditCard, labelEn: "Secure Payment", labelZh: "安全付款" },
 ] as const;
 
 export default function TrustBar({
@@ -30,9 +14,6 @@ export default function TrustBar({
   locale: string;
   region?: string | null;
 }) {
-  // Only show for sneaker stores (ME region)
-  if (region !== "ME") return null;
-
   const isZh = locale === "zh-HK";
 
   return (
