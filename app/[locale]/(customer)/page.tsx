@@ -73,14 +73,8 @@ export async function generateMetadata({
   const storeName = await getStoreName();
   const seo = getSEOContent(tenantSlug);
 
-  // Tenant-specific SEO uses static content; default falls back to locale-aware copy
-  const isCustomTenant = tenantSlug !== "maysshop";
   const title = seo.title.replace("{storeName}", storeName);
-  const description = isCustomTenant
-    ? seo.description
-    : locale === "zh-HK"
-      ? "探索最新波鞋及運動裝備，正品保證！"
-      : "Shop the latest sneakers and sports gear. 100% authentic!";
+  const description = seo.description.replace("{storeName}", storeName);
   const canonicalUrl = `https://${tenantSlug}.wowlix.com/${locale}`;
   const ogImage = seo.ogImage;
 

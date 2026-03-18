@@ -78,8 +78,7 @@ const aboutDefault: TenantAboutContent = {
       text: "https://wowlix.com",
     },
   ],
-  footer:
-    "This Platform is powered by Wowlix and operated by Flow Studio HK.",
+  footer: "This Platform is powered by Wowlix and operated by Flow Studio HK.",
 };
 
 const aboutSolemena: TenantAboutContent = {
@@ -133,8 +132,7 @@ const contactDefault: TenantContactContent = {
   },
   businessHours:
     "Monday to Friday: 10:00 AM - 6:00 PM (excluding public holidays)",
-  footer:
-    "This Platform is powered by Wowlix and operated by Flow Studio HK.",
+  footer: "This Platform is powered by Wowlix and operated by Flow Studio HK.",
 };
 
 const contactSolemena: TenantContactContent = {
@@ -143,12 +141,12 @@ const contactSolemena: TenantContactContent = {
   whatsapp: {
     number: "85291234567",
     label: "WhatsApp Us",
-    description:
-      "The fastest way to reach us. We reply within 24 hours.",
+    description: "The fastest way to reach us. We reply within 24 hours.",
   },
   email: {
     address: "hello@bullkicks.com",
-    description: "For order enquiries, authentication questions, or partnerships:",
+    description:
+      "For order enquiries, authentication questions, or partnerships:",
   },
   instagram: {
     handle: "bullkicks",
@@ -237,7 +235,8 @@ const shippingDefault: TenantShippingContent = {
   destinations: "Hong Kong",
   processingTime: "1–2 business days",
   dutiesNote: "N/A — local delivery only.",
-  trackingNote: "Tracking number provided via WhatsApp for all SF Express orders.",
+  trackingNote:
+    "Tracking number provided via WhatsApp for all SF Express orders.",
 };
 
 const shippingSolemena: TenantShippingContent = {
@@ -262,8 +261,7 @@ const shippingSolemena: TenantShippingContent = {
 const returnsDefault: TenantReturnsContent = {
   intro:
     "We want you to be happy with your purchase. If something isn't right, here's how we can help.",
-  policy:
-    "Return or exchange requests must be made within 7 days of delivery.",
+  policy: "Return or exchange requests must be made within 7 days of delivery.",
   acceptedReasons: [
     "Item arrived damaged",
     "Wrong item received",
@@ -283,10 +281,7 @@ const returnsSolemena: TenantReturnsContent = {
   intro:
     "Due to the limited-edition nature of our products, all items are final sale. We only accept returns in specific circumstances.",
   policy: "All items are final sale.",
-  acceptedReasons: [
-    "Wrong item shipped",
-    "Wrong size shipped",
-  ],
+  acceptedReasons: ["Wrong item shipped", "Wrong size shipped"],
   conditions: [
     "Authentication seal must remain intact for any return eligibility",
     "Return requests must be submitted within 7 days of delivery",
@@ -307,9 +302,15 @@ export type TenantSEO = {
   ogImage: string;
 };
 
-const seoDefault: TenantSEO = {
+const seoMaysshop: TenantSEO = {
   title: "{storeName} - 香港波鞋專門店",
   description: "探索最新波鞋及運動裝備，正品保證！",
+  ogImage: "https://wowlix.com/og-default.png",
+};
+
+const seoDefault: TenantSEO = {
+  title: "{storeName} | WoWlix",
+  description: "Shop quality products at {storeName}. Powered by WoWlix.",
   ogImage: "https://wowlix.com/og-default.png",
 };
 
@@ -317,19 +318,37 @@ const seoSolemena: TenantSEO = {
   title: "Bull Kicks | Authenticated Sneakers from Asia to the Middle East",
   description:
     "Shop authenticated sneakers shipped from Hong Kong. Limited editions, Asia exclusives, and large sizes (US 10.5-13). Ships to UAE and GCC countries.",
-  ogImage:
-    "https://placehold.co/1200x630/1A1A2E/FFFFFF?text=Bull+Kicks",
+  ogImage: "https://placehold.co/1200x630/1A1A2E/FFFFFF?text=Bull+Kicks",
 };
 
 // ─── Lookup functions ─────────────────────────────────────────
 
 const contentMap = {
-  about: { default: aboutDefault, "solemena-test": aboutSolemena } as Record<string, TenantAboutContent>,
-  contact: { default: contactDefault, "solemena-test": contactSolemena } as Record<string, TenantContactContent>,
-  faq: { default: faqDefault, "solemena-test": faqSolemena } as Record<string, FAQItem[]>,
-  shipping: { default: shippingDefault, "solemena-test": shippingSolemena } as Record<string, TenantShippingContent>,
-  returns: { default: returnsDefault, "solemena-test": returnsSolemena } as Record<string, TenantReturnsContent>,
-  seo: { default: seoDefault, "solemena-test": seoSolemena } as Record<string, TenantSEO>,
+  about: { default: aboutDefault, "solemena-test": aboutSolemena } as Record<
+    string,
+    TenantAboutContent
+  >,
+  contact: {
+    default: contactDefault,
+    "solemena-test": contactSolemena,
+  } as Record<string, TenantContactContent>,
+  faq: { default: faqDefault, "solemena-test": faqSolemena } as Record<
+    string,
+    FAQItem[]
+  >,
+  shipping: {
+    default: shippingDefault,
+    "solemena-test": shippingSolemena,
+  } as Record<string, TenantShippingContent>,
+  returns: {
+    default: returnsDefault,
+    "solemena-test": returnsSolemena,
+  } as Record<string, TenantReturnsContent>,
+  seo: {
+    default: seoDefault,
+    maysshop: seoMaysshop,
+    "solemena-test": seoSolemena,
+  } as Record<string, TenantSEO>,
 };
 
 export function getAboutContent(slug: string): TenantAboutContent {
