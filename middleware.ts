@@ -42,6 +42,18 @@ const RESERVED_SLUGS = new Set([
   "start",
   "_next",
   "favicon.ico",
+  "categories",
+  "collections",
+  "faq",
+  "orders",
+  "product",
+  "products",
+  "profile",
+  "returns",
+  "search",
+  "shipping",
+  "track",
+  "pricing",
 ]);
 
 /**
@@ -85,55 +97,43 @@ function resolveSlugFromPath(pathname: string): string | null {
   return segment;
 }
 
+/**
+ * Detect tenant slug in locale-prefixed paths like /en/giftyouflora or /zh-HK/petitfleur.
+ * Returns the slug segment if found, null otherwise.
+ */
+function resolveSlugFromLocalePath(pathname: string): string | null {
+  const match = pathname.match(
+    /^\/[a-z]{2}(?:-[a-zA-Z]{2,4})?\/([a-z0-9][\w-]*?)(?:\/|$)/,
+  );
+  if (!match) return null;
+  const segment = match[1];
+  if (RESERVED_SLUGS.has(segment)) return null;
+  return segment;
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // --- Tenant resolution ---
-  // Resolve slug from subdomain or ?tenant= dev fallback
+  // 1. Start with subdomain-based slug
   let tenantSlug = resolveSlugFromHostname(request.headers.get("host") || "");
-
-  // ?tenant=slug query param override — accepted on any domain.
-  // Only selects which tenant's public storefront to display; no security risk.
-  // Persists via __dev_tenant cookie so the entire session stays on the
-  // chosen tenant (page navigations, client-side API fetches, RSC requests).
-  // To switch tenant: ?tenant=other-slug  To reset: ?tenant=maysshop
   let devTenantCookieChanged = false;
   let tenantOverridden = false;
-  const tenantParam = request.nextUrl.searchParams.get("tenant");
-  if (tenantParam) {
-    tenantSlug = tenantParam;
-    devTenantCookieChanged = true;
-    tenantOverridden = true;
-  } else {
-    const cookieVal = request.cookies.get("__dev_tenant")?.value;
-    if (cookieVal) {
-      tenantSlug = cookieVal;
-      tenantOverridden = true;
-    }
-  }
 
-  // --- Platform bare domain detection ---
-  // Skip if ?tenant= or cookie already resolved the slug (e.g. demo links on Vercel)
   const isPlatform = isPlatformBare(request.headers.get("host") || "");
-  if (isPlatform && !tenantOverridden) {
-    tenantSlug = DEFAULT_SLUG;
-  }
 
-  // --- Path-based slug routing: /{slug} → /en/{slug} rewrite ---
-  // When the first segment is a tenant slug (not a locale or reserved word),
-  // rewrite to add /en prefix so Next.js matches app/[locale]/[slug]/page.tsx
+  // 2. Path-based slug detection (highest priority for slug URLs)
+  //    If the URL contains a tenant slug in the path, cookie/param are ignored
+  //    so that biolink pages always resolve to the correct tenant.
   const pathSlug = resolveSlugFromPath(pathname);
-  if (pathSlug && tenantSlug === DEFAULT_SLUG) {
-    // Check if the remaining path after slug is /admin/...
-    // /{slug}/admin/... → redirect to /en/admin/... so admin route group matches
-    const restPath = pathname.substring(pathSlug.length + 1); // e.g. "/admin/login"
-    if (restPath === "/admin" || restPath.startsWith("/admin/")) {
-      const adminUrl = new URL(`/zh-HK${restPath}`, request.url);
-      return NextResponse.redirect(adminUrl);
-    }
+  const localePathSlug = resolveSlugFromLocalePath(pathname);
 
-    // Path slug only takes effect when no subdomain tenant is set
-    // Rewrite /{slug}/... → /en/{slug}/...
+  if (pathSlug) {
+    // Bare path /{slug}/... → rewrite to /zh-HK/{slug}/...
+    const restPath = pathname.substring(pathSlug.length + 1);
+    if (restPath === "/admin" || restPath.startsWith("/admin/")) {
+      return NextResponse.redirect(new URL(`/zh-HK${restPath}`, request.url));
+    }
     const rewriteUrl = request.nextUrl.clone();
     rewriteUrl.pathname = `/zh-HK${pathname}`;
     const requestHeaders = new Headers(request.headers);
@@ -145,6 +145,29 @@ export function middleware(request: NextRequest) {
     return NextResponse.rewrite(rewriteUrl, {
       request: { headers: requestHeaders },
     });
+  }
+
+  // 3. For non-slug URLs: apply cookie/param tenant override
+  //    localePathSlug URLs (e.g. /en/giftyouflora) skip cookie override
+  //    so the [slug] page resolves the correct tenant from the URL segment.
+  if (!localePathSlug) {
+    const tenantParam = request.nextUrl.searchParams.get("tenant");
+    if (tenantParam) {
+      tenantSlug = tenantParam;
+      devTenantCookieChanged = true;
+      tenantOverridden = true;
+    } else {
+      const cookieVal = request.cookies.get("__dev_tenant")?.value;
+      if (cookieVal) {
+        tenantSlug = cookieVal;
+        tenantOverridden = true;
+      }
+    }
+  }
+
+  // Platform bare domain default
+  if (isPlatform && !tenantOverridden) {
+    tenantSlug = DEFAULT_SLUG;
   }
 
   // --- Skip admin guards for API routes (they handle auth themselves) ---
