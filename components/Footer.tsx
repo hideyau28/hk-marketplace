@@ -6,7 +6,7 @@ import { Instagram } from "lucide-react";
 export default function Footer({
   locale,
   t,
-  storeName = "May's Shop",
+  storeName = "WoWlix",
   hideBranding = false,
   whatsappNumber,
   instagramUrl,

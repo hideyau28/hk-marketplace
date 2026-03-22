@@ -38,7 +38,7 @@ export async function getTenantInfo(): Promise<TenantInfo> {
     return {
       id: tenantId,
       slug: "maysshop",
-      name: "May's Shop",
+      name: "WoWlix",
       region: "HK",
       currency: "HKD",
       whatsapp: null,

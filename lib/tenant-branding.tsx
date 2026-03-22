@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
 export type TenantBranding = {
   name: string;
@@ -18,7 +24,7 @@ type TenantBrandingContextValue = {
 };
 
 const DEFAULT_BRANDING: TenantBranding = {
-  name: "May's Shop",
+  name: "WoWlix",
   slug: "maysshop",
   themeColor: "#FF9500",
   logoUrl: null,
@@ -58,7 +64,10 @@ export function TenantBrandingProvider({ children }: { children: ReactNode }) {
 
   // Apply theme color as CSS variable on <html>
   useEffect(() => {
-    document.documentElement.style.setProperty("--tenant-primary", branding.themeColor);
+    document.documentElement.style.setProperty(
+      "--tenant-primary",
+      branding.themeColor,
+    );
   }, [branding.themeColor]);
 
   return (

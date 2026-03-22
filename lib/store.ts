@@ -4,6 +4,6 @@ export type StoreSettings = {
 };
 
 export const defaultStore: StoreSettings = {
-  storeName: "May's Shop",
-  tagline: "Deep dark, easy shopping"
+  storeName: "WoWlix",
+  tagline: "Deep dark, easy shopping",
 };

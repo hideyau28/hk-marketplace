@@ -10,6 +10,8 @@ import {
   Shield,
   DollarSign,
   Zap,
+  Menu,
+  X,
 } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 
@@ -1017,6 +1019,7 @@ function FAQ({ isZh }: { isZh: boolean }) {
 
 export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
   const isZh = locale === "zh-HK";
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const PLANS = getPlans(isZh);
   const SCENARIOS = getScenarios(isZh);
   const DEMOS = getDemos(isZh);
@@ -1145,6 +1148,14 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             padding-top: 88px !important;
           }
         }
+        @media (max-width: 768px) {
+          .pp-nav-desktop {
+            display: none !important;
+          }
+          .pp-nav-hamburger {
+            display: block !important;
+          }
+        }
       `}</style>
 
       {/* NAV */}
@@ -1177,7 +1188,11 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
           <span style={{ color: "#FF9500" }}>W</span>o
           <span style={{ color: "#FF9500" }}>W</span>lix
         </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        {/* Desktop nav links */}
+        <div
+          className="pp-nav-desktop"
+          style={{ display: "flex", alignItems: "center", gap: 16 }}
+        >
           {/* Language toggle */}
           <div
             style={{
@@ -1234,7 +1249,99 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             {isZh ? "免費開店" : "Start Free"}
           </Link>
         </div>
+
+        {/* Mobile hamburger button */}
+        <button
+          className="pp-nav-hamburger"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+          style={{
+            display: "none",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 8,
+            color: "#1A1A1A",
+          }}
+        >
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </nav>
+
+      {/* Mobile dropdown menu */}
+      {mobileMenuOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 57,
+            left: 0,
+            right: 0,
+            zIndex: 999,
+            background: "rgba(255,255,255,0.95)",
+            backdropFilter: "blur(20px)",
+            borderBottom: "1px solid rgba(0,0,0,0.06)",
+            padding: "16px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              fontSize: 13,
+            }}
+          >
+            <Link
+              href="/zh-HK/pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                color: isZh ? "#1A1A1A" : "rgba(0,0,0,0.3)",
+                fontWeight: isZh ? 700 : 400,
+                textDecoration: "none",
+                padding: "4px 2px",
+              }}
+            >
+              繁
+            </Link>
+            <span style={{ color: "rgba(0,0,0,0.2)", userSelect: "none" }}>
+              /
+            </span>
+            <Link
+              href="/en/pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                color: !isZh ? "#1A1A1A" : "rgba(0,0,0,0.3)",
+                fontWeight: !isZh ? 700 : 400,
+                textDecoration: "none",
+                padding: "4px 2px",
+              }}
+            >
+              EN
+            </Link>
+          </div>
+          <Link
+            href={`/${locale}/start`}
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              background: "#FF9500",
+              color: "#fff",
+              padding: "12px 24px",
+              borderRadius: 100,
+              fontSize: 14,
+              fontWeight: 700,
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+            }}
+          >
+            {isZh ? "免費開店" : "Start Free"}
+          </Link>
+        </div>
+      )}
 
       {/* HERO */}
       <section
@@ -1795,7 +1902,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   fontSize: 14,
                   fontWeight: 700,
                   position: "sticky",
-                  top: 57, /* offset for fixed nav bar */
+                  top: 57 /* offset for fixed nav bar */,
                   zIndex: 10,
                 }}
               >
@@ -2054,7 +2161,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   {isZh ? "聯絡我們" : "Contact"}
                 </Link>
                 <a
-                  href="https://wa.me/85298765432"
+                  href="https://wa.me/85254323686"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -2179,7 +2286,7 @@ export default function PricingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               </a>
               {/* WhatsApp */}
               <a
-                href="https://wa.me/85298765432"
+                href="https://wa.me/85254323686"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

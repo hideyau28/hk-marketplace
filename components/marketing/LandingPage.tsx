@@ -2,7 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MessageCircle, ClipboardList, Wallet, TrendingDown, Store, Palette, ShoppingBag } from "lucide-react";
+import {
+  MessageCircle,
+  ClipboardList,
+  Wallet,
+  TrendingDown,
+  Store,
+  Palette,
+  ShoppingBag,
+  Menu,
+  X,
+} from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import HeroSection from "@/components/marketing/sections/HeroSection";
 
@@ -228,6 +238,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
   const isZH = locale === "zh-HK";
   const [hoveredPain, setHoveredPain] = useState<number | null>(null);
   const [hoveredPlan, setHoveredPlan] = useState<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   /* ─── Scroll fade-in-up (Intersection Observer) ─── */
   useEffect(() => {
@@ -383,6 +394,8 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
         }
         @media (max-width: 768px) {
           .lp-plan-grid { grid-template-columns: 1fr !important; max-width: 400px !important; margin-left: auto !important; margin-right: auto !important; }
+          .lp-nav-desktop { display: none !important; }
+          .lp-nav-hamburger { display: block !important; }
         }
       `}</style>
 
@@ -421,7 +434,11 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
             <span style={{ color: "#FF9500" }}>W</span>o
             <span style={{ color: "#FF9500" }}>W</span>lix
           </Link>
-          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          {/* Desktop nav links */}
+          <div
+            className="lp-nav-desktop"
+            style={{ display: "flex", gap: 16, alignItems: "center" }}
+          >
             <Link
               href={`/${locale}/pricing`}
               style={{
@@ -490,8 +507,111 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               {t.navCta}
             </Link>
           </div>
+
+          {/* Mobile hamburger button */}
+          <button
+            className="lp-nav-hamburger"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+            style={{
+              display: "none",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 8,
+              color: "#1A1A1A",
+            }}
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </nav>
+
+      {/* ─── Mobile dropdown menu ─── */}
+      {mobileMenuOpen && (
+        <div
+          className="lp-mobile-menu"
+          style={{
+            position: "sticky",
+            top: 57,
+            zIndex: 99,
+            background: "rgba(255,255,255,0.95)",
+            backdropFilter: "blur(20px)",
+            borderBottom: "1px solid rgba(0,0,0,0.06)",
+            padding: "16px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+            alignItems: "center",
+          }}
+        >
+          <Link
+            href={`/${locale}/pricing`}
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              fontSize: 15,
+              fontWeight: 600,
+              color: "rgba(0,0,0,0.6)",
+              textDecoration: "none",
+            }}
+          >
+            {t.navPricing}
+          </Link>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              fontSize: 13,
+            }}
+          >
+            <Link
+              href="/zh-HK"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                color: isZH ? "#1A1A1A" : "rgba(0,0,0,0.3)",
+                fontWeight: isZH ? 700 : 400,
+                textDecoration: "none",
+                padding: "4px 2px",
+              }}
+            >
+              {t.navLangZh}
+            </Link>
+            <span style={{ color: "rgba(0,0,0,0.2)", userSelect: "none" }}>
+              /
+            </span>
+            <Link
+              href="/en"
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                color: !isZH ? "#1A1A1A" : "rgba(0,0,0,0.3)",
+                fontWeight: !isZH ? 700 : 400,
+                textDecoration: "none",
+                padding: "4px 2px",
+              }}
+            >
+              {t.navLangEn}
+            </Link>
+          </div>
+          <Link
+            href={`/${locale}/start`}
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              background: "#FF9500",
+              color: "#fff",
+              padding: "12px 24px",
+              borderRadius: 100,
+              fontSize: 14,
+              fontWeight: 700,
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+            }}
+          >
+            {t.navCta}
+          </Link>
+        </div>
+      )}
 
       {/* ─── HERO ─── */}
       <HeroSection locale={locale as Locale} />
@@ -1415,7 +1535,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
                   {t.footerContact}
                 </Link>
                 <a
-                  href="https://wa.me/85298765432"
+                  href="https://wa.me/85254323686"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -1532,7 +1652,7 @@ export default function LandingPage({ locale = "zh-HK" }: { locale?: Locale }) {
               </a>
               {/* WhatsApp */}
               <a
-                href="https://wa.me/85298765432"
+                href="https://wa.me/85254323686"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

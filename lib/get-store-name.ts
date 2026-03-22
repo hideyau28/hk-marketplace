@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerTenantId } from "@/lib/tenant";
 
-const DEFAULT_STORE_NAME = "May's Shop";
+const DEFAULT_STORE_NAME = "WoWlix";
 
 /**
  * Fetch store name from database with fallback.

@@ -121,7 +121,7 @@ const contactDefault: TenantContactContent = {
   intro:
     "Have a question? Get in touch with us through any of the channels below.",
   whatsapp: {
-    number: "85298765432",
+    number: "85254323686",
     label: "WhatsApp Us",
     description:
       "The fastest way to reach us. We typically reply during business hours.",

@@ -38,7 +38,7 @@ function swapLocale(pathname: string, nextLocale: Locale) {
 export default function TopNav({
   locale,
   t,
-  storeName: initialStoreName = "May's Shop",
+  storeName: initialStoreName = "WoWlix",
   languages,
 }: {
   locale: Locale;

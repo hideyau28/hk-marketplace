@@ -72,7 +72,7 @@ export default async function CustomerLayout({
   ]);
 
   // Get store name with fallback
-  const storeName = storeSettings?.storeName || "May's Shop";
+  const storeName = storeSettings?.storeName || "WoWlix";
 
   // Only Pro plan (not expired) with hideBranding enabled can hide branding
   const isPro =
