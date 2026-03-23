@@ -81,6 +81,7 @@ export default function CheckoutPage({
     null,
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
@@ -315,7 +316,10 @@ export default function CheckoutPage({
 
       const res = await fetch("/api/biolink/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-idempotency-key": idempotencyKeyRef.current,
+        },
         body: JSON.stringify({
           tenantId: tenant.id,
           items: cart.map((item) => ({
