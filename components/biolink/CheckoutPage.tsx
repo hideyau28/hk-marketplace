@@ -8,6 +8,13 @@ import {
   type DeliveryOption,
 } from "@/lib/biolink-helpers";
 import { useTemplate } from "@/lib/template-context";
+import {
+  Package,
+  RefreshCw,
+  MessageCircle,
+  CheckCircle,
+  ShieldCheck,
+} from "lucide-react";
 
 type PaymentProvider = {
   providerId: string;
@@ -925,6 +932,47 @@ export default function CheckoutPage({
                   </span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Trust signals */}
+          <div
+            className="mt-5 rounded-2xl px-4 py-4"
+            style={{
+              backgroundColor: `${tmpl.subtext}08`,
+              border: `1px solid ${tmpl.subtext}12`,
+            }}
+          >
+            <p
+              className="text-xs font-semibold tracking-wide mb-3 flex items-center gap-1.5"
+              style={{ color: `${tmpl.text}B3` }}
+            >
+              <ShieldCheck size={14} style={{ color: tmpl.accent }} />
+              安心購物保障
+            </p>
+            <div className="space-y-2">
+              {[
+                { Icon: Package, text: "落單後 1-3 個工作天出貨" },
+                { Icon: RefreshCw, text: "收貨 7 日內可退換" },
+                ...(tenant.whatsapp
+                  ? [{ Icon: MessageCircle, text: "有問題隨時 WhatsApp 聯絡" }]
+                  : []),
+                { Icon: CheckCircle, text: "付款後會收到訂單確認通知" },
+              ].map(({ Icon, text }) => (
+                <div key={text} className="flex items-center gap-2">
+                  <Icon
+                    size={13}
+                    className="flex-shrink-0"
+                    style={{ color: `${tmpl.subtext}99` }}
+                  />
+                  <span
+                    className="text-xs leading-relaxed"
+                    style={{ color: `${tmpl.subtext}CC` }}
+                  >
+                    {text}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
