@@ -1,14 +1,30 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { type Locale } from "@/lib/i18n";
 import type { Product } from "@prisma/client";
 import { ProductModal } from "./product-modal";
 import CsvUpload from "@/components/admin/CsvUpload";
-import { Search, Check, X, Pencil, Eye, EyeOff, Package, LayoutGrid, List } from "lucide-react";
-import { toggleFeatured, toggleHidden, toggleHotSelling, updatePrice, updateProduct } from "./actions";
+import {
+  Search,
+  Check,
+  X,
+  Pencil,
+  Eye,
+  EyeOff,
+  Package,
+  LayoutGrid,
+  List,
+} from "lucide-react";
+import {
+  fetchProducts,
+  toggleFeatured,
+  toggleHidden,
+  toggleHotSelling,
+  updatePrice,
+  updateProduct,
+} from "./actions";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -98,7 +114,10 @@ function exportProductsToCsv(products: ProductWithBadges[]): void {
     ].map(escapeCsvField);
   });
 
-  const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+  const csvContent = [
+    headers.join(","),
+    ...rows.map((row) => row.join(",")),
+  ].join("\n");
 
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -115,10 +134,16 @@ function exportProductsToCsv(products: ProductWithBadges[]): void {
   URL.revokeObjectURL(url);
 }
 
-export function ProductsTable({ products, locale, showAddButton }: ProductsTableProps) {
+export function ProductsTable({
+  products: initialProducts,
+  locale,
+  showAddButton,
+}: ProductsTableProps) {
   const isZh = locale === "zh-HK";
-  const isEmpty = products.length === 0;
-  const router = useRouter();
+  // 本地 products state — 初始值來自 SSR，mutation 後 client-side re-fetch 更新
+  const [localProducts, setLocalProducts] =
+    useState<ProductWithBadges[]>(initialProducts);
+  const isEmpty = localProducts.length === 0;
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isCsvOpen, setIsCsvOpen] = useState(false);
@@ -130,18 +155,28 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const [editingBadgeId, setEditingBadgeId] = useState<string | null>(null);
   const [badgeNameZh, setBadgeNameZh] = useState("");
   const [badgeNameEn, setBadgeNameEn] = useState("");
-  const [badgeColor, setBadgeColor] = useState(BADGE_PRESETS[0]?.color || "#EF4444");
+  const [badgeColor, setBadgeColor] = useState(
+    BADGE_PRESETS[0]?.color || "#EF4444",
+  );
   const [badgeSaving, setBadgeSaving] = useState(false);
   const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
-  const [togglingHotSelling, setTogglingHotSelling] = useState<string | null>(null);
+  const [togglingHotSelling, setTogglingHotSelling] = useState<string | null>(
+    null,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [stockFilter, setStockFilter] = useState("All");
-  const [openFilter, setOpenFilter] = useState<"category" | "status" | "stock" | null>(null);
-  const [sortKey, setSortKey] = useState<"originalPrice" | "price" | null>(null);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
+  const [openFilter, setOpenFilter] = useState<
+    "category" | "status" | "stock" | null
+  >(null);
+  const [sortKey, setSortKey] = useState<"originalPrice" | "price" | null>(
+    null,
+  );
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(
+    null,
+  );
   const [showHidden, setShowHidden] = useState(false);
   const [togglingActive, setTogglingActive] = useState<string | null>(null);
   const [togglingHidden, setTogglingHidden] = useState<string | null>(null);
@@ -154,8 +189,13 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   // View mode
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
-  // Trigger router.refresh() outside of any startTransition context
-  const [pendingRefresh, setPendingRefresh] = useState(false);
+  // Client-side re-fetch — 直接用 server action 拎最新 data，唔依賴 cache
+  const refreshProducts = useCallback(async () => {
+    const result = await fetchProducts();
+    if (result.ok) {
+      setLocalProducts(result.data as ProductWithBadges[]);
+    }
+  }, []);
 
   const CATEGORY_OPTIONS = [
     "All",
@@ -173,20 +213,17 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const STATUS_OPTIONS = ["All", "Active", "Inactive"];
   const STOCK_OPTIONS = ["All", "In Stock", "Out of Stock"];
 
-  // Full page reload after product save — router.refresh() gets stale due to client-side cache
-  useEffect(() => {
-    if (pendingRefresh) {
-      setPendingRefresh(false);
-      window.location.reload();
-    }
-  }, [pendingRefresh]);
-
-  const badgeMap = useMemo(() => new Map(badges.map((badge) => [badge.id, badge])), [badges]);
+  const badgeMap = useMemo(
+    () => new Map(badges.map((badge) => [badge.id, badge])),
+    [badges],
+  );
 
   const hasStock = (product: ProductWithBadges) => {
     const sizes = (product as { sizes?: Record<string, number> | null }).sizes;
     if (sizes && typeof sizes === "object" && !Array.isArray(sizes)) {
-      return Object.values(sizes).some((value) => typeof value === "number" && value > 0);
+      return Object.values(sizes).some(
+        (value) => typeof value === "number" && value > 0,
+      );
     }
     return (product.stock ?? 0) > 0;
   };
@@ -210,38 +247,49 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   // Filter and sort products
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    let result = products.filter((p) => {
+    let result = localProducts.filter((p) => {
       // When showHidden is off and status filter is "All", hide inactive products
       if (!showHidden && statusFilter === "All" && !p.active) return false;
 
-      const matchesSearch = !query
-        || p.title.toLowerCase().includes(query)
-        || (p.sku && p.sku.toLowerCase().includes(query))
-        || (p.brand && p.brand.toLowerCase().includes(query));
+      const matchesSearch =
+        !query ||
+        p.title.toLowerCase().includes(query) ||
+        (p.sku && p.sku.toLowerCase().includes(query)) ||
+        (p.brand && p.brand.toLowerCase().includes(query));
 
-      const matchesCategory = categoryFilter === "All" || (p.category || "") === categoryFilter;
-      const matchesStatus = statusFilter === "All"
-        || (statusFilter === "Active" ? p.active : !p.active);
-      const matchesStock = stockFilter === "All"
-        || (stockFilter === "In Stock" ? hasStock(p) : !hasStock(p));
+      const matchesCategory =
+        categoryFilter === "All" || (p.category || "") === categoryFilter;
+      const matchesStatus =
+        statusFilter === "All" ||
+        (statusFilter === "Active" ? p.active : !p.active);
+      const matchesStock =
+        stockFilter === "All" ||
+        (stockFilter === "In Stock" ? hasStock(p) : !hasStock(p));
 
       return matchesSearch && matchesCategory && matchesStatus && matchesStock;
     });
 
     if (sortKey && sortDirection) {
       result = [...result].sort((a, b) => {
-        const aValue = sortKey === "originalPrice"
-          ? (a.originalPrice ?? 0)
-          : a.price;
-        const bValue = sortKey === "originalPrice"
-          ? (b.originalPrice ?? 0)
-          : b.price;
+        const aValue =
+          sortKey === "originalPrice" ? (a.originalPrice ?? 0) : a.price;
+        const bValue =
+          sortKey === "originalPrice" ? (b.originalPrice ?? 0) : b.price;
         return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
       });
     }
 
     return result;
-  }, [products, searchQuery, categoryFilter, statusFilter, stockFilter, sortKey, sortDirection, showHidden]);
+  }, [
+    localProducts,
+    searchQuery,
+    categoryFilter,
+    statusFilter,
+    stockFilter,
+    sortKey,
+    sortDirection,
+    showHidden,
+  ]);
 
   // Paginate filtered products
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -256,11 +304,14 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     setCurrentPage(1);
   };
 
-  const handleToggleFeatured = async (productId: string, currentFeatured: boolean) => {
+  const handleToggleFeatured = async (
+    productId: string,
+    currentFeatured: boolean,
+  ) => {
     setTogglingFeatured(productId);
     try {
       await toggleFeatured(productId, !currentFeatured);
-      router.refresh();
+      refreshProducts();
     } catch (error) {
       console.error("Failed to toggle featured:", error);
     } finally {
@@ -268,11 +319,15 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     }
   };
 
-  const handleToggleHotSelling = async (productId: string, currentBadges: string[], isHot: boolean) => {
+  const handleToggleHotSelling = async (
+    productId: string,
+    currentBadges: string[],
+    isHot: boolean,
+  ) => {
     setTogglingHotSelling(productId);
     try {
       await toggleHotSelling(productId, currentBadges, !isHot);
-      router.refresh();
+      refreshProducts();
     } catch (error) {
       console.error("Failed to toggle hot selling:", error);
     } finally {
@@ -283,7 +338,11 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const startEditingPrice = (product: ProductWithBadges) => {
     setEditingPriceId(product.id);
     setEditPrice(Math.round(product.price).toString());
-    setEditOriginalPrice(product.originalPrice != null ? Math.round(product.originalPrice).toString() : "");
+    setEditOriginalPrice(
+      product.originalPrice != null
+        ? Math.round(product.originalPrice).toString()
+        : "",
+    );
   };
 
   const cancelEditingPrice = () => {
@@ -296,13 +355,19 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     const priceNum = parseFloat(editPrice);
     if (isNaN(priceNum) || priceNum < 0) return;
 
-    const originalPriceNum = editOriginalPrice.trim() ? parseFloat(editOriginalPrice) : null;
-    if (editOriginalPrice.trim() && (isNaN(originalPriceNum!) || originalPriceNum! < 0)) return;
+    const originalPriceNum = editOriginalPrice.trim()
+      ? parseFloat(editOriginalPrice)
+      : null;
+    if (
+      editOriginalPrice.trim() &&
+      (isNaN(originalPriceNum!) || originalPriceNum! < 0)
+    )
+      return;
 
     setSavingPrice(true);
     try {
       await updatePrice(productId, priceNum, originalPriceNum);
-      router.refresh();
+      refreshProducts();
       cancelEditingPrice();
     } catch (error) {
       console.error("Failed to update price:", error);
@@ -315,7 +380,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     setTogglingActive(productId);
     try {
       await updateProduct(productId, { active: newActive }, locale);
-      router.refresh();
+      refreshProducts();
     } catch (error) {
       console.error("Failed to toggle active:", error);
     } finally {
@@ -323,11 +388,14 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
     }
   };
 
-  const handleToggleHidden = async (productId: string, currentHidden: boolean) => {
+  const handleToggleHidden = async (
+    productId: string,
+    currentHidden: boolean,
+  ) => {
     setTogglingHidden(productId);
     try {
       await toggleHidden(productId, !currentHidden);
-      router.refresh();
+      refreshProducts();
     } catch (error) {
       console.error("Failed to toggle hidden:", error);
     } finally {
@@ -373,7 +441,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const handleDeleteBadge = async (badge: Badge) => {
     const confirmed = window.confirm(`Delete badge "${badge.nameZh}"?`);
     if (!confirmed) return;
-    const res = await fetch(`/api/admin/badges/${badge.id}`, { method: "DELETE" });
+    const res = await fetch(`/api/admin/badges/${badge.id}`, {
+      method: "DELETE",
+    });
     const json = await res.json();
     if (!res.ok || !json.ok) {
       alert(json?.error?.message || "Failed to delete badge.");
@@ -408,12 +478,14 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
         color: badgeColor.trim(),
       };
       const res = await fetch(
-        editingBadgeId ? `/api/admin/badges/${editingBadgeId}` : "/api/admin/badges",
+        editingBadgeId
+          ? `/api/admin/badges/${editingBadgeId}`
+          : "/api/admin/badges",
         {
           method: editingBadgeId ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       );
       const json = await res.json();
       if (!res.ok || !json.ok) {
@@ -451,7 +523,10 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
   const handleCloseModal = (saved?: boolean) => {
     setSelectedProduct(null);
     setIsCreating(false);
-    if (saved) setPendingRefresh(true);
+    if (saved) {
+      // 直接 re-fetch products，唔靠 router.refresh 或 window.reload
+      refreshProducts();
+    }
   };
 
   const toggleSort = (key: "originalPrice" | "price") => {
@@ -500,14 +575,16 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
 
   const handleBatchHide = async () => {
     if (selectedIds.size === 0) return;
-    const confirmed = window.confirm(`Hide ${selectedIds.size} selected products?`);
+    const confirmed = window.confirm(
+      `Hide ${selectedIds.size} selected products?`,
+    );
     if (!confirmed) return;
 
     for (const id of selectedIds) {
       await updateProduct(id, { active: false }, locale);
     }
     setSelectedIds(new Set());
-    router.refresh();
+    refreshProducts();
   };
 
   if (isEmpty) {
@@ -534,7 +611,11 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
         </div>
 
         {(selectedProduct || isCreating) && (
-          <ProductModal product={selectedProduct} onClose={handleCloseModal} locale={locale} />
+          <ProductModal
+            product={selectedProduct}
+            onClose={handleCloseModal}
+            locale={locale}
+          />
         )}
       </>
     );
@@ -587,7 +668,11 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                 : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
             }`}
           >
-            {showHidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            {showHidden ? (
+              <Eye className="w-4 h-4" />
+            ) : (
+              <EyeOff className="w-4 h-4" />
+            )}
             {showHidden ? "Showing hidden" : "Show hidden"}
           </button>
           <button
@@ -597,7 +682,7 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
             Manage Badges
           </button>
           <button
-            onClick={() => exportProductsToCsv(products)}
+            onClick={() => exportProductsToCsv(localProducts)}
             className="rounded-xl bg-olive-600 px-4 py-3 text-sm text-white font-semibold hover:bg-olive-700"
           >
             Export CSV
@@ -624,10 +709,11 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           )}
         </div>
       </div>
-
       {selectedIds.size > 0 && (
         <div className="mt-4 flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3">
-          <span className="text-sm text-zinc-700">{selectedIds.size} selected</span>
+          <span className="text-sm text-zinc-700">
+            {selectedIds.size} selected
+          </span>
           <button
             onClick={handleBatchHide}
             className="rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-sm text-red-600 hover:bg-red-100"
@@ -642,20 +728,25 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           </button>
         </div>
       )}
-
       {/* ── Grid view ── */}
       {viewMode === "grid" && (
         <div className="mt-6">
           {paginatedProducts.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-zinc-200 bg-white px-6 py-16 text-center text-zinc-500">
-              {searchQuery ? "No products match your search." : "No data available."}
+              {searchQuery
+                ? "No products match your search."
+                : "No data available."}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {paginatedProducts.map((product) => {
-                const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
+                const isOnSale =
+                  product.originalPrice != null &&
+                  product.originalPrice > product.price;
                 const discountPercent = isOnSale
-                  ? Math.round((1 - product.price / product.originalPrice!) * 100)
+                  ? Math.round(
+                      (1 - product.price / product.originalPrice!) * 100,
+                    )
                   : 0;
                 const promotionBadges = Array.isArray(product.promotionBadges)
                   ? product.promotionBadges
@@ -722,11 +813,17 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                       <div className="flex items-center gap-1.5 mt-auto pt-1">
                         {isOnSale ? (
                           <>
-                            <span className="text-[10px] text-zinc-400 line-through">${Math.round(product.originalPrice!)}</span>
-                            <span className="text-sm font-bold text-red-600">${Math.round(product.price)}</span>
+                            <span className="text-[10px] text-zinc-400 line-through">
+                              ${Math.round(product.originalPrice!)}
+                            </span>
+                            <span className="text-sm font-bold text-red-600">
+                              ${Math.round(product.price)}
+                            </span>
                           </>
                         ) : (
-                          <span className="text-sm font-bold text-zinc-900">${Math.round(product.price)}</span>
+                          <span className="text-sm font-bold text-zinc-900">
+                            ${Math.round(product.price)}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -740,7 +837,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                         Edit
                       </button>
                       <button
-                        onClick={() => handleToggleHidden(product.id, product.hidden)}
+                        onClick={() =>
+                          handleToggleHidden(product.id, product.hidden)
+                        }
                         disabled={togglingHidden === product.id}
                         className={`rounded-xl border p-1.5 disabled:opacity-50 transition-colors ${
                           product.hidden
@@ -749,7 +848,11 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                         }`}
                         title={product.hidden ? "取消隱藏" : "隱藏產品"}
                       >
-                        {product.hidden ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {product.hidden ? (
+                          <EyeOff size={14} />
+                        ) : (
+                          <Eye size={14} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -761,7 +864,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           {/* Grid pagination */}
           <div className="flex flex-col md:flex-row items-center justify-between mt-4 text-zinc-500 text-sm gap-3">
             <div>
-              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+              {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)}{" "}
+              of {filteredProducts.length} products
               {searchQuery && " (filtered)"}
             </div>
             {totalPages > 1 && (
@@ -802,7 +907,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                   <span className="px-1">...</span>
                 )}
                 <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
                 >
@@ -813,394 +920,482 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           </div>
         </div>
       )}
-
       {/* ── Table view ── */}
       {viewMode === "table" && (
-      <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
-        <div className="overflow-x-auto">
-          <table className="min-w-[1400px] w-full text-sm">
-            <thead>
-              <tr className="text-zinc-500 border-b border-zinc-200">
-                <th className="px-4 py-3 text-left w-12">
-                  <input
-                    type="checkbox"
-                    checked={paginatedProducts.length > 0 && selectedIds.size === paginatedProducts.length}
-                    onChange={toggleSelectAll}
-                    className="h-5 w-5 rounded border-2 border-zinc-400 accent-olive-600 focus:ring-olive-500 cursor-pointer"
-                  />
-                </th>
-                <th className="px-2 py-1 text-left min-w-[220px]">Product</th>
-                <th className="px-2 py-1 text-left">Style</th>
-                <th className="px-2 py-1 text-left relative">
-                  <button
-                    type="button"
-                    onClick={() => setOpenFilter(openFilter === "category" ? null : "category")}
-                    className="inline-flex items-center gap-1 hover:text-zinc-700"
-                  >
-                    Category <span className="text-xs">▼</span>
-                  </button>
-                  {openFilter === "category" && (
-                    <div className="absolute left-0 mt-2 w-48 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
-                      {CATEGORY_OPTIONS.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => {
-                            setCategoryFilter(option);
-                            setOpenFilter(null);
-                            setCurrentPage(1);
-                          }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
-                            categoryFilter === option ? "text-olive-700 font-semibold" : "text-zinc-600"
-                          }`}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </th>
-                <th className="px-2 py-1 text-right">
-                  <button
-                    type="button"
-                    onClick={() => toggleSort("originalPrice")}
-                    className="inline-flex items-center gap-1 hover:text-zinc-700"
-                  >
-                    Orig. Price <span className="text-xs">{getSortIndicator("originalPrice")}</span>
-                  </button>
-                </th>
-                <th className="px-2 py-1 text-right">
-                  <button
-                    type="button"
-                    onClick={() => toggleSort("price")}
-                    className="inline-flex items-center gap-1 hover:text-zinc-700 ml-auto"
-                  >
-                    Net Price <span className="text-xs">{getSortIndicator("price")}</span>
-                  </button>
-                </th>
-                <th className="px-2 py-1 text-center">Discount</th>
-                <th className="px-2 py-1 text-right relative">
-                  <button
-                    type="button"
-                    onClick={() => setOpenFilter(openFilter === "stock" ? null : "stock")}
-                    className="inline-flex items-center gap-1 hover:text-zinc-700"
-                  >
-                    Stock <span className="text-xs">▼</span>
-                  </button>
-                  {openFilter === "stock" && (
-                    <div className="absolute left-0 mt-2 w-40 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
-                      {STOCK_OPTIONS.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => {
-                            setStockFilter(option);
-                            setOpenFilter(null);
-                            setCurrentPage(1);
-                          }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
-                            stockFilter === option ? "text-olive-700 font-semibold" : "text-zinc-600"
-                          }`}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </th>
-                <th className="px-2 py-1 text-left">Badges</th>
-                <th className="px-2 py-1 text-left relative">
-                  <button
-                    type="button"
-                    onClick={() => setOpenFilter(openFilter === "status" ? null : "status")}
-                    className="inline-flex items-center gap-1 hover:text-zinc-700"
-                  >
-                    Status <span className="text-xs">▼</span>
-                  </button>
-                  {openFilter === "status" && (
-                    <div className="absolute left-0 mt-2 w-36 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
-                      {STATUS_OPTIONS.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => {
-                            setStatusFilter(option);
-                            setOpenFilter(null);
-                            setCurrentPage(1);
-                          }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
-                            statusFilter === option ? "text-olive-700 font-semibold" : "text-zinc-600"
-                          }`}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </th>
-                <th className="px-2 py-1 text-left">Updated</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {paginatedProducts.length === 0 ? (
-                <tr>
-                  <td colSpan={11} className="px-4 py-12 text-center text-zinc-500">
-                    {searchQuery ? "No products match your search." : "No data available."}
-                  </td>
-                </tr>
-              ) : (
-                paginatedProducts.map((product) => {
-                  const isOnSale = product.originalPrice != null && product.originalPrice > product.price;
-                  const discountPercent = isOnSale ? Math.round((1 - product.price / product.originalPrice!) * 100) : 0;
-                  const productBadges = Array.isArray((product as { badges?: string[] }).badges)
-                    ? (product as { badges: string[] }).badges
-                    : [];
-                  const badgeDisplay = productBadges.map((badge) => {
-                    const mapped = badgeMap.get(badge);
-                    if (mapped) {
-                      return {
-                        key: mapped.id,
-                        label: `${mapped.nameZh} / ${mapped.nameEn}`,
-                        color: mapped.color,
-                      };
-                    }
-                    return { key: badge, label: badge, color: null };
-                  });
-                  return (
-                  <tr key={product.id} className={`border-t border-zinc-200 hover:bg-zinc-50 ${!product.active ? "opacity-50" : ""} ${product.hidden ? "opacity-60" : ""}`}>
-                    {/* Checkbox */}
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(product.id)}
-                        onChange={() => toggleSelect(product.id)}
-                        className="h-5 w-5 rounded border-2 border-zinc-400 accent-olive-600 focus:ring-olive-500 cursor-pointer"
-                      />
-                    </td>
-                    {/* Product: thumbnail + title + brand */}
-                    <td className="px-2 py-2">
-                      <div className="flex items-center gap-3">
-                        {product.imageUrl ? (
-                          <div className="relative h-[48px] w-[48px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
-                            <Image src={product.imageUrl} alt={product.title} fill className="object-cover" sizes="48px" />
-                            {isOnSale && (
-                              <span className="absolute top-0 right-0 rounded-bl bg-red-500 px-1 py-px text-[8px] font-bold text-white leading-tight">
-                                -{discountPercent}%
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="h-[48px] w-[48px] flex-shrink-0 rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
-                        )}
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-semibold text-zinc-900 truncate">{product.title}</span>
-                            {product.hidden && (
-                              <span className="shrink-0 rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] font-medium text-zinc-600">
-                                已隱藏
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-xs text-zinc-500 truncate">{product.brand || "—"}</div>
-                        </div>
-                      </div>
-                    </td>
-                    {/* Style */}
-                    <td className="px-2 py-1 text-zinc-500 text-sm">{product.sku || "—"}</td>
-                    {/* Category */}
-                    <td className="px-2 py-1 text-zinc-600 text-sm">{product.category || "—"}</td>
-                    {/* Orig. Price */}
-                    <td className="px-2 py-1 text-right text-sm">
-                      {product.originalPrice != null ? (
-                        <span className="text-zinc-600">${Math.round(product.originalPrice)}</span>
-                      ) : (
-                        <span className="text-zinc-300">—</span>
-                      )}
-                    </td>
-                    {/* Price (editable on click) */}
-                    <td className="px-2 py-1 text-right">
-                      {editingPriceId === product.id ? (
-                        <div className="flex flex-col items-end gap-1">
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="number"
-                              value={editOriginalPrice}
-                              onChange={(e) => setEditOriginalPrice(e.target.value)}
-                              className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right text-zinc-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
-                              placeholder="Orig."
-                            />
-                            <input
-                              type="number"
-                              value={editPrice}
-                              onChange={(e) => setEditPrice(e.target.value)}
-                              className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-olive-500"
-                              placeholder="Price"
-                              autoFocus
-                            />
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => savePrice(product.id)}
-                              disabled={savingPrice}
-                              className="p-1 rounded-lg text-olive-600 hover:bg-olive-50 disabled:opacity-50"
-                            >
-                              <Check size={14} />
-                            </button>
-                            <button
-                              onClick={cancelEditingPrice}
-                              disabled={savingPrice}
-                              className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-100"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          className="group cursor-pointer inline-flex items-center gap-1"
-                          onClick={() => startEditingPrice(product)}
-                        >
-                          <span className="text-zinc-900 font-medium">${Math.round(product.price)}</span>
-                          <Pencil size={12} className="text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                      )}
-                    </td>
-                    {/* Discount */}
-                    <td className="px-2 py-1 text-center text-sm text-zinc-600">
-                      {isOnSale ? `-${discountPercent}%` : ""}
-                    </td>
-                    {/* Stock */}
-                    <td className="px-2 py-1 text-right text-zinc-700 text-sm">{product.stock ?? 0}</td>
-                    {/* Badges */}
-                    <td className="px-2 py-1">
-                      {badgeDisplay.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5">
-                          {badgeDisplay.map((badge) => (
-                            <span
-                              key={badge.key}
-                              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                                badge.color ? "text-white" : getBadgeStyles(badge.label)
-                              }`}
-                              style={badge.color ? { backgroundColor: badge.color } : undefined}
-                            >
-                              {badge.label}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-zinc-300">—</span>
-                      )}
-                    </td>
-                    {/* Status */}
-                    <td className="px-2 py-1">
-                      <span
-                        className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${
-                          product.active
-                            ? "bg-olive-100 text-olive-700 border-olive-200"
-                            : "bg-red-50 text-red-600 border-red-200"
-                        }`}
-                      >
-                        {product.active ? "Active" : "Hidden"}
-                      </span>
-                    </td>
-                    {/* Updated */}
-                    <td className="px-2 py-1 text-zinc-500 text-xs">
-                      <div className="flex items-center justify-between gap-3">
-                        <span>{new Date(product.updatedAt).toISOString().slice(0, 10)}</span>
-                        <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => handleToggleHidden(product.id, product.hidden)}
-                          disabled={togglingHidden === product.id}
-                          className={`rounded-lg border p-1.5 disabled:opacity-50 ${
-                            product.hidden
-                              ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
-                              : "border-zinc-200 bg-white text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"
-                          }`}
-                          title={product.hidden ? "取消隱藏" : "隱藏產品"}
-                        >
-                          {product.hidden ? <EyeOff size={14} /> : <Eye size={14} />}
-                        </button>
-                        {!product.active && (
+        <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
+          <div className="overflow-x-auto">
+            <table className="min-w-[1400px] w-full text-sm">
+              <thead>
+                <tr className="text-zinc-500 border-b border-zinc-200">
+                  <th className="px-4 py-3 text-left w-12">
+                    <input
+                      type="checkbox"
+                      checked={
+                        paginatedProducts.length > 0 &&
+                        selectedIds.size === paginatedProducts.length
+                      }
+                      onChange={toggleSelectAll}
+                      className="h-5 w-5 rounded border-2 border-zinc-400 accent-olive-600 focus:ring-olive-500 cursor-pointer"
+                    />
+                  </th>
+                  <th className="px-2 py-1 text-left min-w-[220px]">Product</th>
+                  <th className="px-2 py-1 text-left">Style</th>
+                  <th className="px-2 py-1 text-left relative">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenFilter(
+                          openFilter === "category" ? null : "category",
+                        )
+                      }
+                      className="inline-flex items-center gap-1 hover:text-zinc-700"
+                    >
+                      Category <span className="text-xs">▼</span>
+                    </button>
+                    {openFilter === "category" && (
+                      <div className="absolute left-0 mt-2 w-48 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
+                        {CATEGORY_OPTIONS.map((option) => (
                           <button
-                            onClick={() => handleToggleActive(product.id, true)}
-                            disabled={togglingActive === product.id}
-                            className="rounded-lg border border-olive-200 bg-olive-50 px-2.5 py-1.5 text-xs text-olive-700 hover:bg-olive-100 disabled:opacity-50"
+                            key={option}
+                            type="button"
+                            onClick={() => {
+                              setCategoryFilter(option);
+                              setOpenFilter(null);
+                              setCurrentPage(1);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
+                              categoryFilter === option
+                                ? "text-olive-700 font-semibold"
+                                : "text-zinc-600"
+                            }`}
                           >
-                            {togglingActive === product.id ? "..." : "Show"}
+                            {option}
                           </button>
-                        )}
-                        <button
-                          onClick={() => handleEditProduct(product)}
-                          className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50"
-                        >
-                          Edit
-                        </button>
-                        </div>
+                        ))}
                       </div>
+                    )}
+                  </th>
+                  <th className="px-2 py-1 text-right">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("originalPrice")}
+                      className="inline-flex items-center gap-1 hover:text-zinc-700"
+                    >
+                      Orig. Price{" "}
+                      <span className="text-xs">
+                        {getSortIndicator("originalPrice")}
+                      </span>
+                    </button>
+                  </th>
+                  <th className="px-2 py-1 text-right">
+                    <button
+                      type="button"
+                      onClick={() => toggleSort("price")}
+                      className="inline-flex items-center gap-1 hover:text-zinc-700 ml-auto"
+                    >
+                      Net Price{" "}
+                      <span className="text-xs">
+                        {getSortIndicator("price")}
+                      </span>
+                    </button>
+                  </th>
+                  <th className="px-2 py-1 text-center">Discount</th>
+                  <th className="px-2 py-1 text-right relative">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenFilter(openFilter === "stock" ? null : "stock")
+                      }
+                      className="inline-flex items-center gap-1 hover:text-zinc-700"
+                    >
+                      Stock <span className="text-xs">▼</span>
+                    </button>
+                    {openFilter === "stock" && (
+                      <div className="absolute left-0 mt-2 w-40 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
+                        {STOCK_OPTIONS.map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => {
+                              setStockFilter(option);
+                              setOpenFilter(null);
+                              setCurrentPage(1);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
+                              stockFilter === option
+                                ? "text-olive-700 font-semibold"
+                                : "text-zinc-600"
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </th>
+                  <th className="px-2 py-1 text-left">Badges</th>
+                  <th className="px-2 py-1 text-left relative">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenFilter(openFilter === "status" ? null : "status")
+                      }
+                      className="inline-flex items-center gap-1 hover:text-zinc-700"
+                    >
+                      Status <span className="text-xs">▼</span>
+                    </button>
+                    {openFilter === "status" && (
+                      <div className="absolute left-0 mt-2 w-36 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
+                        {STATUS_OPTIONS.map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => {
+                              setStatusFilter(option);
+                              setOpenFilter(null);
+                              setCurrentPage(1);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
+                              statusFilter === option
+                                ? "text-olive-700 font-semibold"
+                                : "text-zinc-600"
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </th>
+                  <th className="px-2 py-1 text-left">Updated</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {paginatedProducts.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={11}
+                      className="px-4 py-12 text-center text-zinc-500"
+                    >
+                      {searchQuery
+                        ? "No products match your search."
+                        : "No data available."}
                     </td>
                   </tr>
-                );})
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex flex-col md:flex-row items-center justify-between border-t border-zinc-200 px-4 py-3 text-zinc-500 text-sm gap-3">
-          <div>
-            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
-            {searchQuery && " (filtered)"}
+                ) : (
+                  paginatedProducts.map((product) => {
+                    const isOnSale =
+                      product.originalPrice != null &&
+                      product.originalPrice > product.price;
+                    const discountPercent = isOnSale
+                      ? Math.round(
+                          (1 - product.price / product.originalPrice!) * 100,
+                        )
+                      : 0;
+                    const productBadges = Array.isArray(
+                      (product as { badges?: string[] }).badges,
+                    )
+                      ? (product as { badges: string[] }).badges
+                      : [];
+                    const badgeDisplay = productBadges.map((badge) => {
+                      const mapped = badgeMap.get(badge);
+                      if (mapped) {
+                        return {
+                          key: mapped.id,
+                          label: `${mapped.nameZh} / ${mapped.nameEn}`,
+                          color: mapped.color,
+                        };
+                      }
+                      return { key: badge, label: badge, color: null };
+                    });
+                    return (
+                      <tr
+                        key={product.id}
+                        className={`border-t border-zinc-200 hover:bg-zinc-50 ${!product.active ? "opacity-50" : ""} ${product.hidden ? "opacity-60" : ""}`}
+                      >
+                        {/* Checkbox */}
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(product.id)}
+                            onChange={() => toggleSelect(product.id)}
+                            className="h-5 w-5 rounded border-2 border-zinc-400 accent-olive-600 focus:ring-olive-500 cursor-pointer"
+                          />
+                        </td>
+                        {/* Product: thumbnail + title + brand */}
+                        <td className="px-2 py-2">
+                          <div className="flex items-center gap-3">
+                            {product.imageUrl ? (
+                              <div className="relative h-[48px] w-[48px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+                                <Image
+                                  src={product.imageUrl}
+                                  alt={product.title}
+                                  fill
+                                  className="object-cover"
+                                  sizes="48px"
+                                />
+                                {isOnSale && (
+                                  <span className="absolute top-0 right-0 rounded-bl bg-red-500 px-1 py-px text-[8px] font-bold text-white leading-tight">
+                                    -{discountPercent}%
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="h-[48px] w-[48px] flex-shrink-0 rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
+                            )}
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-semibold text-zinc-900 truncate">
+                                  {product.title}
+                                </span>
+                                {product.hidden && (
+                                  <span className="shrink-0 rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] font-medium text-zinc-600">
+                                    已隱藏
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-zinc-500 truncate">
+                                {product.brand || "—"}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        {/* Style */}
+                        <td className="px-2 py-1 text-zinc-500 text-sm">
+                          {product.sku || "—"}
+                        </td>
+                        {/* Category */}
+                        <td className="px-2 py-1 text-zinc-600 text-sm">
+                          {product.category || "—"}
+                        </td>
+                        {/* Orig. Price */}
+                        <td className="px-2 py-1 text-right text-sm">
+                          {product.originalPrice != null ? (
+                            <span className="text-zinc-600">
+                              ${Math.round(product.originalPrice)}
+                            </span>
+                          ) : (
+                            <span className="text-zinc-300">—</span>
+                          )}
+                        </td>
+                        {/* Price (editable on click) */}
+                        <td className="px-2 py-1 text-right">
+                          {editingPriceId === product.id ? (
+                            <div className="flex flex-col items-end gap-1">
+                              <div className="flex items-center gap-1">
+                                <input
+                                  type="number"
+                                  value={editOriginalPrice}
+                                  onChange={(e) =>
+                                    setEditOriginalPrice(e.target.value)
+                                  }
+                                  className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right text-zinc-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
+                                  placeholder="Orig."
+                                />
+                                <input
+                                  type="number"
+                                  value={editPrice}
+                                  onChange={(e) => setEditPrice(e.target.value)}
+                                  className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-olive-500"
+                                  placeholder="Price"
+                                  autoFocus
+                                />
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => savePrice(product.id)}
+                                  disabled={savingPrice}
+                                  className="p-1 rounded-lg text-olive-600 hover:bg-olive-50 disabled:opacity-50"
+                                >
+                                  <Check size={14} />
+                                </button>
+                                <button
+                                  onClick={cancelEditingPrice}
+                                  disabled={savingPrice}
+                                  className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-100"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div
+                              className="group cursor-pointer inline-flex items-center gap-1"
+                              onClick={() => startEditingPrice(product)}
+                            >
+                              <span className="text-zinc-900 font-medium">
+                                ${Math.round(product.price)}
+                              </span>
+                              <Pencil
+                                size={12}
+                                className="text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                              />
+                            </div>
+                          )}
+                        </td>
+                        {/* Discount */}
+                        <td className="px-2 py-1 text-center text-sm text-zinc-600">
+                          {isOnSale ? `-${discountPercent}%` : ""}
+                        </td>
+                        {/* Stock */}
+                        <td className="px-2 py-1 text-right text-zinc-700 text-sm">
+                          {product.stock ?? 0}
+                        </td>
+                        {/* Badges */}
+                        <td className="px-2 py-1">
+                          {badgeDisplay.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {badgeDisplay.map((badge) => (
+                                <span
+                                  key={badge.key}
+                                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                    badge.color
+                                      ? "text-white"
+                                      : getBadgeStyles(badge.label)
+                                  }`}
+                                  style={
+                                    badge.color
+                                      ? { backgroundColor: badge.color }
+                                      : undefined
+                                  }
+                                >
+                                  {badge.label}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-zinc-300">—</span>
+                          )}
+                        </td>
+                        {/* Status */}
+                        <td className="px-2 py-1">
+                          <span
+                            className={`inline-flex items-center rounded-full border px-2 py-1 text-xs ${
+                              product.active
+                                ? "bg-olive-100 text-olive-700 border-olive-200"
+                                : "bg-red-50 text-red-600 border-red-200"
+                            }`}
+                          >
+                            {product.active ? "Active" : "Hidden"}
+                          </span>
+                        </td>
+                        {/* Updated */}
+                        <td className="px-2 py-1 text-zinc-500 text-xs">
+                          <div className="flex items-center justify-between gap-3">
+                            <span>
+                              {new Date(product.updatedAt)
+                                .toISOString()
+                                .slice(0, 10)}
+                            </span>
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() =>
+                                  handleToggleHidden(product.id, product.hidden)
+                                }
+                                disabled={togglingHidden === product.id}
+                                className={`rounded-lg border p-1.5 disabled:opacity-50 ${
+                                  product.hidden
+                                    ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
+                                    : "border-zinc-200 bg-white text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"
+                                }`}
+                                title={product.hidden ? "取消隱藏" : "隱藏產品"}
+                              >
+                                {product.hidden ? (
+                                  <EyeOff size={14} />
+                                ) : (
+                                  <Eye size={14} />
+                                )}
+                              </button>
+                              {!product.active && (
+                                <button
+                                  onClick={() =>
+                                    handleToggleActive(product.id, true)
+                                  }
+                                  disabled={togglingActive === product.id}
+                                  className="rounded-lg border border-olive-200 bg-olive-50 px-2.5 py-1.5 text-xs text-olive-700 hover:bg-olive-100 disabled:opacity-50"
+                                >
+                                  {togglingActive === product.id
+                                    ? "..."
+                                    : "Show"}
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleEditProduct(product)}
+                                className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
-          {totalPages > 1 && (
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
-              >
-                Previous
-              </button>
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                let pageNum: number;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`w-8 h-8 rounded-lg text-sm font-medium ${
-                      currentPage === pageNum
-                        ? "bg-[#6B7A2F] text-white"
-                        : "border border-zinc-200 hover:bg-zinc-50"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-              {totalPages > 5 && currentPage < totalPages - 2 && (
-                <span className="px-1">...</span>
-              )}
-              <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-      )} {/* end viewMode === "table" */}
 
+          <div className="flex flex-col md:flex-row items-center justify-between border-t border-zinc-200 px-4 py-3 text-zinc-500 text-sm gap-3">
+            <div>
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+              {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)}{" "}
+              of {filteredProducts.length} products
+              {searchQuery && " (filtered)"}
+            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium ${
+                        currentPage === pageNum
+                          ? "bg-[#6B7A2F] text-white"
+                          : "border border-zinc-200 hover:bg-zinc-50"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                {totalPages > 5 && currentPage < totalPages - 2 && (
+                  <span className="px-1">...</span>
+                )}
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}{" "}
+      {/* end viewMode === "table" */}
       {isBadgeModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
@@ -1213,8 +1408,12 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           <div className="w-full max-w-4xl rounded-3xl border border-zinc-200 bg-white p-6">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-zinc-900">Manage Badges</h2>
-                <p className="mt-1 text-sm text-zinc-500">Create, edit, and organize product badges.</p>
+                <h2 className="text-xl font-semibold text-zinc-900">
+                  Manage Badges
+                </h2>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Create, edit, and organize product badges.
+                </p>
               </div>
               <button
                 onClick={() => setIsBadgeModalOpen(false)}
@@ -1233,7 +1432,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
               <div className="rounded-2xl border border-zinc-200 bg-white p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-zinc-800">Badge List</h3>
+                  <h3 className="text-sm font-semibold text-zinc-800">
+                    Badge List
+                  </h3>
                   <button
                     onClick={loadBadges}
                     disabled={badgeLoading}
@@ -1243,9 +1444,13 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                   </button>
                 </div>
                 {badgeLoading ? (
-                  <div className="py-8 text-center text-sm text-zinc-500">Loading badges...</div>
+                  <div className="py-8 text-center text-sm text-zinc-500">
+                    Loading badges...
+                  </div>
                 ) : badges.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-zinc-500">No badges yet</div>
+                  <div className="py-8 text-center text-sm text-zinc-500">
+                    No badges yet
+                  </div>
                 ) : (
                   <div className="space-y-2">
                     {badges.map((badge) => (
@@ -1262,7 +1467,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                             <div className="text-sm font-medium text-zinc-900">
                               {badge.nameZh} / {badge.nameEn}
                             </div>
-                            <div className="text-xs text-zinc-400">{badge.color}</div>
+                            <div className="text-xs text-zinc-400">
+                              {badge.color}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1308,7 +1515,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
 
                 <div className="mt-4 space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">Name (Chinese)</label>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                      Name (Chinese)
+                    </label>
                     <input
                       value={badgeNameZh}
                       onChange={(e) => setBadgeNameZh(e.target.value)}
@@ -1317,7 +1526,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">Name (English)</label>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                      Name (English)
+                    </label>
                     <input
                       value={badgeNameEn}
                       onChange={(e) => setBadgeNameEn(e.target.value)}
@@ -1326,10 +1537,14 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">Color Presets</label>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                      Color Presets
+                    </label>
                     <div className="flex flex-wrap gap-2">
                       {BADGE_PRESETS.map((preset) => {
-                        const isSelected = badgeColor.toUpperCase() === preset.color.toUpperCase();
+                        const isSelected =
+                          badgeColor.toUpperCase() ===
+                          preset.color.toUpperCase();
                         return (
                           <button
                             key={preset.key}
@@ -1341,7 +1556,10 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                                 : "border-zinc-200 bg-white text-zinc-700"
                             }`}
                           >
-                            <span className="h-4 w-4 rounded-full" style={{ backgroundColor: preset.color }} />
+                            <span
+                              className="h-4 w-4 rounded-full"
+                              style={{ backgroundColor: preset.color }}
+                            />
                             {preset.label}
                           </button>
                         );
@@ -1349,7 +1567,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">Custom Hex</label>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                      Custom Hex
+                    </label>
                     <input
                       value={badgeColor}
                       onChange={(e) => setBadgeColor(e.target.value)}
@@ -1358,7 +1578,9 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">Live Preview</label>
+                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                      Live Preview
+                    </label>
                     <div className="h-20 w-20 rounded-xl bg-zinc-200 relative overflow-hidden">
                       <span
                         className="absolute top-1 left-1 px-2 py-0.5 text-[10px] font-semibold text-white rounded"
@@ -1390,16 +1612,18 @@ export function ProductsTable({ products, locale, showAddButton }: ProductsTable
           </div>
         </div>
       )}
-
       {(selectedProduct || isCreating) && (
-        <ProductModal product={selectedProduct} onClose={handleCloseModal} locale={locale} />
+        <ProductModal
+          product={selectedProduct}
+          onClose={handleCloseModal}
+          locale={locale}
+        />
       )}
-
       {isCsvOpen && (
         <CsvUpload
           open={isCsvOpen}
           onClose={() => setIsCsvOpen(false)}
-          onImported={() => router.refresh()}
+          onImported={() => refreshProducts()}
         />
       )}
     </>
