@@ -223,11 +223,14 @@ export const POST = withApi(async (req) => {
     );
   }
 
-  // Idempotency check (optional — only enforced when header present)
+  // Idempotency check (required)
   const idemKey = getIdempotencyKey(req);
+  if (!idemKey) {
+    throw new ApiError(400, "BAD_REQUEST", "Missing idempotency key");
+  }
   let requestHash: string | null = null;
 
-  if (idemKey) {
+  {
     requestHash = sha256(
       stableStringify({ route: ROUTE, method: "POST", body: payload }),
     );
@@ -523,8 +526,8 @@ export const POST = withApi(async (req) => {
   response.storeName = tenant.name;
   response.total = totalWithDelivery;
 
-  // Save idempotency record (only if header was provided)
-  if (idemKey && requestHash) {
+  // Save idempotency record
+  if (requestHash) {
     await prisma.idempotencyKey.create({
       data: {
         tenantId: tenant.id,
