@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { formatPrice, type OrderConfirmConfig } from "@/lib/biolink-helpers";
 import { buildMerchantNotifyUrl } from "@/lib/whatsapp-notify";
 import { useTemplate } from "@/lib/template-context";
+import { ClipboardList, MessageCircle } from "lucide-react";
 
 type OrderItem = {
   name: string;
@@ -142,9 +143,7 @@ export default function OrderConfirmation({
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setUploadError(
-        isZh ? "圖片大小不能超過 5MB" : "Image must be under 5MB",
-      );
+      setUploadError(isZh ? "圖片大小不能超過 5MB" : "Image must be under 5MB");
       return;
     }
     const reader = new FileReader();
@@ -722,6 +721,71 @@ export default function OrderConfirmation({
               </div>
             </div>
           )}
+
+          {/* Next steps */}
+          <div
+            className="rounded-2xl p-5 mb-4"
+            style={{
+              backgroundColor: cardBg,
+              border: `1px solid ${subtleBorder}`,
+            }}
+          >
+            <p
+              className="text-xs font-semibold tracking-wide mb-3.5 flex items-center gap-1.5"
+              style={{ color: `${tmpl.text}B3` }}
+            >
+              <ClipboardList size={14} style={{ color: tmpl.accent }} />
+              {isZh ? "接下來會發生咩？" : "What happens next?"}
+            </p>
+            <div className="space-y-3">
+              {[
+                isZh
+                  ? "轉帳後上傳付款截圖"
+                  : "Upload payment proof after transfer",
+                isZh
+                  ? "商戶確認收款（通常 1 小時內）"
+                  : "Merchant confirms payment (usually within 1 hour)",
+                isZh ? "商戶安排出貨" : "Merchant arranges shipping",
+                isZh ? "收到出貨通知" : "Receive shipping notification",
+              ].map((step, idx) => (
+                <div key={idx} className="flex items-start gap-2.5">
+                  <span
+                    className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-px"
+                    style={{
+                      backgroundColor: `${tmpl.accent}18`,
+                      color: tmpl.accent,
+                    }}
+                  >
+                    {idx + 1}
+                  </span>
+                  <span
+                    className="text-xs leading-relaxed"
+                    style={{ color: `${tmpl.subtext}CC` }}
+                  >
+                    {step}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {order.whatsapp && (
+              <a
+                href={`https://wa.me/${order.whatsapp.replace(/[^0-9]/g, "")}`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 flex items-center justify-center gap-1.5 text-xs font-medium py-2.5 rounded-xl transition-colors active:scale-[0.98]"
+                style={{
+                  backgroundColor: `${tmpl.subtext}10`,
+                  color: `${tmpl.text}CC`,
+                }}
+              >
+                <MessageCircle size={13} />
+                {isZh
+                  ? "有問題？WhatsApp 聯絡商戶"
+                  : "Questions? WhatsApp the store"}
+              </a>
+            )}
+          </div>
 
           {/* WhatsApp notify merchant */}
           {notifyUrl && (
