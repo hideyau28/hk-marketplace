@@ -8,130 +8,135 @@ import { resolveTemplateId } from "@/lib/cover-templates";
 const ROUTE = "/api/admin/tenant-settings";
 
 // GET /api/admin/tenant-settings (admin)
-export const GET = withApi(
-  async (req) => {
-    const { tenantId, adminId } = await authenticateAdmin(req);
+export const GET = withApi(async (req) => {
+  const { tenantId, adminId } = await authenticateAdmin(req);
 
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: tenantId },
-      select: {
-        name: true,
-        slug: true,
-        tagline: true,
-        location: true,
-        whatsapp: true,
-        instagram: true,
-        coverTemplate: true,
-        coverPhoto: true,
-        logoUrl: true,
-        // Checkout settings
-        currency: true,
-        deliveryOptions: true,
-        freeShippingThreshold: true,
-        orderConfirmMessage: true,
-        // Branding
-        hideBranding: true,
-      },
-    });
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: {
+      name: true,
+      slug: true,
+      tagline: true,
+      location: true,
+      whatsapp: true,
+      instagram: true,
+      socialLinks: true,
+      coverTemplate: true,
+      coverPhoto: true,
+      logoUrl: true,
+      // Checkout settings
+      currency: true,
+      deliveryOptions: true,
+      freeShippingThreshold: true,
+      orderConfirmMessage: true,
+      // Branding
+      hideBranding: true,
+    },
+  });
 
-    if (!tenant) {
-      throw new ApiError(404, "NOT_FOUND", "Tenant not found");
-    }
-
-    // Get admin email
-    const admin = await prisma.tenantAdmin.findUnique({
-      where: { id: adminId },
-      select: { email: true },
-    });
-
-    return ok(req, {
-      ...tenant,
-      email: admin?.email || null,
-      logo: tenant.logoUrl,
-    });
+  if (!tenant) {
+    throw new ApiError(404, "NOT_FOUND", "Tenant not found");
   }
-);
+
+  // Get admin email
+  const admin = await prisma.tenantAdmin.findUnique({
+    where: { id: adminId },
+    select: { email: true },
+  });
+
+  return ok(req, {
+    ...tenant,
+    email: admin?.email || null,
+    logo: tenant.logoUrl,
+  });
+});
 
 // PUT /api/admin/tenant-settings (admin)
-export const PUT = withApi(
-  async (req) => {
-    const { tenantId } = await authenticateAdmin(req);
+export const PUT = withApi(async (req) => {
+  const { tenantId } = await authenticateAdmin(req);
 
-    let body: any = null;
-    try {
-      body = await req.json();
-    } catch {
-      throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
+  let body: any = null;
+  try {
+    body = await req.json();
+  } catch {
+    throw new ApiError(400, "BAD_REQUEST", "Invalid JSON body");
+  }
+
+  // Validate slug if provided
+  if (body.slug !== undefined) {
+    if (typeof body.slug !== "string" || body.slug.trim().length === 0) {
+      throw new ApiError(400, "BAD_REQUEST", "slug must be a non-empty string");
     }
 
-    // Validate slug if provided
-    if (body.slug !== undefined) {
-      if (typeof body.slug !== "string" || body.slug.trim().length === 0) {
-        throw new ApiError(400, "BAD_REQUEST", "slug must be a non-empty string");
-      }
+    // Check if slug is changing
+    const currentTenant = await prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { slug: true },
+    });
 
-      // Check if slug is changing
-      const currentTenant = await prisma.tenant.findUnique({
-        where: { id: tenantId },
-        select: { slug: true },
+    if (currentTenant && body.slug !== currentTenant.slug) {
+      // Check if new slug is already taken
+      const existing = await prisma.tenant.findUnique({
+        where: { slug: body.slug },
       });
 
-      if (currentTenant && body.slug !== currentTenant.slug) {
-        // Check if new slug is already taken
-        const existing = await prisma.tenant.findUnique({
-          where: { slug: body.slug },
-        });
-
-        if (existing) {
-          throw new ApiError(409, "CONFLICT", "Slug already taken");
-        }
+      if (existing) {
+        throw new ApiError(409, "CONFLICT", "Slug already taken");
       }
     }
-
-    // Prepare update data
-    const updateData: any = {};
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.slug !== undefined) updateData.slug = body.slug;
-    if (body.tagline !== undefined) updateData.tagline = body.tagline;
-    if (body.location !== undefined) updateData.location = body.location;
-    if (body.whatsapp !== undefined) updateData.whatsapp = body.whatsapp;
-    if (body.instagram !== undefined) updateData.instagram = body.instagram;
-    if (body.coverTemplate !== undefined) updateData.coverTemplate = resolveTemplateId(body.coverTemplate);
-    if (body.coverPhoto !== undefined) updateData.coverPhoto = body.coverPhoto;
-    if (body.logo !== undefined) updateData.logoUrl = body.logo;
-    // Checkout settings
-    if (body.currency !== undefined) updateData.currency = body.currency;
-    if (body.deliveryOptions !== undefined) updateData.deliveryOptions = body.deliveryOptions;
-    if (body.freeShippingThreshold !== undefined) updateData.freeShippingThreshold = body.freeShippingThreshold;
-    // Allow explicitly setting to null
-    if (body.freeShippingThreshold === null) updateData.freeShippingThreshold = null;
-    if (body.orderConfirmMessage !== undefined) updateData.orderConfirmMessage = body.orderConfirmMessage;
-    if (body.hideBranding !== undefined) updateData.hideBranding = body.hideBranding;
-
-    const updated = await prisma.tenant.update({
-      where: { id: tenantId },
-      data: updateData,
-      select: {
-        name: true,
-        slug: true,
-        tagline: true,
-        location: true,
-        whatsapp: true,
-        instagram: true,
-        coverTemplate: true,
-        coverPhoto: true,
-        logoUrl: true,
-        currency: true,
-        deliveryOptions: true,
-        freeShippingThreshold: true,
-        orderConfirmMessage: true,
-        hideBranding: true,
-      },
-    });
-
-    return ok(req, {
-      ...updated,
-      logo: updated.logoUrl,
-    });
   }
-);
+
+  // Prepare update data
+  const updateData: any = {};
+  if (body.name !== undefined) updateData.name = body.name;
+  if (body.slug !== undefined) updateData.slug = body.slug;
+  if (body.tagline !== undefined) updateData.tagline = body.tagline;
+  if (body.location !== undefined) updateData.location = body.location;
+  if (body.whatsapp !== undefined) updateData.whatsapp = body.whatsapp;
+  if (body.instagram !== undefined) updateData.instagram = body.instagram;
+  if (body.socialLinks !== undefined) updateData.socialLinks = body.socialLinks;
+  if (body.coverTemplate !== undefined)
+    updateData.coverTemplate = resolveTemplateId(body.coverTemplate);
+  if (body.coverPhoto !== undefined) updateData.coverPhoto = body.coverPhoto;
+  if (body.logo !== undefined) updateData.logoUrl = body.logo;
+  // Checkout settings
+  if (body.currency !== undefined) updateData.currency = body.currency;
+  if (body.deliveryOptions !== undefined)
+    updateData.deliveryOptions = body.deliveryOptions;
+  if (body.freeShippingThreshold !== undefined)
+    updateData.freeShippingThreshold = body.freeShippingThreshold;
+  // Allow explicitly setting to null
+  if (body.freeShippingThreshold === null)
+    updateData.freeShippingThreshold = null;
+  if (body.orderConfirmMessage !== undefined)
+    updateData.orderConfirmMessage = body.orderConfirmMessage;
+  if (body.hideBranding !== undefined)
+    updateData.hideBranding = body.hideBranding;
+
+  const updated = await prisma.tenant.update({
+    where: { id: tenantId },
+    data: updateData,
+    select: {
+      name: true,
+      slug: true,
+      tagline: true,
+      location: true,
+      whatsapp: true,
+      instagram: true,
+      socialLinks: true,
+      coverTemplate: true,
+      coverPhoto: true,
+      logoUrl: true,
+      currency: true,
+      deliveryOptions: true,
+      freeShippingThreshold: true,
+      orderConfirmMessage: true,
+      hideBranding: true,
+    },
+  });
+
+  return ok(req, {
+    ...updated,
+    logo: updated.logoUrl,
+  });
+});
