@@ -1,27 +1,77 @@
-import { NextResponse } from "next/server";
-import { generateOTP, storeOTP, validateHKPhone, normalizePhone } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  generateOTP,
+  storeOTP,
+  validateHKPhone,
+  normalizePhone,
+} from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
+import { withRateLimit } from "@/lib/api/rate-limit-middleware";
 
-export async function POST(request: Request) {
+// Per-IP: 10 requests / 15 min (prevent bulk enumeration)
+const ipLimiter = withRateLimit(
+  { interval: 15 * 60 * 1000, maxRequests: 10 },
+  { keyPrefix: "send-otp:ip" },
+);
+
+// Per-phone config: 3 requests / 15 min (prevent spamming one number)
+const PHONE_LIMIT = { interval: 15 * 60 * 1000, maxRequests: 3 };
+
+export async function POST(request: NextRequest) {
+  // Check IP rate limit first (before parsing body)
+  const ipBlock = await ipLimiter(request);
+  if (ipBlock) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: { code: "RATE_LIMIT_EXCEEDED", message: "請稍後再試" },
+      },
+      { status: 429, headers: Object.fromEntries(ipBlock.headers.entries()) },
+    );
+  }
+
   try {
     const body = await request.json();
     const { phone } = body;
 
     if (!phone) {
       return NextResponse.json(
-        { ok: false, error: { code: "MISSING_PHONE", message: "電話號碼為必填" } },
-        { status: 400 }
+        {
+          ok: false,
+          error: { code: "MISSING_PHONE", message: "電話號碼為必填" },
+        },
+        { status: 400 },
       );
     }
 
     // Validate HK phone format
     if (!validateHKPhone(phone)) {
       return NextResponse.json(
-        { ok: false, error: { code: "INVALID_PHONE", message: "請輸入有效嘅香港電話號碼（8位數字）" } },
-        { status: 400 }
+        {
+          ok: false,
+          error: {
+            code: "INVALID_PHONE",
+            message: "請輸入有效嘅香港電話號碼（8位數字）",
+          },
+        },
+        { status: 400 },
       );
     }
 
     const normalizedPhone = normalizePhone(phone);
+
+    // Check per-phone rate limit (after validation, before sending OTP)
+    const phoneResult = await rateLimit(`send-otp:phone:${normalizedPhone}`, PHONE_LIMIT);
+    if (!phoneResult.allowed) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: { code: "RATE_LIMIT_EXCEEDED", message: "請稍後再試" },
+        },
+        { status: 429 },
+      );
+    }
+
     const otp = generateOTP();
 
     // Store OTP
@@ -42,7 +92,7 @@ export async function POST(request: Request) {
     console.error("[send-otp] Error:", error);
     return NextResponse.json(
       { ok: false, error: { code: "SERVER_ERROR", message: "伺服器錯誤" } },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
