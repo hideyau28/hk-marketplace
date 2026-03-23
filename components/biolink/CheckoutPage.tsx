@@ -45,6 +45,8 @@ type OrderResult = {
   paymentProof?: boolean;
   paymentProofUrl?: string | null;
   currency?: string;
+  providerConfig?: Record<string, unknown>;
+  providerInstructions?: string;
 };
 
 type Props = {
@@ -76,11 +78,6 @@ export default function CheckoutPage({
     Array<{ id: string; label: string; sub: string }>
   >([]);
   const [providers, setProviders] = useState<PaymentProvider[]>([]);
-  const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
-  const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(
-    null,
-  );
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
 
   // Coupon state
@@ -174,13 +171,6 @@ export default function CheckoutPage({
       });
   }, [tenant.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset payment proof when switching payment method
-  useEffect(() => {
-    setPaymentProofFile(null);
-    setPaymentProofPreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }, [payment]);
-
   // Current selected provider (full data)
   const selectedProvider = providers.find((p) => p.providerId === payment);
   const isManualPayment = selectedProvider
@@ -241,50 +231,13 @@ export default function CheckoutPage({
   const needsAddress =
     !!delivery && !["meetup", "pickup", "self-pickup"].includes(delivery);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setError("圖片大小不能超過 5MB");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPaymentProofFile(file);
-      setPaymentProofPreview(reader.result as string);
-      setError(null);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemoveProof = () => {
-    setPaymentProofFile(null);
-    setPaymentProofPreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
-  const handleReUpload = () => {
-    handleRemoveProof();
-    setTimeout(() => fileInputRef.current?.click(), 50);
-  };
-
   const validate = useCallback(() => {
     if (name.trim().length < 2) return "請輸入姓名（最少 2 個字）";
     if (!/^\d{8}$/.test(phone.trim())) return "請輸入 8 位電話號碼";
     if (!delivery) return "請選擇送貨方式";
     if (needsAddress && address.trim().length < 5) return "請輸入送貨地址";
-    if (isManualPayment && !paymentProofFile) return "請上傳付款截圖";
     return null;
-  }, [
-    name,
-    phone,
-    delivery,
-    needsAddress,
-    address,
-    isManualPayment,
-    paymentProofFile,
-  ]);
+  }, [name, phone, delivery, needsAddress, address]);
 
   const handleSubmit = async () => {
     const validationError = validate();
@@ -297,23 +250,6 @@ export default function CheckoutPage({
     setError(null);
 
     try {
-      // Upload payment proof if manual payment
-      let paymentProofUrl: string | undefined;
-      if (isManualPayment && paymentProofFile) {
-        const formData = new FormData();
-        formData.append("file", paymentProofFile);
-        formData.append("folder", "payments");
-        const uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        const uploadJson = await uploadRes.json();
-        if (!uploadRes.ok || !uploadJson.ok) {
-          throw new Error("上傳截圖失敗，請重試");
-        }
-        paymentProofUrl = uploadJson.data.url;
-      }
-
       const res = await fetch("/api/biolink/orders", {
         method: "POST",
         headers: {
@@ -341,7 +277,7 @@ export default function CheckoutPage({
             address: needsAddress ? address.trim() : null,
           },
           payment: { method: payment },
-          paymentProof: paymentProofUrl || null,
+          paymentProof: null,
           note: note.trim() || null,
           couponCode: couponApplied
             ? couponCode.trim().toUpperCase()
@@ -374,7 +310,9 @@ export default function CheckoutPage({
           address: needsAddress ? address.trim() : null,
         },
         paymentMethod: payment,
-        paymentProofUrl: paymentProofUrl || null,
+        paymentProofUrl: null,
+        providerConfig: selectedProvider?.config,
+        providerInstructions: selectedProvider?.instructions,
         currency,
       };
       onOrderComplete(result);
@@ -900,98 +838,7 @@ export default function CheckoutPage({
                 </div>
               </div>
 
-              {/* Upload payment proof */}
-              <div
-                className="mt-4 rounded-2xl p-4"
-                style={{
-                  backgroundColor: inputBg,
-                  border: `1px solid ${subtleBorder}`,
-                }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <h4
-                    className="text-sm font-semibold"
-                    style={{ color: tmpl.text }}
-                  >
-                    請轉帳後上傳收據截圖
-                  </h4>
-                  <span
-                    className="rounded-md px-1.5 py-0.5 text-[10px] font-medium"
-                    style={{ backgroundColor: "#ef444420", color: "#ef4444" }}
-                  >
-                    必填
-                  </span>
-                </div>
-                <p className="text-xs mb-3" style={{ color: tmpl.subtext }}>
-                  完成轉帳後，請上傳付款截圖以確認落單
-                </p>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/heic"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-
-                {paymentProofPreview ? (
-                  <div className="space-y-3">
-                    <div
-                      className="relative overflow-hidden rounded-xl"
-                      style={{ border: `1px solid ${borderColor}` }}
-                    >
-                      <img
-                        src={paymentProofPreview}
-                        alt="付款截圖"
-                        className="w-full max-h-64 object-contain"
-                        style={{ backgroundColor: `${tmpl.subtext}10` }}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleRemoveProof}
-                        className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white text-xs"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleReUpload}
-                      className="w-full rounded-xl py-2 text-sm font-medium"
-                      style={{
-                        backgroundColor: `${tmpl.subtext}15`,
-                        color: `${tmpl.text}CC`,
-                      }}
-                    >
-                      重新上傳
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full rounded-xl border-2 border-dashed p-6 text-center transition-colors"
-                    style={{
-                      borderColor: `${tmpl.subtext}40`,
-                      backgroundColor: `${tmpl.subtext}08`,
-                    }}
-                  >
-                    <div className="text-3xl mb-1">📷</div>
-                    <div
-                      className="text-sm font-medium"
-                      style={{ color: `${tmpl.text}CC` }}
-                    >
-                      點擊上傳付款截圖
-                    </div>
-                    <div
-                      className="text-xs mt-1"
-                      style={{ color: tmpl.subtext }}
-                    >
-                      JPG, PNG, WebP（最大 5MB）
-                    </div>
-                  </button>
-                )}
-              </div>
+              {/* 落單後先喺 OrderConfirmation 上傳付款截圖 */}
             </div>
           )}
 
@@ -1091,13 +938,10 @@ export default function CheckoutPage({
           {/* Submit */}
           <button
             onClick={handleSubmit}
-            disabled={submitting || (isManualPayment && !paymentProofFile)}
+            disabled={submitting}
             className="mt-6 w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform disabled:active:scale-100"
             style={{
-              backgroundColor:
-                isManualPayment && !paymentProofFile
-                  ? `${tmpl.subtext}40`
-                  : tmpl.accent,
+              backgroundColor: tmpl.accent,
               opacity: submitting ? 0.5 : 1,
             }}
           >
