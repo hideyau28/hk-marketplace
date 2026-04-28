@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { DollarSign, Sparkles, Check, Circle } from "lucide-react";
 import StepIndicator from "./StepIndicator";
 import { COVER_TEMPLATES } from "@/lib/cover-templates";
@@ -346,18 +345,6 @@ interface OnboardingData {
   templateId: string;
   tagline: string;
 }
-
-const slideVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? 300 : -300,
-    opacity: 0,
-  }),
-  center: { x: 0, opacity: 1 },
-  exit: (direction: number) => ({
-    x: direction > 0 ? -300 : 300,
-    opacity: 0,
-  }),
-};
 
 interface OnboardingWizardProps {
   locale: Locale;
@@ -920,17 +907,8 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
       )}
 
       {/* Step content with slide animation */}
-      <div className="bg-white rounded-2xl shadow-sm border border-wlx-mist p-6 overflow-hidden relative">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={step}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-          >
+      <div className="bg-white rounded-2xl shadow-sm border border-wlx-mist p-6 relative">
+        <div key={step}>
             {/* ======== STEP 1: Choose Plan ======== */}
             {step === 1 && (
               <div className="space-y-5">
@@ -1818,8 +1796,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                 )}
               </div>
             )}
-          </motion.div>
-        </AnimatePresence>
+        </div>
       </div>
 
       {/* Progress bar */}
