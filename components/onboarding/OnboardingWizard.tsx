@@ -261,7 +261,7 @@ function getOnboardingPlans(isZh: boolean) {
         : ["10 products", "50 orders/mo", "3 payment methods", "1 store theme"],
       badge: null,
       footnote: isZh ? "永久免費" : "Free forever",
-      bg: "bg-white border-zinc-200",
+      bg: "bg-white border-wlx-mist",
       accent: "#10B981",
     },
     {
@@ -273,8 +273,8 @@ function getOnboardingPlans(isZh: boolean) {
         : ["50 products", "Unlimited orders", "All 7 payment methods", "All themes", "Coupons + WhatsApp"],
       badge: isZh ? "最受歡迎" : "Most popular",
       footnote: isZh ? "開店後設定付款" : "Set up billing after opening",
-      bg: "bg-gradient-to-b from-orange-50 to-amber-50 border-[#FF9500]",
-      accent: "#FF9500",
+      bg: "bg-wlx-cream border-wlx-ink",
+      accent: "#1A1A1A",
     },
     {
       id: "pro",
@@ -285,7 +285,7 @@ function getOnboardingPlans(isZh: boolean) {
         : ["Unlimited everything", "Custom domain (add-on, coming soon)", "Abandoned cart recovery", "Bestseller ranking", "CRM + Analytics", "Remove branding"],
       badge: null,
       footnote: isZh ? "開店後設定付款" : "Set up billing after opening",
-      bg: "bg-zinc-900 border-zinc-700",
+      bg: "bg-wlx-ink border-wlx-paper/15",
       accent: "#FFFFFF",
     },
   ];
@@ -387,8 +387,8 @@ function PaymentMethodCard({
     <div
       className={`rounded-xl border-2 p-4 transition-all duration-200 ${
         selected
-          ? "border-[#FF9500] ring-2 ring-[#FF9500]/20 bg-orange-50/50"
-          : "border-zinc-200 bg-white hover:border-zinc-300"
+          ? "border-wlx-ink ring-2 ring-wlx-ink/15 bg-wlx-cream"
+          : "border-wlx-mist bg-white hover:border-wlx-mist"
       }`}
     >
       <button
@@ -399,7 +399,7 @@ function PaymentMethodCard({
         {/* Checkbox */}
         <div
           className={`w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-            selected ? "border-[#FF9500] bg-[#FF9500]" : "border-zinc-300"
+            selected ? "border-wlx-ink bg-wlx-ink" : "border-wlx-mist"
           }`}
         >
           {selected && (
@@ -413,8 +413,8 @@ function PaymentMethodCard({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-zinc-900 text-sm">{label}</p>
-          <p className="text-xs text-zinc-500">{desc}</p>
+          <p className="font-semibold text-wlx-ink text-sm">{label}</p>
+          <p className="text-xs text-wlx-stone">{desc}</p>
         </div>
       </button>
       {children}
@@ -465,11 +465,11 @@ function QrUploader({
           <img
             src={currentUrl}
             alt="QR Code"
-            className="w-16 h-16 rounded-lg border border-zinc-200 object-cover"
+            className="w-16 h-16 rounded-lg border border-wlx-mist object-cover"
           />
           <div className="flex-1">
             <p className="text-xs text-green-600 font-medium">{labels.uploadSuccess}</p>
-            <label className="text-xs text-[#FF9500] font-medium cursor-pointer hover:underline">
+            <label className="text-xs text-wlx-ink font-medium cursor-pointer hover:underline">
               {labels.uploadQr}
               <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
             </label>
@@ -478,18 +478,18 @@ function QrUploader({
       ) : (
         <label
           className={`flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed py-4 cursor-pointer transition-colors ${
-            uploading ? "border-zinc-300 bg-zinc-50" : "border-zinc-300 hover:border-[#FF9500] hover:bg-orange-50/30"
+            uploading ? "border-wlx-mist bg-wlx-cream" : "border-wlx-mist hover:border-wlx-ink hover:bg-wlx-cream"
           }`}
         >
           {uploading ? (
-            <span className="text-sm text-zinc-500 animate-pulse">{labels.uploading}</span>
+            <span className="text-sm text-wlx-stone animate-pulse">{labels.uploading}</span>
           ) : (
             <>
-              <svg className="w-6 h-6 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-6 h-6 text-wlx-stone" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span className="text-sm font-medium text-zinc-700">{labels.uploadQr}</span>
-              <span className="text-xs text-zinc-400">{labels.uploadQrHint}</span>
+              <span className="text-sm font-medium text-wlx-stone">{labels.uploadQr}</span>
+              <span className="text-xs text-wlx-stone">{labels.uploadQrHint}</span>
             </>
           )}
           <input type="file" accept="image/*" onChange={handleFile} className="hidden" disabled={uploading} />
@@ -903,8 +903,8 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
 
   const inputClass = (field: string) =>
     `w-full px-3 py-2.5 rounded-xl border text-[16px] ${
-      errors[field] ? "border-red-400" : "border-zinc-200"
-    } focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400`;
+      errors[field] ? "border-red-400" : "border-wlx-mist"
+    } focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 focus:border-wlx-ink text-wlx-ink placeholder:text-wlx-stone`;
 
   const selectedTemplate = COVER_TEMPLATES.find(
     (tmpl) => tmpl.id === data.templateId
@@ -920,7 +920,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
       )}
 
       {/* Step content with slide animation */}
-      <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 p-6 overflow-hidden relative">
+      <div className="bg-white rounded-2xl shadow-sm border border-wlx-mist p-6 overflow-hidden relative">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={step}
@@ -935,10 +935,10 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
             {step === 1 && (
               <div className="space-y-5">
                 <div className="text-center">
-                  <h1 className="text-xl font-bold text-zinc-900">
+                  <h1 className="text-xl font-bold text-wlx-ink">
                     {labels.choosePlan}
                   </h1>
-                  <p className="text-zinc-500 text-sm mt-1">
+                  <p className="text-wlx-stone text-sm mt-1">
                     {labels.choosePlanSub}
                   </p>
                 </div>
@@ -955,19 +955,19 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                         onClick={() => update("plan", plan.id)}
                         className={`w-full text-left rounded-xl border-2 p-4 transition-all duration-200 relative overflow-hidden ${
                           isSelected
-                            ? "border-[#FF9500] ring-2 ring-[#FF9500]/20"
+                            ? "border-wlx-ink ring-2 ring-wlx-ink/15"
                             : isDark
-                            ? "border-zinc-700 bg-zinc-900"
-                            : "border-zinc-200 bg-white hover:border-zinc-300"
-                        } ${isDark && !isSelected ? "bg-zinc-900" : ""} ${
-                          isDark && isSelected ? "bg-zinc-900 border-[#FF9500]" : ""
-                        } ${plan.id === "lite" && !isSelected ? "bg-gradient-to-r from-orange-50 to-amber-50" : ""} ${
-                          plan.id === "lite" && isSelected ? "bg-gradient-to-r from-orange-50 to-amber-50" : ""
+                            ? "border-wlx-paper/15 bg-wlx-ink"
+                            : "border-wlx-mist bg-white hover:border-wlx-mist"
+                        } ${isDark && !isSelected ? "bg-wlx-ink" : ""} ${
+                          isDark && isSelected ? "bg-wlx-ink border-wlx-ink" : ""
+                        } ${plan.id === "lite" && !isSelected ? "bg-wlx-cream" : ""} ${
+                          plan.id === "lite" && isSelected ? "bg-wlx-cream" : ""
                         }`}
                       >
                         {/* Badge */}
                         {plan.badge && (
-                          <span className="absolute top-3 right-3 bg-[#FF9500] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          <span className="absolute top-3 right-3 bg-wlx-ink text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                             {plan.badge}
                           </span>
                         )}
@@ -977,10 +977,10 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                           <div
                             className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center ${
                               isSelected
-                                ? "border-[#FF9500] bg-[#FF9500]"
+                                ? "border-wlx-ink bg-wlx-ink"
                                 : isDark
-                                ? "border-zinc-500"
-                                : "border-zinc-300"
+                                ? "border-wlx-stone"
+                                : "border-wlx-mist"
                             }`}
                           >
                             {isSelected && (
@@ -998,15 +998,15 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                             <div className="flex items-baseline gap-2">
                               <span
                                 className={`font-bold text-base ${
-                                  isDark ? "text-white" : "text-zinc-900"
+                                  isDark ? "text-white" : "text-wlx-ink"
                                 }`}
                               >
                                 {plan.name}
                               </span>
-                              <span className={`text-lg font-extrabold ${isDark ? "text-white" : "text-zinc-900"}`}>
+                              <span className={`text-lg font-extrabold ${isDark ? "text-white" : "text-wlx-ink"}`}>
                                 ${plan.price}
                               </span>
-                              <span className={`text-sm ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                              <span className={`text-sm ${isDark ? "text-wlx-stone" : "text-wlx-stone"}`}>
                                 {labels.month}
                               </span>
                             </div>
@@ -1014,13 +1014,13 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                               {plan.features.map((f, i) => (
                                 <span
                                   key={i}
-                                  className={`text-xs ${isDark ? "text-zinc-400" : "text-zinc-500"}`}
+                                  className={`text-xs ${isDark ? "text-wlx-stone" : "text-wlx-stone"}`}
                                 >
-                                  <span className="text-[#FF9500] mr-0.5">&#10003;</span> {f}
+                                  <span className="text-wlx-ink mr-0.5">&#10003;</span> {f}
                                 </span>
                               ))}
                             </div>
-                            <p className={`text-[10px] mt-1.5 ${isDark ? "text-zinc-500" : "text-zinc-400"}`}>
+                            <p className={`text-[10px] mt-1.5 ${isDark ? "text-wlx-stone" : "text-wlx-stone"}`}>
                               {plan.footnote}
                             </p>
                           </div>
@@ -1031,25 +1031,25 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                 </div>
 
                 {/* 0% platform fee badge */}
-                <p className="text-center text-xs text-zinc-400">
+                <p className="text-center text-xs text-wlx-stone">
                   {labels.zeroPlatformFee}
                 </p>
 
                 {/* Next button */}
                 <button
                   onClick={goNext}
-                  className="w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px]"
+                  className="w-full py-3 rounded-xl bg-wlx-ink text-white font-semibold text-base hover:bg-wlx-ink/90 transition-colors min-h-[48px]"
                 >
                   {labels.next} &rarr;
                 </button>
 
                 {/* Login link */}
-                <p className="text-center text-sm text-zinc-500">
+                <p className="text-center text-sm text-wlx-stone">
                   {labels.haveAccount}{" "}
                   <a
                     href={`/${locale}/admin/login`}
                     onClick={handleLoginClick}
-                    className="text-[#FF9500] font-medium hover:underline"
+                    className="text-wlx-ink font-medium hover:underline"
                   >
                     {labels.login}
                   </a>
@@ -1061,7 +1061,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
             {step === 2 && (
               <div className="space-y-4">
                 <div className="text-center">
-                  <h2 className="text-xl font-bold text-zinc-900">
+                  <h2 className="text-xl font-bold text-wlx-ink">
                     {labels.storeInfo}
                   </h2>
                 </div>
@@ -1070,7 +1070,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                 <div className="space-y-3">
                   {/* Store name */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-medium text-wlx-stone mb-1">
                       {labels.storeName}
                     </label>
                     <input
@@ -1088,11 +1088,11 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
 
                   {/* Slug */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-medium text-wlx-stone mb-1">
                       {labels.storeUrl}
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm select-none">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-wlx-stone text-sm select-none">
                         wowlix.com/
                       </span>
                       <input
@@ -1100,13 +1100,13 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                         value={data.slug}
                         onChange={(e) => handleSlugChange(e.target.value)}
                         className={`w-full pl-[100px] pr-9 py-2.5 rounded-xl border text-[16px] ${
-                          errors.slug ? "border-red-400" : "border-zinc-200"
-                        } focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900`}
+                          errors.slug ? "border-red-400" : "border-wlx-mist"
+                        } focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 focus:border-wlx-ink text-wlx-ink`}
                         maxLength={30}
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
                         {slugStatus === "checking" && (
-                          <span className="text-zinc-400 animate-pulse">...</span>
+                          <span className="text-wlx-stone animate-pulse">...</span>
                         )}
                         {slugStatus === "available" && (
                           <span className="text-green-500">&#10003;</span>
@@ -1120,7 +1120,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                       <p className="text-green-600 text-xs mt-1">{labels.slugAvailable}</p>
                     )}
                     {slugStatus === "checking" && (
-                      <p className="text-zinc-400 text-xs mt-1">{labels.slugChecking}</p>
+                      <p className="text-wlx-stone text-xs mt-1">{labels.slugChecking}</p>
                     )}
                     {(slugStatus === "taken" || slugStatus === "invalid") && slugReason && (
                       <p className="text-red-500 text-xs mt-1">{slugReason}</p>
@@ -1132,11 +1132,11 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                 </div>
 
                 {/* Divider */}
-                <div className="border-t border-zinc-100" />
+                <div className="border-t border-wlx-mist" />
 
                 {/* Account section */}
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                  <p className="text-xs font-semibold text-wlx-stone uppercase tracking-wider">
                     {labels.accountSection}
                   </p>
 
@@ -1145,7 +1145,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     <>
                       <a
                         href={`/api/tenant-admin/google?onboarding=true&locale=${locale}`}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors min-h-[44px]"
+                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-wlx-mist bg-white px-4 py-2.5 text-sm font-medium text-wlx-stone hover:bg-wlx-cream transition-colors min-h-[44px]"
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24">
                           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -1156,9 +1156,9 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                         {labels.signUpWithGoogle}
                       </a>
                       <div className="flex items-center gap-3">
-                        <div className="flex-1 border-t border-zinc-200" />
-                        <span className="text-xs text-zinc-400">{labels.orDivider}</span>
-                        <div className="flex-1 border-t border-zinc-200" />
+                        <div className="flex-1 border-t border-wlx-mist" />
+                        <span className="text-xs text-wlx-stone">{labels.orDivider}</span>
+                        <div className="flex-1 border-t border-wlx-mist" />
                       </div>
                     </>
                   )}
@@ -1178,7 +1178,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
 
                   {/* Email */}
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-medium text-wlx-stone mb-1">
                       {labels.email}
                     </label>
                     <input
@@ -1187,7 +1187,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                       onChange={(e) => update("email", e.target.value)}
                       placeholder={labels.emailPlaceholder}
                       readOnly={!!googleEmail}
-                      className={`${inputClass("email")} ${googleEmail ? "bg-zinc-50 text-zinc-500" : ""}`}
+                      className={`${inputClass("email")} ${googleEmail ? "bg-wlx-cream text-wlx-stone" : ""}`}
                     />
                     {errors.email && (
                       <p className="text-red-500 text-xs mt-1">{errors.email}</p>
@@ -1198,7 +1198,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   {!googleEmail && (
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 mb-1">
+                      <label className="block text-sm font-medium text-wlx-stone mb-1">
                         {labels.password}
                       </label>
                       <input
@@ -1214,7 +1214,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-zinc-700 mb-1">
+                      <label className="block text-sm font-medium text-wlx-stone mb-1">
                         {labels.confirmPassword}
                       </label>
                       <input
@@ -1238,14 +1238,14 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   <button
                     onClick={goBack}
                     type="button"
-                    className="flex-1 py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px]"
+                    className="flex-1 py-3 rounded-xl border border-wlx-mist text-wlx-stone font-semibold text-base hover:bg-wlx-cream transition-colors min-h-[48px]"
                   >
                     &larr; {labels.back}
                   </button>
                   <button
                     onClick={handleNext}
                     disabled={slugStatus === "checking"}
-                    className="flex-1 py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
+                    className="flex-1 py-3 rounded-xl bg-wlx-ink text-white font-semibold text-base hover:bg-wlx-ink/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
                   >
                     {labels.next} &rarr;
                   </button>
@@ -1260,16 +1260,16 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-600 text-2xl mb-3">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12.05 21.785c-1.726 0-3.42-.464-4.9-1.342l-.352-.209-3.65.957.974-3.558-.23-.365a9.687 9.687 0 01-1.487-5.17c.002-5.36 4.365-9.72 9.731-9.72a9.67 9.67 0 016.882 2.852 9.67 9.67 0 012.85 6.874c-.003 5.36-4.366 9.72-9.731 9.72h-.004zm8.284-17.99A11.616 11.616 0 0012.05.42C5.495.42.16 5.753.157 12.098a11.63 11.63 0 001.555 5.828L0 24l6.258-1.64a11.67 11.67 0 005.788 1.527h.005c6.554 0 11.89-5.334 11.893-11.9a11.82 11.82 0 00-3.48-8.413z"/></svg>
                   </div>
-                  <h2 className="text-xl font-bold text-zinc-900">
+                  <h2 className="text-xl font-bold text-wlx-ink">
                     {labels.whatsappTitle}
                   </h2>
-                  <p className="text-zinc-500 text-sm mt-1">
+                  <p className="text-wlx-stone text-sm mt-1">
                     {labels.whatsappSub}
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 mb-1">
+                  <label className="block text-sm font-medium text-wlx-stone mb-1">
                     {labels.whatsapp}
                   </label>
                   <div className="flex">
@@ -1279,7 +1279,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                         update("whatsappDialCode", e.target.value);
                         if (e.target.value !== "other") update("whatsappCustomDialCode", "");
                       }}
-                      className="rounded-l-xl border border-r-0 border-zinc-300 bg-zinc-50 px-2 py-3 text-sm text-zinc-700 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/40 min-w-[110px]"
+                      className="rounded-l-xl border border-r-0 border-wlx-mist bg-wlx-cream px-2 py-3 text-sm text-wlx-stone focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 min-w-[110px]"
                     >
                       {DIAL_CODES.map((d) => (
                         <option key={d.code} value={d.code}>{d.label}</option>
@@ -1292,7 +1292,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                         update("whatsapp", e.target.value.replace(/\D/g, ""))
                       }
                       placeholder={labels.whatsappPlaceholder}
-                      className={`flex-1 rounded-r-xl border border-zinc-300 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#FF9500]/40 ${errors.whatsapp ? "border-red-400" : ""}`}
+                      className={`flex-1 rounded-r-xl border border-wlx-mist px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 ${errors.whatsapp ? "border-red-400" : ""}`}
                       autoFocus
                     />
                   </div>
@@ -1313,8 +1313,8 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                           update("whatsappCustomDialCode", cleaned);
                         }}
                         placeholder={isZh ? "例如 +44" : "e.g. +44"}
-                        className={`w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] ${
-                          errors.whatsappCustomDialCode ? "border-red-400" : "border-zinc-300"
+                        className={`w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 focus:border-wlx-ink ${
+                          errors.whatsappCustomDialCode ? "border-red-400" : "border-wlx-mist"
                         }`}
                       />
                       {errors.whatsappCustomDialCode && (
@@ -1325,7 +1325,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   {errors.whatsapp ? (
                     <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>
                   ) : (
-                    <p className="text-zinc-400 text-xs mt-1">{labels.whatsappHint}</p>
+                    <p className="text-wlx-stone text-xs mt-1">{labels.whatsappHint}</p>
                   )}
                 </div>
 
@@ -1334,13 +1334,13 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   <button
                     onClick={goBack}
                     type="button"
-                    className="flex-1 py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px]"
+                    className="flex-1 py-3 rounded-xl border border-wlx-mist text-wlx-stone font-semibold text-base hover:bg-wlx-cream transition-colors min-h-[48px]"
                   >
                     &larr; {labels.back}
                   </button>
                   <button
                     onClick={handleNext}
-                    className="flex-1 py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px]"
+                    className="flex-1 py-3 rounded-xl bg-wlx-ink text-white font-semibold text-base hover:bg-wlx-ink/90 transition-colors min-h-[48px]"
                   >
                     {labels.next} &rarr;
                   </button>
@@ -1352,13 +1352,13 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
             {step === 4 && (
               <div className="space-y-5">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3" style={{ background: "#FF9500" }}>
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full mb-3" style={{ background: "var(--wlx-ink)" }}>
                     <DollarSign className="w-6 h-6 text-white" strokeWidth={2.5} />
                   </div>
-                  <h2 className="text-xl font-bold text-zinc-900">
+                  <h2 className="text-xl font-bold text-wlx-ink">
                     {labels.fpsTitle}
                   </h2>
-                  <p className="text-zinc-500 text-sm mt-1">
+                  <p className="text-wlx-stone text-sm mt-1">
                     {labels.fpsSub}
                   </p>
                 </div>
@@ -1383,7 +1383,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     }}
                   >
                     {data.selectedPayments.includes("fps") && (
-                      <div className="space-y-3 mt-3 pt-3 border-t border-zinc-100">
+                      <div className="space-y-3 mt-3 pt-3 border-t border-wlx-mist">
                         {/* Radio option 1: use WhatsApp number */}
                         <label className="flex items-start gap-2.5 cursor-pointer">
                           <input
@@ -1392,15 +1392,15 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                             value="whatsapp"
                             checked={fpsMode === "whatsapp"}
                             onChange={() => { setFpsMode("whatsapp"); update("fpsId", ""); }}
-                            className="mt-0.5 accent-[#FF9500]"
+                            className="mt-0.5 accent-wlx-ink"
                           />
                           <div>
                             <p className="text-sm font-medium text-zinc-800">{labels.fpsUseWhatsapp}</p>
                             {fpsMode === "whatsapp" && data.whatsapp && (
-                              <p className="text-xs text-zinc-500 mt-0.5">
+                              <p className="text-xs text-wlx-stone mt-0.5">
                                 {labels.fpsUseWhatsappHint}
                                 {" · "}
-                                <span className="font-mono text-zinc-700">{stripDialCode(data.whatsapp, effectiveDialCode)}</span>
+                                <span className="font-mono text-wlx-stone">{stripDialCode(data.whatsapp, effectiveDialCode)}</span>
                               </p>
                             )}
                           </div>
@@ -1414,7 +1414,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                             value="phone"
                             checked={fpsMode === "phone"}
                             onChange={() => { setFpsMode("phone"); update("fpsId", ""); }}
-                            className="mt-0.5 accent-[#FF9500]"
+                            className="mt-0.5 accent-wlx-ink"
                           />
                           <div className="flex-1">
                             <p className="text-sm font-medium text-zinc-800">{labels.fpsUsePhone}</p>
@@ -1440,7 +1440,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                             value="id"
                             checked={fpsMode === "id"}
                             onChange={() => { setFpsMode("id"); update("fpsId", ""); }}
-                            className="mt-0.5 accent-[#FF9500]"
+                            className="mt-0.5 accent-wlx-ink"
                           />
                           <div className="flex-1">
                             <p className="text-sm font-medium text-zinc-800">{labels.fpsUseId}</p>
@@ -1463,7 +1463,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
 
                         {/* Account name (optional) */}
                         <div>
-                          <label className="block text-sm font-medium text-zinc-700 mb-1">
+                          <label className="block text-sm font-medium text-wlx-stone mb-1">
                             {labels.fpsAccountName}
                           </label>
                           <input
@@ -1492,7 +1492,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     }}
                   >
                     {data.selectedPayments.includes("payme") && (
-                      <div className="mt-3 pt-3 border-t border-zinc-100">
+                      <div className="mt-3 pt-3 border-t border-wlx-mist">
                         <QrUploader
                           currentUrl={data.paymeQrUrl}
                           onUploaded={(url) => {
@@ -1522,7 +1522,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     }}
                   >
                     {data.selectedPayments.includes("alipay_hk") && (
-                      <div className="mt-3 pt-3 border-t border-zinc-100">
+                      <div className="mt-3 pt-3 border-t border-wlx-mist">
                         <QrUploader
                           currentUrl={data.alipayQrUrl}
                           onUploaded={(url) => {
@@ -1539,7 +1539,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   </PaymentMethodCard>
                 </div>
 
-                <p className="text-center text-xs text-zinc-400">
+                <p className="text-center text-xs text-wlx-stone">
                   {labels.paymentSetupLater}
                 </p>
 
@@ -1548,13 +1548,13 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   <button
                     onClick={goBack}
                     type="button"
-                    className="flex-1 py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px]"
+                    className="flex-1 py-3 rounded-xl border border-wlx-mist text-wlx-stone font-semibold text-base hover:bg-wlx-cream transition-colors min-h-[48px]"
                   >
                     &larr; {labels.back}
                   </button>
                   <button
                     onClick={handleNext}
-                    className="flex-1 py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px]"
+                    className="flex-1 py-3 rounded-xl bg-wlx-ink text-white font-semibold text-base hover:bg-wlx-ink/90 transition-colors min-h-[48px]"
                   >
                     {labels.next} &rarr;
                   </button>
@@ -1566,17 +1566,17 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
             {step === 5 && (
               <div className="space-y-5">
                 <div className="text-center">
-                  <h2 className="text-xl font-bold text-zinc-900">
+                  <h2 className="text-xl font-bold text-wlx-ink">
                     {labels.pickStyle}
                   </h2>
-                  <p className="text-zinc-500 text-sm mt-1">
+                  <p className="text-wlx-stone text-sm mt-1">
                     {labels.pickStyleSub}
                   </p>
                 </div>
 
                 {/* Template preview gallery — 2x2 grid */}
                 <div>
-                  <p className="text-sm font-medium text-zinc-700 mb-3">
+                  <p className="text-sm font-medium text-wlx-stone mb-3">
                     {labels.storeStyle}
                   </p>
                   <div className="grid grid-cols-2 gap-3">
@@ -1590,8 +1590,8 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                           onClick={() => update("templateId", tmpl.id)}
                           className={`rounded-xl overflow-hidden border-2 transition-all duration-200 text-left ${
                             isSelected
-                              ? "border-[#FF9500] ring-2 ring-[#FF9500]/30 scale-[1.02]"
-                              : "border-zinc-200 hover:border-zinc-300"
+                              ? "border-wlx-ink ring-2 ring-wlx-ink/20 scale-[1.02]"
+                              : "border-wlx-mist hover:border-wlx-mist"
                           }`}
                         >
                           {/* Mini storefront mockup */}
@@ -1639,11 +1639,11 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                               />
                             </div>
                           </div>
-                          <div className="bg-white px-2.5 py-2 border-t border-zinc-100">
+                          <div className="bg-white px-2.5 py-2 border-t border-wlx-mist">
                             <p className="text-xs font-semibold text-zinc-800">
                               {isZh ? tmpl.label : tmpl.labelEn}
                             </p>
-                            <p className="text-[10px] text-zinc-500">
+                            <p className="text-[10px] text-wlx-stone">
                               {isZh ? tmpl.descZh : tmpl.descEn}
                             </p>
                           </div>
@@ -1655,7 +1655,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
 
                 {/* Tagline */}
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                  <label className="block text-sm font-medium text-wlx-stone mb-1.5">
                     {labels.taglineOptional}
                   </label>
                   <input
@@ -1666,7 +1666,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     maxLength={100}
                     className={inputClass("tagline")}
                   />
-                  <p className="text-zinc-400 text-xs mt-1">
+                  <p className="text-wlx-stone text-xs mt-1">
                     {labels.taglineSkipHint}
                   </p>
                 </div>
@@ -1677,14 +1677,14 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     onClick={goBack}
                     type="button"
                     disabled={submitting}
-                    className="flex-1 py-3 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-base hover:bg-zinc-50 transition-colors min-h-[48px] disabled:opacity-50"
+                    className="flex-1 py-3 rounded-xl border border-wlx-mist text-wlx-stone font-semibold text-base hover:bg-wlx-cream transition-colors min-h-[48px] disabled:opacity-50"
                   >
                     &larr; {labels.back}
                   </button>
                   <button
                     onClick={handleNext}
                     disabled={submitting}
-                    className="flex-1 py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] disabled:opacity-50"
+                    className="flex-1 py-3 rounded-xl bg-wlx-ink text-white font-semibold text-base hover:bg-wlx-ink/90 transition-colors min-h-[48px] disabled:opacity-50"
                   >
                     {submitting ? labels.creating : `${labels.createStore} →`}
                   </button>
@@ -1695,13 +1695,13 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
             {/* ======== STEP 6: Done ======== */}
             {step === 6 && (
               <div className="space-y-5 text-center">
-                <Sparkles className="w-10 h-10 text-[#FF9500] mx-auto" strokeWidth={1.5} />
-                <h2 className="text-xl font-bold text-zinc-900">
+                <Sparkles className="w-10 h-10 text-wlx-ink mx-auto" strokeWidth={1.5} />
+                <h2 className="text-xl font-bold text-wlx-ink">
                   {labels.congrats}
                 </h2>
 
                 {/* Checklist + template preview card */}
-                <div className="rounded-xl border border-zinc-200 overflow-hidden">
+                <div className="rounded-xl border border-wlx-mist overflow-hidden">
                   {/* Template preview header */}
                   <div
                     className="px-4 py-3 flex items-center gap-2"
@@ -1724,35 +1724,35 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                   <div className="p-4 space-y-2.5 text-left">
                     <div className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-emerald-500 shrink-0" strokeWidth={2.5} />
-                      <span className="text-sm text-zinc-700">{labels.checklistStoreCreated}</span>
+                      <span className="text-sm text-wlx-stone">{labels.checklistStoreCreated}</span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Check className="w-4 h-4 text-emerald-500 shrink-0" strokeWidth={2.5} />
-                      <span className="text-sm text-zinc-700">{labels.checklistPaymentSet}</span>
+                      <span className="text-sm text-wlx-stone">{labels.checklistPaymentSet}</span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Circle className="w-4 h-4 text-zinc-300 shrink-0" strokeWidth={2} />
-                      <span className="text-sm text-zinc-500">{labels.checklistNextProduct}</span>
+                      <span className="text-sm text-wlx-stone">{labels.checklistNextProduct}</span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Circle className="w-4 h-4 text-zinc-300 shrink-0" strokeWidth={2} />
-                      <span className="text-sm text-zinc-500">{labels.checklistNextShipping}</span>
+                      <span className="text-sm text-wlx-stone">{labels.checklistNextShipping}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Store link */}
-                <div className="bg-zinc-50 rounded-xl px-4 py-3 border border-zinc-200">
-                  <p className="text-xs text-zinc-500 mb-1.5">
+                <div className="bg-wlx-cream rounded-xl px-4 py-3 border border-wlx-mist">
+                  <p className="text-xs text-wlx-stone mb-1.5">
                     {labels.storeLink}
                   </p>
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-[#FF9500] font-semibold text-base">
+                    <span className="text-wlx-ink font-semibold text-base">
                       wowlix.com/{createdSlug}
                     </span>
                     <button
                       onClick={handleCopyLink}
-                      className="text-xs px-3 py-1.5 rounded-lg bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 transition-colors font-medium"
+                      className="text-xs px-3 py-1.5 rounded-lg bg-white border border-wlx-mist text-wlx-stone hover:bg-wlx-cream transition-colors font-medium"
                     >
                       {linkCopied ? labels.copied : labels.copyLink}
                     </button>
@@ -1762,7 +1762,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                 {/* Primary CTA: Go to admin */}
                 <a
                   href={`/${locale}/admin`}
-                  className="block w-full py-3 rounded-xl bg-[#FF9500] text-white font-semibold text-base hover:bg-[#E68600] transition-colors min-h-[48px] leading-[48px]"
+                  className="block w-full py-3 rounded-xl bg-wlx-ink text-white font-semibold text-base hover:bg-wlx-ink/90 transition-colors min-h-[48px] leading-[48px]"
                 >
                   {labels.goToAdmin} &rarr;
                 </a>
@@ -1773,13 +1773,13 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
                     <button
                       onClick={handleSetupBilling}
                       disabled={billingRedirecting}
-                      className="block w-full py-2.5 rounded-xl border border-zinc-200 text-zinc-700 font-semibold text-sm hover:bg-zinc-50 transition-colors disabled:opacity-70"
+                      className="block w-full py-2.5 rounded-xl border border-wlx-mist text-wlx-stone font-semibold text-sm hover:bg-wlx-cream transition-colors disabled:opacity-70"
                     >
                       {billingRedirecting
                         ? "..."
                         : `${labels.setupBilling} →`}
                     </button>
-                    <p className="text-[11px] text-zinc-400">
+                    <p className="text-[11px] text-wlx-stone">
                       {labels.setupBillingDesc
                         .replace("{plan}", data.plan === "pro" ? "Pro" : "Lite")
                         .replace("{price}", data.plan === "pro" ? "198" : "78")}
@@ -1789,28 +1789,28 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
 
                 {/* Upgrade CTA for free users */}
                 {data.plan === "free" && (
-                  <div className="bg-gradient-to-b from-orange-50 to-amber-50 rounded-xl border border-orange-200 p-4 space-y-3">
+                  <div className="bg-wlx-cream rounded-xl border border-orange-200 p-4 space-y-3">
                     <div className="text-center">
-                      <p className="font-semibold text-zinc-900 text-sm">
+                      <p className="font-semibold text-wlx-ink text-sm">
                         {labels.upgradeCta}
                       </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">
+                      <p className="text-xs text-wlx-stone mt-0.5">
                         {labels.upgradeCtaDesc}
                       </p>
                     </div>
                     <div className="space-y-2 text-left">
                       <div className="bg-white rounded-lg p-2.5 border border-orange-100">
-                        <p className="text-xs font-bold text-[#FF9500]">{labels.liteTag}</p>
-                        <p className="text-[11px] text-zinc-600 mt-0.5">{labels.liteBenefitShort}</p>
+                        <p className="text-xs font-bold text-wlx-ink">{labels.liteTag}</p>
+                        <p className="text-[11px] text-wlx-stone mt-0.5">{labels.liteBenefitShort}</p>
                       </div>
                       <div className="bg-white rounded-lg p-2.5 border border-orange-100">
-                        <p className="text-xs font-bold text-zinc-900">{labels.proTag}</p>
-                        <p className="text-[11px] text-zinc-600 mt-0.5">{labels.proBenefitShort}</p>
+                        <p className="text-xs font-bold text-wlx-ink">{labels.proTag}</p>
+                        <p className="text-[11px] text-wlx-stone mt-0.5">{labels.proBenefitShort}</p>
                       </div>
                     </div>
                     <a
                       href={`/${locale}/admin/billing`}
-                      className="block w-full py-2.5 rounded-xl bg-[#FF9500] text-white font-semibold text-sm text-center hover:bg-[#E68600] transition-colors"
+                      className="block w-full py-2.5 rounded-xl bg-wlx-ink text-white font-semibold text-sm text-center hover:bg-wlx-ink/90 transition-colors"
                     >
                       {labels.viewPlans} &rarr;
                     </a>
@@ -1829,7 +1829,7 @@ export default function OnboardingWizard({ locale, initialGoogleEmail }: Onboard
       <div className="text-center mt-4">
         <a
           href={locale === "zh-HK" ? "/en/start" : "/zh-HK/start"}
-          className="text-sm text-zinc-400 hover:text-zinc-600 transition-colors"
+          className="text-sm text-wlx-stone hover:text-wlx-stone transition-colors"
         >
           {locale === "zh-HK" ? "English" : "中文"}
         </a>

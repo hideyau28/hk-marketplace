@@ -14,16 +14,19 @@ export default function StepIndicator({ total, current, locale }: StepIndicatorP
 
   return (
     <div className="mt-6">
-      {/* Progress bar */}
-      <div className="h-1.5 bg-zinc-200 rounded-full overflow-hidden">
+      <div className="h-px bg-wlx-mist overflow-hidden">
         <div
-          className="h-full bg-[#FF9500] rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${percentage}%` }}
+          className="h-full bg-wlx-ink transition-all duration-500"
+          style={{
+            width: `${percentage}%`,
+            transitionTimingFunction: "var(--wlx-ease)",
+          }}
         />
       </div>
-      {/* Step text */}
-      <p className="text-center text-xs text-zinc-400 mt-2">
-        {isZh ? `第 ${current} 步（共 ${total} 步）` : `Step ${current} of ${total}`}
+      <p className="mt-3 text-center text-[11px] uppercase tracking-[0.22em] text-wlx-stone">
+        {isZh
+          ? `第 ${current} 步 · 共 ${total} 步`
+          : `Step ${current} of ${total}`}
       </p>
     </div>
   );

@@ -13,7 +13,7 @@ export default async function StartPage({ params }: Props) {
   const googleEmail = cookieStore.get("google_onboard_email")?.value || null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-wlx-paper text-wlx-ink flex items-center justify-center px-4 py-12">
       <OnboardingWizard locale={locale as Locale} initialGoogleEmail={googleEmail} />
     </div>
   );
