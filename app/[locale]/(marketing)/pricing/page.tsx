@@ -1,4 +1,4 @@
-import PricingPage from "@/components/marketing/PricingPage";
+import PricingPage from "@/components/marketing/StudioPricingPage";
 import type { Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 

@@ -12,7 +12,7 @@ import RecentlyViewed from "@/components/home/RecentlyViewed";
 import SaleZone from "@/components/home/SaleZone";
 import KidsSection from "@/components/home/KidsSection";
 import { Metadata } from "next";
-import LandingPage from "@/components/marketing/LandingPage";
+import LandingPage from "@/components/marketing/StudioLandingPage";
 import TrustBar from "@/components/TrustBar";
 
 // Force dynamic rendering because we need headers() for tenant resolution
