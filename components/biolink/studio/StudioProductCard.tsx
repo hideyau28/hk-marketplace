@@ -9,9 +9,11 @@ type Props = {
   product: ProductForBioLink;
   currency: string;
   onTap: (product: ProductForBioLink) => void;
+  /** First N cards above the fold should set this so Image renders eagerly + as LCP candidate. */
+  priority?: boolean;
 };
 
-export default function StudioProductCard({ product, currency, onTap }: Props) {
+export default function StudioProductCard({ product, currency, onTap, priority = false }: Props) {
   const images = getAllImages(product);
   const primary = images[0];
   const secondary = images[1];
@@ -36,6 +38,8 @@ export default function StudioProductCard({ product, currency, onTap }: Props) {
               src={primary}
               alt={product.title}
               fill
+              priority={priority}
+              loading={priority ? "eager" : "lazy"}
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
               className={`object-cover transition-opacity duration-[400ms] ${
                 hoverImage && secondary ? "opacity-0" : "opacity-100"

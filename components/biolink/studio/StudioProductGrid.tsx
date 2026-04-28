@@ -32,15 +32,20 @@ export default function StudioProductGrid({
     );
   }
 
+  // First 4 cards are above-the-fold on lg (4-col), 6 on sm (3-col), 4 on mobile (2-col).
+  // Marking them priority lets Next.js eagerly load + signals LCP candidate to the browser.
+  const PRIORITY_COUNT = 4;
+
   return (
     <div className="mx-auto max-w-[1200px] px-4 sm:px-8 py-10 sm:py-14">
       <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-14 lg:grid-cols-4 lg:gap-x-8">
-        {filtered.map((product) => (
+        {filtered.map((product, idx) => (
           <StudioProductCard
             key={product.id}
             product={product}
             currency={currency}
             onTap={onTap}
+            priority={idx < PRIORITY_COUNT}
           />
         ))}
       </div>
