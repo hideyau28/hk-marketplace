@@ -661,17 +661,17 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
     >
       <div
         ref={modalRef}
-        className="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-3xl border border-zinc-200 bg-white"
+        className="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-3xl border border-wlx-mist bg-white"
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl border-b border-zinc-100 bg-white px-6 py-4">
-          <h2 className="text-xl font-semibold text-zinc-900">
+        <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl border-b border-wlx-mist bg-white px-6 py-4">
+          <h2 className="text-xl font-semibold text-wlx-ink">
             {product ? "Edit Product" : "Create Product"}
           </h2>
           <button
             onClick={() => onClose()}
             disabled={isPending}
-            className="rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 disabled:opacity-50"
+            className="rounded-full p-2 text-wlx-stone hover:bg-wlx-cream hover:text-wlx-stone disabled:opacity-50"
           >
             <X size={20} />
           </button>
@@ -690,8 +690,8 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
           <form id="product-form" onSubmit={handleSubmit}>
             {/* Product Type Selector */}
-            <div className="mb-6 rounded-2xl border border-zinc-200 p-4">
-              <label className="block text-zinc-700 text-sm font-medium mb-3">
+            <div className="mb-6 rounded-2xl border border-wlx-mist p-4">
+              <label className="block text-wlx-stone text-sm font-medium mb-3">
                 產品類型
               </label>
               <div className="flex flex-wrap gap-2">
@@ -704,7 +704,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     className={`rounded-full px-4 py-2 text-sm font-medium transition-colors border disabled:opacity-50 ${
                       productType === pt.id
                         ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
-                        : "bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100"
+                        : "bg-wlx-cream text-wlx-stone border-wlx-mist hover:bg-wlx-cream"
                     }`}
                   >
                     {pt.icon} {pt.label}
@@ -712,7 +712,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                 ))}
               </div>
               {!productType && (
-                <p className="mt-2 text-xs text-zinc-400">
+                <p className="mt-2 text-xs text-wlx-stone">
                   未選產品類型 = 使用舊版波鞋模式
                 </p>
               )}
@@ -723,8 +723,8 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               {/* LEFT COLUMN - Images */}
               <div className="space-y-4">
                 {/* Main Image */}
-                <div className="rounded-2xl border border-zinc-200 p-4">
-                  <label className="block text-zinc-700 text-sm font-medium mb-3">
+                <div className="rounded-2xl border border-wlx-mist p-4">
+                  <label className="block text-wlx-stone text-sm font-medium mb-3">
                     主圖 (Main Image)
                   </label>
                   <ImageUpload
@@ -737,12 +737,12 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       <img
                         src={imageUrl}
                         alt="Main"
-                        className="w-full aspect-square object-cover rounded-lg border border-zinc-200 bg-zinc-50"
+                        className="w-full aspect-square object-cover rounded-lg border border-wlx-mist bg-wlx-cream"
                       />
                       <button
                         type="button"
                         onClick={() => setImageUrl("")}
-                        className="absolute top-2 right-2 p-1 rounded-full bg-white/90 text-zinc-500 hover:text-red-500 hover:bg-white shadow-sm"
+                        className="absolute top-2 right-2 p-1 rounded-full bg-white/90 text-wlx-stone hover:text-red-500 hover:bg-white shadow-sm"
                       >
                         <X size={16} />
                       </button>
@@ -753,16 +753,16 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
                     disabled={isPending}
-                    className="mt-3 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                    className="mt-3 w-full rounded-xl border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                     placeholder="Or paste image URL here"
                   />
                 </div>
 
                 {/* Additional Images */}
-                <div className="rounded-2xl border border-zinc-200 p-4">
-                  <label className="block text-zinc-700 text-sm font-medium mb-3">
+                <div className="rounded-2xl border border-wlx-mist p-4">
+                  <label className="block text-wlx-stone text-sm font-medium mb-3">
                     額外圖片{" "}
-                    <span className="text-zinc-400 font-normal">
+                    <span className="text-wlx-stone font-normal">
                       ({images.length}/10)
                     </span>
                   </label>
@@ -778,7 +778,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                           className={`group relative aspect-square rounded-lg overflow-hidden border cursor-move transition-all ${
                             draggedIndex === index
                               ? "border-olive-500 ring-2 ring-olive-200"
-                              : "border-zinc-200"
+                              : "border-wlx-mist"
                           }`}
                         >
                           <img
@@ -799,12 +799,12 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                             type="button"
                             onClick={() => handleRemoveImage(index)}
                             disabled={isPending}
-                            className="absolute top-1 right-1 p-1 rounded-full bg-white/90 text-zinc-500 hover:text-red-500 hover:bg-white shadow-sm disabled:opacity-50"
+                            className="absolute top-1 right-1 p-1 rounded-full bg-white/90 text-wlx-stone hover:text-red-500 hover:bg-white shadow-sm disabled:opacity-50"
                           >
                             <X size={12} />
                           </button>
                           <div className="absolute bottom-1 left-1 p-0.5 rounded bg-white/80">
-                            <GripVertical size={10} className="text-zinc-400" />
+                            <GripVertical size={10} className="text-wlx-stone" />
                           </div>
                         </div>
                       ))}
@@ -827,7 +827,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                           value={newImageUrl}
                           onChange={(e) => setNewImageUrl(e.target.value)}
                           disabled={isPending}
-                          className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                          className="flex-1 rounded-xl border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                           placeholder="Or paste image URL"
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
@@ -840,7 +840,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                           type="button"
                           onClick={handleAddImage}
                           disabled={isPending || !newImageUrl.trim()}
-                          className="rounded-xl bg-zinc-100 px-3 py-2 text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                          className="rounded-xl bg-wlx-cream px-3 py-2 text-wlx-stone hover:bg-wlx-mist disabled:opacity-50"
                         >
                           <Plus size={18} />
                         </button>
@@ -850,16 +850,16 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                 </div>
 
                 {/* Video URL — 即將推出 */}
-                <div className="rounded-2xl border border-zinc-200 p-4 opacity-50">
-                  <label className="block text-zinc-700 text-sm font-medium mb-3">
+                <div className="rounded-2xl border border-wlx-mist p-4 opacity-50">
+                  <label className="block text-wlx-stone text-sm font-medium mb-3">
                     影片連結
-                    <span className="ml-2 text-xs text-zinc-400">即將推出</span>
+                    <span className="ml-2 text-xs text-wlx-stone">即將推出</span>
                   </label>
                   <input
                     type="url"
                     disabled
                     value=""
-                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-400 placeholder:text-zinc-300 cursor-not-allowed"
+                    className="w-full rounded-xl border border-wlx-mist bg-wlx-cream px-3 py-2 text-sm text-wlx-stone placeholder:text-zinc-300 cursor-not-allowed"
                     placeholder="貼 IG Reel 或 YouTube 連結"
                   />
                 </div>
@@ -869,7 +869,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               <div className="space-y-4">
                 {/* Brand */}
                 <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">
+                  <label className="block text-wlx-stone text-sm font-medium mb-2">
                     Brand
                   </label>
                   <input
@@ -877,14 +877,14 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     value={brand}
                     onChange={(e) => setBrand(e.target.value)}
                     disabled={isPending}
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                    className="w-full rounded-xl border border-wlx-mist bg-white px-3 py-2.5 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                     placeholder="品牌名"
                   />
                 </div>
 
                 {/* Title */}
                 <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">
+                  <label className="block text-wlx-stone text-sm font-medium mb-2">
                     產品名稱 *
                   </label>
                   <input
@@ -892,7 +892,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     disabled={isPending}
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                    className="w-full rounded-xl border border-wlx-mist bg-white px-3 py-2.5 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                     placeholder="產品名稱"
                     required
                   />
@@ -900,7 +900,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
                 {/* SKU */}
                 <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">
+                  <label className="block text-wlx-stone text-sm font-medium mb-2">
                     SKU / Model Number
                   </label>
                   <input
@@ -908,14 +908,14 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
                     disabled={isPending}
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                    className="w-full rounded-xl border border-wlx-mist bg-white px-3 py-2.5 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                     placeholder="553558-067"
                   />
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">
+                  <label className="block text-wlx-stone text-sm font-medium mb-2">
                     商品描述
                   </label>
                   <textarea
@@ -923,19 +923,19 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     onChange={(e) => setDescription(e.target.value)}
                     disabled={isPending}
                     rows={4}
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50 resize-y"
+                    className="w-full rounded-xl border border-wlx-mist bg-white px-3 py-2.5 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50 resize-y"
                     placeholder="產品描述（會顯示喺產品詳情頁）"
                   />
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className="mt-1 text-xs text-wlx-stone">
                     支持換行，會原樣顯示
                   </p>
                 </div>
 
                 {/* Price */}
-                <div className="rounded-xl border border-zinc-200 p-4 space-y-3">
+                <div className="rounded-xl border border-wlx-mist p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-zinc-700 text-sm font-medium mb-2">
+                      <label className="block text-wlx-stone text-sm font-medium mb-2">
                         售價 ($) *
                       </label>
                       <input
@@ -945,13 +945,13 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
                         disabled={isPending}
-                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                        className="w-full rounded-xl border border-wlx-mist bg-white px-3 py-2.5 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                         placeholder="899"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-zinc-700 text-sm font-medium mb-2">
+                      <label className="block text-wlx-stone text-sm font-medium mb-2">
                         原價 ($)
                       </label>
                       <input
@@ -961,7 +961,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                         value={originalPrice}
                         onChange={(e) => setOriginalPrice(e.target.value)}
                         disabled={isPending}
-                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                        className="w-full rounded-xl border border-wlx-mist bg-white px-3 py-2.5 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                         placeholder="1299"
                       />
                     </div>
@@ -969,7 +969,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                   {isOnSale ? (
                     <div className="rounded-lg bg-red-50 border border-red-200 p-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-zinc-400 line-through text-sm">
+                        <span className="text-wlx-stone line-through text-sm">
                           ${Math.round(originalPriceNum)}
                         </span>
                         <span className="text-lg font-bold text-red-600">
@@ -981,7 +981,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-zinc-400 text-xs">
+                    <p className="text-wlx-stone text-xs">
                       設定原價高於售價，會顯示為減價產品
                     </p>
                   )}
@@ -991,7 +991,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                 {(productType === "sneakers" || productType === "") && (
                   <>
                     <div>
-                      <label className="block text-zinc-700 text-sm font-medium mb-2">
+                      <label className="block text-wlx-stone text-sm font-medium mb-2">
                         Category *
                       </label>
                       <select
@@ -999,7 +999,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                         onChange={(e) => setCategory(e.target.value)}
                         disabled={isPending}
                         required
-                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                        className="w-full rounded-xl border border-wlx-mist bg-white px-3 py-2.5 text-sm text-wlx-ink focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                       >
                         <option value="">-- 選擇類別 --</option>
                         {CATEGORIES.map((cat) => (
@@ -1010,7 +1010,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-zinc-700 text-sm font-medium mb-2">
+                      <label className="block text-wlx-stone text-sm font-medium mb-2">
                         鞋類 / Shoe Type *
                       </label>
                       <select
@@ -1018,7 +1018,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                         onChange={(e) => setShoeType(e.target.value)}
                         disabled={isPending}
                         required
-                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                        className="w-full rounded-xl border border-wlx-mist bg-white px-3 py-2.5 text-sm text-wlx-ink focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                       >
                         <option value="">-- 選擇鞋類 --</option>
                         {SHOE_TYPES.map((type) => (
@@ -1032,8 +1032,8 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                 )}
 
                 {/* Inventory Mode Toggle */}
-                <div className="rounded-xl border border-zinc-200 p-4">
-                  <label className="block text-zinc-700 text-sm font-medium mb-3">
+                <div className="rounded-xl border border-wlx-mist p-4">
+                  <label className="block text-wlx-stone text-sm font-medium mb-3">
                     庫存模式
                   </label>
                   <div className="flex gap-3">
@@ -1044,7 +1044,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       className={`flex-1 rounded-xl py-2.5 text-sm font-medium border transition-colors disabled:opacity-50 ${
                         inventoryMode === "limited"
                           ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
-                          : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100"
+                          : "bg-wlx-cream text-wlx-stone border-wlx-mist hover:bg-wlx-cream"
                       }`}
                     >
                       有限庫存
@@ -1056,14 +1056,14 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       className={`flex-1 rounded-xl py-2.5 text-sm font-medium border transition-colors disabled:opacity-50 ${
                         inventoryMode === "made_to_order"
                           ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
-                          : "bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100"
+                          : "bg-wlx-cream text-wlx-stone border-wlx-mist hover:bg-wlx-cream"
                       }`}
                     >
                       接單製作
                     </button>
                   </div>
                   {inventoryMode === "made_to_order" && (
-                    <p className="mt-2 text-xs text-zinc-400">
+                    <p className="mt-2 text-xs text-wlx-stone">
                       接單製作：無限量，庫存自動設為 999
                     </p>
                   )}
@@ -1071,30 +1071,30 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
                 {/* Product Badges */}
                 <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">
+                  <label className="block text-wlx-stone text-sm font-medium mb-2">
                     產品標籤
                   </label>
                   <div className="relative">
                     <button
                       type="button"
                       onClick={() => setIsBadgeDropdownOpen((prev) => !prev)}
-                      className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-left text-sm text-zinc-900 flex items-center justify-between"
+                      className="w-full rounded-xl border border-wlx-mist bg-white px-3 py-2.5 text-left text-sm text-wlx-ink flex items-center justify-between"
                     >
                       <span>
                         {selectedBadgeIds.length > 0
                           ? `${selectedBadgeIds.length} badges selected`
                           : "Select badges"}
                       </span>
-                      <span className="text-xs text-zinc-400">▼</span>
+                      <span className="text-xs text-wlx-stone">▼</span>
                     </button>
                     {isBadgeDropdownOpen && (
-                      <div className="absolute z-20 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-lg">
+                      <div className="absolute z-20 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border border-wlx-mist bg-white shadow-lg">
                         {badgeLoading ? (
-                          <div className="px-3 py-3 text-sm text-zinc-500">
+                          <div className="px-3 py-3 text-sm text-wlx-stone">
                             Loading badges...
                           </div>
                         ) : badgeOptions.length === 0 ? (
-                          <div className="px-3 py-3 text-sm text-zinc-500">
+                          <div className="px-3 py-3 text-sm text-wlx-stone">
                             No badges available
                           </div>
                         ) : (
@@ -1107,13 +1107,13 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                                 key={badge.id}
                                 type="button"
                                 onClick={() => toggleProductBadge(badge.id)}
-                                className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-zinc-50 ${isSelected ? "bg-olive-50" : ""}`}
+                                className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-wlx-cream ${isSelected ? "bg-olive-50" : ""}`}
                               >
                                 <span
                                   className="h-3 w-3 rounded-full"
                                   style={{ backgroundColor: badge.color }}
                                 />
-                                <span className="text-zinc-800">
+                                <span className="text-wlx-ink">
                                   {badge.nameZh} / {badge.nameEn}
                                 </span>
                                 {isSelected && (
@@ -1156,7 +1156,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
                 {/* Promotion Badges */}
                 <div>
-                  <label className="block text-zinc-700 text-sm font-medium mb-2">
+                  <label className="block text-wlx-stone text-sm font-medium mb-2">
                     推廣標籤
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -1192,7 +1192,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       disabled={isPending}
                       className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50"
                     />
-                    <label htmlFor="active" className="text-zinc-700 text-sm">
+                    <label htmlFor="active" className="text-wlx-stone text-sm">
                       Active
                     </label>
                   </div>
@@ -1205,7 +1205,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       disabled={isPending}
                       className="h-4 w-4 accent-yellow-500 disabled:opacity-50"
                     />
-                    <label htmlFor="featured" className="text-zinc-700 text-sm">
+                    <label htmlFor="featured" className="text-wlx-stone text-sm">
                       Featured
                     </label>
                   </div>
@@ -1218,9 +1218,9 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
               <div className="mt-6 space-y-4">
                 {/* Option 1: Size (from preset) */}
                 {!typePreset.noSize && (
-                  <div className="rounded-2xl border border-zinc-200 p-4 space-y-3">
+                  <div className="rounded-2xl border border-wlx-mist p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-zinc-700 text-sm font-medium">
+                      <label className="text-wlx-stone text-sm font-medium">
                         選項 1：{option1Label}
                       </label>
                       {typePreset.sizeSystems.length > 1 && (
@@ -1228,7 +1228,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                           value={option1SizeSystem}
                           onChange={(e) => setOption1SizeSystem(e.target.value)}
                           disabled={isPending}
-                          className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                          className="rounded-xl border border-wlx-mist bg-white px-3 py-1.5 text-sm text-wlx-ink focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
                         >
                           {typePreset.sizeSystems.map((sys) => (
                             <option key={sys.id} value={sys.id}>
@@ -1250,7 +1250,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                             className={`rounded-lg px-3 py-1.5 text-sm border transition-colors disabled:opacity-50 ${
                               selected
                                 ? "bg-[#6B7A2F] text-white border-[#6B7A2F]"
-                                : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
+                                : "bg-white text-wlx-stone border-wlx-mist hover:bg-wlx-cream"
                             }`}
                           >
                             {size}
@@ -1258,16 +1258,16 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                         );
                       })}
                     </div>
-                    <p className="text-xs text-zinc-400">
+                    <p className="text-xs text-wlx-stone">
                       已選 {option1Values.length} 個
                     </p>
                   </div>
                 )}
 
                 {/* Option 2: Color / Flavor / etc. */}
-                <div className="rounded-2xl border border-zinc-200 p-4 space-y-3">
+                <div className="rounded-2xl border border-wlx-mist p-4 space-y-3">
                   <div className="flex items-center gap-2">
-                    <label className="text-zinc-700 text-sm font-medium">
+                    <label className="text-wlx-stone text-sm font-medium">
                       選項 2：
                     </label>
                     <input
@@ -1275,7 +1275,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       value={option2Label}
                       onChange={(e) => setOption2Label(e.target.value)}
                       disabled={isPending}
-                      className="rounded-lg border border-zinc-200 px-2 py-1 text-sm w-24 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                      className="rounded-lg border border-wlx-mist px-2 py-1 text-sm w-24 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
                       placeholder="顏色"
                     />
                   </div>
@@ -1283,14 +1283,14 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                     {option2Values.map((val) => (
                       <span
                         key={val}
-                        className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-700"
+                        className="inline-flex items-center gap-1 rounded-full bg-wlx-cream px-3 py-1 text-sm text-wlx-stone"
                       >
                         {val}
                         <button
                           type="button"
                           onClick={() => removeOption2Value(val)}
                           disabled={isPending}
-                          className="text-zinc-400 hover:text-red-500 disabled:opacity-50"
+                          className="text-wlx-stone hover:text-red-500 disabled:opacity-50"
                         >
                           <X size={12} />
                         </button>
@@ -1303,7 +1303,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       value={newOption2Value}
                       onChange={(e) => setNewOption2Value(e.target.value)}
                       disabled={isPending}
-                      className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                      className="flex-1 rounded-xl border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
                       placeholder={`輸入${option2Label}值（例如：黑色）`}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
@@ -1316,7 +1316,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       type="button"
                       onClick={addOption2Value}
                       disabled={isPending || !newOption2Value.trim()}
-                      className="rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                      className="rounded-xl bg-wlx-cream px-3 py-2 text-sm text-wlx-stone hover:bg-wlx-mist disabled:opacity-50"
                     >
                       <Plus size={18} />
                     </button>
@@ -1325,8 +1325,8 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
                 {/* Variant Matrix */}
                 {(option1Values.length > 0 || option2Values.length > 0) && (
-                  <div className="rounded-2xl border border-zinc-200 p-4">
-                    <label className="block text-zinc-700 text-sm font-medium mb-3">
+                  <div className="rounded-2xl border border-wlx-mist p-4">
+                    <label className="block text-wlx-stone text-sm font-medium mb-3">
                       Variant Matrix
                     </label>
                     <VariantMatrixEditor
@@ -1347,9 +1347,9 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
             {/* FULL WIDTH — Legacy Size System (sneakers / no type) */}
             {!useVariantSystem && (
-              <div className="mt-6 rounded-2xl border border-zinc-200 p-4 space-y-3">
+              <div className="mt-6 rounded-2xl border border-wlx-mist p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="block text-zinc-700 text-sm font-medium">
+                  <label className="block text-wlx-stone text-sm font-medium">
                     尺碼系統
                   </label>
                   <div className="flex items-center gap-3">
@@ -1357,7 +1357,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                       value={sizeSystem}
                       onChange={(e) => setSizeSystem(e.target.value)}
                       disabled={isPending}
-                      className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                      className="rounded-xl border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                     >
                       <option value="">No sizes</option>
                       {Object.entries(SIZE_SYSTEMS).map(([key, val]) => (
@@ -1366,9 +1366,9 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                         </option>
                       ))}
                     </select>
-                    <div className="text-sm text-zinc-600">
+                    <div className="text-sm text-wlx-stone">
                       總庫存:{" "}
-                      <span className="font-semibold text-zinc-900">
+                      <span className="font-semibold text-wlx-ink">
                         {legacyTotalStock}
                       </span>
                     </div>
@@ -1377,10 +1377,10 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
 
                 {sizeSystem && (
                   <>
-                    <div className="overflow-x-auto max-h-[250px] overflow-y-auto border border-zinc-100 rounded-xl">
+                    <div className="overflow-x-auto max-h-[250px] overflow-y-auto border border-wlx-mist rounded-xl">
                       <table className="w-full text-sm">
-                        <thead className="sticky top-0 bg-zinc-50">
-                          <tr className="text-zinc-500 border-b border-zinc-200">
+                        <thead className="sticky top-0 bg-wlx-cream">
+                          <tr className="text-wlx-stone border-b border-wlx-mist">
                             <th className="py-2 px-3 text-center font-medium w-12">
                               ✓
                             </th>
@@ -1400,7 +1400,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                             return (
                               <tr
                                 key={size}
-                                className="border-b border-zinc-100 hover:bg-zinc-50"
+                                className="border-b border-wlx-mist hover:bg-wlx-cream"
                               >
                                 <td className="py-2 px-3 text-center">
                                   <input
@@ -1413,7 +1413,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                                     className="h-4 w-4 accent-[#6B7A2F] disabled:opacity-50"
                                   />
                                 </td>
-                                <td className="py-2 px-3 text-zinc-900">
+                                <td className="py-2 px-3 text-wlx-ink">
                                   <div className="flex items-center gap-2">
                                     {size}
                                     {isCustom && (
@@ -1422,7 +1422,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                                         onClick={() =>
                                           handleRemoveCustomSize(size)
                                         }
-                                        className="text-zinc-400 hover:text-red-500"
+                                        className="text-wlx-stone hover:text-red-500"
                                       >
                                         <X size={12} />
                                       </button>
@@ -1441,7 +1441,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                                       )
                                     }
                                     disabled={isPending || !isChecked}
-                                    className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50 disabled:bg-zinc-50"
+                                    className="w-20 rounded-lg border border-wlx-mist px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50 disabled:bg-wlx-cream"
                                     placeholder="0"
                                   />
                                 </td>
@@ -1457,7 +1457,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                         value={newCustomSize}
                         onChange={(e) => setNewCustomSize(e.target.value)}
                         disabled={isPending}
-                        className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                        className="flex-1 rounded-xl border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
                         placeholder="自訂尺碼 (e.g. US 14)"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
@@ -1470,7 +1470,7 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
                         type="button"
                         onClick={handleAddCustomSize}
                         disabled={isPending || !newCustomSize.trim()}
-                        className="rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                        className="rounded-xl bg-wlx-cream px-3 py-2 text-sm text-wlx-stone hover:bg-wlx-mist disabled:opacity-50"
                       >
                         + 自訂尺碼
                       </button>
@@ -1483,13 +1483,13 @@ export function ProductModal({ product, onClose, locale }: ProductModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 rounded-b-3xl border-t border-zinc-100 bg-white px-6 py-4">
+        <div className="sticky bottom-0 rounded-b-3xl border-t border-wlx-mist bg-white px-6 py-4">
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => onClose()}
               disabled={isPending}
-              className="flex-1 rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+              className="flex-1 rounded-xl border border-wlx-mist bg-wlx-cream px-4 py-3 text-sm text-wlx-stone hover:bg-wlx-mist disabled:opacity-50"
             >
               Cancel
             </button>

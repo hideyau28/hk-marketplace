@@ -62,8 +62,8 @@ export default function CustomerNotes({ phone, locale }: Props) {
   const isZh = locale === "zh-HK";
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6">
-      <h3 className="text-lg font-semibold text-zinc-900 mb-4">
+    <div className="rounded-2xl border border-wlx-mist bg-white p-6">
+      <h3 className="text-lg font-semibold text-wlx-ink mb-4">
         {isZh ? "客戶備註" : "Customer Notes"}
       </h3>
 
@@ -74,7 +74,7 @@ export default function CustomerNotes({ phone, locale }: Props) {
           onChange={(e) => setNewNote(e.target.value)}
           placeholder={isZh ? "新增備註..." : "Add a note..."}
           rows={2}
-          className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+          className="w-full rounded-xl border border-wlx-mist bg-white px-4 py-2.5 text-sm text-wlx-ink placeholder:text-wlx-stone focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
         />
         <button
           type="submit"
@@ -93,26 +93,26 @@ export default function CustomerNotes({ phone, locale }: Props) {
 
       {/* 備註列表 */}
       {loading ? (
-        <div className="text-center text-zinc-400 text-sm py-4">
+        <div className="text-center text-wlx-stone text-sm py-4">
           {isZh ? "載入中..." : "Loading..."}
         </div>
       ) : notes.length > 0 ? (
         <div className="space-y-3">
           {notes.map((n) => (
-            <div key={n.id} className="p-3 bg-zinc-50 rounded-lg">
-              <div className="text-xs text-zinc-500 mb-1">
+            <div key={n.id} className="p-3 bg-wlx-cream rounded-lg">
+              <div className="text-xs text-wlx-stone mb-1">
                 {new Date(n.createdAt).toLocaleString(
                   isZh ? "zh-HK" : "en-HK",
                 )}
               </div>
-              <div className="text-sm text-zinc-900 whitespace-pre-wrap">
+              <div className="text-sm text-wlx-ink whitespace-pre-wrap">
                 {n.note}
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center text-zinc-400 text-sm py-4">
+        <div className="text-center text-wlx-stone text-sm py-4">
           {isZh ? "暫無備註" : "No notes yet"}
         </div>
       )}

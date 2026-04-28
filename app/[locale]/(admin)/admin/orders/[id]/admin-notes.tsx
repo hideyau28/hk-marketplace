@@ -51,8 +51,8 @@ export default function AdminNotes({ orderId, notes, locale }: AdminNotesProps) 
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-      <h3 className="text-lg font-semibold text-zinc-900 mb-4">
+    <div className="bg-white rounded-2xl border border-wlx-mist p-6">
+      <h3 className="text-lg font-semibold text-wlx-ink mb-4">
         {locale === "zh-HK" ? "管理備註" : "Admin Notes"}
       </h3>
 
@@ -63,7 +63,7 @@ export default function AdminNotes({ orderId, notes, locale }: AdminNotesProps) 
           onChange={(e) => setNewNote(e.target.value)}
           placeholder={locale === "zh-HK" ? "新增備註..." : "Add a note..."}
           rows={2}
-          className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+          className="w-full rounded-xl border border-wlx-mist bg-white px-4 py-2.5 text-wlx-ink placeholder:text-wlx-stone focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
         />
         <button
           type="submit"
@@ -80,17 +80,17 @@ export default function AdminNotes({ orderId, notes, locale }: AdminNotesProps) 
       {notes.length > 0 ? (
         <div className="space-y-3">
           {notes.slice().reverse().map((note, index) => (
-            <div key={index} className="p-3 bg-zinc-50 rounded-lg">
-              <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
+            <div key={index} className="p-3 bg-wlx-cream rounded-lg">
+              <div className="flex items-center justify-between text-xs text-wlx-stone mb-1">
                 <span>{note.author}</span>
                 <span>{new Date(note.timestamp).toLocaleString()}</span>
               </div>
-              <div className="text-sm text-zinc-900">{note.note}</div>
+              <div className="text-sm text-wlx-ink">{note.note}</div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center text-zinc-400 text-sm py-4">
+        <div className="text-center text-wlx-stone text-sm py-4">
           {locale === "zh-HK" ? "沒有備註" : "No notes yet"}
         </div>
       )}

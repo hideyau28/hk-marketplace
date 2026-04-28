@@ -153,25 +153,25 @@ export default function SetupChecklist({ locale, status, storeSlug }: SetupCheck
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
         transition={{ duration: 0.3 }}
-        className="bg-white rounded-2xl border border-zinc-200 p-5 mb-6"
+        className="bg-white rounded-2xl border border-wlx-mist p-5 mb-6"
       >
         {/* Header */}
         <div className="mb-4">
-          <h3 className="text-base font-bold text-zinc-900">{labels.title}</h3>
-          <p className="text-sm text-zinc-500 mt-0.5">{labels.subtitle}</p>
+          <h3 className="text-base font-bold text-wlx-ink">{labels.title}</h3>
+          <p className="text-sm text-wlx-stone mt-0.5">{labels.subtitle}</p>
         </div>
 
         {/* Progress bar */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-medium text-zinc-600">
+            <span className="text-xs font-medium text-wlx-stone">
               {completedCount}/{totalCheckable} {labels.complete}
             </span>
-            <span className="text-xs font-bold text-[#FF9500]">{progressPct}%</span>
+            <span className="text-xs font-bold text-wlx-ink">{progressPct}%</span>
           </div>
-          <div className="h-2 bg-zinc-100 rounded-full overflow-hidden">
+          <div className="h-2 bg-wlx-cream rounded-full overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-[#FF9500]"
+              className="h-full rounded-full bg-wlx-ink"
               initial={{ width: 0 }}
               animate={{ width: `${progressPct}%` }}
               transition={{ duration: 0.6, ease: "easeOut" }}
@@ -224,13 +224,13 @@ function ChecklistItem({
     : null;
 
   return (
-    <div className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-zinc-50 transition-colors">
+    <div className="flex items-center gap-3 py-2 px-2 rounded-xl hover:bg-wlx-cream transition-colors">
       {/* Circle indicator */}
       <div
         className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center border-2 transition-colors ${
           done
             ? "bg-emerald-500 border-emerald-500"
-            : "border-zinc-300 bg-white"
+            : "border-wlx-mist bg-white"
         }`}
       >
         {done && (
@@ -241,7 +241,7 @@ function ChecklistItem({
       </div>
 
       {/* Label */}
-      <span className={`flex-1 text-sm ${done ? "text-zinc-400 line-through" : "text-zinc-700 font-medium"}`}>
+      <span className={`flex-1 text-sm ${done ? "text-wlx-stone line-through" : "text-wlx-stone font-medium"}`}>
         {label}
       </span>
 
@@ -252,7 +252,7 @@ function ChecklistItem({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#FF9500] font-medium hover:underline"
+            className="text-xs text-wlx-ink font-medium hover:underline"
             onClick={onPreviewClick}
           >
             {actionLabel} &rarr;
@@ -260,7 +260,7 @@ function ChecklistItem({
         ) : (
           <Link
             href={href}
-            className="text-xs text-[#FF9500] font-medium hover:underline"
+            className="text-xs text-wlx-ink font-medium hover:underline"
           >
             {actionLabel} &rarr;
           </Link>

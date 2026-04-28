@@ -73,7 +73,7 @@ function orderStatusBadgeClass(status: string) {
     return "bg-yellow-100 text-yellow-700 border border-yellow-200";
   }
   if (s === "PENDING_CONFIRMATION") {
-    return "bg-orange-100 text-orange-700 border border-orange-300 font-semibold";
+    return "bg-wlx-cream text-orange-700 border border-orange-300 font-semibold";
   }
   if (s === "PAID" || s === "CONFIRMED") {
     return "bg-green-100 text-green-700 border border-green-200";
@@ -82,13 +82,13 @@ function orderStatusBadgeClass(status: string) {
     return "bg-blue-100 text-blue-700 border border-blue-200";
   }
   if (s === "COMPLETED" || s === "DELIVERED") {
-    return "bg-zinc-100 text-zinc-600 border border-zinc-200";
+    return "bg-wlx-cream text-wlx-stone border border-wlx-mist";
   }
   if (s === "CANCELLED") {
     return "bg-red-100 text-red-700 border border-red-200";
   }
   if (s === "REFUNDED") {
-    return "bg-amber-100 text-amber-700 border border-amber-200";
+    return "bg-wlx-cream text-amber-700 border border-amber-200";
   }
   if (s === "PAYMENT_REJECTED") {
     return "bg-rose-100 text-rose-700 border border-rose-200";
@@ -96,7 +96,7 @@ function orderStatusBadgeClass(status: string) {
   if (s === "DISPUTED") {
     return "bg-rose-100 text-rose-700 border border-rose-200";
   }
-  return "bg-zinc-100 text-zinc-600 border border-zinc-200";
+  return "bg-wlx-cream text-wlx-stone border border-wlx-mist";
 }
 
 function formatDate(date: Date | string): string {
@@ -189,8 +189,8 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
                 selectedStatus === tab.value
                   ? "bg-olive-600 text-white"
                   : isPendingTab && pendingConfirmationCount > 0
-                  ? "bg-orange-100 text-orange-700 border border-orange-300 hover:bg-orange-200"
-                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                  ? "bg-wlx-cream text-orange-700 border border-orange-300 hover:bg-orange-200"
+                  : "bg-wlx-cream text-wlx-stone hover:bg-wlx-mist"
               }`}
             >
               {locale === "zh-HK" ? tab.label.zh : tab.label.en}
@@ -213,10 +213,10 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={locale === "zh-HK" ? "搜尋訂單編號或電話..." : "Search order ID or phone..."}
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 pl-10 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-olive-300"
+              className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 pl-10 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-olive-300"
             />
             <svg
-              className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400"
+              className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-wlx-stone"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -247,7 +247,7 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
           ) : (
             <span
               title={locale === "zh-HK" ? "需要 Lite 或以上計劃" : "Requires Lite plan or above"}
-              className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-2xl bg-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-500"
+              className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-2xl bg-zinc-300 px-4 py-3 text-sm font-semibold text-wlx-stone"
             >
               {locale === "zh-HK" ? "匯出 CSV" : "Export CSV"}
             </span>
@@ -257,14 +257,14 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
 
       {/* Orders cards */}
       {orders.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-300 bg-white px-6 py-16 text-center">
+        <div className="mt-6 flex flex-col items-center justify-center rounded-3xl border border-dashed border-wlx-mist bg-white px-6 py-16 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-olive-50">
             <ShoppingCart size={32} className="text-olive-600" />
           </div>
-          <h3 className="text-lg font-semibold text-zinc-900">
+          <h3 className="text-lg font-semibold text-wlx-ink">
             {locale === "zh-HK" ? "未有訂單" : "No orders yet"}
           </h3>
-          <p className="mt-2 max-w-sm text-sm text-zinc-500">
+          <p className="mt-2 max-w-sm text-sm text-wlx-stone">
             {locale === "zh-HK"
               ? "當客人落單後，訂單會喺呢度顯示。"
               : "Orders will appear here once customers place them."}
@@ -286,19 +286,19 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
                 className={`rounded-2xl border bg-white overflow-hidden transition-shadow hover:shadow-md ${
                   isPendingConfirmation
                     ? "border-orange-300 border-l-4 border-l-orange-500 shadow-sm"
-                    : "border-zinc-200"
+                    : "border-wlx-mist"
                 }`}
               >
                 {/* Card header - clickable */}
                 <div
                   onClick={() => toggleExpand(order.id)}
-                  className="p-4 cursor-pointer hover:bg-zinc-50 transition-colors"
+                  className="p-4 cursor-pointer hover:bg-wlx-cream transition-colors"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     {/* Left side: Order info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-mono text-zinc-500">
+                        <span className="text-xs font-mono text-wlx-stone">
                           {order.orderNumber || `#${order.id.slice(0, 8)}`}
                         </span>
                         <span
@@ -309,10 +309,10 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
                           {translateStatus(order.status, locale)}
                         </span>
                       </div>
-                      <div className="text-sm text-zinc-900 font-medium">
+                      <div className="text-sm text-wlx-ink font-medium">
                         {order.customerName}
                       </div>
-                      <div className="text-xs text-zinc-500 mt-1">
+                      <div className="text-xs text-wlx-stone mt-1">
                         {formatDate(order.createdAt)} · {productCount} {locale === "zh-HK" ? "件商品" : "items"}
                       </div>
                     </div>
@@ -320,12 +320,12 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
                     {/* Right side: Total */}
                     <div className="flex items-center justify-between sm:justify-end gap-3">
                       <div className="text-right">
-                        <div className="text-lg font-semibold text-zinc-900">
+                        <div className="text-lg font-semibold text-wlx-ink">
                           ${amounts?.total || 0}
                         </div>
                       </div>
                       <svg
-                        className={`h-5 w-5 text-zinc-400 transition-transform ${
+                        className={`h-5 w-5 text-wlx-stone transition-transform ${
                           isExpanded ? "rotate-180" : ""
                         }`}
                         fill="none"
@@ -345,10 +345,10 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
 
                 {/* Expanded details */}
                 {isExpanded && (
-                  <div className="border-t border-zinc-200 bg-zinc-50 p-4 space-y-4">
+                  <div className="border-t border-wlx-mist bg-wlx-cream p-4 space-y-4">
                     {/* Product list */}
                     <div>
-                      <h4 className="text-sm font-semibold text-zinc-900 mb-2">
+                      <h4 className="text-sm font-semibold text-wlx-ink mb-2">
                         {locale === "zh-HK" ? "商品列表" : "Products"}
                       </h4>
                       <div className="space-y-2">
@@ -359,18 +359,18 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
                               className="flex justify-between text-sm bg-white rounded-lg p-2"
                             >
                               <div>
-                                <div className="text-zinc-900">{item.name}</div>
+                                <div className="text-wlx-ink">{item.name}</div>
                                 {item.variant && (
-                                  <div className="text-zinc-500 text-xs">{item.variant}</div>
+                                  <div className="text-wlx-stone text-xs">{item.variant}</div>
                                 )}
                               </div>
-                              <div className="text-zinc-600">
+                              <div className="text-wlx-stone">
                                 x{item.quantity} · ${item.unitPrice}
                               </div>
                             </div>
                           ))
                         ) : (
-                          <div className="text-zinc-500 text-sm">
+                          <div className="text-wlx-stone text-sm">
                             {locale === "zh-HK" ? "無商品資料" : "No items"}
                           </div>
                         )}
@@ -379,26 +379,26 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
 
                     {/* Customer info */}
                     <div>
-                      <h4 className="text-sm font-semibold text-zinc-900 mb-2">
+                      <h4 className="text-sm font-semibold text-wlx-ink mb-2">
                         {locale === "zh-HK" ? "客人資料" : "Customer Info"}
                       </h4>
                       <div className="bg-white rounded-lg p-3 space-y-1 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-zinc-600">
+                          <span className="text-wlx-stone">
                             {locale === "zh-HK" ? "姓名" : "Name"}:
                           </span>
-                          <span className="text-zinc-900">{order.customerName}</span>
+                          <span className="text-wlx-ink">{order.customerName}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-zinc-600">
+                          <span className="text-wlx-stone">
                             {locale === "zh-HK" ? "電話" : "Phone"}:
                           </span>
-                          <span className="text-zinc-900 font-mono">{order.phone}</span>
+                          <span className="text-wlx-ink font-mono">{order.phone}</span>
                         </div>
                         {order.email && (
                           <div className="flex justify-between">
-                            <span className="text-zinc-600">Email:</span>
-                            <span className="text-zinc-900">{order.email}</span>
+                            <span className="text-wlx-stone">Email:</span>
+                            <span className="text-wlx-ink">{order.email}</span>
                           </div>
                         )}
                       </div>
@@ -407,16 +407,16 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
                     {/* Delivery address */}
                     {order.fulfillmentType === "DELIVERY" && fulfillmentAddress && (
                       <div>
-                        <h4 className="text-sm font-semibold text-zinc-900 mb-2">
+                        <h4 className="text-sm font-semibold text-wlx-ink mb-2">
                           {locale === "zh-HK" ? "送貨地址" : "Delivery Address"}
                         </h4>
-                        <div className="bg-white rounded-lg p-3 text-sm text-zinc-900">
+                        <div className="bg-white rounded-lg p-3 text-sm text-wlx-ink">
                           <div>{fulfillmentAddress.line1}</div>
                           {fulfillmentAddress.district && (
-                            <div className="text-zinc-600">{fulfillmentAddress.district}</div>
+                            <div className="text-wlx-stone">{fulfillmentAddress.district}</div>
                           )}
                           {fulfillmentAddress.notes && (
-                            <div className="text-zinc-500 text-xs mt-2">
+                            <div className="text-wlx-stone text-xs mt-2">
                               {locale === "zh-HK" ? "備註" : "Note"}: {fulfillmentAddress.notes}
                             </div>
                           )}
@@ -427,10 +427,10 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
                     {/* Pickup info */}
                     {order.fulfillmentType === "PICKUP" && (
                       <div>
-                        <h4 className="text-sm font-semibold text-zinc-900 mb-2">
+                        <h4 className="text-sm font-semibold text-wlx-ink mb-2">
                           {locale === "zh-HK" ? "自取" : "Pickup"}
                         </h4>
-                        <div className="bg-white rounded-lg p-3 text-sm text-zinc-600">
+                        <div className="bg-white rounded-lg p-3 text-sm text-wlx-stone">
                           {translateFulfillment(order.fulfillmentType, locale)}
                         </div>
                       </div>
@@ -440,7 +440,7 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
                     <div className="pt-2">
                       <Link
                         href={`/${locale}/admin/orders/${order.id}`}
-                        className="inline-flex w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 transition-colors"
+                        className="inline-flex w-full items-center justify-center rounded-xl border border-wlx-mist bg-white px-4 py-2 text-sm font-medium text-wlx-stone hover:bg-wlx-cream transition-colors"
                       >
                         {locale === "zh-HK" ? "查看完整訂單詳情" : "View Full Order Details"}
                       </Link>
@@ -452,7 +452,7 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
           })}
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-4 py-3 text-zinc-600 text-sm">
+          <div className="flex items-center justify-between px-4 py-3 text-wlx-stone text-sm">
             <div>
               {locale === "zh-HK"
                 ? `共 ${total} 個訂單，第 ${page} / ${totalPages || 1} 頁`
@@ -462,14 +462,14 @@ export function OrdersTable({ orders, locale, currentStatus, searchQuery, csvExp
               <button
                 onClick={() => goToPage(page - 1)}
                 disabled={page <= 1}
-                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="rounded-lg border border-wlx-mist px-3 py-1.5 text-xs font-medium hover:bg-wlx-cream disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {locale === "zh-HK" ? "上一頁" : "Prev"}
               </button>
               <button
                 onClick={() => goToPage(page + 1)}
                 disabled={page >= totalPages}
-                className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="rounded-lg border border-wlx-mist px-3 py-1.5 text-xs font-medium hover:bg-wlx-cream disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {locale === "zh-HK" ? "下一頁" : "Next"}
               </button>

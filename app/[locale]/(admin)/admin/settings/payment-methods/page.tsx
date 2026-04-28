@@ -75,7 +75,7 @@ function FieldLabel({
   required?: boolean;
 }) {
   return (
-    <label className="text-sm font-medium text-zinc-700">
+    <label className="text-sm font-medium text-wlx-stone">
       {children}
       {required && <span className="text-red-500 ml-0.5">*</span>}
     </label>
@@ -99,7 +99,7 @@ function TextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+      className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
     />
   );
 }
@@ -119,7 +119,7 @@ function TextareaInput({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       rows={3}
-      className="flex w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 resize-none"
+      className="flex w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 resize-none"
     />
   );
 }
@@ -241,14 +241,14 @@ export default function PaymentMethodsPage() {
 
   if (loading) {
     return (
-      <div className="bg-zinc-50 min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+      <div className="bg-wlx-cream min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-wlx-stone" />
       </div>
     );
   }
 
   return (
-    <div className="bg-zinc-50 text-zinc-900 pb-24 min-h-screen">
+    <div className="bg-wlx-cream text-wlx-ink pb-24 min-h-screen">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
         <div className="mb-4">
           <SidebarToggle />
@@ -258,7 +258,7 @@ export default function PaymentMethodsPage() {
         <div className="mb-2">
           <Link
             href={`/${locale}/admin/settings`}
-            className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-800 transition-colors mb-4"
+            className="inline-flex items-center gap-1.5 text-sm text-wlx-stone hover:text-wlx-ink transition-colors mb-4"
           >
             <ChevronLeft className="h-4 w-4" />
             {isZh ? "返回設定" : "Back to Settings"}
@@ -266,11 +266,11 @@ export default function PaymentMethodsPage() {
         </div>
 
         <div className="space-y-1.5 mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-3">
-            <Wallet className="h-7 w-7 sm:h-8 sm:w-8 text-zinc-600" />
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-wlx-ink flex items-center gap-3">
+            <Wallet className="h-7 w-7 sm:h-8 sm:w-8 text-wlx-stone" />
             {isZh ? "收款方式" : "Payment Methods"}
           </h1>
-          <p className="text-zinc-500 text-sm sm:text-base">
+          <p className="text-wlx-stone text-sm sm:text-base">
             {isZh
               ? "設定顧客結帳時可用的收款方式。至少啟用 1 種。"
               : "Configure payment methods shown during checkout. At least 1 must be active."}
@@ -465,13 +465,13 @@ export default function PaymentMethodsPage() {
         </div>
 
         {/* Save bar */}
-        <div className="sticky bottom-0 bg-zinc-50/95 backdrop-blur-sm border-t border-zinc-200 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mt-8">
+        <div className="sticky bottom-0 bg-wlx-cream/95 backdrop-blur-sm border-t border-wlx-mist -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mt-8">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={handleSave}
               disabled={saveState === "saving"}
-              className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-md bg-wlx-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50"
             >
               {saveState === "saving" ? (
                 <>
@@ -534,7 +534,7 @@ function MethodCard({
     <div
       className={cn(
         "rounded-xl border bg-white overflow-hidden transition-colors",
-        method.active ? "border-zinc-300" : "border-zinc-200"
+        method.active ? "border-wlx-mist" : "border-wlx-mist"
       )}
     >
       {/* Header */}
@@ -543,10 +543,10 @@ function MethodCard({
           {icon}
         </span>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-zinc-900">
+          <div className="font-semibold text-wlx-ink">
             {isZh ? names.zh : names.en}
           </div>
-          <div className="text-xs text-zinc-500 mt-0.5">
+          <div className="text-xs text-wlx-stone mt-0.5">
             {method.active ? (
               <span className="text-emerald-600 font-medium">
                 {isZh ? "已啟用" : "Active"}
@@ -562,7 +562,7 @@ function MethodCard({
       {/* Fields (always visible, but dimmed when inactive) */}
       <div
         className={cn(
-          "border-t border-zinc-100 px-4 sm:px-5 py-4 sm:py-5 space-y-4 bg-zinc-50/40 transition-opacity",
+          "border-t border-wlx-mist px-4 sm:px-5 py-4 sm:py-5 space-y-4 bg-wlx-cream/40 transition-opacity",
           !method.active && "opacity-60"
         )}
       >

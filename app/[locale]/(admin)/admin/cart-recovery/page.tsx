@@ -32,13 +32,13 @@ export default async function AdminCartRecovery({
         <div className="flex items-center gap-4 mb-6">
           <SidebarToggle />
           <div>
-            <div className="text-zinc-500 text-sm">Admin</div>
-            <h1 className="text-2xl font-semibold text-zinc-900">
+            <div className="text-wlx-stone text-sm">Admin</div>
+            <h1 className="text-2xl font-semibold text-wlx-ink">
               {t.admin.cartRecovery.title}
             </h1>
           </div>
         </div>
-        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-white p-12 text-center">
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-wlx-mist bg-white p-12 text-center">
           <div className="w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center mb-4">
             <svg
               className="h-8 w-8 text-violet-500"
@@ -54,10 +54,10 @@ export default async function AdminCartRecovery({
               />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-zinc-900 mb-2">
+          <h2 className="text-xl font-semibold text-wlx-ink mb-2">
             {t.admin.cartRecovery.proFeature}
           </h2>
-          <p className="text-zinc-500 mb-6 max-w-md">
+          <p className="text-wlx-stone mb-6 max-w-md">
             {t.admin.cartRecovery.proFeatureDesc}
           </p>
           <Link
@@ -137,11 +137,11 @@ export default async function AdminCartRecovery({
       <div className="flex items-center gap-4 mb-6">
         <SidebarToggle />
         <div>
-          <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">
+          <div className="text-wlx-stone text-sm">Admin</div>
+          <h1 className="text-2xl font-semibold text-wlx-ink">
             {t.admin.cartRecovery.title}
           </h1>
-          <div className="text-zinc-500 text-sm">
+          <div className="text-wlx-stone text-sm">
             {t.admin.cartRecovery.subtitle}
           </div>
         </div>

@@ -404,7 +404,7 @@ export default function HomepageCMS({
     // Color coding: green for Section, purple for Banner
     const borderColor = item.type === "section" ? "border-green-400" : "border-purple-400";
     const rowBg = item.type === "section" ? "bg-white" : "bg-purple-50";
-    const rowHover = item.type === "section" ? "hover:bg-zinc-50" : "hover:bg-purple-100";
+    const rowHover = item.type === "section" ? "hover:bg-wlx-cream" : "hover:bg-purple-100";
     const badgeBg = item.type === "section" ? "bg-[#6B7A2F]/10" : "bg-purple-100";
     const badgeText = item.type === "section" ? "text-[#6B7A2F]" : "text-purple-700";
 
@@ -413,7 +413,7 @@ export default function HomepageCMS({
         ref={setNodeRef}
         style={style}
         className={`
-          border-l-4 ${borderColor} border-b border-zinc-200 last:border-b-0
+          border-l-4 ${borderColor} border-b border-wlx-mist last:border-b-0
           ${rowBg}
           ${!isEditMode ? rowHover : ""}
           ${isDragging ? "shadow-lg scale-105 z-10 rounded-xl !border-l-4" : ""}
@@ -432,7 +432,7 @@ export default function HomepageCMS({
               {...listeners}
               className="cursor-grab active:cursor-grabbing flex-shrink-0"
             >
-              <GripVertical size={20} className="text-zinc-400" />
+              <GripVertical size={20} className="text-wlx-stone" />
             </div>
           )}
 
@@ -455,10 +455,10 @@ export default function HomepageCMS({
 
           {/* Title + subtitle */}
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-zinc-900 truncate">
+            <div className="text-sm font-bold text-wlx-ink truncate">
               {itemTitle}
             </div>
-            <div className="text-xs text-zinc-500">
+            <div className="text-xs text-wlx-stone">
               {item.type === "section" ? (
                 <>
                   {(item.data as Section).cardSize === "large" ? "大卡" : "細卡"} ·{" "}
@@ -486,7 +486,7 @@ export default function HomepageCMS({
                 className={`px-2 py-1 rounded text-xs font-medium ${
                   item.data.active
                     ? "bg-green-100 text-green-700"
-                    : "bg-zinc-100 text-zinc-500"
+                    : "bg-wlx-cream text-wlx-stone"
                 }`}
               >
                 {item.data.active ? "啟用" : "停用"}
@@ -502,7 +502,7 @@ export default function HomepageCMS({
                     setIsCreatingBanner(false);
                   }
                 }}
-                className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-zinc-400 hover:text-zinc-600 rounded"
+                className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center text-wlx-stone hover:text-wlx-stone rounded"
                 title="編輯"
               >
                 <Pencil size={16} className="md:hidden" />
@@ -582,17 +582,17 @@ export default function HomepageCMS({
               position: "hero",
             });
           }}
-          className="flex items-center gap-1 px-4 py-2 bg-zinc-800 text-white rounded-xl text-sm hover:bg-zinc-900"
+          className="flex items-center gap-1 px-4 py-2 bg-zinc-800 text-white rounded-xl text-sm hover:bg-wlx-ink"
         >
           <Plus size={16} /> 新增 Banner
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-        <div className="p-4 border-b border-zinc-200 flex items-center justify-between">
+      <div className="bg-white rounded-2xl border border-wlx-mist overflow-hidden">
+        <div className="p-4 border-b border-wlx-mist flex items-center justify-between">
           <div>
-            <h2 className="font-semibold text-zinc-900">首頁內容排序</h2>
-            <p className="text-sm text-zinc-500 mt-1">
+            <h2 className="font-semibold text-wlx-ink">首頁內容排序</h2>
+            <p className="text-sm text-wlx-stone mt-1">
               {isEditMode ? "拖拉排序，順序即係首頁顯示嘅順序" : "點擊 [編輯排序] 開始調整順序"}
             </p>
           </div>
@@ -601,7 +601,7 @@ export default function HomepageCMS({
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
               isEditMode
                 ? "bg-[#6B7A2F] text-white hover:bg-[#5a6527]"
-                : "border border-zinc-300 text-zinc-700 hover:bg-zinc-50"
+                : "border border-wlx-mist text-wlx-stone hover:bg-wlx-cream"
             }`}
           >
             {isEditMode ? "完成" : "編輯排序"}
@@ -609,7 +609,7 @@ export default function HomepageCMS({
         </div>
 
         {unifiedList.length === 0 ? (
-          <div className="p-8 text-center text-zinc-500">
+          <div className="p-8 text-center text-wlx-stone">
             未有任何內容，請新增 Section 或 Banner
           </div>
         ) : isEditMode ? (
@@ -759,29 +759,29 @@ function SectionModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-4 border-b border-zinc-200 flex justify-between items-center sticky top-0 bg-white z-10">
+        <div className="p-4 border-b border-wlx-mist flex justify-between items-center sticky top-0 bg-white z-10">
           <h3 className="font-semibold text-lg">
             {isNew ? "新增 Section" : "編輯 Section"}
           </h3>
-          <button onClick={onClose} className="p-1 hover:bg-zinc-100 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-wlx-cream rounded">
             <X size={20} />
           </button>
         </div>
 
         <div className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1">標題</label>
+            <label className="block text-sm font-medium text-wlx-stone mb-1">標題</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
+              className="w-full px-3 py-2 border border-wlx-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
               placeholder="例如：Air Jordan 系列"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1">卡片大小</label>
+            <label className="block text-sm font-medium text-wlx-stone mb-1">卡片大小</label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -789,7 +789,7 @@ function SectionModal({
                 className={`flex-1 px-4 py-2 rounded-xl border ${
                   cardSize === "small"
                     ? "border-olive-600 bg-olive-50 text-olive-700"
-                    : "border-zinc-200 text-zinc-700"
+                    : "border-wlx-mist text-wlx-stone"
                 }`}
               >
                 細卡 (160px)
@@ -800,7 +800,7 @@ function SectionModal({
                 className={`flex-1 px-4 py-2 rounded-xl border ${
                   cardSize === "large"
                     ? "border-olive-600 bg-olive-50 text-olive-700"
-                    : "border-zinc-200 text-zinc-700"
+                    : "border-wlx-mist text-wlx-stone"
                 }`}
               >
                 大卡 (280px)
@@ -809,7 +809,7 @@ function SectionModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1">產品選擇方式</label>
+            <label className="block text-sm font-medium text-wlx-stone mb-1">產品選擇方式</label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -817,7 +817,7 @@ function SectionModal({
                 className={`flex-1 px-4 py-2 rounded-xl border ${
                   selectionMode === "auto"
                     ? "border-olive-600 bg-olive-50 text-olive-700"
-                    : "border-zinc-200 text-zinc-700"
+                    : "border-wlx-mist text-wlx-stone"
                 }`}
               >
                 自動篩選
@@ -828,7 +828,7 @@ function SectionModal({
                 className={`flex-1 px-4 py-2 rounded-xl border ${
                   selectionMode === "manual"
                     ? "border-olive-600 bg-olive-50 text-olive-700"
-                    : "border-zinc-200 text-zinc-700"
+                    : "border-wlx-mist text-wlx-stone"
                 }`}
               >
                 手動選擇
@@ -837,13 +837,13 @@ function SectionModal({
           </div>
 
           {selectionMode === "auto" && (
-            <div className="space-y-3 bg-zinc-50 p-4 rounded-xl">
+            <div className="space-y-3 bg-wlx-cream p-4 rounded-xl">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">篩選類型</label>
+                <label className="block text-sm font-medium text-wlx-stone mb-1">篩選類型</label>
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
+                  className="w-full px-3 py-2 border border-wlx-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
                 >
                   <option value="category">類別 (Category)</option>
                   <option value="shoeType">對象 (ShoeType)</option>
@@ -851,12 +851,12 @@ function SectionModal({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">篩選值</label>
+                <label className="block text-sm font-medium text-wlx-stone mb-1">篩選值</label>
                 {filterType === "category" && (
                   <select
                     value={filterValue}
                     onChange={(e) => setFilterValue(e.target.value)}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
+                    className="w-full px-3 py-2 border border-wlx-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
                   >
                     <option value="">-- 選擇類別 --</option>
                     <option value="Air Jordan">Air Jordan</option>
@@ -874,7 +874,7 @@ function SectionModal({
                   <select
                     value={filterValue}
                     onChange={(e) => setFilterValue(e.target.value)}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
+                    className="w-full px-3 py-2 border border-wlx-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500"
                   >
                     <option value="">-- 選擇對象 --</option>
                     <option value="adult">男裝 (Adult)</option>
@@ -887,7 +887,7 @@ function SectionModal({
                     type="text"
                     value="true"
                     disabled
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl bg-zinc-100"
+                    className="w-full px-3 py-2 border border-wlx-mist rounded-xl bg-wlx-cream"
                   />
                 )}
               </div>
@@ -895,9 +895,9 @@ function SectionModal({
           )}
 
           {selectionMode === "manual" && (
-            <div className="bg-zinc-50 p-4 rounded-xl space-y-3">
+            <div className="bg-wlx-cream p-4 rounded-xl space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-zinc-700">
+                <span className="text-sm font-medium text-wlx-stone">
                   已選擇 {selectedProductIds.length} 件產品
                 </span>
                 {selectedProductIds.length > 0 && (
@@ -911,23 +911,23 @@ function SectionModal({
               </div>
 
               {selectedProducts.length > 0 && (
-                <div className="flex flex-wrap gap-2 p-2 bg-white rounded-lg border border-zinc-200">
+                <div className="flex flex-wrap gap-2 p-2 bg-white rounded-lg border border-wlx-mist">
                   {selectedProducts.map((p) => (
                     <div
                       key={p.id}
                       className="flex items-center gap-2 bg-olive-50 pl-1 pr-2 py-1 rounded-lg"
                     >
-                      <div className="w-8 h-8 rounded overflow-hidden bg-zinc-100">
+                      <div className="w-8 h-8 rounded overflow-hidden bg-wlx-cream">
                         {p.imageUrl ? (
                           <img src={p.imageUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <ImageIcon size={12} className="text-zinc-400" />
+                            <ImageIcon size={12} className="text-wlx-stone" />
                           </div>
                         )}
                       </div>
-                      <span className="text-xs text-zinc-700 max-w-[100px] truncate">{p.title}</span>
-                      <button onClick={() => toggleProduct(p.id)} className="text-zinc-400 hover:text-red-600">
+                      <span className="text-xs text-wlx-stone max-w-[100px] truncate">{p.title}</span>
+                      <button onClick={() => toggleProduct(p.id)} className="text-wlx-stone hover:text-red-600">
                         <X size={14} />
                       </button>
                     </div>
@@ -948,7 +948,7 @@ function SectionModal({
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                       shoeTypeFilter === opt.value
                         ? "bg-olive-600 text-white"
-                        : "bg-white text-zinc-700 border border-zinc-200 hover:border-zinc-300"
+                        : "bg-white text-wlx-stone border border-wlx-mist hover:border-wlx-mist"
                     }`}
                   >
                     {opt.label}
@@ -960,7 +960,7 @@ function SectionModal({
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                  className="flex-1 px-3 py-2 border border-wlx-mist rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
                 >
                   <option value="all">所有類別</option>
                   {categories.map((cat) => (
@@ -968,49 +968,49 @@ function SectionModal({
                   ))}
                 </select>
                 <div className="flex-1 relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-wlx-stone" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="搜尋產品名或 SKU..."
-                    className="w-full pl-9 pr-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                    className="w-full pl-9 pr-3 py-2 border border-wlx-mist rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
                   />
                 </div>
               </div>
 
-              <div className="max-h-64 overflow-y-auto space-y-1 bg-white rounded-lg border border-zinc-200">
+              <div className="max-h-64 overflow-y-auto space-y-1 bg-white rounded-lg border border-wlx-mist">
                 {filteredProducts.length === 0 ? (
-                  <div className="p-4 text-center text-zinc-500 text-sm">搵唔到符合條件嘅產品</div>
+                  <div className="p-4 text-center text-wlx-stone text-sm">搵唔到符合條件嘅產品</div>
                 ) : (
                   filteredProducts.slice(0, 100).map((p) => (
                     <label
                       key={p.id}
-                      className="flex items-center gap-3 p-2 hover:bg-zinc-50 cursor-pointer border-b border-zinc-100 last:border-b-0"
+                      className="flex items-center gap-3 p-2 hover:bg-wlx-cream cursor-pointer border-b border-wlx-mist last:border-b-0"
                     >
                       <input
                         type="checkbox"
                         checked={selectedProductIds.includes(p.id)}
                         onChange={() => toggleProduct(p.id)}
-                        className="rounded border-zinc-300 text-olive-600 focus:ring-olive-500"
+                        className="rounded border-wlx-mist text-olive-600 focus:ring-olive-500"
                       />
-                      <div className="w-10 h-10 rounded overflow-hidden bg-zinc-100 flex-shrink-0">
+                      <div className="w-10 h-10 rounded overflow-hidden bg-wlx-cream flex-shrink-0">
                         {p.imageUrl ? (
                           <img src={p.imageUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <ImageIcon size={16} className="text-zinc-400" />
+                            <ImageIcon size={16} className="text-wlx-stone" />
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm text-zinc-900 truncate">{p.title}</div>
-                        <div className="text-xs text-zinc-500">
+                        <div className="text-sm text-wlx-ink truncate">{p.title}</div>
+                        <div className="text-xs text-wlx-stone">
                           {p.sku && <span>{p.sku} · </span>}
                           {p.category}
                         </div>
                       </div>
-                      <span className="text-xs text-zinc-400 flex-shrink-0">
+                      <span className="text-xs text-wlx-stone flex-shrink-0">
                         {p.shoeType === "adult"
                           ? "男裝"
                           : p.shoeType === "womens"
@@ -1024,7 +1024,7 @@ function SectionModal({
                 )}
               </div>
               {filteredProducts.length > 100 && (
-                <p className="text-xs text-zinc-500 text-center">
+                <p className="text-xs text-wlx-stone text-center">
                   顯示首 100 件產品，請使用篩選或搜尋縮窄範圍
                 </p>
               )}
@@ -1032,7 +1032,7 @@ function SectionModal({
           )}
 
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-zinc-700">啟用</span>
+            <span className="text-sm font-medium text-wlx-stone">啟用</span>
             <button
               type="button"
               onClick={() => setActive(!active)}
@@ -1047,8 +1047,8 @@ function SectionModal({
           </div>
         </div>
 
-        <div className="p-4 border-t border-zinc-200 flex gap-2 justify-end sticky bottom-0 bg-white">
-          <button onClick={onClose} className="px-4 py-2 text-zinc-700 hover:bg-zinc-100 rounded-xl">取消</button>
+        <div className="p-4 border-t border-wlx-mist flex gap-2 justify-end sticky bottom-0 bg-white">
+          <button onClick={onClose} className="px-4 py-2 text-wlx-stone hover:bg-wlx-cream rounded-xl">取消</button>
           <button
             onClick={handleSave}
             disabled={saving || !title}
@@ -1163,11 +1163,11 @@ function BannerModal({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-4 border-b border-zinc-200 flex justify-between items-center sticky top-0 bg-white z-10">
+        <div className="p-4 border-b border-wlx-mist flex justify-between items-center sticky top-0 bg-white z-10">
           <h3 className="font-semibold text-lg">
             {isNew ? "新增 Banner" : "編輯 Banner"}
           </h3>
-          <button onClick={onClose} className="p-1 hover:bg-zinc-100 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-wlx-cream rounded">
             <X size={20} />
           </button>
         </div>
@@ -1176,7 +1176,7 @@ function BannerModal({
           {/* Slides */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium text-zinc-700">
+              <label className="block text-sm font-medium text-wlx-stone">
                 Slides ({slides.length})
               </label>
               <button
@@ -1190,10 +1190,10 @@ function BannerModal({
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className="border border-zinc-200 rounded-xl p-4 space-y-3 bg-zinc-50"
+                className="border border-wlx-mist rounded-xl p-4 space-y-3 bg-wlx-cream"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-zinc-700">
+                  <span className="text-sm font-medium text-wlx-stone">
                     Slide {index + 1}
                   </span>
                   {slides.length > 1 && (
@@ -1209,8 +1209,8 @@ function BannerModal({
 
                 {/* Image upload */}
                 <div>
-                  <label className="block text-xs text-zinc-600 mb-1">圖片 *</label>
-                  <div className="border-2 border-dashed border-zinc-200 rounded-xl p-3">
+                  <label className="block text-xs text-wlx-stone mb-1">圖片 *</label>
+                  <div className="border-2 border-dashed border-wlx-mist rounded-xl p-3">
                     {slide.imageUrl ? (
                       <div className="relative">
                         <img
@@ -1226,9 +1226,9 @@ function BannerModal({
                         </button>
                       </div>
                     ) : (
-                      <label className="flex flex-col items-center justify-center h-24 cursor-pointer hover:bg-zinc-100 rounded-lg">
-                        <ImageIcon size={24} className="text-zinc-400 mb-1" />
-                        <span className="text-xs text-zinc-500">
+                      <label className="flex flex-col items-center justify-center h-24 cursor-pointer hover:bg-wlx-cream rounded-lg">
+                        <ImageIcon size={24} className="text-wlx-stone mb-1" />
+                        <span className="text-xs text-wlx-stone">
                           {uploadingIndex === index ? "上傳中..." : "點擊上傳"}
                         </span>
                         <input
@@ -1246,13 +1246,13 @@ function BannerModal({
                     value={slide.imageUrl}
                     onChange={(e) => updateSlide(index, "imageUrl", e.target.value)}
                     placeholder="或貼上圖片 URL"
-                    className="w-full mt-2 px-2 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                    className="w-full mt-2 px-2 py-1.5 border border-wlx-mist rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
                   />
                 </div>
 
                 {/* Link URL */}
                 <div>
-                  <label className="block text-xs text-zinc-600 mb-1">
+                  <label className="block text-xs text-wlx-stone mb-1">
                     連結 URL (選填)
                   </label>
                   <input
@@ -1260,13 +1260,13 @@ function BannerModal({
                     value={slide.linkUrl || ""}
                     onChange={(e) => updateSlide(index, "linkUrl", e.target.value)}
                     placeholder="例如：/products?category=Air+Jordan"
-                    className="w-full px-2 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                    className="w-full px-2 py-1.5 border border-wlx-mist rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
                   />
                 </div>
 
                 {/* Title */}
                 <div>
-                  <label className="block text-xs text-zinc-600 mb-1">
+                  <label className="block text-xs text-wlx-stone mb-1">
                     標題 (選填)
                   </label>
                   <input
@@ -1274,13 +1274,13 @@ function BannerModal({
                     value={slide.title || ""}
                     onChange={(e) => updateSlide(index, "title", e.target.value)}
                     placeholder="例如：Air Jordan 系列"
-                    className="w-full px-2 py-1.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                    className="w-full px-2 py-1.5 border border-wlx-mist rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
                   />
                 </div>
 
                 {/* Subtitle */}
                 <div>
-                  <label className="block text-xs text-zinc-600 mb-1">
+                  <label className="block text-xs text-wlx-stone mb-1">
                     副標題 (選填)
                   </label>
                   <input
@@ -1288,7 +1288,7 @@ function BannerModal({
                     value={slide.subtitle || ""}
                     onChange={(e) => updateSlide(index, "subtitle", e.target.value)}
                     placeholder="例如：新品上架"
-                    className="w-full px-2 py-1.5 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                    className="w-full px-2 py-1.5 border border-wlx-mist rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
                   />
                 </div>
               </div>
@@ -1296,8 +1296,8 @@ function BannerModal({
           </div>
 
           {/* Active toggle */}
-          <div className="flex items-center justify-between pt-4 border-t border-zinc-200">
-            <span className="text-sm font-medium text-zinc-700">啟用</span>
+          <div className="flex items-center justify-between pt-4 border-t border-wlx-mist">
+            <span className="text-sm font-medium text-wlx-stone">啟用</span>
             <button
               type="button"
               onClick={() => setActive(!active)}
@@ -1314,10 +1314,10 @@ function BannerModal({
           </div>
         </div>
 
-        <div className="p-4 border-t border-zinc-200 flex gap-2 justify-end sticky bottom-0 bg-white">
+        <div className="p-4 border-t border-wlx-mist flex gap-2 justify-end sticky bottom-0 bg-white">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-zinc-700 hover:bg-zinc-100 rounded-xl"
+            className="px-4 py-2 text-wlx-stone hover:bg-wlx-cream rounded-xl"
           >
             取消
           </button>

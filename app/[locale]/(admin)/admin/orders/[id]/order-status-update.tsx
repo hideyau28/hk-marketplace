@@ -131,15 +131,15 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
     <div className="space-y-4 pb-8">
       {/* Current Status */}
       <div>
-        <label className="block text-sm text-zinc-500 mb-2">
+        <label className="block text-sm text-wlx-stone mb-2">
           {locale === "zh-HK" ? "當前狀態" : "Current Status"}
         </label>
         <div className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium ${
           displayStatus === "COMPLETED" || displayStatus === "DELIVERED" ? "bg-olive-100 text-olive-700" :
           displayStatus === "PENDING" ? "bg-yellow-100 text-yellow-700" :
-          displayStatus === "PENDING_CONFIRMATION" ? "bg-orange-100 text-orange-700 border border-orange-300" :
+          displayStatus === "PENDING_CONFIRMATION" ? "bg-wlx-cream text-orange-700 border border-orange-300" :
           displayStatus === "CANCELLED" || displayStatus === "DISPUTED" || displayStatus === "PAYMENT_REJECTED" ? "bg-red-100 text-red-700" :
-          displayStatus === "REFUNDED" ? "bg-amber-100 text-amber-700" :
+          displayStatus === "REFUNDED" ? "bg-wlx-cream text-amber-700" :
           "bg-blue-100 text-blue-700"
         }`}>
           {translateStatus(displayStatus)}
@@ -150,14 +150,14 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
       {!isTerminal && (
         <>
           <div>
-            <label htmlFor="status" className="block text-sm text-zinc-500 mb-2">
+            <label htmlFor="status" className="block text-sm text-wlx-stone mb-2">
               {locale === "zh-HK" ? "更新狀態" : "Update Status"}
             </label>
             <select
               id="status"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value as OrderStatus)}
-              className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+              className="w-full rounded-xl border border-wlx-mist bg-white px-4 py-2.5 text-wlx-ink focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
             >
               <option value={displayStatus}>{translateStatus(displayStatus)}</option>
               {validTransitions.map((status) => (
@@ -171,7 +171,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
           {/* Tracking Number Input (show when transitioning to SHIPPED) */}
           {selectedStatus === "SHIPPED" && (
             <div>
-              <label htmlFor="tracking" className="block text-sm text-zinc-500 mb-2">
+              <label htmlFor="tracking" className="block text-sm text-wlx-stone mb-2">
                 {locale === "zh-HK" ? "追蹤號碼" : "Tracking Number"}
               </label>
               <input
@@ -180,7 +180,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
                 value={trackingNumber}
                 onChange={(e) => setTrackingNumber(e.target.value)}
                 placeholder={locale === "zh-HK" ? "輸入追蹤號碼" : "Enter tracking number"}
-                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full rounded-xl border border-wlx-mist bg-white px-4 py-2.5 text-wlx-ink focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
               />
             </div>
           )}
@@ -188,7 +188,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
           {/* Cancel Reason Input */}
           {selectedStatus === "CANCELLED" && (
             <div>
-              <label htmlFor="cancelReason" className="block text-sm text-zinc-500 mb-2">
+              <label htmlFor="cancelReason" className="block text-sm text-wlx-stone mb-2">
                 {locale === "zh-HK" ? "取消原因" : "Cancel Reason"}
               </label>
               <textarea
@@ -197,7 +197,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
                 onChange={(e) => setCancelReason(e.target.value)}
                 placeholder={locale === "zh-HK" ? "輸入取消原因（選填）" : "Enter cancel reason (optional)"}
                 rows={2}
-                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full rounded-xl border border-wlx-mist bg-white px-4 py-2.5 text-wlx-ink focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
               />
             </div>
           )}
@@ -205,7 +205,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
           {/* Refund Reason Input */}
           {selectedStatus === "REFUNDED" && (
             <div>
-              <label htmlFor="refundReason" className="block text-sm text-zinc-500 mb-2">
+              <label htmlFor="refundReason" className="block text-sm text-wlx-stone mb-2">
                 {locale === "zh-HK" ? "退款原因" : "Refund Reason"}
               </label>
               <textarea
@@ -214,7 +214,7 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
                 onChange={(e) => setRefundReason(e.target.value)}
                 placeholder={locale === "zh-HK" ? "輸入退款原因（選填）" : "Enter refund reason (optional)"}
                 rows={2}
-                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                className="w-full rounded-xl border border-wlx-mist bg-white px-4 py-2.5 text-wlx-ink focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
               />
             </div>
           )}
@@ -233,46 +233,46 @@ export default function OrderStatusUpdate({ order, locale }: OrderStatusUpdatePr
 
       {/* Show existing tracking number */}
       {order.trackingNumber && (
-        <div className="pt-3 border-t border-zinc-200">
-          <div className="text-sm text-zinc-500 mb-1">
+        <div className="pt-3 border-t border-wlx-mist">
+          <div className="text-sm text-wlx-stone mb-1">
             {locale === "zh-HK" ? "追蹤號碼" : "Tracking Number"}
           </div>
-          <div className="text-zinc-900 font-mono text-sm">{order.trackingNumber}</div>
+          <div className="text-wlx-ink font-mono text-sm">{order.trackingNumber}</div>
         </div>
       )}
 
       {/* Show cancel/refund reason */}
       {order.cancelReason && (
-        <div className="pt-3 border-t border-zinc-200">
-          <div className="text-sm text-zinc-500 mb-1">
+        <div className="pt-3 border-t border-wlx-mist">
+          <div className="text-sm text-wlx-stone mb-1">
             {locale === "zh-HK" ? "取消原因" : "Cancel Reason"}
           </div>
-          <div className="text-zinc-900 text-sm">{order.cancelReason}</div>
+          <div className="text-wlx-ink text-sm">{order.cancelReason}</div>
         </div>
       )}
 
       {order.refundReason && (
-        <div className="pt-3 border-t border-zinc-200">
-          <div className="text-sm text-zinc-500 mb-1">
+        <div className="pt-3 border-t border-wlx-mist">
+          <div className="text-sm text-wlx-stone mb-1">
             {locale === "zh-HK" ? "退款原因" : "Refund Reason"}
           </div>
-          <div className="text-zinc-900 text-sm">{order.refundReason}</div>
+          <div className="text-wlx-ink text-sm">{order.refundReason}</div>
         </div>
       )}
 
       {/* Status History */}
       {statusHistory.length > 0 && (
-        <div className="pt-3 border-t border-zinc-200">
-          <div className="text-sm text-zinc-500 mb-2">
+        <div className="pt-3 border-t border-wlx-mist">
+          <div className="text-sm text-wlx-stone mb-2">
             {locale === "zh-HK" ? "狀態歷史" : "Status History"}
           </div>
           <div className="space-y-2">
             {statusHistory.map((entry: any, index: number) => (
               <div key={index} className="flex items-center justify-between text-xs">
-                <span className="text-zinc-600">
+                <span className="text-wlx-stone">
                   {translateStatus(entry.fromStatus)} → {translateStatus(entry.toStatus)}
                 </span>
-                <span className="text-zinc-400">
+                <span className="text-wlx-stone">
                   {new Date(entry.timestamp).toLocaleString()}
                 </span>
               </div>

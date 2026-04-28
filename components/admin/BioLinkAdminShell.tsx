@@ -27,31 +27,31 @@ export default function BioLinkAdminShell({ children }: { children: ReactNode })
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 pb-20">
+    <div className="min-h-screen bg-wlx-cream pb-20">
       {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-white border-b border-zinc-200 px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-20 bg-white border-b border-wlx-mist px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {loading ? (
             <>
-              <div className="w-8 h-8 rounded-lg bg-zinc-200 animate-pulse" />
-              <div className="h-4 w-28 bg-zinc-200 rounded animate-pulse" />
+              <div className="w-8 h-8 rounded-lg bg-wlx-mist animate-pulse" />
+              <div className="h-4 w-28 bg-wlx-mist rounded animate-pulse" />
             </>
           ) : (
             <>
               <div
                 className="w-8 h-8 rounded-lg text-white flex items-center justify-center text-sm font-bold"
-                style={{ backgroundColor: branding.themeColor || "#FF9500" }}
+                style={{ backgroundColor: branding.themeColor || "#1A1A1A" }}
               >
                 {branding.name.charAt(0).toUpperCase()}
               </div>
-              <span className="font-semibold text-zinc-900 text-sm truncate max-w-[200px]">{branding.name}</span>
+              <span className="font-semibold text-wlx-ink text-sm truncate max-w-[200px]">{branding.name}</span>
             </>
           )}
         </div>
         <button
           onClick={handleLogout}
           aria-label="登出"
-          className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors"
+          className="p-2 rounded-lg text-wlx-stone hover:text-wlx-stone hover:bg-wlx-cream transition-colors"
         >
           <LogOut size={18} />
         </button>
@@ -61,7 +61,7 @@ export default function BioLinkAdminShell({ children }: { children: ReactNode })
       <main>{children}</main>
 
       {/* Bottom tab bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-zinc-200 safe-area-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-wlx-mist safe-area-bottom">
         <div className="flex items-center justify-around px-2 py-2">
           {tabs.map((tab) => {
             const isActive = tab.exact
@@ -74,7 +74,7 @@ export default function BioLinkAdminShell({ children }: { children: ReactNode })
                 key={tab.href}
                 href={tab.href}
                 className={`flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-lg transition-colors relative ${
-                  isActive ? "text-[#FF9500]" : "text-zinc-400"
+                  isActive ? "text-wlx-ink" : "text-wlx-stone"
                 }`}
               >
                 <div className="relative">

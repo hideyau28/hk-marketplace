@@ -56,7 +56,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="ml-1 px-1.5 py-0.5 text-xs rounded border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-500 hover:text-zinc-700"
+      className="ml-1 px-1.5 py-0.5 text-xs rounded border border-wlx-mist bg-white hover:bg-wlx-cream text-wlx-stone hover:text-wlx-stone"
       title="Copy to clipboard"
     >
       {copied ? "Copied!" : "Copy"}
@@ -70,7 +70,7 @@ function PaymentProofImage({ url }: { url: string }) {
   return (
     <>
       <div
-        className="relative cursor-zoom-in rounded-xl overflow-hidden border border-zinc-200 bg-zinc-50"
+        className="relative cursor-zoom-in rounded-xl overflow-hidden border border-wlx-mist bg-wlx-cream"
         onClick={() => setEnlarged(true)}
         title="點擊放大檢視"
       >
@@ -100,7 +100,7 @@ function PaymentProofImage({ url }: { url: string }) {
             />
             <button
               onClick={() => setEnlarged(false)}
-              className="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white text-zinc-700 shadow-lg hover:bg-zinc-100 text-sm font-bold"
+              className="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white text-wlx-stone shadow-lg hover:bg-wlx-cream text-sm font-bold"
             >
               ✕
             </button>
@@ -193,15 +193,15 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4">
-      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-6">
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl border border-wlx-mist bg-white p-6">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-semibold text-zinc-900">Order Details</h2>
-            <div className="mt-1 text-zinc-500 text-sm font-mono">{order.id}</div>
+            <h2 className="text-2xl font-semibold text-wlx-ink">Order Details</h2>
+            <div className="mt-1 text-wlx-stone text-sm font-mono">{order.id}</div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-zinc-700 hover:bg-zinc-50"
+            className="rounded-xl border border-wlx-mist bg-white px-3 py-2 text-wlx-stone hover:bg-wlx-cream"
           >
             Close
           </button>
@@ -211,19 +211,19 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
 
           {/* Payment Confirmation Section — shown when PENDING_CONFIRMATION */}
           {isPendingConfirmation && (
-            <div className="rounded-2xl border-2 border-orange-300 bg-orange-50 p-4">
+            <div className="rounded-2xl border-2 border-orange-300 bg-wlx-cream p-4">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-lg">⚠️</span>
-                <h3 className="text-zinc-900 font-semibold">待確認收款</h3>
-                <span className="ml-auto text-xl font-bold text-zinc-900">
+                <h3 className="text-wlx-ink font-semibold">待確認收款</h3>
+                <span className="ml-auto text-xl font-bold text-wlx-ink">
                   ${total}
                 </span>
               </div>
 
               {/* Payment method */}
               {paymentMethod && (
-                <div className="mb-3 text-sm text-zinc-700">
-                  收款方式：<span className="font-semibold text-zinc-900">
+                <div className="mb-3 text-sm text-wlx-stone">
+                  收款方式：<span className="font-semibold text-wlx-ink">
                     {PAYMENT_METHOD_LABEL[paymentMethod] ?? paymentMethod}
                   </span>
                 </div>
@@ -232,7 +232,7 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
               {/* Payment proof image */}
               {hasPaymentProof && (
                 <div className="mb-4">
-                  <div className="text-sm text-zinc-600 mb-2">付款截圖：</div>
+                  <div className="text-sm text-wlx-stone mb-2">付款截圖：</div>
                   <PaymentProofImage url={(order as any).paymentProof} />
                 </div>
               )}
@@ -262,10 +262,10 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
 
           {/* Payment proof display for non-PENDING_CONFIRMATION orders with proof */}
           {!isPendingConfirmation && hasPaymentProof && (
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <h3 className="text-zinc-900 font-semibold mb-3">付款截圖</h3>
+            <div className="rounded-2xl border border-wlx-mist bg-wlx-cream p-4">
+              <h3 className="text-wlx-ink font-semibold mb-3">付款截圖</h3>
               {paymentMethod && (
-                <div className="mb-2 text-sm text-zinc-700">
+                <div className="mb-2 text-sm text-wlx-stone">
                   收款方式：<span className="font-semibold">
                     {PAYMENT_METHOD_LABEL[paymentMethod] ?? paymentMethod}
                   </span>
@@ -276,39 +276,39 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
           )}
 
           {/* Customer Info */}
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <h3 className="text-zinc-900 font-semibold mb-3">Customer Information</h3>
+          <div className="rounded-2xl border border-wlx-mist bg-wlx-cream p-4">
+            <h3 className="text-wlx-ink font-semibold mb-3">Customer Information</h3>
             <div className="grid gap-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-zinc-600">Name:</span>
-                <span className="text-zinc-900">{order.customerName}</span>
+                <span className="text-wlx-stone">Name:</span>
+                <span className="text-wlx-ink">{order.customerName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-600">Phone:</span>
-                <span className="text-zinc-900">{order.phone}</span>
+                <span className="text-wlx-stone">Phone:</span>
+                <span className="text-wlx-ink">{order.phone}</span>
               </div>
               {order.email && (
                 <div className="flex justify-between">
-                  <span className="text-zinc-600">Email:</span>
-                  <span className="text-zinc-900">{order.email}</span>
+                  <span className="text-wlx-stone">Email:</span>
+                  <span className="text-wlx-ink">{order.email}</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Order Items */}
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <h3 className="text-zinc-900 font-semibold mb-3">Order Items</h3>
+          <div className="rounded-2xl border border-wlx-mist bg-wlx-cream p-4">
+            <h3 className="text-wlx-ink font-semibold mb-3">Order Items</h3>
             <div className="space-y-2">
               {items?.map((item: any, idx: number) => (
                 <div key={idx} className="flex justify-between text-sm">
                   <div>
-                    <div className="text-zinc-900">{item.name}</div>
-                    <div className="text-zinc-600 text-xs">
+                    <div className="text-wlx-ink">{item.name}</div>
+                    <div className="text-wlx-stone text-xs">
                       {item.quantity} × {currency} {item.unitPrice}
                     </div>
                   </div>
-                  <div className="text-zinc-900 font-medium">
+                  <div className="text-wlx-ink font-medium">
                     {currency} {item.quantity * item.unitPrice}
                   </div>
                 </div>
@@ -317,34 +317,34 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
           </div>
 
           {/* Amounts */}
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <h3 className="text-zinc-900 font-semibold mb-3">Payment Summary</h3>
+          <div className="rounded-2xl border border-wlx-mist bg-wlx-cream p-4">
+            <h3 className="text-wlx-ink font-semibold mb-3">Payment Summary</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-zinc-600">Subtotal:</span>
-                <span className="text-zinc-900">
+                <span className="text-wlx-stone">Subtotal:</span>
+                <span className="text-wlx-ink">
                   ${amounts?.subtotal || 0}
                 </span>
               </div>
               {amounts?.discount && (
                 <div className="flex justify-between">
-                  <span className="text-zinc-600">Discount:</span>
-                  <span className="text-zinc-900">
+                  <span className="text-wlx-stone">Discount:</span>
+                  <span className="text-wlx-ink">
                     -${amounts.discount}
                   </span>
                 </div>
               )}
               {amounts?.deliveryFee && (
                 <div className="flex justify-between">
-                  <span className="text-zinc-600">Delivery Fee:</span>
-                  <span className="text-zinc-900">
+                  <span className="text-wlx-stone">Delivery Fee:</span>
+                  <span className="text-wlx-ink">
                     ${amounts.deliveryFee}
                   </span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-zinc-200 pt-2 font-semibold">
-                <span className="text-zinc-900">Total:</span>
-                <span className="text-zinc-900">
+              <div className="flex justify-between border-t border-wlx-mist pt-2 font-semibold">
+                <span className="text-wlx-ink">Total:</span>
+                <span className="text-wlx-ink">
                   ${total}
                 </span>
               </div>
@@ -352,16 +352,16 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
           </div>
 
           {/* Fulfillment */}
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <h3 className="text-zinc-900 font-semibold mb-3">
+          <div className="rounded-2xl border border-wlx-mist bg-wlx-cream p-4">
+            <h3 className="text-wlx-ink font-semibold mb-3">
               {locale === "zh-HK" ? "取貨方式" : "Fulfillment"}
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-zinc-600">
+                <span className="text-wlx-stone">
                   {locale === "zh-HK" ? "方式" : "Type"}:
                 </span>
-                <span className="text-zinc-900">
+                <span className="text-wlx-ink">
                   {order.fulfillmentType === "DELIVERY"
                     ? locale === "zh-HK" ? "送貨" : "Delivery"
                     : locale === "zh-HK" ? "面交" : "Meetup / Pickup"}
@@ -369,22 +369,22 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
               </div>
               {order.fulfillmentType === "DELIVERY" && fulfillmentAddress && (
                 <div>
-                  <div className="text-zinc-600 mb-1">
+                  <div className="text-wlx-stone mb-1">
                     {locale === "zh-HK" ? "送貨地址" : "Address"}:
                   </div>
-                  <div className="text-zinc-900">
+                  <div className="text-wlx-ink">
                     {fulfillmentAddress.line1}
                     {fulfillmentAddress.district && `, ${fulfillmentAddress.district}`}
                   </div>
                   {fulfillmentAddress.notes && (
-                    <div className="text-zinc-600 text-xs mt-1">
+                    <div className="text-wlx-stone text-xs mt-1">
                       {locale === "zh-HK" ? "備註" : "Note"}: {fulfillmentAddress.notes}
                     </div>
                   )}
                 </div>
               )}
               {order.fulfillmentType === "PICKUP" && (
-                <div className="text-zinc-600 text-xs">
+                <div className="text-wlx-stone text-xs">
                   {locale === "zh-HK" ? "請聯絡賣家安排面交詳情" : "Contact seller to arrange meetup details"}
                 </div>
               )}
@@ -392,13 +392,13 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
           </div>
 
           {/* Status Update */}
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <h3 className="text-zinc-900 font-semibold mb-3">Update Status</h3>
+          <div className="rounded-2xl border border-wlx-mist bg-wlx-cream p-4">
+            <h3 className="text-wlx-ink font-semibold mb-3">Update Status</h3>
             <div className="flex gap-3">
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value as OrderStatus)}
-                className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                className="flex-1 rounded-xl border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink focus:outline-none focus:ring-2 focus:ring-zinc-300"
               >
                 {ORDER_STATUSES.map((status) => (
                   <option key={status} value={status}>
@@ -409,7 +409,7 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
               <button
                 onClick={handleUpdateStatus}
                 disabled={isUpdating || selectedStatus === order.status}
-                className="rounded-xl border border-zinc-300 bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-xl border border-wlx-mist bg-wlx-ink px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isUpdating ? "Updating..." : "Update"}
               </button>
@@ -420,26 +420,26 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
 
           {/* Note */}
           {order.note && (
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-              <h3 className="text-zinc-900 font-semibold mb-3">Order Note</h3>
-              <div className="text-zinc-700 text-sm">{order.note}</div>
+            <div className="rounded-2xl border border-wlx-mist bg-wlx-cream p-4">
+              <h3 className="text-wlx-ink font-semibold mb-3">Order Note</h3>
+              <div className="text-wlx-stone text-sm">{order.note}</div>
             </div>
           )}
 
           {/* Payment Attempts */}
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <h3 className="text-zinc-900 font-semibold mb-3">Payment Attempts</h3>
+          <div className="rounded-2xl border border-wlx-mist bg-wlx-cream p-4">
+            <h3 className="text-wlx-ink font-semibold mb-3">Payment Attempts</h3>
             {order.paymentAttempts && order.paymentAttempts.length > 0 ? (
               <div className="space-y-3">
                 {order.paymentAttempts.map((attempt) => (
-                  <div key={attempt.id} className="rounded-xl border border-zinc-200 bg-white p-3 text-sm">
+                  <div key={attempt.id} className="rounded-xl border border-wlx-mist bg-white p-3 text-sm">
                     <div className="grid gap-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-zinc-600">Provider:</span>
-                        <span className="text-zinc-900 font-medium">{attempt.provider}</span>
+                        <span className="text-wlx-stone">Provider:</span>
+                        <span className="text-wlx-ink font-medium">{attempt.provider}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-zinc-600">Status:</span>
+                        <span className="text-wlx-stone">Status:</span>
                         <span
                           className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
                             attempt.status === "SUCCEEDED"
@@ -447,9 +447,9 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                               : attempt.status === "FAILED"
                               ? "bg-red-50 text-red-700 border-red-200"
                               : attempt.status === "CANCELLED"
-                              ? "bg-zinc-100 text-zinc-700 border-zinc-200"
+                              ? "bg-wlx-cream text-wlx-stone border-wlx-mist"
                               : attempt.status === "REFUNDED"
-                              ? "bg-amber-50 text-amber-700 border-amber-200"
+                              ? "bg-wlx-cream text-amber-700 border-amber-200"
                               : attempt.status === "DISPUTED"
                               ? "bg-rose-50 text-rose-700 border-rose-200"
                               : "bg-blue-50 text-blue-700 border-blue-200"
@@ -460,8 +460,8 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                       </div>
                       {attempt.amount && attempt.currency && (
                         <div className="flex justify-between">
-                          <span className="text-zinc-600">Amount:</span>
-                          <span className="text-zinc-900 font-medium">
+                          <span className="text-wlx-stone">Amount:</span>
+                          <span className="text-wlx-ink font-medium">
                             ${(attempt.amount / 100).toFixed(2)}
                           </span>
                         </div>
@@ -470,7 +470,7 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                         <>
                           {attempt.failureCode && (
                             <div className="flex justify-between">
-                              <span className="text-zinc-600">Failure Code:</span>
+                              <span className="text-wlx-stone">Failure Code:</span>
                               <code className="text-red-700 text-xs bg-red-50 px-2 py-0.5 rounded">
                                 {attempt.failureCode}
                               </code>
@@ -478,55 +478,55 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                           )}
                           {attempt.failureMessage && (
                             <div className="mt-1">
-                              <span className="text-zinc-600">Failure Message:</span>
+                              <span className="text-wlx-stone">Failure Message:</span>
                               <div className="text-red-700 text-xs mt-1">{attempt.failureMessage}</div>
                             </div>
                           )}
                         </>
                       )}
-                      <div className="border-t border-zinc-200 pt-2 mt-2 space-y-1.5">
-                        <div className="text-xs text-zinc-500 font-medium">Stripe IDs</div>
+                      <div className="border-t border-wlx-mist pt-2 mt-2 space-y-1.5">
+                        <div className="text-xs text-wlx-stone font-medium">Stripe IDs</div>
                         <div className="flex items-center justify-between">
-                          <span className="text-zinc-600 text-xs">Session:</span>
+                          <span className="text-wlx-stone text-xs">Session:</span>
                           {attempt.stripeCheckoutSessionId ? (
                             <div className="flex items-center">
-                              <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                              <code className="text-wlx-ink text-xs bg-wlx-cream px-2 py-0.5 rounded font-mono select-all">
                                 {attempt.stripeCheckoutSessionId}
                               </code>
                               <CopyButton text={attempt.stripeCheckoutSessionId} />
                             </div>
                           ) : (
-                            <span className="text-zinc-400 text-xs">—</span>
+                            <span className="text-wlx-stone text-xs">—</span>
                           )}
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-zinc-600 text-xs">Payment Intent:</span>
+                          <span className="text-wlx-stone text-xs">Payment Intent:</span>
                           {attempt.stripePaymentIntentId ? (
                             <div className="flex items-center">
-                              <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                              <code className="text-wlx-ink text-xs bg-wlx-cream px-2 py-0.5 rounded font-mono select-all">
                                 {attempt.stripePaymentIntentId}
                               </code>
                               <CopyButton text={attempt.stripePaymentIntentId} />
                             </div>
                           ) : (
-                            <span className="text-zinc-400 text-xs">—</span>
+                            <span className="text-wlx-stone text-xs">—</span>
                           )}
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-zinc-600 text-xs">Charge:</span>
+                          <span className="text-wlx-stone text-xs">Charge:</span>
                           {attempt.stripeChargeId ? (
                             <div className="flex items-center">
-                              <code className="text-zinc-900 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                              <code className="text-wlx-ink text-xs bg-wlx-cream px-2 py-0.5 rounded font-mono select-all">
                                 {attempt.stripeChargeId}
                               </code>
                               <CopyButton text={attempt.stripeChargeId} />
                             </div>
                           ) : (
-                            <span className="text-zinc-400 text-xs">—</span>
+                            <span className="text-wlx-stone text-xs">—</span>
                           )}
                         </div>
                       </div>
-                      <div className="flex justify-between text-xs text-zinc-500 border-t border-zinc-200 pt-2 mt-2">
+                      <div className="flex justify-between text-xs text-wlx-stone border-t border-wlx-mist pt-2 mt-2">
                         <span>Created: {new Date(attempt.createdAt).toLocaleString()}</span>
                         <span>Updated: {new Date(attempt.updatedAt).toLocaleString()}</span>
                       </div>
@@ -536,14 +536,14 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
               </div>
             ) : (
               <div className="text-center py-4">
-                <div className="text-zinc-400 text-sm">No payment attempts recorded</div>
+                <div className="text-wlx-stone text-sm">No payment attempts recorded</div>
                 {(order.stripeCheckoutSessionId || order.stripePaymentIntentId) && (
-                  <div className="mt-3 pt-3 border-t border-zinc-200">
-                    <div className="text-xs text-zinc-500 mb-2">Legacy Stripe IDs</div>
+                  <div className="mt-3 pt-3 border-t border-wlx-mist">
+                    <div className="text-xs text-wlx-stone mb-2">Legacy Stripe IDs</div>
                     {order.stripeCheckoutSessionId && (
                       <div className="flex items-center justify-center gap-2 mb-1">
-                        <span className="text-zinc-500 text-xs">Session:</span>
-                        <code className="text-zinc-700 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                        <span className="text-wlx-stone text-xs">Session:</span>
+                        <code className="text-wlx-stone text-xs bg-wlx-cream px-2 py-0.5 rounded font-mono select-all">
                           {order.stripeCheckoutSessionId}
                         </code>
                         <CopyButton text={order.stripeCheckoutSessionId} />
@@ -551,8 +551,8 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
                     )}
                     {order.stripePaymentIntentId && (
                       <div className="flex items-center justify-center gap-2">
-                        <span className="text-zinc-500 text-xs">Intent:</span>
-                        <code className="text-zinc-700 text-xs bg-zinc-100 px-2 py-0.5 rounded font-mono select-all">
+                        <span className="text-wlx-stone text-xs">Intent:</span>
+                        <code className="text-wlx-stone text-xs bg-wlx-cream px-2 py-0.5 rounded font-mono select-all">
                           {order.stripePaymentIntentId}
                         </code>
                         <CopyButton text={order.stripePaymentIntentId} />
@@ -565,44 +565,44 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
           </div>
 
           {/* Timestamps */}
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <h3 className="text-zinc-900 font-semibold mb-3">Timestamps</h3>
+          <div className="rounded-2xl border border-wlx-mist bg-wlx-cream p-4">
+            <h3 className="text-wlx-ink font-semibold mb-3">Timestamps</h3>
             <div className="grid gap-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-zinc-600">Created:</span>
-                <span className="text-zinc-900">{new Date(order.createdAt).toLocaleString()}</span>
+                <span className="text-wlx-stone">Created:</span>
+                <span className="text-wlx-ink">{new Date(order.createdAt).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-600">Updated:</span>
-                <span className="text-zinc-900">{new Date(order.updatedAt).toLocaleString()}</span>
+                <span className="text-wlx-stone">Updated:</span>
+                <span className="text-wlx-ink">{new Date(order.updatedAt).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-600">Paid:</span>
-                <span className="text-zinc-900">{order.paidAt ? new Date(order.paidAt).toLocaleString() : "—"}</span>
+                <span className="text-wlx-stone">Paid:</span>
+                <span className="text-wlx-ink">{order.paidAt ? new Date(order.paidAt).toLocaleString() : "—"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-600">Fulfilling:</span>
-                <span className="text-zinc-900">{order.fulfillingAt ? new Date(order.fulfillingAt).toLocaleString() : "—"}</span>
+                <span className="text-wlx-stone">Fulfilling:</span>
+                <span className="text-wlx-ink">{order.fulfillingAt ? new Date(order.fulfillingAt).toLocaleString() : "—"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-600">Shipped:</span>
-                <span className="text-zinc-900">{order.shippedAt ? new Date(order.shippedAt).toLocaleString() : "—"}</span>
+                <span className="text-wlx-stone">Shipped:</span>
+                <span className="text-wlx-ink">{order.shippedAt ? new Date(order.shippedAt).toLocaleString() : "—"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-600">Completed:</span>
-                <span className="text-zinc-900">{order.completedAt ? new Date(order.completedAt).toLocaleString() : "—"}</span>
+                <span className="text-wlx-stone">Completed:</span>
+                <span className="text-wlx-ink">{order.completedAt ? new Date(order.completedAt).toLocaleString() : "—"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-600">Cancelled:</span>
-                <span className="text-zinc-900">{order.cancelledAt ? new Date(order.cancelledAt).toLocaleString() : "—"}</span>
+                <span className="text-wlx-stone">Cancelled:</span>
+                <span className="text-wlx-ink">{order.cancelledAt ? new Date(order.cancelledAt).toLocaleString() : "—"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-600">Refunded:</span>
-                <span className="text-zinc-900">{order.refundedAt ? new Date(order.refundedAt).toLocaleString() : "—"}</span>
+                <span className="text-wlx-stone">Refunded:</span>
+                <span className="text-wlx-ink">{order.refundedAt ? new Date(order.refundedAt).toLocaleString() : "—"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-zinc-600">Disputed:</span>
-                <span className="text-zinc-900">{order.disputedAt ? new Date(order.disputedAt).toLocaleString() : "—"}</span>
+                <span className="text-wlx-stone">Disputed:</span>
+                <span className="text-wlx-ink">{order.disputedAt ? new Date(order.disputedAt).toLocaleString() : "—"}</span>
               </div>
             </div>
           </div>
@@ -613,10 +613,10 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
       {showConfirmDialog && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-zinc-900 mb-2">確認收款</h3>
-            <p className="text-zinc-600 text-sm mb-6">
+            <h3 className="text-lg font-semibold text-wlx-ink mb-2">確認收款</h3>
+            <p className="text-wlx-stone text-sm mb-6">
               確認已收到{" "}
-              <span className="font-bold text-zinc-900">
+              <span className="font-bold text-wlx-ink">
                 ${total}
               </span>
               ？
@@ -624,7 +624,7 @@ export function OrderDetailModal({ order, onClose, locale }: OrderDetailModalPro
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmDialog(false)}
-                className="flex-1 rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+                className="flex-1 rounded-xl border border-wlx-mist px-4 py-2.5 text-sm font-medium text-wlx-stone hover:bg-wlx-cream"
               >
                 取消
               </button>

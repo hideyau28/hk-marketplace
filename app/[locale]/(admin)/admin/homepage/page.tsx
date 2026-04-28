@@ -57,9 +57,9 @@ export default async function AdminHomepage({
       <div className="flex items-center gap-4 mb-6">
         <SidebarToggle />
         <div>
-          <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">Homepage CMS</h1>
-          <div className="text-zinc-500 text-sm">管理首頁 Sections 同 Banners</div>
+          <div className="text-wlx-stone text-sm">Admin</div>
+          <h1 className="text-2xl font-semibold text-wlx-ink">Homepage CMS</h1>
+          <div className="text-wlx-stone text-sm">管理首頁 Sections 同 Banners</div>
         </div>
       </div>
 

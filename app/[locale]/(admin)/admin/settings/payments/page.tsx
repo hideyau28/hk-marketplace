@@ -205,14 +205,14 @@ export default function PaymentSettingsPage() {
 
   if (loading) {
     return (
-      <div className="bg-zinc-50 min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+      <div className="bg-wlx-cream min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-wlx-stone" />
       </div>
     );
   }
 
   return (
-    <div className="bg-zinc-50 text-zinc-900 pb-24 min-h-screen">
+    <div className="bg-wlx-cream text-wlx-ink pb-24 min-h-screen">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 sm:py-12">
         <div className="mb-6">
           <SidebarToggle />
@@ -220,11 +220,11 @@ export default function PaymentSettingsPage() {
 
         {/* Header */}
         <div className="space-y-1.5 mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-3">
-            <CreditCard className="h-7 w-7 sm:h-8 sm:w-8 text-zinc-600" />
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-wlx-ink flex items-center gap-3">
+            <CreditCard className="h-7 w-7 sm:h-8 sm:w-8 text-wlx-stone" />
             {t.admin.payments.title}
           </h1>
-          <p className="text-zinc-600 text-sm sm:text-base">
+          <p className="text-wlx-stone text-sm sm:text-base">
             {t.admin.payments.subtitle}
           </p>
         </div>
@@ -238,9 +238,9 @@ export default function PaymentSettingsPage() {
 
             return (
               <div key={groupType}>
-                <h2 className="text-lg font-semibold text-zinc-800 mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-wlx-ink mb-4 flex items-center gap-2">
                   {isZh ? gl.zh : gl.en}
-                  <span className="text-sm font-normal text-zinc-500">
+                  <span className="text-sm font-normal text-wlx-stone">
                     ({isZh ? gl.en : gl.zh})
                   </span>
                 </h2>
@@ -254,7 +254,7 @@ export default function PaymentSettingsPage() {
                     return (
                       <div
                         key={provider.providerId}
-                        className="rounded-xl border border-zinc-200 bg-white overflow-hidden"
+                        className="rounded-xl border border-wlx-mist bg-white overflow-hidden"
                       >
                         {/* Provider header row */}
                         <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4">
@@ -267,10 +267,10 @@ export default function PaymentSettingsPage() {
                           </span>
 
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-zinc-900">
+                            <div className="font-medium text-wlx-ink">
                               {isZh ? provider.nameZh : provider.name}
                             </div>
-                            <div className="text-sm text-zinc-500">
+                            <div className="text-sm text-wlx-stone">
                               {isZh ? provider.name : provider.nameZh}
                             </div>
                           </div>
@@ -301,7 +301,7 @@ export default function PaymentSettingsPage() {
                             <button
                               type="button"
                               onClick={() => toggleExpand(provider.providerId)}
-                              className="text-zinc-400 hover:text-zinc-600 p-1"
+                              className="text-wlx-stone hover:text-wlx-stone p-1"
                             >
                               {isExpanded ? (
                                 <ChevronUp className="h-5 w-5" />
@@ -322,10 +322,10 @@ export default function PaymentSettingsPage() {
                               transition={{ duration: 0.2 }}
                               className="overflow-hidden"
                             >
-                              <div className="border-t border-zinc-100 px-4 sm:px-5 py-4 sm:py-5 space-y-4 bg-zinc-50/50">
+                              <div className="border-t border-wlx-mist px-4 sm:px-5 py-4 sm:py-5 space-y-4 bg-wlx-cream/50">
                                 {provider.configFields.map((field) => (
                                   <div key={field.key} className="space-y-1.5">
-                                    <label className="text-sm font-medium text-zinc-700">
+                                    <label className="text-sm font-medium text-wlx-stone">
                                       {isZh ? field.labelZh : field.label}
                                       {field.required && (
                                         <span className="text-red-500 ml-0.5">
@@ -361,7 +361,7 @@ export default function PaymentSettingsPage() {
                                             e.target.value
                                           )
                                         }
-                                        className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                                        className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                                       >
                                         <option value="">
                                           {isZh ? "請選擇" : "Select..."}
@@ -394,12 +394,12 @@ export default function PaymentSettingsPage() {
                                         placeholder={
                                           field.placeholder || field.label
                                         }
-                                        className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                                        className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                                       />
                                     )}
 
                                     {/* Sub-label: show the other language */}
-                                    <p className="text-xs text-zinc-500">
+                                    <p className="text-xs text-wlx-stone">
                                       {isZh ? field.label : field.labelZh}
                                     </p>
                                   </div>
@@ -418,13 +418,13 @@ export default function PaymentSettingsPage() {
         </div>
 
         {/* Global save bar */}
-        <div className="sticky bottom-0 bg-zinc-50/95 backdrop-blur-sm border-t border-zinc-200 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mt-8">
+        <div className="sticky bottom-0 bg-wlx-cream/95 backdrop-blur-sm border-t border-wlx-mist -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mt-8">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={handleSaveAll}
               disabled={saveState === "saving"}
-              className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-md bg-wlx-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-50"
             >
               {saveState === "saving" ? (
                 <>

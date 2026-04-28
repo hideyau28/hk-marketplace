@@ -104,11 +104,11 @@ function SortableProductCard({
           onTap();
         }}
         className={`rounded-xl overflow-hidden border ${
-          isSelected ? "border-[#FF9500] ring-2 ring-[#FF9500]/30" : "border-zinc-200"
+          isSelected ? "border-wlx-ink ring-2 ring-wlx-ink/20" : "border-wlx-mist"
         } bg-white ${product.hidden ? "opacity-50" : ""} ${isEditMode ? "" : "cursor-pointer"}`}
       >
         {/* Image — 1:1 aspect ratio to match storefront */}
-        <div className="relative aspect-square w-full bg-zinc-100">
+        <div className="relative aspect-square w-full bg-wlx-cream">
           {product.imageUrl || product.images?.[0] ? (
             <Image
               src={product.imageUrl || product.images[0]}
@@ -132,13 +132,13 @@ function SortableProductCard({
               className="absolute top-1.5 left-1.5 w-7 h-7 bg-white/90 rounded-lg flex items-center justify-center shadow-sm touch-none cursor-grab active:cursor-grabbing"
               onClick={(e) => e.stopPropagation()}
             >
-              <GripVertical size={14} className="text-zinc-500" />
+              <GripVertical size={14} className="text-wlx-stone" />
             </button>
           )}
 
           {/* Hidden badge */}
           {product.hidden && !isEditMode && (
-            <div className="absolute top-1.5 left-1.5 bg-zinc-900/80 text-white text-xs px-2 py-0.5 rounded-full">
+            <div className="absolute top-1.5 left-1.5 bg-wlx-ink/80 text-white text-xs px-2 py-0.5 rounded-full">
               已隱藏
             </div>
           )}
@@ -157,7 +157,7 @@ function SortableProductCard({
                 </span>
               )}
               {product.featured && (
-                <span className="rounded px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-white flex items-center gap-0.5">
+                <span className="rounded px-1.5 py-0.5 text-[10px] font-bold bg-wlx-cream0 text-white flex items-center gap-0.5">
                   <Star size={8} fill="white" />
                   精選
                 </span>
@@ -168,11 +168,11 @@ function SortableProductCard({
 
         {/* Info — p-3 padding matches BioProductCard */}
         <div className="p-3">
-          <p className="text-sm font-semibold leading-snug text-zinc-900 mb-1 truncate">{product.title}</p>
+          <p className="text-sm font-semibold leading-snug text-wlx-ink mb-1 truncate">{product.title}</p>
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-base text-zinc-900">${product.price}</span>
+            <span className="font-bold text-base text-wlx-ink">${product.price}</span>
             {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-xs text-zinc-400 line-through">${product.originalPrice}</span>
+              <span className="text-xs text-wlx-stone line-through">${product.originalPrice}</span>
             )}
           </div>
         </div>
@@ -188,8 +188,8 @@ function SortableProductCard({
             aria-label={isSelected ? `取消選擇 ${product.title}` : `選擇 ${product.title}`}
             className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
               isSelected
-                ? "bg-[#FF9500] border-[#FF9500] text-white"
-                : "border-zinc-300 bg-white hover:border-zinc-400"
+                ? "bg-wlx-ink border-wlx-ink text-white"
+                : "border-wlx-mist bg-white hover:border-zinc-400"
             }`}
             style={{ touchAction: 'auto' }}
           >
@@ -223,7 +223,7 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
 
   const isZh = locale === "zh-HK";
   const storeUrl = `wowlix.com/${tenant.slug}`;
-  const brandColor = tenant.brandColor || "#FF9500";
+  const brandColor = tenant.brandColor || "#1A1A1A";
   const tmpl = getCoverTemplate(tenant.coverTemplate);
   // Admin header banner：自訂 cover → template default banner
   const headerBanner = bannerUrl || tmpl.defaultBanner;
@@ -539,12 +539,12 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
-              <span className="text-base font-semibold text-zinc-900">
+              <span className="text-base font-semibold text-wlx-ink">
                 {isZh ? "編輯" : "Edit"}
               </span>
               <button
                 onClick={() => setEditMenuOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-wlx-cream text-wlx-stone hover:bg-wlx-mist transition-colors"
                 aria-label="Close"
               >
                 <X size={16} />
@@ -553,28 +553,28 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
             <div className="divide-y divide-zinc-100 pb-6">
               <button
                 onClick={() => { setEditMenuOpen(false); avatarInputRef.current?.click(); }}
-                className="flex items-center justify-between w-full px-5 py-4 text-left text-zinc-900 hover:bg-zinc-50 transition-colors min-h-[56px]"
+                className="flex items-center justify-between w-full px-5 py-4 text-left text-wlx-ink hover:bg-wlx-cream transition-colors min-h-[56px]"
               >
                 <span className="text-sm font-medium">{isZh ? "編輯頭像" : "Edit Avatar"}</span>
-                <ChevronRight size={16} className="text-zinc-400" />
+                <ChevronRight size={16} className="text-wlx-stone" />
               </button>
               <button
                 onClick={() => { setEditMenuOpen(false); bannerInputRef.current?.click(); }}
-                className="flex items-center justify-between w-full px-5 py-4 text-left text-zinc-900 hover:bg-zinc-50 transition-colors min-h-[56px]"
+                className="flex items-center justify-between w-full px-5 py-4 text-left text-wlx-ink hover:bg-wlx-cream transition-colors min-h-[56px]"
               >
                 <span className="text-sm font-medium">{isZh ? "編輯 Banner" : "Edit Banner"}</span>
                 {uploadingBanner ? (
-                  <Loader2 size={16} className="text-zinc-400 animate-spin" />
+                  <Loader2 size={16} className="text-wlx-stone animate-spin" />
                 ) : (
-                  <ChevronRight size={16} className="text-zinc-400" />
+                  <ChevronRight size={16} className="text-wlx-stone" />
                 )}
               </button>
               <button
                 onClick={() => { setEditMenuOpen(false); setIsEditMode(true); }}
-                className="flex items-center justify-between w-full px-5 py-4 text-left text-zinc-900 hover:bg-zinc-50 transition-colors min-h-[56px]"
+                className="flex items-center justify-between w-full px-5 py-4 text-left text-wlx-ink hover:bg-wlx-cream transition-colors min-h-[56px]"
               >
                 <span className="text-sm font-medium">{isZh ? "編輯商品" : "Edit Products"}</span>
-                <ChevronRight size={16} className="text-zinc-400" />
+                <ChevronRight size={16} className="text-wlx-stone" />
               </button>
             </div>
           </div>
@@ -590,8 +590,8 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
               onClick={() => applyQuickSort(btn.key)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                 quickSort === btn.key
-                  ? "bg-zinc-900 text-white"
-                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                  ? "bg-wlx-ink text-white"
+                  : "bg-wlx-cream text-wlx-stone hover:bg-wlx-mist"
               }`}
             >
               {btn.label}
@@ -604,15 +604,15 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
       {isEmpty && (
         <button
           onClick={handleNewProduct}
-          className="w-full border-2 border-dashed border-zinc-300 rounded-2xl p-8 text-center hover:border-[#FF9500] hover:bg-orange-50/50 transition-colors group"
+          className="w-full border-2 border-dashed border-wlx-mist rounded-2xl p-8 text-center hover:border-wlx-ink hover:bg-wlx-cream transition-colors group"
         >
-          <div className="w-16 h-16 rounded-full bg-zinc-100 group-hover:bg-[#FF9500]/10 flex items-center justify-center mx-auto mb-4 transition-colors">
-            <Camera size={28} className="text-zinc-400 group-hover:text-[#FF9500] transition-colors" />
+          <div className="w-16 h-16 rounded-full bg-wlx-cream group-hover:bg-wlx-ink/10 flex items-center justify-center mx-auto mb-4 transition-colors">
+            <Camera size={28} className="text-wlx-stone group-hover:text-wlx-ink transition-colors" />
           </div>
-          <p className="text-lg font-semibold text-zinc-700 group-hover:text-[#FF9500] transition-colors">
+          <p className="text-lg font-semibold text-wlx-stone group-hover:text-wlx-ink transition-colors">
             {isZh ? "加你第一件商品" : "Add your first product"}
           </p>
-          <p className="text-sm text-zinc-400 mt-1">
+          <p className="text-sm text-wlx-stone mt-1">
             {isZh ? "影相或上傳就搞掂" : "Take a photo or upload an image"}
           </p>
         </button>
@@ -645,13 +645,13 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
 
       {/* Bottom action bar — visible when items selected */}
       {isEditMode && selectedCount > 0 && (
-        <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-zinc-200 shadow-lg px-4 py-3 flex items-center gap-3 safe-area-pb">
-          <span className="text-sm font-medium text-zinc-700 mr-auto">
+        <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-wlx-mist shadow-lg px-4 py-3 flex items-center gap-3 safe-area-pb">
+          <span className="text-sm font-medium text-wlx-stone mr-auto">
             {isZh ? `已選 ${selectedCount} 件` : `${selectedCount} selected`}
           </span>
           <button
             onClick={handleBatchHide}
-            className="px-4 py-2 rounded-lg bg-zinc-100 text-sm font-medium text-zinc-700 hover:bg-zinc-200 transition-colors"
+            className="px-4 py-2 rounded-lg bg-wlx-cream text-sm font-medium text-wlx-stone hover:bg-wlx-mist transition-colors"
           >
             {isZh ? "隱藏" : "Hide"}
           </button>
@@ -669,7 +669,7 @@ export default function BioLinkDashboard({ locale, tenant, products: initialProd
           </button>
           <button
             onClick={() => { setSelectedIds(new Set()); setConfirmBatchDelete(false); }}
-            className="px-4 py-2 rounded-lg bg-zinc-100 text-sm font-medium text-zinc-500 hover:bg-zinc-200 transition-colors"
+            className="px-4 py-2 rounded-lg bg-wlx-cream text-sm font-medium text-wlx-stone hover:bg-wlx-mist transition-colors"
           >
             {isZh ? "取消" : "Cancel"}
           </button>

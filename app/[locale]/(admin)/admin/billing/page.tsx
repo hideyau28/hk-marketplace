@@ -231,15 +231,15 @@ export default function BillingPage() {
 
   if (loading) {
     return (
-      <div className="bg-zinc-50 min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+      <div className="bg-wlx-cream min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-wlx-stone" />
       </div>
     );
   }
 
   if (error || !billing) {
     return (
-      <div className="bg-zinc-50 min-h-screen flex items-center justify-center">
+      <div className="bg-wlx-cream min-h-screen flex items-center justify-center">
         <p className="text-red-600">{error || t.errorLoadBilling}</p>
       </div>
     );
@@ -252,10 +252,10 @@ export default function BillingPage() {
       ? "bg-violet-100 text-violet-700"
       : billing.plan === "lite"
       ? "bg-blue-100 text-blue-700"
-      : "bg-zinc-100 text-zinc-700";
+      : "bg-wlx-cream text-wlx-stone";
 
   return (
-    <div className="bg-zinc-50 text-zinc-900 pb-20 min-h-screen">
+    <div className="bg-wlx-cream text-wlx-ink pb-20 min-h-screen">
       <div className="mx-auto max-w-4xl px-6 py-12">
         <div className="mb-6">
           <SidebarToggle />
@@ -263,10 +263,10 @@ export default function BillingPage() {
 
         {/* Header */}
         <div className="space-y-1.5 mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+          <h1 className="text-3xl font-bold tracking-tight text-wlx-ink">
             {t.title}
           </h1>
-          <p className="text-zinc-600 text-base max-w-lg">{t.subtitle}</p>
+          <p className="text-wlx-stone text-base max-w-lg">{t.subtitle}</p>
         </div>
 
         {/* Success/Cancel banners */}
@@ -279,7 +279,7 @@ export default function BillingPage() {
           </div>
         )}
         {showCancelled && (
-          <div className="mb-6 flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <div className="mb-6 flex items-center gap-3 p-4 bg-wlx-cream border border-amber-200 rounded-xl">
             <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
             <p className="text-sm font-medium text-amber-800">
               {t.checkoutCancelled}
@@ -313,10 +313,10 @@ export default function BillingPage() {
 
         <div className="space-y-6">
           {/* ═══ Current Plan ═══ */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Crown className="h-5 w-5 text-zinc-600" />
+              <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                <Crown className="h-5 w-5 text-wlx-stone" />
                 {t.currentPlan}
               </h3>
             </div>
@@ -338,7 +338,7 @@ export default function BillingPage() {
                 </span>
               )}
               {billing.isTrialing && (
-                <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full font-medium">
+                <span className="text-xs text-amber-600 bg-wlx-cream border border-amber-200 px-2.5 py-1 rounded-full font-medium">
                   {t.trialing}
                 </span>
               )}
@@ -354,7 +354,7 @@ export default function BillingPage() {
               )}
 
               {billing.plan !== "free" && billing.planPrices[billing.plan] && (
-                <span className="text-sm text-zinc-500 ml-auto">
+                <span className="text-sm text-wlx-stone ml-auto">
                   ${billing.planPrices[billing.plan].monthly}
                   {t.month}
                 </span>
@@ -366,16 +366,16 @@ export default function BillingPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 {billing.planStartedAt && (
                   <div>
-                    <span className="text-zinc-500">{t.planStarted}</span>
-                    <p className="font-medium text-zinc-900 mt-0.5">
+                    <span className="text-wlx-stone">{t.planStarted}</span>
+                    <p className="font-medium text-wlx-ink mt-0.5">
                       {formatDate(billing.planStartedAt)}
                     </p>
                   </div>
                 )}
                 {(billing.currentPeriodEnd || billing.planExpiresAt) && (
                   <div>
-                    <span className="text-zinc-500">{t.planExpires}</span>
-                    <p className="font-medium text-zinc-900 mt-0.5">
+                    <span className="text-wlx-stone">{t.planExpires}</span>
+                    <p className="font-medium text-wlx-ink mt-0.5">
                       {formatDate(
                         billing.currentPeriodEnd || billing.planExpiresAt
                       )}
@@ -387,14 +387,14 @@ export default function BillingPage() {
           </div>
 
           {/* ═══ Usage ═══ */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
-            <h3 className="text-lg font-semibold text-zinc-900">{t.usage}</h3>
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
+            <h3 className="text-lg font-semibold text-wlx-ink">{t.usage}</h3>
 
             {/* SKU */}
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-zinc-600">{t.products}</span>
-                <span className="font-medium text-zinc-900">
+                <span className="text-wlx-stone">{t.products}</span>
+                <span className="font-medium text-wlx-ink">
                   {billing.usage.sku.current} /{" "}
                   {billing.usage.sku.limit > 999999
                     ? t.unlimited
@@ -402,7 +402,7 @@ export default function BillingPage() {
                 </span>
               </div>
               {billing.usage.sku.limit <= 999999 && (
-                <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-wlx-cream rounded-full overflow-hidden">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all",
@@ -410,7 +410,7 @@ export default function BillingPage() {
                         ? "bg-red-500"
                         : billing.usage.sku.current / billing.usage.sku.limit >=
                           0.7
-                        ? "bg-amber-500"
+                        ? "bg-wlx-cream0"
                         : "bg-emerald-500"
                     )}
                     style={{
@@ -428,8 +428,8 @@ export default function BillingPage() {
             {/* Orders */}
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-zinc-600">{t.ordersMonth}</span>
-                <span className="font-medium text-zinc-900">
+                <span className="text-wlx-stone">{t.ordersMonth}</span>
+                <span className="font-medium text-wlx-ink">
                   {billing.usage.orders.current} /{" "}
                   {billing.usage.orders.limit > 999999
                     ? t.unlimited
@@ -437,7 +437,7 @@ export default function BillingPage() {
                 </span>
               </div>
               {billing.usage.orders.limit <= 999999 && (
-                <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-wlx-cream rounded-full overflow-hidden">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all",
@@ -448,7 +448,7 @@ export default function BillingPage() {
                         : billing.usage.orders.current /
                             billing.usage.orders.limit >=
                           0.7
-                        ? "bg-amber-500"
+                        ? "bg-wlx-cream0"
                         : "bg-emerald-500"
                     )}
                     style={{
@@ -467,14 +467,14 @@ export default function BillingPage() {
 
           {/* ═══ Manage Payment (Stripe Portal) ═══ */}
           {billing.hasStripeCustomer && (
-            <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-4">
+            <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-4">
               <div className="flex items-start gap-3">
-                <CreditCard className="h-5 w-5 text-zinc-600 mt-0.5" />
+                <CreditCard className="h-5 w-5 text-wlx-stone mt-0.5" />
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-zinc-900">
+                  <h3 className="text-lg font-semibold text-wlx-ink">
                     {t.managePayment}
                   </h3>
-                  <p className="text-sm text-zinc-600 mt-1">
+                  <p className="text-sm text-wlx-stone mt-1">
                     {t.managePaymentDesc}
                   </p>
                 </div>
@@ -482,7 +482,7 @@ export default function BillingPage() {
               <button
                 onClick={handlePortal}
                 disabled={portalLoading}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-wlx-ink rounded-lg hover:bg-zinc-800 transition-colors disabled:opacity-50"
               >
                 {portalLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -495,14 +495,14 @@ export default function BillingPage() {
           )}
 
           {/* ═══ Plan Options / Upgrade ═══ */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Zap className="h-5 w-5 text-zinc-600" />
+              <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                <Zap className="h-5 w-5 text-wlx-stone" />
                 {billing.plan === "free" ? t.upgradeTitle : t.changePlan}
               </h3>
               {billing.plan === "free" && (
-                <p className="text-sm text-zinc-600 mt-1">{t.upgradeDesc}</p>
+                <p className="text-sm text-wlx-stone mt-1">{t.upgradeDesc}</p>
               )}
             </div>
 
@@ -512,21 +512,21 @@ export default function BillingPage() {
                 className={cn(
                   "rounded-xl border-2 p-5 transition-all",
                   billing.plan === "free"
-                    ? "border-zinc-900 bg-zinc-50"
-                    : "border-zinc-200"
+                    ? "border-zinc-900 bg-wlx-cream"
+                    : "border-wlx-mist"
                 )}
               >
                 <div className="flex items-baseline gap-1 mb-3">
-                  <span className="text-lg font-bold text-zinc-900">
+                  <span className="text-lg font-bold text-wlx-ink">
                     {t.free}
                   </span>
-                  <span className="text-sm text-zinc-500">$0{t.month}</span>
+                  <span className="text-sm text-wlx-stone">$0{t.month}</span>
                 </div>
-                <p className="text-xs text-zinc-600 leading-relaxed">
+                <p className="text-xs text-wlx-stone leading-relaxed">
                   {t.freeFeatures}
                 </p>
                 {billing.plan === "free" && (
-                  <p className="text-xs font-semibold text-zinc-500 mt-3">
+                  <p className="text-xs font-semibold text-wlx-stone mt-3">
                     {t.currentPlan}
                   </p>
                 )}
@@ -538,19 +538,19 @@ export default function BillingPage() {
                   "rounded-xl border-2 p-5 transition-all",
                   billing.plan === "lite"
                     ? "border-blue-500 bg-blue-50"
-                    : "border-zinc-200 hover:border-blue-300"
+                    : "border-wlx-mist hover:border-blue-300"
                 )}
               >
                 <div className="flex items-baseline gap-1 mb-3">
-                  <span className="text-lg font-bold text-zinc-900">
+                  <span className="text-lg font-bold text-wlx-ink">
                     {t.lite}
                   </span>
-                  <span className="text-sm text-zinc-500">
+                  <span className="text-sm text-wlx-stone">
                     ${billing.planPrices.lite?.monthly || 78}
                     {t.month}
                   </span>
                 </div>
-                <p className="text-xs text-zinc-600 leading-relaxed mb-4">
+                <p className="text-xs text-wlx-stone leading-relaxed mb-4">
                   {t.liteFeatures}
                 </p>
                 {billing.plan === "lite" ? (
@@ -579,19 +579,19 @@ export default function BillingPage() {
                   "rounded-xl border-2 p-5 transition-all",
                   billing.plan === "pro"
                     ? "border-violet-500 bg-violet-50"
-                    : "border-zinc-200 hover:border-violet-300"
+                    : "border-wlx-mist hover:border-violet-300"
                 )}
               >
                 <div className="flex items-baseline gap-1 mb-3">
-                  <span className="text-lg font-bold text-zinc-900">
+                  <span className="text-lg font-bold text-wlx-ink">
                     {t.pro}
                   </span>
-                  <span className="text-sm text-zinc-500">
+                  <span className="text-sm text-wlx-stone">
                     ${billing.planPrices.pro?.monthly || 198}
                     {t.month}
                   </span>
                 </div>
-                <p className="text-xs text-zinc-600 leading-relaxed mb-4">
+                <p className="text-xs text-wlx-stone leading-relaxed mb-4">
                   {t.proFeatures}
                 </p>
                 {billing.plan === "pro" ? (

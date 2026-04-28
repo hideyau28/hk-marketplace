@@ -72,7 +72,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
         <SidebarToggle />
         <Link
           href={`/${locale}/admin/orders`}
-          className="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-900 transition-colors"
+          className="inline-flex items-center gap-2 text-wlx-stone hover:text-wlx-ink transition-colors"
         >
           <ArrowLeft size={20} />
           <span>{t.admin.orders.detail.backToOrders}</span>
@@ -81,9 +81,9 @@ export default async function OrderDetailPage({ params }: PageProps) {
 
       <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <div className="text-zinc-500 text-sm">{t.admin.orders.detail.title}</div>
-          <h1 className="mt-1 text-2xl font-semibold text-zinc-900">{order.orderNumber || order.id}</h1>
-          <div className="mt-2 text-zinc-500 text-sm">
+          <div className="text-wlx-stone text-sm">{t.admin.orders.detail.title}</div>
+          <h1 className="mt-1 text-2xl font-semibold text-wlx-ink">{order.orderNumber || order.id}</h1>
+          <div className="mt-2 text-wlx-stone text-sm">
             Created: {new Date(order.createdAt).toLocaleString()}
           </div>
         </div>
@@ -91,7 +91,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
           href={`/api/admin/orders/${order.id}/receipt`}
           target="_blank"
           rel="noreferrer"
-          className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+          className="rounded-xl border border-wlx-mist bg-white px-4 py-2 text-sm text-wlx-stone hover:bg-wlx-cream"
         >
           View Receipt
         </a>
@@ -99,21 +99,21 @@ export default async function OrderDetailPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Customer Info */}
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-          <h3 className="text-lg font-semibold text-zinc-900 mb-4">{t.admin.orders.detail.customerInfo}</h3>
+        <div className="bg-white rounded-2xl border border-wlx-mist p-6">
+          <h3 className="text-lg font-semibold text-wlx-ink mb-4">{t.admin.orders.detail.customerInfo}</h3>
           <div className="space-y-3">
             <div>
-              <div className="text-sm text-zinc-500">{t.admin.orders.detail.name}</div>
-              <div className="text-zinc-900 font-medium">{order.customerName}</div>
+              <div className="text-sm text-wlx-stone">{t.admin.orders.detail.name}</div>
+              <div className="text-wlx-ink font-medium">{order.customerName}</div>
             </div>
             <div>
-              <div className="text-sm text-zinc-500">{t.admin.orders.detail.phone}</div>
-              <div className="text-zinc-900 font-medium">{order.phone}</div>
+              <div className="text-sm text-wlx-stone">{t.admin.orders.detail.phone}</div>
+              <div className="text-wlx-ink font-medium">{order.phone}</div>
             </div>
             {order.email && (
               <div>
-                <div className="text-sm text-zinc-500">{t.admin.orders.detail.email}</div>
-                <div className="text-zinc-900 font-medium">{order.email}</div>
+                <div className="text-sm text-wlx-stone">{t.admin.orders.detail.email}</div>
+                <div className="text-wlx-ink font-medium">{order.email}</div>
               </div>
             )}
             {whatsappUrl && (
@@ -134,8 +134,8 @@ export default async function OrderDetailPage({ params }: PageProps) {
         </div>
 
         {/* Order Status */}
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-          <h3 className="text-lg font-semibold text-zinc-900 mb-4">{t.admin.orders.detail.orderStatus}</h3>
+        <div className="bg-white rounded-2xl border border-wlx-mist p-6">
+          <h3 className="text-lg font-semibold text-wlx-ink mb-4">{t.admin.orders.detail.orderStatus}</h3>
           <OrderStatusUpdate
             order={{
               id: order.id,
@@ -150,17 +150,17 @@ export default async function OrderDetailPage({ params }: PageProps) {
         </div>
 
         {/* Fulfillment Info */}
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-          <h3 className="text-lg font-semibold text-zinc-900 mb-4">Fulfillment</h3>
+        <div className="bg-white rounded-2xl border border-wlx-mist p-6">
+          <h3 className="text-lg font-semibold text-wlx-ink mb-4">Fulfillment</h3>
           <div className="space-y-3">
             <div>
-              <div className="text-sm text-zinc-500">Type</div>
-              <div className="text-zinc-900 font-medium">{order.fulfillmentType}</div>
+              <div className="text-sm text-wlx-stone">Type</div>
+              <div className="text-wlx-ink font-medium">{order.fulfillmentType}</div>
             </div>
             {fulfillmentAddress && order.fulfillmentType === "DELIVERY" && (
               <div>
-                <div className="text-sm text-zinc-500">Address</div>
-                <div className="text-zinc-900">
+                <div className="text-sm text-wlx-stone">Address</div>
+                <div className="text-wlx-ink">
                   {fulfillmentAddress.street && <div>{fulfillmentAddress.street}</div>}
                   {fulfillmentAddress.district && <div>{fulfillmentAddress.district}</div>}
                   {fulfillmentAddress.region && <div>{fulfillmentAddress.region}</div>}
@@ -169,39 +169,39 @@ export default async function OrderDetailPage({ params }: PageProps) {
             )}
             {order.note && (
               <div>
-                <div className="text-sm text-zinc-500">Note</div>
-                <div className="text-zinc-900">{order.note}</div>
+                <div className="text-sm text-wlx-stone">Note</div>
+                <div className="text-wlx-ink">{order.note}</div>
               </div>
             )}
           </div>
         </div>
 
         {/* Payment Info */}
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-          <h3 className="text-lg font-semibold text-zinc-900 mb-4">{t.admin.orders.detail.paymentInfo}</h3>
+        <div className="bg-white rounded-2xl border border-wlx-mist p-6">
+          <h3 className="text-lg font-semibold text-wlx-ink mb-4">{t.admin.orders.detail.paymentInfo}</h3>
           <div className="space-y-3">
             <div>
-              <div className="text-sm text-zinc-500">{t.admin.orders.detail.subtotal}</div>
-              <div className="text-zinc-900 font-medium">
+              <div className="text-sm text-wlx-stone">{t.admin.orders.detail.subtotal}</div>
+              <div className="text-wlx-ink font-medium">
                 ${Math.round(amounts.subtotal || 0)}
               </div>
             </div>
             <div>
-              <div className="text-sm text-zinc-500">{t.admin.orders.detail.deliveryFee}</div>
-              <div className="text-zinc-900 font-medium">
+              <div className="text-sm text-wlx-stone">{t.admin.orders.detail.deliveryFee}</div>
+              <div className="text-wlx-ink font-medium">
                 ${Math.round(amounts.deliveryFee || 0)}
               </div>
             </div>
-            <div className="pt-3 border-t border-zinc-200">
-              <div className="text-sm text-zinc-500">{t.admin.orders.detail.total}</div>
-              <div className="text-xl font-bold text-zinc-900">
+            <div className="pt-3 border-t border-wlx-mist">
+              <div className="text-sm text-wlx-stone">{t.admin.orders.detail.total}</div>
+              <div className="text-xl font-bold text-wlx-ink">
                 ${Math.round(amounts.total || 0)}
               </div>
             </div>
             {order.paidAt && (
               <div>
-                <div className="text-sm text-zinc-500">Paid At</div>
-                <div className="text-zinc-900 text-sm">
+                <div className="text-sm text-wlx-stone">Paid At</div>
+                <div className="text-wlx-ink text-sm">
                   {new Date(order.paidAt).toLocaleString()}
                 </div>
               </div>
@@ -211,11 +211,11 @@ export default async function OrderDetailPage({ params }: PageProps) {
       </div>
 
       {/* Order Items */}
-      <div className="bg-white rounded-2xl border border-zinc-200 p-6 mt-6">
-        <h3 className="text-lg font-semibold text-zinc-900 mb-4">{t.admin.orders.detail.orderItems}</h3>
+      <div className="bg-white rounded-2xl border border-wlx-mist p-6 mt-6">
+        <h3 className="text-lg font-semibold text-wlx-ink mb-4">{t.admin.orders.detail.orderItems}</h3>
         <div className="space-y-4">
           {items.map((item: any, index: number) => (
-            <div key={index} className="flex items-center justify-between py-3 border-b border-zinc-100 last:border-0">
+            <div key={index} className="flex items-center justify-between py-3 border-b border-wlx-mist last:border-0">
               <div className="flex items-center gap-4">
                 {item.imageUrl && (
                   <div className="relative w-16 h-16 rounded-lg overflow-hidden">
@@ -229,15 +229,15 @@ export default async function OrderDetailPage({ params }: PageProps) {
                   </div>
                 )}
                 <div>
-                  <div className="font-medium text-zinc-900">{item.title}</div>
-                  {item.brand && <div className="text-sm text-zinc-500">{item.brand}</div>}
+                  <div className="font-medium text-wlx-ink">{item.title}</div>
+                  {item.brand && <div className="text-sm text-wlx-stone">{item.brand}</div>}
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-medium text-zinc-900">
+                <div className="font-medium text-wlx-ink">
                   ${Math.round(item.price || 0)} × {item.quantity}
                 </div>
-                <div className="text-sm text-zinc-500">
+                <div className="text-sm text-wlx-stone">
                   ${Math.round((item.price || 0) * (item.quantity || 1))}
                 </div>
               </div>
@@ -272,21 +272,21 @@ export default async function OrderDetailPage({ params }: PageProps) {
 
       {/* Payment Attempts */}
       {order.paymentAttempts.length > 0 && (
-        <div className="bg-white rounded-2xl border border-zinc-200 p-6 mt-6">
-          <h3 className="text-lg font-semibold text-zinc-900 mb-4">Payment Attempts</h3>
+        <div className="bg-white rounded-2xl border border-wlx-mist p-6 mt-6">
+          <h3 className="text-lg font-semibold text-wlx-ink mb-4">Payment Attempts</h3>
           <div className="space-y-3">
             {order.paymentAttempts.map((attempt) => (
-              <div key={attempt.id} className="p-4 bg-zinc-50 rounded-lg">
+              <div key={attempt.id} className="p-4 bg-wlx-cream rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-zinc-900">
+                  <span className="text-sm font-medium text-wlx-ink">
                     {attempt.provider} - {attempt.status}
                   </span>
-                  <span className="text-sm text-zinc-500">
+                  <span className="text-sm text-wlx-stone">
                     {new Date(attempt.createdAt).toLocaleString()}
                   </span>
                 </div>
                 {attempt.amount && (
-                  <div className="text-sm text-zinc-600">
+                  <div className="text-sm text-wlx-stone">
                     Amount: {attempt.currency} {(attempt.amount / 100).toFixed(2)}
                   </div>
                 )}

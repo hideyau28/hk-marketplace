@@ -857,13 +857,13 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             onClick={() => onToggle(val)}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors border ${
               isSelected
-                ? "bg-[#FF9500]/10 border-[#FF9500] text-[#FF9500] font-medium"
-                : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-300"
+                ? "bg-wlx-ink/10 border-wlx-ink text-wlx-ink font-medium"
+                : "bg-white border-wlx-mist text-wlx-stone hover:border-wlx-mist"
             }`}
           >
             {hex && (
               <span
-                className="w-4 h-4 rounded-full border border-zinc-200 flex-shrink-0"
+                className="w-4 h-4 rounded-full border border-wlx-mist flex-shrink-0"
                 style={{ backgroundColor: hex }}
               />
             )}
@@ -881,10 +881,10 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
 
     return (
       <div className="space-y-3">
-        <label className="block text-xs font-medium text-zinc-600">
+        <label className="block text-xs font-medium text-wlx-stone">
           {isZh ? "庫存" : "Stock"}
         </label>
-        <div className="rounded-xl border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
+        <div className="rounded-xl border border-wlx-mist divide-y divide-zinc-100 overflow-hidden">
           {selectedValues.map((v) => {
             const hex = getColorHex(v.name);
             return (
@@ -892,18 +892,18 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                 <div className="flex items-center gap-2">
                   {hex && (
                     <span
-                      className="w-4 h-4 rounded-full border border-zinc-200 flex-shrink-0"
+                      className="w-4 h-4 rounded-full border border-wlx-mist flex-shrink-0"
                       style={{ backgroundColor: hex }}
                     />
                   )}
-                  <span className="text-sm font-medium text-zinc-900">{v.name}</span>
+                  <span className="text-sm font-medium text-wlx-ink">{v.name}</span>
                 </div>
                 <input
                   type="number"
                   min="0"
                   value={v.qty}
                   onChange={(e) => handleStockChange(v.name, e.target.value)}
-                  className="w-20 px-2 py-1.5 rounded-lg border border-zinc-200 text-center text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#FF9500]/30 focus:border-[#FF9500]"
+                  className="w-20 px-2 py-1.5 rounded-lg border border-wlx-mist text-center text-sm text-wlx-ink focus:outline-none focus:ring-1 focus:ring-wlx-ink/20 focus:border-wlx-ink"
                 />
               </div>
             );
@@ -919,7 +919,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
 
     return (
       <div className="space-y-3">
-        <label className="block text-xs font-medium text-zinc-600">
+        <label className="block text-xs font-medium text-wlx-stone">
           {isZh ? "每個組合庫存" : "Stock per combination"}
         </label>
         <div className="space-y-2">
@@ -929,22 +929,22 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             const hex = getColorHex(v1.name);
 
             return (
-              <div key={v1.name} className="rounded-xl border border-zinc-200 overflow-hidden">
+              <div key={v1.name} className="rounded-xl border border-wlx-mist overflow-hidden">
                 {/* Group header */}
                 <button
                   type="button"
                   onClick={() => toggleGroupCollapse(v1.name)}
-                  className="w-full flex items-center gap-2 px-4 py-3 bg-zinc-50 hover:bg-zinc-100 transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-4 py-3 bg-wlx-cream hover:bg-wlx-cream transition-colors text-left"
                 >
-                  {isCollapsed ? <ChevronRight size={14} className="text-zinc-400" /> : <ChevronDown size={14} className="text-zinc-400" />}
+                  {isCollapsed ? <ChevronRight size={14} className="text-wlx-stone" /> : <ChevronDown size={14} className="text-wlx-stone" />}
                   {hex && (
                     <span
-                      className="w-4 h-4 rounded-full border border-zinc-200 flex-shrink-0"
+                      className="w-4 h-4 rounded-full border border-wlx-mist flex-shrink-0"
                       style={{ backgroundColor: hex }}
                     />
                   )}
-                  <span className="text-sm font-medium text-zinc-900">{v1.name}</span>
-                  <span className="text-xs text-zinc-400 ml-auto">
+                  <span className="text-sm font-medium text-wlx-ink">{v1.name}</span>
+                  <span className="text-xs text-wlx-stone ml-auto">
                     ({isZh ? `共${totalQty}件` : `${totalQty} total`})
                   </span>
                 </button>
@@ -960,18 +960,18 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                           <div className="flex items-center gap-2">
                             {hex2 && (
                               <span
-                                className="w-3.5 h-3.5 rounded-full border border-zinc-200 flex-shrink-0"
+                                className="w-3.5 h-3.5 rounded-full border border-wlx-mist flex-shrink-0"
                                 style={{ backgroundColor: hex2 }}
                               />
                             )}
-                            <span className="text-sm text-zinc-700">{v2}</span>
+                            <span className="text-sm text-wlx-stone">{v2}</span>
                           </div>
                           <input
                             type="number"
                             min="0"
                             value={grid[key] ?? 0}
                             onChange={(e) => handleGridChange(key, e.target.value)}
-                            className="w-20 px-2 py-1.5 rounded-lg border border-zinc-200 text-center text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#FF9500]/30 focus:border-[#FF9500]"
+                            className="w-20 px-2 py-1.5 rounded-lg border border-wlx-mist text-center text-sm text-wlx-ink focus:outline-none focus:ring-1 focus:ring-wlx-ink/20 focus:border-wlx-ink"
                           />
                         </div>
                       );
@@ -982,7 +982,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             );
           })}
         </div>
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-wlx-stone">
           {isZh ? "填 0 = 冇貨" : "0 = out of stock"}
         </p>
       </div>
@@ -1012,8 +1012,8 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
           <div key={step} className="flex items-center gap-1.5">
             {idx > 0 && <div className="w-3 h-px bg-zinc-300" />}
             <div className={`w-2 h-2 rounded-full transition-colors ${
-              idx < currentIdx ? "bg-[#FF9500]"
-              : idx === currentIdx ? "bg-[#FF9500] ring-2 ring-[#FF9500]/20"
+              idx < currentIdx ? "bg-wlx-ink"
+              : idx === currentIdx ? "bg-wlx-ink ring-2 ring-wlx-ink/15"
               : "bg-zinc-300"
             }`} />
           </div>
@@ -1026,7 +1026,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     <div className="space-y-3">
       {/* Variant memory suggestion */}
       {isNew && variantMemory && !memoryDismissed && (
-        <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+        <div className="flex items-center gap-2 bg-wlx-cream border border-amber-200 rounded-xl px-4 py-3">
           <div className="flex-1 min-w-0">
             <span className="text-sm text-amber-800">
               {isZh ? "上次設定：" : "Last config: "}
@@ -1039,7 +1039,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
           <button
             type="button"
             onClick={handleApplyMemory}
-            className="px-3 py-1 rounded-lg bg-[#FF9500] text-white text-xs font-medium hover:bg-[#E68600] transition-colors flex-shrink-0"
+            className="px-3 py-1 rounded-lg bg-wlx-ink text-white text-xs font-medium hover:bg-wlx-ink/90 transition-colors flex-shrink-0"
           >
             {isZh ? "套用" : "Apply"}
           </button>
@@ -1055,7 +1055,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       <button
         type="button"
         onClick={() => setWizardStep("type")}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-zinc-300 text-zinc-600 hover:border-[#FF9500] hover:text-[#FF9500] transition-colors text-sm font-medium w-full justify-center"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-wlx-mist text-wlx-stone hover:border-wlx-ink hover:text-wlx-ink transition-colors text-sm font-medium w-full justify-center"
       >
         <Plus size={16} />
         {isZh ? "加尺碼 / 顏色選項" : "Add size / color options"}
@@ -1068,8 +1068,8 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     onSelect: (preset: VariantPreset) => void,
     onCustom: () => void,
   ) => (
-    <div className="space-y-3 bg-zinc-50 rounded-xl p-4">
-      <div className="text-sm font-medium text-zinc-700">
+    <div className="space-y-3 bg-wlx-cream rounded-xl p-4">
+      <div className="text-sm font-medium text-wlx-stone">
         {isZh ? "選擇選項類型" : "Select option type"}
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -1078,29 +1078,29 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             key={preset.id}
             type="button"
             onClick={() => onSelect(preset)}
-            className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-white border border-zinc-200 hover:border-[#FF9500] hover:bg-[#FF9500]/5 transition-colors text-left"
+            className="flex items-center gap-2.5 px-3 py-3 rounded-xl bg-white border border-wlx-mist hover:border-wlx-ink hover:bg-wlx-ink/5 transition-colors text-left"
           >
             <span className="text-xl">{preset.icon}</span>
-            <span className="text-sm font-medium text-zinc-800 truncate">{preset.label}</span>
+            <span className="text-sm font-medium text-wlx-ink truncate">{preset.label}</span>
           </button>
         ))}
       </div>
       {/* Search */}
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-wlx-stone" />
         <input
           type="text"
           value={presetSearch}
           onChange={(e) => setPresetSearch(e.target.value)}
           placeholder={isZh ? "搜尋更多..." : "Search more..."}
-          className="w-full pl-8 pr-3 py-2 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400"
+          className="w-full pl-8 pr-3 py-2 rounded-lg border border-wlx-mist text-sm focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 focus:border-wlx-ink text-wlx-ink placeholder:text-wlx-stone"
         />
       </div>
       {/* Custom */}
       <button
         type="button"
         onClick={onCustom}
-        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-zinc-300 hover:border-[#FF9500] hover:bg-white transition-colors text-sm text-zinc-600"
+        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-wlx-mist hover:border-wlx-ink hover:bg-white transition-colors text-sm text-wlx-stone"
       >
         <span>✏️</span>
         <span>{isZh ? "自訂" : "Custom"}</span>
@@ -1109,7 +1109,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       <button
         type="button"
         onClick={handleWizardBack}
-        className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 py-1"
+        className="w-full text-center text-xs text-wlx-stone hover:text-wlx-stone py-1"
       >
         {isZh ? "← 返回" : "← Back"}
       </button>
@@ -1122,22 +1122,22 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
   };
 
   const renderStepHasColor = () => (
-    <div className="space-y-4 bg-zinc-50 rounded-xl p-4">
-      <div className="text-sm font-medium text-zinc-700 text-center">
+    <div className="space-y-4 bg-wlx-cream rounded-xl p-4">
+      <div className="text-sm font-medium text-wlx-stone text-center">
         {isZh ? "呢件商品有冇唔同顏色？" : "Does this product have different colors?"}
       </div>
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
           onClick={() => { setHasColor(true); setWizardStep("colors"); }}
-          className="py-4 rounded-xl border border-zinc-200 bg-white hover:border-[#FF9500] hover:bg-[#FF9500]/5 transition-colors text-sm font-medium text-zinc-800"
+          className="py-4 rounded-xl border border-wlx-mist bg-white hover:border-wlx-ink hover:bg-wlx-ink/5 transition-colors text-sm font-medium text-wlx-ink"
         >
           {isZh ? "✅ 有" : "Yes"}
         </button>
         <button
           type="button"
           onClick={() => { setHasColor(false); setWizardStep("sizes"); }}
-          className="py-4 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 transition-colors text-sm font-medium text-zinc-800"
+          className="py-4 rounded-xl border border-wlx-mist bg-white hover:border-zinc-400 transition-colors text-sm font-medium text-wlx-ink"
         >
           {isZh ? "冇（跳過）" : "No (skip)"}
         </button>
@@ -1145,7 +1145,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       <button
         type="button"
         onClick={handleWizardBack}
-        className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 py-1"
+        className="w-full text-center text-xs text-wlx-stone hover:text-wlx-stone py-1"
       >
         {isZh ? "← 返回" : "← Back"}
       </button>
@@ -1158,8 +1158,8 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     const colorHexMap = colorPresetDef?.colorHex || {};
 
     return (
-      <div className="space-y-4 bg-zinc-50 rounded-xl p-4">
-        <div className="text-sm font-medium text-zinc-700">
+      <div className="space-y-4 bg-wlx-cream rounded-xl p-4">
+        <div className="text-sm font-medium text-wlx-stone">
           {isZh ? "選擇顏色" : "Select colors"}
         </div>
         {/* 4-col color swatch grid */}
@@ -1174,17 +1174,17 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                 onClick={() => toggleColor(colorName)}
                 className={`flex flex-col items-center gap-1.5 py-2.5 rounded-xl transition-colors border ${
                   isSelected
-                    ? "bg-[#FF9500]/10 border-[#FF9500]"
-                    : "bg-white border-zinc-200 hover:border-zinc-300"
+                    ? "bg-wlx-ink/10 border-wlx-ink"
+                    : "bg-white border-wlx-mist hover:border-wlx-mist"
                 }`}
               >
                 <span
                   className={`w-7 h-7 rounded-full flex-shrink-0 ${
-                    isSelected ? "ring-2 ring-[#FF9500] ring-offset-1" : "border-2 border-zinc-200"
+                    isSelected ? "ring-2 ring-wlx-ink ring-offset-1" : "border-2 border-wlx-mist"
                   }`}
                   style={{ backgroundColor: hex }}
                 />
-                <span className={`text-xs ${isSelected ? "text-[#FF9500] font-medium" : "text-zinc-600"}`}>
+                <span className={`text-xs ${isSelected ? "text-wlx-ink font-medium" : "text-wlx-stone"}`}>
                   {colorName}
                 </span>
               </button>
@@ -1192,25 +1192,25 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
           })}
         </div>
         {/* Custom color */}
-        <div className="flex items-center gap-2 pt-2 border-t border-zinc-200">
+        <div className="flex items-center gap-2 pt-2 border-t border-wlx-mist">
           <input
             type="color"
             value={customColorHex}
             onChange={(e) => setCustomColorHex(e.target.value)}
-            className="w-7 h-7 rounded-full border border-zinc-200 cursor-pointer p-0 overflow-hidden flex-shrink-0"
+            className="w-7 h-7 rounded-full border border-wlx-mist cursor-pointer p-0 overflow-hidden flex-shrink-0"
           />
           <input
             type="text"
             value={customColorName}
             onChange={(e) => setCustomColorName(e.target.value)}
             placeholder={isZh ? "自訂顏色名" : "Custom color name"}
-            className="flex-1 px-3 py-2 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400"
+            className="flex-1 px-3 py-2 rounded-xl border border-wlx-mist text-sm focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 focus:border-wlx-ink text-wlx-ink placeholder:text-wlx-stone"
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCustomColor())}
           />
           <button
             type="button"
             onClick={handleAddCustomColor}
-            className="px-3 py-2 rounded-xl bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors text-sm font-medium flex-shrink-0"
+            className="px-3 py-2 rounded-xl bg-wlx-cream text-wlx-stone hover:bg-wlx-mist transition-colors text-sm font-medium flex-shrink-0"
           >
             <Plus size={14} />
           </button>
@@ -1221,14 +1221,14 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             {selectedColors.filter((c) => !colorValues.includes(c)).map((c) => (
               <span
                 key={c}
-                className="inline-flex items-center gap-1 bg-[#FF9500]/10 border border-[#FF9500] text-[#FF9500] text-sm px-3 py-1.5 rounded-full font-medium"
+                className="inline-flex items-center gap-1 bg-wlx-ink/10 border border-wlx-ink text-wlx-ink text-sm px-3 py-1.5 rounded-full font-medium"
               >
                 <span
-                  className="w-3.5 h-3.5 rounded-full border border-[#FF9500]/30 flex-shrink-0"
+                  className="w-3.5 h-3.5 rounded-full border border-wlx-ink/30 flex-shrink-0"
                   style={{ backgroundColor: customColorOverrides[c] || "#888" }}
                 />
                 {c}
-                <button type="button" onClick={() => toggleColor(c)} className="text-[#FF9500]/60 hover:text-[#FF9500]">
+                <button type="button" onClick={() => toggleColor(c)} className="text-wlx-ink/60 hover:text-wlx-ink">
                   <X size={12} />
                 </button>
               </span>
@@ -1237,7 +1237,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
         )}
         {/* Selected count */}
         {selectedColors.length > 0 && (
-          <div className="text-xs text-zinc-500">
+          <div className="text-xs text-wlx-stone">
             {isZh ? `已選：${selectedColors.join("、")}` : `Selected: ${selectedColors.join(", ")}`}
           </div>
         )}
@@ -1246,7 +1246,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
           <button
             type="button"
             onClick={handleWizardBack}
-            className="px-4 py-2.5 rounded-xl border border-zinc-200 text-sm text-zinc-600 hover:bg-zinc-100 transition-colors"
+            className="px-4 py-2.5 rounded-xl border border-wlx-mist text-sm text-wlx-stone hover:bg-wlx-cream transition-colors"
           >
             {isZh ? "← 返回" : "← Back"}
           </button>
@@ -1254,7 +1254,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             type="button"
             onClick={() => setWizardStep(colorIsFirstDimension ? "hasSize" : "sizes")}
             disabled={selectedColors.length === 0}
-            className="flex-1 py-2.5 rounded-xl bg-[#FF9500] text-white text-sm font-medium hover:bg-[#E68600] disabled:opacity-40 transition-colors"
+            className="flex-1 py-2.5 rounded-xl bg-wlx-ink text-white text-sm font-medium hover:bg-wlx-ink/90 disabled:opacity-40 transition-colors"
           >
             {isZh ? "下一步 →" : "Next →"}
           </button>
@@ -1264,22 +1264,22 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
   };
 
   const renderStepHasSize = () => (
-    <div className="space-y-4 bg-zinc-50 rounded-xl p-4">
-      <div className="text-sm font-medium text-zinc-700 text-center">
+    <div className="space-y-4 bg-wlx-cream rounded-xl p-4">
+      <div className="text-sm font-medium text-wlx-stone text-center">
         {isZh ? "有冇唔同尺碼/規格？" : "Does it have different sizes/specs?"}
       </div>
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
           onClick={() => { setHasSize(true); setWizardStep("sizeType"); }}
-          className="py-4 rounded-xl border border-zinc-200 bg-white hover:border-[#FF9500] hover:bg-[#FF9500]/5 transition-colors text-sm font-medium text-zinc-800"
+          className="py-4 rounded-xl border border-wlx-mist bg-white hover:border-wlx-ink hover:bg-wlx-ink/5 transition-colors text-sm font-medium text-wlx-ink"
         >
           {isZh ? "✅ 有" : "Yes"}
         </button>
         <button
           type="button"
           onClick={() => { setHasSize(false); goToStep("stock"); }}
-          className="py-4 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 transition-colors text-sm font-medium text-zinc-800"
+          className="py-4 rounded-xl border border-wlx-mist bg-white hover:border-zinc-400 transition-colors text-sm font-medium text-wlx-ink"
         >
           {isZh ? "冇（跳過）" : "No (skip)"}
         </button>
@@ -1287,7 +1287,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       <button
         type="button"
         onClick={handleWizardBack}
-        className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 py-1"
+        className="w-full text-center text-xs text-wlx-stone hover:text-wlx-stone py-1"
       >
         {isZh ? "← 返回" : "← Back"}
       </button>
@@ -1314,8 +1314,8 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     const setOptName = isSecondDim ? setOptionName2 : setOptionName1;
 
     return (
-      <div className="space-y-4 bg-zinc-50 rounded-xl p-4">
-        <div className="text-sm font-medium text-zinc-700">
+      <div className="space-y-4 bg-wlx-cream rounded-xl p-4">
+        <div className="text-sm font-medium text-wlx-stone">
           {preset?.icon && <span className="mr-1">{preset.icon}</span>}
           {isZh ? `揀${preset?.label || "選項"}` : `Select ${preset?.label || "options"}`}
         </div>
@@ -1325,7 +1325,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
           value={optName}
           onChange={(e) => setOptName(e.target.value)}
           placeholder={isZh ? "選項名稱" : "Option name"}
-          className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400 text-sm"
+          className="w-full px-3 py-2.5 rounded-xl border border-wlx-mist focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 focus:border-wlx-ink text-wlx-ink placeholder:text-wlx-stone text-sm"
         />
         {/* Preset chips */}
         {presetValues.length > 0 && renderValueChips(presetValues, currentSelected, onToggle, preset?.colorHex)}
@@ -1336,13 +1336,13 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             value={customVal}
             onChange={(e) => setCustomVal(e.target.value)}
             placeholder={isZh ? "自訂值" : "Custom value"}
-            className="flex-1 px-3 py-2 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400 text-sm"
+            className="flex-1 px-3 py-2 rounded-xl border border-wlx-mist focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 focus:border-wlx-ink text-wlx-ink placeholder:text-wlx-stone text-sm"
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustom())}
           />
           <button
             type="button"
             onClick={addCustom}
-            className="px-3 py-2 rounded-xl bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors text-sm font-medium flex-shrink-0"
+            className="px-3 py-2 rounded-xl bg-wlx-cream text-wlx-stone hover:bg-wlx-mist transition-colors text-sm font-medium flex-shrink-0"
           >
             <Plus size={14} />
           </button>
@@ -1353,10 +1353,10 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             {currentSelected.filter((v) => !presetValues.includes(v)).map((v) => (
               <span
                 key={v}
-                className="inline-flex items-center gap-1 bg-[#FF9500]/10 border border-[#FF9500] text-[#FF9500] text-sm px-3 py-1.5 rounded-full font-medium"
+                className="inline-flex items-center gap-1 bg-wlx-ink/10 border border-wlx-ink text-wlx-ink text-sm px-3 py-1.5 rounded-full font-medium"
               >
                 {v}
-                <button type="button" onClick={() => onToggle(v)} className="text-[#FF9500]/60 hover:text-[#FF9500]">
+                <button type="button" onClick={() => onToggle(v)} className="text-wlx-ink/60 hover:text-wlx-ink">
                   <X size={12} />
                 </button>
               </span>
@@ -1368,7 +1368,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
           <button
             type="button"
             onClick={handleWizardBack}
-            className="px-4 py-2.5 rounded-xl border border-zinc-200 text-sm text-zinc-600 hover:bg-zinc-100 transition-colors"
+            className="px-4 py-2.5 rounded-xl border border-wlx-mist text-sm text-wlx-stone hover:bg-wlx-cream transition-colors"
           >
             {isZh ? "← 返回" : "← Back"}
           </button>
@@ -1376,7 +1376,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             type="button"
             onClick={() => goToStep("stock")}
             disabled={currentSelected.length === 0}
-            className="flex-1 py-2.5 rounded-xl bg-[#FF9500] text-white text-sm font-medium hover:bg-[#E68600] disabled:opacity-40 transition-colors"
+            className="flex-1 py-2.5 rounded-xl bg-wlx-ink text-white text-sm font-medium hover:bg-wlx-ink/90 disabled:opacity-40 transition-colors"
           >
             {isZh ? "下一步 →" : "Next →"}
           </button>
@@ -1389,25 +1389,25 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
     const isDual = variantMode === "dual";
     return (
       <div className="space-y-4">
-        <div className="text-sm font-medium text-zinc-700">
+        <div className="text-sm font-medium text-wlx-stone">
           {isZh ? "設定庫存" : "Set stock"}
         </div>
         {/* Bulk set all */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-500">{isZh ? "全部設為" : "Set all to"}</span>
+          <span className="text-xs text-wlx-stone">{isZh ? "全部設為" : "Set all to"}</span>
           <input
             type="number"
             min="0"
             value={bulkQty}
             onChange={(e) => setBulkQty(e.target.value)}
             placeholder="0"
-            className="w-20 px-2 py-1.5 rounded-lg border border-zinc-200 text-center text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-[#FF9500]/30 focus:border-[#FF9500]"
+            className="w-20 px-2 py-1.5 rounded-lg border border-wlx-mist text-center text-sm text-wlx-ink focus:outline-none focus:ring-1 focus:ring-wlx-ink/20 focus:border-wlx-ink"
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleBulkSetAll())}
           />
           <button
             type="button"
             onClick={handleBulkSetAll}
-            className="px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-700 hover:bg-zinc-200 transition-colors text-xs font-medium"
+            className="px-3 py-1.5 rounded-lg bg-wlx-cream text-wlx-stone hover:bg-wlx-mist transition-colors text-xs font-medium"
           >
             {isZh ? "套用" : "Apply"}
           </button>
@@ -1419,14 +1419,14 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
           <button
             type="button"
             onClick={handleWizardBack}
-            className="px-4 py-2.5 rounded-xl border border-zinc-200 text-sm text-zinc-600 hover:bg-zinc-100 transition-colors"
+            className="px-4 py-2.5 rounded-xl border border-wlx-mist text-sm text-wlx-stone hover:bg-wlx-cream transition-colors"
           >
             {isZh ? "← 返回" : "← Back"}
           </button>
           <button
             type="button"
             onClick={() => setWizardStep("done")}
-            className="flex-1 py-2.5 rounded-xl bg-[#FF9500] text-white text-sm font-medium hover:bg-[#E68600] transition-colors"
+            className="flex-1 py-2.5 rounded-xl bg-wlx-ink text-white text-sm font-medium hover:bg-wlx-ink/90 transition-colors"
           >
             {isZh ? "完成 ✓" : "Done ✓"}
           </button>
@@ -1445,12 +1445,12 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-green-500">✅</span>
-          <span className="text-sm font-medium text-zinc-700">
+          <span className="text-sm font-medium text-wlx-stone">
             {isZh ? "選項設定" : "Variant settings"}
           </span>
         </div>
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-3">
-          <div className="text-sm font-medium text-zinc-700">
+        <div className="rounded-xl border border-wlx-mist bg-wlx-cream p-4 space-y-3">
+          <div className="text-sm font-medium text-wlx-stone">
             {isDual ? `${optionName1} × ${optionName2}` : optionName1}
           </div>
           {isDual ? (
@@ -1462,7 +1462,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                   qty: grid[`${v1.name}|${v2}`] || 0,
                 }));
                 return (
-                  <div key={v1.name} className="text-xs text-zinc-600">
+                  <div key={v1.name} className="text-xs text-wlx-stone">
                     <span className="inline-flex items-center gap-1">
                       {hex && <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: hex }} />}
                       <span className="font-medium">{v1.name}：</span>
@@ -1473,11 +1473,11 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
               })}
             </div>
           ) : (
-            <div className="text-xs text-zinc-600">
+            <div className="text-xs text-wlx-stone">
               {values1.map((v) => `${v.name}(${v.qty})`).join("  ")}
             </div>
           )}
-          <div className="text-xs text-zinc-400 pt-1 border-t border-zinc-200">
+          <div className="text-xs text-wlx-stone pt-1 border-t border-wlx-mist">
             {isZh ? `總庫存 ${totalQty} 件` : `Total stock: ${totalQty}`}
           </div>
         </div>
@@ -1485,14 +1485,14 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
           <button
             type="button"
             onClick={handleResetVariants}
-            className="flex-1 py-2.5 rounded-xl border border-zinc-200 text-sm text-zinc-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+            className="flex-1 py-2.5 rounded-xl border border-wlx-mist text-sm text-wlx-stone hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
           >
             {isZh ? "重新設定" : "Reset"}
           </button>
           <button
             type="button"
             onClick={() => setWizardStep("stock")}
-            className="flex-1 py-2.5 rounded-xl border border-[#FF9500] text-sm text-[#FF9500] hover:bg-[#FF9500]/10 transition-colors font-medium"
+            className="flex-1 py-2.5 rounded-xl border border-wlx-ink text-sm text-wlx-ink hover:bg-wlx-ink/10 transition-colors font-medium"
           >
             {isZh ? "改庫存" : "Edit stock"}
           </button>
@@ -1531,14 +1531,14 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-3 border-b border-zinc-100">
-          <h3 className="text-lg font-semibold text-zinc-900">
+        <div className="flex items-center justify-between px-5 pb-3 border-b border-wlx-mist">
+          <h3 className="text-lg font-semibold text-wlx-ink">
             {isNew
               ? (isZh ? "新增商品" : "New Product")
               : (isZh ? "編輯商品" : "Edit Product")}
           </h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-zinc-100 transition-colors">
-            <X size={20} className="text-zinc-500" />
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-wlx-cream transition-colors">
+            <X size={20} className="text-wlx-stone" />
           </button>
         </div>
 
@@ -1550,12 +1550,12 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
 
           {/* Image upload */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-2">
+            <label className="block text-sm font-medium text-wlx-stone mb-2">
               {isZh ? "商品圖片" : "Product Images"}
             </label>
             <div className="flex gap-2 flex-wrap">
               {images.map((url, idx) => (
-                <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-zinc-200">
+                <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-wlx-mist">
                   <img src={url} alt="" className="w-full h-full object-cover" />
                   <button
                     type="button"
@@ -1568,8 +1568,8 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
               ))}
 
               {uploading && (
-                <div className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-300 flex items-center justify-center">
-                  <Loader2 size={20} className="text-zinc-400 animate-spin" />
+                <div className="w-20 h-20 rounded-lg border-2 border-dashed border-wlx-mist flex items-center justify-center">
+                  <Loader2 size={20} className="text-wlx-stone animate-spin" />
                 </div>
               )}
 
@@ -1578,10 +1578,10 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                 <button
                   type="button"
                   onClick={() => cameraInputRef.current?.click()}
-                  className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] transition-colors"
+                  className="w-20 h-20 rounded-lg border-2 border-dashed border-wlx-mist flex flex-col items-center justify-center hover:border-wlx-ink transition-colors"
                 >
-                  <Camera size={18} className="text-zinc-400" />
-                  <span className="text-[10px] text-zinc-400 mt-0.5">{isZh ? "影相" : "Camera"}</span>
+                  <Camera size={18} className="text-wlx-stone" />
+                  <span className="text-[10px] text-wlx-stone mt-0.5">{isZh ? "影相" : "Camera"}</span>
                 </button>
                 <input
                   ref={cameraInputRef}
@@ -1596,10 +1596,10 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-20 h-20 rounded-lg border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center hover:border-[#FF9500] transition-colors"
+                  className="w-20 h-20 rounded-lg border-2 border-dashed border-wlx-mist flex flex-col items-center justify-center hover:border-wlx-ink transition-colors"
                 >
-                  <Plus size={18} className="text-zinc-400" />
-                  <span className="text-[10px] text-zinc-400 mt-0.5">{isZh ? "上傳" : "Upload"}</span>
+                  <Plus size={18} className="text-wlx-stone" />
+                  <span className="text-[10px] text-wlx-stone mt-0.5">{isZh ? "上傳" : "Upload"}</span>
                 </button>
                 <input
                   ref={fileInputRef}
@@ -1615,7 +1615,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+            <label className="block text-sm font-medium text-wlx-stone mb-1.5">
               {isZh ? "商品名稱 *" : "Product Name *"}
             </label>
             <input
@@ -1623,13 +1623,13 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={isZh ? "例如：棉麻襯衫" : "e.g. Cotton Shirt"}
-              className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400"
+              className="w-full px-3 py-2.5 rounded-xl border border-wlx-mist focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 focus:border-wlx-ink text-wlx-ink placeholder:text-wlx-stone"
             />
           </div>
 
           {/* Price */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+            <label className="block text-sm font-medium text-wlx-stone mb-1.5">
               {isZh ? "價錢 ($) *" : "Price ($) *"}
             </label>
             <input
@@ -1639,13 +1639,13 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
               placeholder="0"
               min="0"
               step="1"
-              className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400"
+              className="w-full px-3 py-2.5 rounded-xl border border-wlx-mist focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 focus:border-wlx-ink text-wlx-ink placeholder:text-wlx-stone"
             />
           </div>
 
           {/* Original Price */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+            <label className="block text-sm font-medium text-wlx-stone mb-1.5">
               {isZh ? "原價（可選，劃線價）" : "Original Price (optional, strikethrough)"}
             </label>
             <input
@@ -1655,7 +1655,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
               placeholder={isZh ? "留空表示冇折扣" : "Leave empty for no discount"}
               min="0"
               step="1"
-              className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30 focus:border-[#FF9500] text-zinc-900 placeholder:text-zinc-400"
+              className="w-full px-3 py-2.5 rounded-xl border border-wlx-mist focus:outline-none focus:ring-2 focus:ring-wlx-ink/20 focus:border-wlx-ink text-wlx-ink placeholder:text-wlx-stone"
             />
           </div>
 
@@ -1664,22 +1664,22 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
 
           {/* Video URL — 即將推出 */}
           <div className="opacity-50">
-            <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+            <label className="block text-sm font-medium text-wlx-stone mb-1.5">
               {isZh ? "影片連結" : "Video URL"}
-              <span className="ml-2 text-xs text-zinc-400">{isZh ? "即將推出" : "Coming soon"}</span>
+              <span className="ml-2 text-xs text-wlx-stone">{isZh ? "即將推出" : "Coming soon"}</span>
             </label>
             <input
               type="url"
               disabled
               value=""
               placeholder="https://..."
-              className="w-full px-3 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-400 placeholder:text-zinc-300 cursor-not-allowed"
+              className="w-full px-3 py-2.5 rounded-xl border border-wlx-mist bg-wlx-cream text-wlx-stone placeholder:text-zinc-300 cursor-not-allowed"
             />
           </div>
         </div>
 
         {/* Footer buttons */}
-        <div className="px-5 py-4 border-t border-zinc-100 flex gap-3">
+        <div className="px-5 py-4 border-t border-wlx-mist flex gap-3">
           {!isNew && product && (
             <button
               type="button"
@@ -1688,7 +1688,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
               className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                 confirmDelete
                   ? "bg-red-500 text-white hover:bg-red-600"
-                  : "bg-zinc-100 text-zinc-600 hover:bg-red-50 hover:text-red-600"
+                  : "bg-wlx-cream text-wlx-stone hover:bg-red-50 hover:text-red-600"
               } disabled:opacity-50`}
             >
               {deleting ? (
@@ -1704,7 +1704,7 @@ export default function ProductEditSheet({ isOpen, onClose, onSave, product, isN
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 py-3 rounded-xl bg-[#FF9500] text-white font-semibold hover:bg-[#E68600] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-3 rounded-xl bg-wlx-ink text-white font-semibold hover:bg-wlx-ink/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
           >
             {saving && <Loader2 size={16} className="animate-spin" />}
             {isZh ? "儲存" : "Save"}

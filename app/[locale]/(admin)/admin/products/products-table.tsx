@@ -230,7 +230,7 @@ export function ProductsTable({
 
   const getBadgeStyles = (badge: string) => {
     if (badge === "今期熱賣" || badge.toLowerCase() === "hot") {
-      return "bg-orange-100 text-orange-700";
+      return "bg-wlx-cream text-orange-700";
     }
     if (badge === "新品上架" || badge.toLowerCase() === "new") {
       return "bg-blue-100 text-blue-700";
@@ -241,7 +241,7 @@ export function ProductsTable({
     if (badge === "店長推介" || badge.toLowerCase() === "featured") {
       return "bg-olive-100 text-olive-700";
     }
-    return "bg-zinc-100 text-zinc-700";
+    return "bg-wlx-cream text-wlx-stone";
   };
 
   // Filter and sort products
@@ -590,14 +590,14 @@ export function ProductsTable({
   if (isEmpty) {
     return (
       <>
-        <div className="mt-12 flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-300 bg-white px-6 py-16 text-center">
+        <div className="mt-12 flex flex-col items-center justify-center rounded-3xl border border-dashed border-wlx-mist bg-white px-6 py-16 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-olive-50">
             <Package size={32} className="text-olive-600" />
           </div>
-          <h3 className="text-lg font-semibold text-zinc-900">
+          <h3 className="text-lg font-semibold text-wlx-ink">
             {isZh ? "未有商品" : "No products yet"}
           </h3>
-          <p className="mt-2 max-w-sm text-sm text-zinc-500">
+          <p className="mt-2 max-w-sm text-sm text-wlx-stone">
             {isZh
               ? "加入你第一件商品，開始喺網店銷售。"
               : "Add your first product to start selling in your store."}
@@ -625,24 +625,24 @@ export function ProductsTable({
     <>
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-wlx-stone w-5 h-5" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search by name, SKU, brand..."
-            className="w-full rounded-2xl border border-zinc-200 bg-white pl-12 pr-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+            className="w-full rounded-2xl border border-wlx-mist bg-white pl-12 pr-4 py-3 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300"
           />
         </div>
         <div className="flex flex-wrap items-center gap-2 justify-end">
           {/* View mode toggle */}
-          <div className="inline-flex rounded-xl border border-zinc-200 bg-white overflow-hidden">
+          <div className="inline-flex rounded-xl border border-wlx-mist bg-white overflow-hidden">
             <button
               onClick={() => setViewMode("table")}
               className={`flex items-center gap-1.5 px-3 py-3 text-sm font-semibold transition-colors ${
                 viewMode === "table"
                   ? "bg-olive-600 text-white"
-                  : "text-zinc-600 hover:bg-zinc-50"
+                  : "text-wlx-stone hover:bg-wlx-cream"
               }`}
               title="Table view"
             >
@@ -653,7 +653,7 @@ export function ProductsTable({
               className={`flex items-center gap-1.5 px-3 py-3 text-sm font-semibold transition-colors ${
                 viewMode === "grid"
                   ? "bg-olive-600 text-white"
-                  : "text-zinc-600 hover:bg-zinc-50"
+                  : "text-wlx-stone hover:bg-wlx-cream"
               }`}
               title="Grid view"
             >
@@ -665,7 +665,7 @@ export function ProductsTable({
             className={`inline-flex items-center gap-1.5 rounded-xl border px-4 py-3 text-sm font-semibold transition-colors ${
               showHidden
                 ? "border-olive-300 bg-olive-50 text-olive-700"
-                : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
+                : "border-wlx-mist bg-white text-wlx-stone hover:bg-wlx-cream"
             }`}
           >
             {showHidden ? (
@@ -710,8 +710,8 @@ export function ProductsTable({
         </div>
       </div>
       {selectedIds.size > 0 && (
-        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3">
-          <span className="text-sm text-zinc-700">
+        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-wlx-mist bg-white px-4 py-3">
+          <span className="text-sm text-wlx-stone">
             {selectedIds.size} selected
           </span>
           <button
@@ -722,7 +722,7 @@ export function ProductsTable({
           </button>
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-50"
+            className="rounded-xl border border-wlx-mist bg-white px-3 py-1.5 text-sm text-wlx-stone hover:bg-wlx-cream"
           >
             Clear
           </button>
@@ -732,7 +732,7 @@ export function ProductsTable({
       {viewMode === "grid" && (
         <div className="mt-6">
           {paginatedProducts.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-zinc-200 bg-white px-6 py-16 text-center text-zinc-500">
+            <div className="rounded-3xl border border-dashed border-wlx-mist bg-white px-6 py-16 text-center text-wlx-stone">
               {searchQuery
                 ? "No products match your search."
                 : "No data available."}
@@ -756,12 +756,12 @@ export function ProductsTable({
                 return (
                   <div
                     key={product.id}
-                    className={`group flex flex-col rounded-2xl border border-zinc-200 bg-white overflow-hidden ${
+                    className={`group flex flex-col rounded-2xl border border-wlx-mist bg-white overflow-hidden ${
                       !product.active ? "opacity-50" : ""
                     } ${product.hidden ? "opacity-60" : ""}`}
                   >
                     {/* Image */}
-                    <div className="relative aspect-square bg-zinc-100 overflow-hidden">
+                    <div className="relative aspect-square bg-wlx-cream overflow-hidden">
                       {product.imageUrl ? (
                         <Image
                           src={product.imageUrl}
@@ -803,17 +803,17 @@ export function ProductsTable({
                     {/* Info */}
                     <div className="flex flex-col flex-1 p-2.5 gap-1">
                       {product.brand && (
-                        <div className="text-[10px] font-medium text-zinc-400 truncate uppercase tracking-wide">
+                        <div className="text-[10px] font-medium text-wlx-stone truncate uppercase tracking-wide">
                           {product.brand}
                         </div>
                       )}
-                      <div className="text-xs font-semibold text-zinc-900 line-clamp-2 leading-tight min-h-[2rem]">
+                      <div className="text-xs font-semibold text-wlx-ink line-clamp-2 leading-tight min-h-[2rem]">
                         {product.title}
                       </div>
                       <div className="flex items-center gap-1.5 mt-auto pt-1">
                         {isOnSale ? (
                           <>
-                            <span className="text-[10px] text-zinc-400 line-through">
+                            <span className="text-[10px] text-wlx-stone line-through">
                               ${Math.round(product.originalPrice!)}
                             </span>
                             <span className="text-sm font-bold text-red-600">
@@ -821,7 +821,7 @@ export function ProductsTable({
                             </span>
                           </>
                         ) : (
-                          <span className="text-sm font-bold text-zinc-900">
+                          <span className="text-sm font-bold text-wlx-ink">
                             ${Math.round(product.price)}
                           </span>
                         )}
@@ -832,7 +832,7 @@ export function ProductsTable({
                     <div className="flex items-center gap-1.5 px-2.5 pb-2.5">
                       <button
                         onClick={() => handleEditProduct(product)}
-                        className="flex-1 rounded-xl border border-zinc-200 bg-white px-2 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+                        className="flex-1 rounded-xl border border-wlx-mist bg-white px-2 py-1.5 text-xs font-semibold text-wlx-stone hover:bg-wlx-cream transition-colors"
                       >
                         Edit
                       </button>
@@ -843,8 +843,8 @@ export function ProductsTable({
                         disabled={togglingHidden === product.id}
                         className={`rounded-xl border p-1.5 disabled:opacity-50 transition-colors ${
                           product.hidden
-                            ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
-                            : "border-zinc-200 bg-white text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"
+                            ? "border-amber-200 bg-wlx-cream text-amber-600 hover:bg-wlx-cream"
+                            : "border-wlx-mist bg-white text-wlx-stone hover:bg-wlx-cream hover:text-wlx-stone"
                         }`}
                         title={product.hidden ? "取消隱藏" : "隱藏產品"}
                       >
@@ -862,7 +862,7 @@ export function ProductsTable({
           )}
 
           {/* Grid pagination */}
-          <div className="flex flex-col md:flex-row items-center justify-between mt-4 text-zinc-500 text-sm gap-3">
+          <div className="flex flex-col md:flex-row items-center justify-between mt-4 text-wlx-stone text-sm gap-3">
             <div>
               Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
               {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)}{" "}
@@ -874,7 +874,7 @@ export function ProductsTable({
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
+                  className="px-3 py-1.5 rounded-lg border border-wlx-mist text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-wlx-cream"
                 >
                   Previous
                 </button>
@@ -896,7 +896,7 @@ export function ProductsTable({
                       className={`w-8 h-8 rounded-lg text-sm font-medium ${
                         currentPage === pageNum
                           ? "bg-[#6B7A2F] text-white"
-                          : "border border-zinc-200 hover:bg-zinc-50"
+                          : "border border-wlx-mist hover:bg-wlx-cream"
                       }`}
                     >
                       {pageNum}
@@ -911,7 +911,7 @@ export function ProductsTable({
                     setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
+                  className="px-3 py-1.5 rounded-lg border border-wlx-mist text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-wlx-cream"
                 >
                   Next
                 </button>
@@ -922,11 +922,11 @@ export function ProductsTable({
       )}
       {/* ── Table view ── */}
       {viewMode === "table" && (
-        <div className="mt-6 overflow-hidden rounded-3xl border border-zinc-200 bg-white">
+        <div className="mt-6 overflow-hidden rounded-3xl border border-wlx-mist bg-white">
           <div className="overflow-x-auto">
             <table className="min-w-[1400px] w-full text-sm">
               <thead>
-                <tr className="text-zinc-500 border-b border-zinc-200">
+                <tr className="text-wlx-stone border-b border-wlx-mist">
                   <th className="px-4 py-3 text-left w-12">
                     <input
                       type="checkbox"
@@ -948,12 +948,12 @@ export function ProductsTable({
                           openFilter === "category" ? null : "category",
                         )
                       }
-                      className="inline-flex items-center gap-1 hover:text-zinc-700"
+                      className="inline-flex items-center gap-1 hover:text-wlx-stone"
                     >
                       Category <span className="text-xs">▼</span>
                     </button>
                     {openFilter === "category" && (
-                      <div className="absolute left-0 mt-2 w-48 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
+                      <div className="absolute left-0 mt-2 w-48 rounded-lg border border-wlx-mist bg-white shadow-lg z-10">
                         {CATEGORY_OPTIONS.map((option) => (
                           <button
                             key={option}
@@ -963,10 +963,10 @@ export function ProductsTable({
                               setOpenFilter(null);
                               setCurrentPage(1);
                             }}
-                            className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-wlx-cream ${
                               categoryFilter === option
                                 ? "text-olive-700 font-semibold"
-                                : "text-zinc-600"
+                                : "text-wlx-stone"
                             }`}
                           >
                             {option}
@@ -979,7 +979,7 @@ export function ProductsTable({
                     <button
                       type="button"
                       onClick={() => toggleSort("originalPrice")}
-                      className="inline-flex items-center gap-1 hover:text-zinc-700"
+                      className="inline-flex items-center gap-1 hover:text-wlx-stone"
                     >
                       Orig. Price{" "}
                       <span className="text-xs">
@@ -991,7 +991,7 @@ export function ProductsTable({
                     <button
                       type="button"
                       onClick={() => toggleSort("price")}
-                      className="inline-flex items-center gap-1 hover:text-zinc-700 ml-auto"
+                      className="inline-flex items-center gap-1 hover:text-wlx-stone ml-auto"
                     >
                       Net Price{" "}
                       <span className="text-xs">
@@ -1006,12 +1006,12 @@ export function ProductsTable({
                       onClick={() =>
                         setOpenFilter(openFilter === "stock" ? null : "stock")
                       }
-                      className="inline-flex items-center gap-1 hover:text-zinc-700"
+                      className="inline-flex items-center gap-1 hover:text-wlx-stone"
                     >
                       Stock <span className="text-xs">▼</span>
                     </button>
                     {openFilter === "stock" && (
-                      <div className="absolute left-0 mt-2 w-40 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
+                      <div className="absolute left-0 mt-2 w-40 rounded-lg border border-wlx-mist bg-white shadow-lg z-10">
                         {STOCK_OPTIONS.map((option) => (
                           <button
                             key={option}
@@ -1021,10 +1021,10 @@ export function ProductsTable({
                               setOpenFilter(null);
                               setCurrentPage(1);
                             }}
-                            className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-wlx-cream ${
                               stockFilter === option
                                 ? "text-olive-700 font-semibold"
-                                : "text-zinc-600"
+                                : "text-wlx-stone"
                             }`}
                           >
                             {option}
@@ -1040,12 +1040,12 @@ export function ProductsTable({
                       onClick={() =>
                         setOpenFilter(openFilter === "status" ? null : "status")
                       }
-                      className="inline-flex items-center gap-1 hover:text-zinc-700"
+                      className="inline-flex items-center gap-1 hover:text-wlx-stone"
                     >
                       Status <span className="text-xs">▼</span>
                     </button>
                     {openFilter === "status" && (
-                      <div className="absolute left-0 mt-2 w-36 rounded-lg border border-zinc-200 bg-white shadow-lg z-10">
+                      <div className="absolute left-0 mt-2 w-36 rounded-lg border border-wlx-mist bg-white shadow-lg z-10">
                         {STATUS_OPTIONS.map((option) => (
                           <button
                             key={option}
@@ -1055,10 +1055,10 @@ export function ProductsTable({
                               setOpenFilter(null);
                               setCurrentPage(1);
                             }}
-                            className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 ${
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-wlx-cream ${
                               statusFilter === option
                                 ? "text-olive-700 font-semibold"
-                                : "text-zinc-600"
+                                : "text-wlx-stone"
                             }`}
                           >
                             {option}
@@ -1076,7 +1076,7 @@ export function ProductsTable({
                   <tr>
                     <td
                       colSpan={11}
-                      className="px-4 py-12 text-center text-zinc-500"
+                      className="px-4 py-12 text-center text-wlx-stone"
                     >
                       {searchQuery
                         ? "No products match your search."
@@ -1112,7 +1112,7 @@ export function ProductsTable({
                     return (
                       <tr
                         key={product.id}
-                        className={`border-t border-zinc-200 hover:bg-zinc-50 ${!product.active ? "opacity-50" : ""} ${product.hidden ? "opacity-60" : ""}`}
+                        className={`border-t border-wlx-mist hover:bg-wlx-cream ${!product.active ? "opacity-50" : ""} ${product.hidden ? "opacity-60" : ""}`}
                       >
                         {/* Checkbox */}
                         <td className="px-4 py-3">
@@ -1127,7 +1127,7 @@ export function ProductsTable({
                         <td className="px-2 py-2">
                           <div className="flex items-center gap-3">
                             {product.imageUrl ? (
-                              <div className="relative h-[48px] w-[48px] flex-shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+                              <div className="relative h-[48px] w-[48px] flex-shrink-0 overflow-hidden rounded-lg border border-wlx-mist bg-wlx-cream">
                                 <Image
                                   src={product.imageUrl}
                                   alt={product.title}
@@ -1142,37 +1142,37 @@ export function ProductsTable({
                                 )}
                               </div>
                             ) : (
-                              <div className="h-[48px] w-[48px] flex-shrink-0 rounded-lg border border-dashed border-zinc-200 bg-zinc-50" />
+                              <div className="h-[48px] w-[48px] flex-shrink-0 rounded-lg border border-dashed border-wlx-mist bg-wlx-cream" />
                             )}
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-sm font-semibold text-zinc-900 truncate">
+                                <span className="text-sm font-semibold text-wlx-ink truncate">
                                   {product.title}
                                 </span>
                                 {product.hidden && (
-                                  <span className="shrink-0 rounded-full bg-zinc-200 px-1.5 py-0.5 text-[10px] font-medium text-zinc-600">
+                                  <span className="shrink-0 rounded-full bg-wlx-mist px-1.5 py-0.5 text-[10px] font-medium text-wlx-stone">
                                     已隱藏
                                   </span>
                                 )}
                               </div>
-                              <div className="text-xs text-zinc-500 truncate">
+                              <div className="text-xs text-wlx-stone truncate">
                                 {product.brand || "—"}
                               </div>
                             </div>
                           </div>
                         </td>
                         {/* Style */}
-                        <td className="px-2 py-1 text-zinc-500 text-sm">
+                        <td className="px-2 py-1 text-wlx-stone text-sm">
                           {product.sku || "—"}
                         </td>
                         {/* Category */}
-                        <td className="px-2 py-1 text-zinc-600 text-sm">
+                        <td className="px-2 py-1 text-wlx-stone text-sm">
                           {product.category || "—"}
                         </td>
                         {/* Orig. Price */}
                         <td className="px-2 py-1 text-right text-sm">
                           {product.originalPrice != null ? (
-                            <span className="text-zinc-600">
+                            <span className="text-wlx-stone">
                               ${Math.round(product.originalPrice)}
                             </span>
                           ) : (
@@ -1190,14 +1190,14 @@ export function ProductsTable({
                                   onChange={(e) =>
                                     setEditOriginalPrice(e.target.value)
                                   }
-                                  className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right text-zinc-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
+                                  className="w-20 rounded-lg border border-wlx-mist px-2 py-1 text-sm text-right text-wlx-stone focus:outline-none focus:ring-1 focus:ring-olive-500"
                                   placeholder="Orig."
                                 />
                                 <input
                                   type="number"
                                   value={editPrice}
                                   onChange={(e) => setEditPrice(e.target.value)}
-                                  className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-olive-500"
+                                  className="w-20 rounded-lg border border-wlx-mist px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-olive-500"
                                   placeholder="Price"
                                   autoFocus
                                 />
@@ -1213,7 +1213,7 @@ export function ProductsTable({
                                 <button
                                   onClick={cancelEditingPrice}
                                   disabled={savingPrice}
-                                  className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-100"
+                                  className="p-1 rounded-lg text-wlx-stone hover:bg-wlx-cream"
                                 >
                                   <X size={14} />
                                 </button>
@@ -1224,7 +1224,7 @@ export function ProductsTable({
                               className="group cursor-pointer inline-flex items-center gap-1"
                               onClick={() => startEditingPrice(product)}
                             >
-                              <span className="text-zinc-900 font-medium">
+                              <span className="text-wlx-ink font-medium">
                                 ${Math.round(product.price)}
                               </span>
                               <Pencil
@@ -1235,11 +1235,11 @@ export function ProductsTable({
                           )}
                         </td>
                         {/* Discount */}
-                        <td className="px-2 py-1 text-center text-sm text-zinc-600">
+                        <td className="px-2 py-1 text-center text-sm text-wlx-stone">
                           {isOnSale ? `-${discountPercent}%` : ""}
                         </td>
                         {/* Stock */}
-                        <td className="px-2 py-1 text-right text-zinc-700 text-sm">
+                        <td className="px-2 py-1 text-right text-wlx-stone text-sm">
                           {product.stock ?? 0}
                         </td>
                         {/* Badges */}
@@ -1281,7 +1281,7 @@ export function ProductsTable({
                           </span>
                         </td>
                         {/* Updated */}
-                        <td className="px-2 py-1 text-zinc-500 text-xs">
+                        <td className="px-2 py-1 text-wlx-stone text-xs">
                           <div className="flex items-center justify-between gap-3">
                             <span>
                               {new Date(product.updatedAt)
@@ -1296,8 +1296,8 @@ export function ProductsTable({
                                 disabled={togglingHidden === product.id}
                                 className={`rounded-lg border p-1.5 disabled:opacity-50 ${
                                   product.hidden
-                                    ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
-                                    : "border-zinc-200 bg-white text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"
+                                    ? "border-amber-200 bg-wlx-cream text-amber-600 hover:bg-wlx-cream"
+                                    : "border-wlx-mist bg-white text-wlx-stone hover:bg-wlx-cream hover:text-wlx-stone"
                                 }`}
                                 title={product.hidden ? "取消隱藏" : "隱藏產品"}
                               >
@@ -1322,7 +1322,7 @@ export function ProductsTable({
                               )}
                               <button
                                 onClick={() => handleEditProduct(product)}
-                                className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs text-zinc-700 hover:bg-zinc-50"
+                                className="rounded-lg border border-wlx-mist bg-white px-2.5 py-1.5 text-xs text-wlx-stone hover:bg-wlx-cream"
                               >
                                 Edit
                               </button>
@@ -1337,7 +1337,7 @@ export function ProductsTable({
             </table>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center justify-between border-t border-zinc-200 px-4 py-3 text-zinc-500 text-sm gap-3">
+          <div className="flex flex-col md:flex-row items-center justify-between border-t border-wlx-mist px-4 py-3 text-wlx-stone text-sm gap-3">
             <div>
               Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
               {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)}{" "}
@@ -1349,7 +1349,7 @@ export function ProductsTable({
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
+                  className="px-3 py-1.5 rounded-lg border border-wlx-mist text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-wlx-cream"
                 >
                   Previous
                 </button>
@@ -1371,7 +1371,7 @@ export function ProductsTable({
                       className={`w-8 h-8 rounded-lg text-sm font-medium ${
                         currentPage === pageNum
                           ? "bg-[#6B7A2F] text-white"
-                          : "border border-zinc-200 hover:bg-zinc-50"
+                          : "border border-wlx-mist hover:bg-wlx-cream"
                       }`}
                     >
                       {pageNum}
@@ -1386,7 +1386,7 @@ export function ProductsTable({
                     setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 rounded-lg border border-zinc-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
+                  className="px-3 py-1.5 rounded-lg border border-wlx-mist text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-wlx-cream"
                 >
                   Next
                 </button>
@@ -1405,19 +1405,19 @@ export function ProductsTable({
             }
           }}
         >
-          <div className="w-full max-w-4xl rounded-3xl border border-zinc-200 bg-white p-6">
+          <div className="w-full max-w-4xl rounded-3xl border border-wlx-mist bg-white p-6">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-zinc-900">
+                <h2 className="text-xl font-semibold text-wlx-ink">
                   Manage Badges
                 </h2>
-                <p className="mt-1 text-sm text-zinc-500">
+                <p className="mt-1 text-sm text-wlx-stone">
                   Create, edit, and organize product badges.
                 </p>
               </div>
               <button
                 onClick={() => setIsBadgeModalOpen(false)}
-                className="text-zinc-400 hover:text-zinc-600"
+                className="text-wlx-stone hover:text-wlx-stone"
               >
                 ✕
               </button>
@@ -1430,25 +1430,25 @@ export function ProductsTable({
             )}
 
             <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+              <div className="rounded-2xl border border-wlx-mist bg-white p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-zinc-800">
+                  <h3 className="text-sm font-semibold text-wlx-ink">
                     Badge List
                   </h3>
                   <button
                     onClick={loadBadges}
                     disabled={badgeLoading}
-                    className="text-xs text-zinc-500 hover:text-zinc-700 disabled:opacity-50"
+                    className="text-xs text-wlx-stone hover:text-wlx-stone disabled:opacity-50"
                   >
                     Refresh
                   </button>
                 </div>
                 {badgeLoading ? (
-                  <div className="py-8 text-center text-sm text-zinc-500">
+                  <div className="py-8 text-center text-sm text-wlx-stone">
                     Loading badges...
                   </div>
                 ) : badges.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-zinc-500">
+                  <div className="py-8 text-center text-sm text-wlx-stone">
                     No badges yet
                   </div>
                 ) : (
@@ -1456,7 +1456,7 @@ export function ProductsTable({
                     {badges.map((badge) => (
                       <div
                         key={badge.id}
-                        className="flex items-center justify-between rounded-xl border border-zinc-100 bg-zinc-50 px-3 py-2"
+                        className="flex items-center justify-between rounded-xl border border-wlx-mist bg-wlx-cream px-3 py-2"
                       >
                         <div className="flex items-center gap-3">
                           <span
@@ -1464,10 +1464,10 @@ export function ProductsTable({
                             style={{ backgroundColor: badge.color }}
                           />
                           <div>
-                            <div className="text-sm font-medium text-zinc-900">
+                            <div className="text-sm font-medium text-wlx-ink">
                               {badge.nameZh} / {badge.nameEn}
                             </div>
-                            <div className="text-xs text-zinc-400">
+                            <div className="text-xs text-wlx-stone">
                               {badge.color}
                             </div>
                           </div>
@@ -1475,7 +1475,7 @@ export function ProductsTable({
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleEditBadge(badge)}
-                            className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+                            className="rounded-lg border border-wlx-mist bg-white px-2 py-1 text-xs text-wlx-stone hover:bg-wlx-cream"
                           >
                             Edit
                           </button>
@@ -1492,15 +1492,15 @@ export function ProductsTable({
                 )}
               </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+              <div className="rounded-2xl border border-wlx-mist bg-white p-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-zinc-800">
+                  <h3 className="text-sm font-semibold text-wlx-ink">
                     {editingBadgeId ? "Edit Badge" : "Add Badge"}
                   </h3>
                   {editingBadgeId && (
                     <button
                       onClick={resetBadgeForm}
-                      className="text-xs text-zinc-500 hover:text-zinc-700"
+                      className="text-xs text-wlx-stone hover:text-wlx-stone"
                     >
                       Cancel Edit
                     </button>
@@ -1515,29 +1515,29 @@ export function ProductsTable({
 
                 <div className="mt-4 space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                    <label className="block text-sm font-medium text-wlx-stone mb-2">
                       Name (Chinese)
                     </label>
                     <input
                       value={badgeNameZh}
                       onChange={(e) => setBadgeNameZh(e.target.value)}
-                      className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300"
                       placeholder="店長推介"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                    <label className="block text-sm font-medium text-wlx-stone mb-2">
                       Name (English)
                     </label>
                     <input
                       value={badgeNameEn}
                       onChange={(e) => setBadgeNameEn(e.target.value)}
-                      className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300"
                       placeholder="Staff Pick"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                    <label className="block text-sm font-medium text-wlx-stone mb-2">
                       Color Presets
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -1553,7 +1553,7 @@ export function ProductsTable({
                             className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs ${
                               isSelected
                                 ? "border-olive-500 bg-olive-50 text-olive-700"
-                                : "border-zinc-200 bg-white text-zinc-700"
+                                : "border-wlx-mist bg-white text-wlx-stone"
                             }`}
                           >
                             <span
@@ -1567,21 +1567,21 @@ export function ProductsTable({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                    <label className="block text-sm font-medium text-wlx-stone mb-2">
                       Custom Hex
                     </label>
                     <input
                       value={badgeColor}
                       onChange={(e) => setBadgeColor(e.target.value)}
-                      className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                      className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300"
                       placeholder="#EF4444"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-2">
+                    <label className="block text-sm font-medium text-wlx-stone mb-2">
                       Live Preview
                     </label>
-                    <div className="h-20 w-20 rounded-xl bg-zinc-200 relative overflow-hidden">
+                    <div className="h-20 w-20 rounded-xl bg-wlx-mist relative overflow-hidden">
                       <span
                         className="absolute top-1 left-1 px-2 py-0.5 text-[10px] font-semibold text-white rounded"
                         style={{ backgroundColor: badgeColor || "#6B7A2F" }}
@@ -1601,7 +1601,7 @@ export function ProductsTable({
                     <button
                       onClick={resetBadgeForm}
                       type="button"
-                      className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+                      className="rounded-xl border border-wlx-mist bg-white px-4 py-2 text-sm text-wlx-stone hover:bg-wlx-cream"
                     >
                       Clear
                     </button>

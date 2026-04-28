@@ -32,8 +32,8 @@ type Props = {
 type FilterTab = "all" | "pending" | "shipping" | "shipped";
 
 const statusConfig: Record<string, { label: string; labelZh: string; color: string }> = {
-  PENDING: { label: "Pending Payment", labelZh: "待付款", color: "bg-amber-100 text-amber-700" },
-  PENDING_CONFIRMATION: { label: "Awaiting Confirmation", labelZh: "待確認收款", color: "bg-amber-100 text-amber-700" },
+  PENDING: { label: "Pending Payment", labelZh: "待付款", color: "bg-wlx-cream text-amber-700" },
+  PENDING_CONFIRMATION: { label: "Awaiting Confirmation", labelZh: "待確認收款", color: "bg-wlx-cream text-amber-700" },
   CONFIRMED: { label: "To Ship", labelZh: "待出貨", color: "bg-blue-100 text-blue-700" },
   PAID: { label: "To Ship", labelZh: "待出貨", color: "bg-blue-100 text-blue-700" },
   PROCESSING: { label: "To Ship", labelZh: "待出貨", color: "bg-blue-100 text-blue-700" },
@@ -41,7 +41,7 @@ const statusConfig: Record<string, { label: string; labelZh: string; color: stri
   SHIPPED: { label: "Shipped", labelZh: "已出貨", color: "bg-purple-100 text-purple-700" },
   DELIVERED: { label: "Delivered", labelZh: "已送達", color: "bg-green-100 text-green-700" },
   COMPLETED: { label: "Completed", labelZh: "完成", color: "bg-green-100 text-green-700" },
-  CANCELLED: { label: "Cancelled", labelZh: "已取消", color: "bg-zinc-100 text-zinc-500" },
+  CANCELLED: { label: "Cancelled", labelZh: "已取消", color: "bg-wlx-cream text-wlx-stone" },
 };
 
 const paymentMethodLabels: Record<string, string> = {
@@ -62,10 +62,10 @@ function CopyableField({ label, value }: { label: string; value: string }) {
 
   return (
     <div className="flex items-baseline gap-1">
-      <span className="text-zinc-400 text-xs shrink-0">{label}</span>
+      <span className="text-wlx-stone text-xs shrink-0">{label}</span>
       <button
         onClick={handleCopy}
-        className="flex items-center gap-1 text-sm text-zinc-700 hover:text-zinc-900 transition-colors min-w-0"
+        className="flex items-center gap-1 text-sm text-wlx-stone hover:text-wlx-ink transition-colors min-w-0"
       >
         {copied ? (
           <>
@@ -188,7 +188,7 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
 
   return (
     <div className="px-4 pb-4">
-      <h1 className="text-xl font-semibold text-zinc-900 mb-4">{isZh ? "訂單" : "Orders"}</h1>
+      <h1 className="text-xl font-semibold text-wlx-ink mb-4">{isZh ? "訂單" : "Orders"}</h1>
 
       {/* Filter tabs */}
       <div className="flex gap-2 mb-4">
@@ -198,8 +198,8 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
             onClick={() => setFilter(tab.key)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               filter === tab.key
-                ? "bg-[#FF9500] text-white"
-                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                ? "bg-wlx-ink text-white"
+                : "bg-wlx-cream text-wlx-stone hover:bg-wlx-mist"
             }`}
           >
             {tab.label}
@@ -223,7 +223,7 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
 
       {/* Orders list */}
       {filteredOrders.length === 0 ? (
-        <div className="text-center py-12 text-zinc-400">
+        <div className="text-center py-12 text-wlx-stone">
           <Package size={40} className="mx-auto mb-3 opacity-50" />
           <p>{isZh ? "冇訂單" : "No orders"}</p>
         </div>
@@ -241,11 +241,11 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
             return (
               <div
                 key={order.id}
-                className="bg-white rounded-xl border border-zinc-200 overflow-hidden"
+                className="bg-white rounded-xl border border-wlx-mist overflow-hidden"
               >
                 {/* Header: order number + status */}
                 <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                  <span className="text-xs font-mono text-zinc-400">
+                  <span className="text-xs font-mono text-wlx-stone">
                     {order.orderNumber || order.id.slice(0, 12)}
                   </span>
                   <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${config.color}`}>
@@ -253,7 +253,7 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
                   </span>
                 </div>
 
-                <div className="border-t border-zinc-100 mx-4" />
+                <div className="border-t border-wlx-mist mx-4" />
 
                 {/* 👤 客人 */}
                 <div className="px-4 py-3 flex justify-between items-start">
@@ -270,41 +270,41 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
                   </button>
                 </div>
 
-                <div className="border-t border-zinc-100 mx-4" />
+                <div className="border-t border-wlx-mist mx-4" />
 
                 {/* 🛒 商品 */}
                 <div className="px-4 py-3">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-zinc-400 text-xs shrink-0">商品：</span>
-                    <span className="text-sm text-zinc-700">{formatItems(order.items)}</span>
+                    <span className="text-wlx-stone text-xs shrink-0">商品：</span>
+                    <span className="text-sm text-wlx-stone">{formatItems(order.items)}</span>
                   </div>
                 </div>
 
-                <div className="border-t border-zinc-100 mx-4" />
+                <div className="border-t border-wlx-mist mx-4" />
 
                 {/* 💰 訂單 */}
                 <div className="px-4 py-3 flex justify-between items-start">
                   <div className="space-y-1.5 min-w-0">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-zinc-400 text-xs shrink-0">金額：</span>
-                      <span className="text-sm font-semibold text-zinc-700">${Math.round(total)}</span>
+                      <span className="text-wlx-stone text-xs shrink-0">金額：</span>
+                      <span className="text-sm font-semibold text-wlx-stone">${Math.round(total)}</span>
                     </div>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-zinc-400 text-xs shrink-0">日期：</span>
-                      <span className="text-sm text-zinc-700">{formatDate(order.createdAt)}</span>
+                      <span className="text-wlx-stone text-xs shrink-0">日期：</span>
+                      <span className="text-sm text-wlx-stone">{formatDate(order.createdAt)}</span>
                     </div>
                     {order.paymentMethod && (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-zinc-400 text-xs shrink-0">付款：</span>
-                        <span className="text-sm text-zinc-700">
+                        <span className="text-wlx-stone text-xs shrink-0">付款：</span>
+                        <span className="text-sm text-wlx-stone">
                           {paymentMethodLabels[order.paymentMethod] || order.paymentMethod}
                         </span>
                       </div>
                     )}
                     {getFulfillmentLabel(order) && (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-zinc-400 text-xs shrink-0">取貨方式：</span>
-                        <span className="text-sm text-zinc-700">{getFulfillmentLabel(order)}</span>
+                        <span className="text-wlx-stone text-xs shrink-0">取貨方式：</span>
+                        <span className="text-sm text-wlx-stone">{getFulfillmentLabel(order)}</span>
                       </div>
                     )}
                   </div>
@@ -313,7 +313,7 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
                       <img
                         src={order.paymentProof}
                         alt="付款截圖"
-                        className="w-20 h-20 rounded-lg object-cover border border-zinc-200 hover:border-zinc-400 transition-colors"
+                        className="w-20 h-20 rounded-lg object-cover border border-wlx-mist hover:border-zinc-400 transition-colors"
                       />
                     </button>
                   )}
@@ -322,7 +322,7 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
                 {/* Footer: actions */}
                 {(showConfirm || showShip) && (
                   <>
-                    <div className="border-t border-zinc-100 mx-4" />
+                    <div className="border-t border-wlx-mist mx-4" />
                     <div className="px-4 py-3 flex gap-2">
                       {showConfirm && (
                         <button
@@ -362,31 +362,31 @@ export default function BioLinkOrders({ orders, locale, page, totalPages }: Prop
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between py-4 px-1">
-              <span className="text-xs text-zinc-400">
+              <span className="text-xs text-wlx-stone">
                 {isZh ? `第 ${page} / ${totalPages} 頁` : `Page ${page} of ${totalPages}`}
               </span>
               <div className="flex gap-2">
                 {page > 1 ? (
                   <Link
                     href={`?page=${page - 1}`}
-                    className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                    className="rounded-lg border border-wlx-mist bg-white px-3 py-1.5 text-xs font-medium text-wlx-stone hover:bg-wlx-cream transition-colors"
                   >
                     {isZh ? "上一頁" : "Prev"}
                   </Link>
                 ) : (
-                  <span className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-300 cursor-not-allowed">
+                  <span className="rounded-lg border border-wlx-mist px-3 py-1.5 text-xs font-medium text-zinc-300 cursor-not-allowed">
                     {isZh ? "上一頁" : "Prev"}
                   </span>
                 )}
                 {page < totalPages ? (
                   <Link
                     href={`?page=${page + 1}`}
-                    className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                    className="rounded-lg border border-wlx-mist bg-white px-3 py-1.5 text-xs font-medium text-wlx-stone hover:bg-wlx-cream transition-colors"
                   >
                     {isZh ? "下一頁" : "Next"}
                   </Link>
                 ) : (
-                  <span className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-300 cursor-not-allowed">
+                  <span className="rounded-lg border border-wlx-mist px-3 py-1.5 text-xs font-medium text-zinc-300 cursor-not-allowed">
                     {isZh ? "下一頁" : "Next"}
                   </span>
                 )}

@@ -104,7 +104,7 @@ export default function VariantMatrixEditor({
 
   if (variants.length === 0 && expectedKeys.length === 0) {
     return (
-      <div className="text-sm text-zinc-400 py-4 text-center">
+      <div className="text-sm text-wlx-stone py-4 text-center">
         請先選擇至少一個選項維度嘅值
       </div>
     );
@@ -116,7 +116,7 @@ export default function VariantMatrixEditor({
     <div className="space-y-3">
       {/* Bulk price */}
       <div className="flex items-center gap-2">
-        <span className="text-sm text-zinc-600">統一設定價錢:</span>
+        <span className="text-sm text-wlx-stone">統一設定價錢:</span>
         <input
           type="number"
           min="0"
@@ -124,24 +124,24 @@ export default function VariantMatrixEditor({
           value={bulkPrice}
           onChange={(e) => setBulkPrice(e.target.value)}
           disabled={disabled}
-          className="w-28 rounded-lg border border-zinc-200 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+          className="w-28 rounded-lg border border-wlx-mist px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
           placeholder="$"
         />
         <button
           type="button"
           onClick={applyBulkPrice}
           disabled={disabled || !bulkPrice.trim()}
-          className="rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+          className="rounded-lg bg-wlx-cream px-3 py-1.5 text-sm text-wlx-stone hover:bg-wlx-mist disabled:opacity-50"
         >
           套用全部
         </button>
       </div>
 
       {/* Variant matrix table */}
-      <div className="overflow-x-auto border border-zinc-100 rounded-xl">
+      <div className="overflow-x-auto border border-wlx-mist rounded-xl">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-zinc-50">
-            <tr className="text-zinc-500 border-b border-zinc-200">
+          <thead className="sticky top-0 bg-wlx-cream">
+            <tr className="text-wlx-stone border-b border-wlx-mist">
               <th className="py-2 px-3 text-left font-medium">{option1Label || "選項 1"}</th>
               {has2Dims && (
                 <th className="py-2 px-3 text-left font-medium">{option2Label || "選項 2"}</th>
@@ -158,11 +158,11 @@ export default function VariantMatrixEditor({
             {variants.map((v) => (
               <tr
                 key={v.key}
-                className={`border-b border-zinc-100 hover:bg-zinc-50 ${!v.active ? "opacity-40" : ""}`}
+                className={`border-b border-wlx-mist hover:bg-wlx-cream ${!v.active ? "opacity-40" : ""}`}
               >
-                <td className="py-2 px-3 text-zinc-900">{v.option1Value}</td>
+                <td className="py-2 px-3 text-wlx-ink">{v.option1Value}</td>
                 {has2Dims && (
-                  <td className="py-2 px-3 text-zinc-900">{v.option2Value}</td>
+                  <td className="py-2 px-3 text-wlx-ink">{v.option2Value}</td>
                 )}
                 <td className="py-2 px-3 text-right">
                   <input
@@ -172,7 +172,7 @@ export default function VariantMatrixEditor({
                     value={v.price}
                     onChange={(e) => updateVariant(v.key, "price", e.target.value)}
                     disabled={disabled}
-                    className="w-24 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                    className="w-24 rounded-lg border border-wlx-mist px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
                   />
                 </td>
                 {inventoryMode === "limited" && (
@@ -183,7 +183,7 @@ export default function VariantMatrixEditor({
                       value={v.stock}
                       onChange={(e) => updateVariant(v.key, "stock", e.target.value)}
                       disabled={disabled}
-                      className="w-20 rounded-lg border border-zinc-200 px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
+                      className="w-20 rounded-lg border border-wlx-mist px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-[#6B7A2F] disabled:opacity-50"
                       placeholder="0"
                     />
                   </td>
@@ -202,7 +202,7 @@ export default function VariantMatrixEditor({
                     type="button"
                     onClick={() => removeVariant(v.key)}
                     disabled={disabled}
-                    className="text-zinc-400 hover:text-red-500 disabled:opacity-50"
+                    className="text-wlx-stone hover:text-red-500 disabled:opacity-50"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -213,7 +213,7 @@ export default function VariantMatrixEditor({
         </table>
       </div>
 
-      <div className="text-xs text-zinc-400">
+      <div className="text-xs text-wlx-stone">
         共 {variants.filter((v) => v.active).length} 個有效組合
         {inventoryMode === "limited" && (
           <span>

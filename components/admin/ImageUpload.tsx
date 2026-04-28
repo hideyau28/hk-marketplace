@@ -113,33 +113,33 @@ export default function ImageUpload({
   return (
     <div className="space-y-3">
       {preview ? (
-        <div className={`relative border border-zinc-200 bg-zinc-50 overflow-hidden ${previewRounded ? "rounded-full w-32 h-32" : "rounded-lg"}`}>
+        <div className={`relative border border-wlx-mist bg-wlx-cream overflow-hidden ${previewRounded ? "rounded-full w-32 h-32" : "rounded-lg"}`}>
           <img src={preview} alt="Preview" className={`object-cover ${previewRounded ? "w-32 h-32" : `w-full ${aspectClass}`}`} />
           <button
             type="button"
             onClick={handleClear}
             disabled={disabled || isUploading}
-            className="absolute top-2 right-2 rounded-full bg-white/90 p-2 text-zinc-600 hover:bg-white disabled:opacity-50"
+            className="absolute top-2 right-2 rounded-full bg-white/90 p-2 text-wlx-stone hover:bg-white disabled:opacity-50"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
       ) : (
         <label
-          className={`flex flex-col items-center justify-center w-full ${aspectClass} rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer ${
+          className={`flex flex-col items-center justify-center w-full ${aspectClass} rounded-lg border-2 border-dashed border-wlx-mist bg-wlx-cream hover:bg-wlx-cream transition-colors cursor-pointer ${
             disabled || isUploading ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
           {isUploading ? (
             <>
-              <Loader2 className="h-10 w-10 text-zinc-400 animate-spin mb-2" />
-              <span className="text-sm text-zinc-500">Uploading...</span>
+              <Loader2 className="h-10 w-10 text-wlx-stone animate-spin mb-2" />
+              <span className="text-sm text-wlx-stone">Uploading...</span>
             </>
           ) : (
             <>
-              <ImageIcon className="h-10 w-10 text-zinc-400 mb-2" />
-              <span className="text-sm text-zinc-600 font-medium">{label}</span>
-              <span className="text-xs text-zinc-400 mt-1">{hint}</span>
+              <ImageIcon className="h-10 w-10 text-wlx-stone mb-2" />
+              <span className="text-sm text-wlx-stone font-medium">{label}</span>
+              <span className="text-xs text-wlx-stone mt-1">{hint}</span>
             </>
           )}
           <input

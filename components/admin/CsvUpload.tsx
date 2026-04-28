@@ -319,18 +319,18 @@ export default function CsvUpload({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-5xl rounded-3xl border border-zinc-200 bg-white p-6">
+      <div className="w-full max-w-5xl rounded-3xl border border-wlx-mist bg-white p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-zinc-900">Import CSV</h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <h2 className="text-xl font-semibold text-wlx-ink">Import CSV</h2>
+            <p className="mt-1 text-sm text-wlx-stone">
               Upload a CSV file to batch create products.
             </p>
           </div>
           <button
             onClick={onClose}
             disabled={importing}
-            className="text-zinc-400 hover:text-zinc-600 disabled:opacity-50"
+            className="text-wlx-stone hover:text-wlx-stone disabled:opacity-50"
           >
             ✕
           </button>
@@ -342,14 +342,14 @@ export default function CsvUpload({
               onClick={() => inputRef.current?.click()}
               onDrop={handleDrop}
               onDragOver={(event) => event.preventDefault()}
-              className="flex h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 px-4 text-center text-sm text-zinc-500 hover:border-olive-500 hover:text-olive-700"
+              className="flex h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-wlx-mist bg-wlx-cream px-4 text-center text-sm text-wlx-stone hover:border-olive-500 hover:text-olive-700"
             >
-              <div className="text-base font-semibold text-zinc-700">
+              <div className="text-base font-semibold text-wlx-stone">
                 Upload CSV
               </div>
               <div className="mt-2">Drag & drop or click to select</div>
               {fileName && (
-                <div className="mt-3 text-xs text-zinc-500">{fileName}</div>
+                <div className="mt-3 text-xs text-wlx-stone">{fileName}</div>
               )}
             </div>
             <input
@@ -360,7 +360,7 @@ export default function CsvUpload({
               className="hidden"
             />
 
-            <div className="mt-4 space-y-2 text-xs text-zinc-500">
+            <div className="mt-4 space-y-2 text-xs text-wlx-stone">
               <div>Required: title, price.</div>
               <div>Ensure sizeSystem matches sizes if provided.</div>
             </div>
@@ -370,7 +370,7 @@ export default function CsvUpload({
                 type="button"
                 onClick={handleReset}
                 disabled={importing || rows.length === 0}
-                className="flex-1 rounded-xl border border-zinc-200 bg-zinc-100 px-3 py-2 text-xs text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+                className="flex-1 rounded-xl border border-wlx-mist bg-wlx-cream px-3 py-2 text-xs text-wlx-stone hover:bg-wlx-mist disabled:opacity-50"
               >
                 Reset
               </button>
@@ -396,7 +396,7 @@ export default function CsvUpload({
 
             {rows.length > 0 && (
               <>
-                <div className="flex items-center justify-between text-sm text-zinc-600">
+                <div className="flex items-center justify-between text-sm text-wlx-stone">
                   <div>
                     {validRows.length} valid, {errorRows.length} errors
                   </div>
@@ -469,9 +469,9 @@ export default function CsvUpload({
                   </div>
                 )}
 
-                <div className="mt-4 max-h-[360px] overflow-auto rounded-2xl border border-zinc-200">
+                <div className="mt-4 max-h-[360px] overflow-auto rounded-2xl border border-wlx-mist">
                   <table className="min-w-[900px] w-full text-xs">
-                    <thead className="sticky top-0 bg-zinc-50 text-zinc-500">
+                    <thead className="sticky top-0 bg-wlx-cream text-wlx-stone">
                       <tr>
                         {ALL_COLUMNS.map((col) => (
                           <th
@@ -493,7 +493,7 @@ export default function CsvUpload({
                           className={row.errors.length ? "bg-red-50" : ""}
                         >
                           {ALL_COLUMNS.map((col) => (
-                            <td key={col} className="px-3 py-2 text-zinc-700">
+                            <td key={col} className="px-3 py-2 text-wlx-stone">
                               {row.raw[col] || "—"}
                             </td>
                           ))}

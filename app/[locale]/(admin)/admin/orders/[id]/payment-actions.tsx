@@ -107,11 +107,11 @@ export default function PaymentActions({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-6">
+    <div className="bg-white rounded-2xl border border-wlx-mist p-6">
       <div className="flex items-center gap-3 mb-4">
-        <h3 className="text-lg font-semibold text-zinc-900">付款資料</h3>
+        <h3 className="text-lg font-semibold text-wlx-ink">付款資料</h3>
         {manual && (
-          <span className="inline-flex items-center rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
+          <span className="inline-flex items-center rounded-full bg-wlx-cream px-3 py-1 text-xs font-semibold text-orange-700">
             手動支付
           </span>
         )}
@@ -120,13 +120,13 @@ export default function PaymentActions({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-3">
           <div>
-            <div className="text-sm text-zinc-500">付款方式</div>
-            <div className="text-zinc-900 font-medium">
+            <div className="text-sm text-wlx-stone">付款方式</div>
+            <div className="text-wlx-ink font-medium">
               {getPaymentMethodName(paymentMethod)}
             </div>
           </div>
           <div>
-            <div className="text-sm text-zinc-500">付款狀態</div>
+            <div className="text-sm text-wlx-stone">付款狀態</div>
             <div className="mt-1">
               <span
                 className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
@@ -136,7 +136,7 @@ export default function PaymentActions({
                       ? "bg-yellow-100 text-yellow-700"
                       : paymentStatus === "rejected"
                         ? "bg-red-100 text-red-700"
-                        : "bg-zinc-100 text-zinc-600"
+                        : "bg-wlx-cream text-wlx-stone"
                 }`}
               >
                 {PAYMENT_STATUS_NAMES[paymentStatus] || paymentStatus}
@@ -147,16 +147,16 @@ export default function PaymentActions({
           {/* 已確認：顯示確認資訊 */}
           {paymentConfirmedAt && (
             <div>
-              <div className="text-sm text-zinc-500">確認時間</div>
-              <div className="text-zinc-900 text-sm">
+              <div className="text-sm text-wlx-stone">確認時間</div>
+              <div className="text-wlx-ink text-sm">
                 {new Date(paymentConfirmedAt).toLocaleString()}
               </div>
             </div>
           )}
           {paymentConfirmedBy && (
             <div>
-              <div className="text-sm text-zinc-500">確認人</div>
-              <div className="text-zinc-900 text-sm">{paymentConfirmedBy}</div>
+              <div className="text-sm text-wlx-stone">確認人</div>
+              <div className="text-wlx-ink text-sm">{paymentConfirmedBy}</div>
             </div>
           )}
         </div>
@@ -164,22 +164,22 @@ export default function PaymentActions({
         {/* Payment Proof Image */}
         {paymentProof && (
           <div>
-            <div className="text-sm text-zinc-500 mb-2">付款截圖</div>
+            <div className="text-sm text-wlx-stone mb-2">付款截圖</div>
             <a href={paymentProof} target="_blank" rel="noreferrer" className="block">
               <img
                 src={paymentProof}
                 alt="Payment proof"
-                className="max-h-64 rounded-lg border border-zinc-200 object-contain cursor-pointer hover:opacity-90"
+                className="max-h-64 rounded-lg border border-wlx-mist object-contain cursor-pointer hover:opacity-90"
               />
             </a>
-            <div className="text-xs text-zinc-400 mt-1">點擊查看大圖</div>
+            <div className="text-xs text-wlx-stone mt-1">點擊查看大圖</div>
           </div>
         )}
       </div>
 
       {/* 確認收款按鈕：manual 支付 + PENDING/PENDING_CONFIRMATION 狀態 */}
       {manual && (orderStatus === "PENDING" || orderStatus === "PENDING_CONFIRMATION") && (
-        <div className="mt-6 pt-4 border-t border-zinc-200">
+        <div className="mt-6 pt-4 border-t border-wlx-mist">
           <div className="flex gap-3">
             <button
               type="button"

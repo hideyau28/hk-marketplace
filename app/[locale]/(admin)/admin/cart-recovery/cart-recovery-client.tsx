@@ -88,7 +88,7 @@ function getRecoveryStatusStyle(status: string | null): string {
     case "recovered":
       return "bg-green-100 text-green-700 border border-green-200";
     case "dismissed":
-      return "bg-zinc-100 text-zinc-500 border border-zinc-200";
+      return "bg-wlx-cream text-wlx-stone border border-wlx-mist";
     default:
       return "bg-yellow-100 text-yellow-700 border border-yellow-200";
   }
@@ -167,27 +167,27 @@ export function CartRecoveryClient({
     <>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5">
-          <div className="text-zinc-500 text-sm">
+        <div className="rounded-2xl border border-wlx-mist bg-white p-5">
+          <div className="text-wlx-stone text-sm">
             {t.admin.cartRecovery.totalAbandoned}
           </div>
-          <div className="text-2xl font-bold text-zinc-900 mt-1">
+          <div className="text-2xl font-bold text-wlx-ink mt-1">
             {stats.totalAbandoned}
           </div>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5">
-          <div className="text-zinc-500 text-sm">
+        <div className="rounded-2xl border border-wlx-mist bg-white p-5">
+          <div className="text-wlx-stone text-sm">
             {t.admin.cartRecovery.abandonedAmount}
           </div>
-          <div className="text-2xl font-bold text-zinc-900 mt-1">
+          <div className="text-2xl font-bold text-wlx-ink mt-1">
             ${stats.totalAmount.toLocaleString()}
           </div>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5">
-          <div className="text-zinc-500 text-sm">
+        <div className="rounded-2xl border border-wlx-mist bg-white p-5">
+          <div className="text-wlx-stone text-sm">
             {t.admin.cartRecovery.recoveryRate}
           </div>
-          <div className="text-2xl font-bold text-zinc-900 mt-1">
+          <div className="text-2xl font-bold text-wlx-ink mt-1">
             {stats.recoveryRate}%
           </div>
         </div>
@@ -201,8 +201,8 @@ export function CartRecoveryClient({
             onClick={() => handleRangeChange(r.key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
               currentRange === r.key
-                ? "bg-zinc-900 text-white"
-                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                ? "bg-wlx-ink text-white"
+                : "bg-wlx-cream text-wlx-stone hover:bg-wlx-mist"
             }`}
           >
             {r.label}
@@ -212,10 +212,10 @@ export function CartRecoveryClient({
 
       {/* Orders List */}
       {orders.length === 0 ? (
-        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-white p-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center mb-4">
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-wlx-mist bg-white p-12 text-center">
+          <div className="w-16 h-16 rounded-full bg-wlx-cream flex items-center justify-center mb-4">
             <svg
-              className="h-8 w-8 text-zinc-400"
+              className="h-8 w-8 text-wlx-stone"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -228,7 +228,7 @@ export function CartRecoveryClient({
               />
             </svg>
           </div>
-          <p className="text-zinc-500 max-w-md">
+          <p className="text-wlx-stone max-w-md">
             {t.admin.cartRecovery.empty}
           </p>
         </div>
@@ -243,17 +243,17 @@ export function CartRecoveryClient({
             return (
               <div
                 key={order.id}
-                className={`rounded-2xl border border-zinc-200 bg-white p-4 ${
+                className={`rounded-2xl border border-wlx-mist bg-white p-4 ${
                   isDismissed ? "opacity-60" : ""
                 }`}
               >
                 {/* Top row: customer info + status badge */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="min-w-0">
-                    <div className="font-semibold text-zinc-900 truncate">
+                    <div className="font-semibold text-wlx-ink truncate">
                       {order.customerName}
                     </div>
-                    <div className="text-zinc-500 text-sm">{order.phone}</div>
+                    <div className="text-wlx-stone text-sm">{order.phone}</div>
                   </div>
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${getRecoveryStatusStyle(
@@ -266,15 +266,15 @@ export function CartRecoveryClient({
 
                 {/* Middle: items + amount + time */}
                 <div className="flex items-center justify-between gap-3 mb-3 text-sm">
-                  <div className="text-zinc-600 truncate min-w-0">
+                  <div className="text-wlx-stone truncate min-w-0">
                     {getItemsSummary(order.items)}
                   </div>
-                  <div className="font-semibold text-zinc-900 shrink-0">
+                  <div className="font-semibold text-wlx-ink shrink-0">
                     ${total.toLocaleString()}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 mb-3 text-xs text-zinc-500">
+                <div className="flex items-center justify-between gap-3 mb-3 text-xs text-wlx-stone">
                   <span>{formatDate(order.createdAt)}</span>
                   <span>{formatTimeAgo(order.createdAt, t)}</span>
                 </div>
@@ -318,7 +318,7 @@ export function CartRecoveryClient({
                         updateRecoveryStatus(order.id, "dismissed")
                       }
                       disabled={isUpdating}
-                      className="px-3 py-2 rounded-xl bg-zinc-100 text-zinc-600 text-sm font-medium hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+                      className="px-3 py-2 rounded-xl bg-wlx-cream text-wlx-stone text-sm font-medium hover:bg-wlx-mist disabled:opacity-50 transition-colors"
                     >
                       {t.admin.cartRecovery.markDismissed}
                     </button>

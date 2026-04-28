@@ -137,8 +137,8 @@ export default function AdminLoginPage() {
 
   if (checkingAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">
-        <div className="text-zinc-400 text-sm">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-wlx-cream px-4">
+        <div className="text-wlx-stone text-sm">Loading...</div>
       </div>
     );
   }
@@ -146,17 +146,17 @@ export default function AdminLoginPage() {
   // Tenant picker UI (shown after ADMIN_SECRET login)
   if (showTenantPicker) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-wlx-cream px-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 p-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-wlx-mist p-8">
             <div className="text-center mb-6">
               <div className="inline-flex items-center gap-2 mb-3">
                 <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-zinc-800 text-white text-2xl">
                   ✦
                 </div>
-                <span className="text-2xl font-bold text-zinc-800">Admin</span>
+                <span className="text-2xl font-bold text-wlx-ink">Admin</span>
               </div>
-              <h1 className="text-xl font-semibold text-zinc-900">{labels.selectTenant}</h1>
+              <h1 className="text-xl font-semibold text-wlx-ink">{labels.selectTenant}</h1>
             </div>
 
             {error && (
@@ -171,14 +171,14 @@ export default function AdminLoginPage() {
                   key={tenant.id}
                   onClick={() => handleSelectTenant(tenant.id)}
                   disabled={loading}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 transition-colors text-left disabled:opacity-50"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-wlx-mist hover:border-zinc-400 hover:bg-wlx-cream transition-colors text-left disabled:opacity-50"
                 >
-                  <div className="w-9 h-9 rounded-lg bg-[#FF9500] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-wlx-ink text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
                     {tenant.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <div className="font-medium text-zinc-900 truncate">{tenant.name}</div>
-                    <div className="text-xs text-zinc-400">{tenant.slug}</div>
+                    <div className="font-medium text-wlx-ink truncate">{tenant.name}</div>
+                    <div className="text-xs text-wlx-stone">{tenant.slug}</div>
                   </div>
                 </button>
               ))}
@@ -191,7 +191,7 @@ export default function AdminLoginPage() {
                 setTenants([]);
                 setSecret("");
               }}
-              className="mt-4 text-xs text-zinc-400 hover:text-zinc-600 transition-colors w-full text-center"
+              className="mt-4 text-xs text-wlx-stone hover:text-wlx-stone transition-colors w-full text-center"
             >
               {labels.selectTenantBack}
             </button>
@@ -202,25 +202,25 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-wlx-cream px-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-wlx-mist p-8">
           {/* Branding */}
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-2 mb-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#FF9500] text-white text-2xl">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-wlx-ink text-white text-2xl">
                 ✦
               </div>
-              <span className="text-2xl font-bold text-[#FF9500]">WoWlix</span>
+              <span className="text-2xl font-bold text-wlx-ink">WoWlix</span>
             </div>
-            <h1 className="text-2xl font-semibold text-zinc-900">{labels.heading}</h1>
+            <h1 className="text-2xl font-semibold text-wlx-ink">{labels.heading}</h1>
           </div>
 
           {/* OAuth buttons */}
           <div className="space-y-3">
             <a
               href="/api/tenant-admin/google"
-              className="flex w-full items-center justify-center gap-3 rounded-xl border border-zinc-200 bg-white py-3 font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+              className="flex w-full items-center justify-center gap-3 rounded-xl border border-wlx-mist bg-white py-3 font-semibold text-wlx-stone hover:bg-wlx-cream transition-colors"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -242,17 +242,17 @@ export default function AdminLoginPage() {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-zinc-200" />
+              <div className="w-full border-t border-wlx-mist" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-zinc-500">{labels.or}</span>
+              <span className="bg-white px-2 text-wlx-stone">{labels.or}</span>
             </div>
           </div>
 
           {/* Email + Password form */}
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-1.5">
+              <label htmlFor="email" className="block text-sm font-medium text-wlx-stone mb-1.5">
                 {labels.email}
               </label>
               <input
@@ -260,7 +260,7 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-[#FF9500] focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30"
+                className="w-full rounded-xl border border-wlx-mist bg-white px-4 py-3 text-wlx-ink placeholder-zinc-400 focus:border-wlx-ink focus:outline-none focus:ring-2 focus:ring-wlx-ink/20"
                 placeholder={labels.emailPlaceholder}
                 required
                 autoComplete="email"
@@ -269,12 +269,12 @@ export default function AdminLoginPage() {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="block text-sm font-medium text-zinc-700">
+                <label htmlFor="password" className="block text-sm font-medium text-wlx-stone">
                   {labels.password}
                 </label>
                 <Link
                   href={`/${locale}/admin/forgot-password`}
-                  className="text-xs text-[#FF9500] hover:underline"
+                  className="text-xs text-wlx-ink hover:underline"
                 >
                   {labels.forgotPassword}
                 </Link>
@@ -284,7 +284,7 @@ export default function AdminLoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-[#FF9500] focus:outline-none focus:ring-2 focus:ring-[#FF9500]/30"
+                className="w-full rounded-xl border border-wlx-mist bg-white px-4 py-3 text-wlx-ink placeholder-zinc-400 focus:border-wlx-ink focus:outline-none focus:ring-2 focus:ring-wlx-ink/20"
                 placeholder={labels.passwordPlaceholder}
                 required
                 autoComplete="current-password"
@@ -300,26 +300,26 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full rounded-xl bg-[#FF9500] py-3 text-white font-semibold hover:bg-[#E68600] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full rounded-xl bg-wlx-ink py-3 text-white font-semibold hover:bg-wlx-ink/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading && !showSecretLogin ? labels.submitting : labels.submit}
             </button>
           </form>
 
           {/* Register link */}
-          <p className="text-center text-sm text-zinc-500 mt-4">
+          <p className="text-center text-sm text-wlx-stone mt-4">
             {labels.noAccount}{" "}
-            <Link href={`/${locale}/start`} className="text-[#FF9500] font-medium hover:underline">
+            <Link href={`/${locale}/start`} className="text-wlx-ink font-medium hover:underline">
               {labels.createStore}
             </Link>
           </p>
 
           {/* Admin secret login (collapsible) */}
-          <div className="mt-6 pt-4 border-t border-zinc-100">
+          <div className="mt-6 pt-4 border-t border-wlx-mist">
             <button
               type="button"
               onClick={() => setShowSecretLogin(!showSecretLogin)}
-              className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors w-full text-center"
+              className="text-xs text-wlx-stone hover:text-wlx-stone transition-colors w-full text-center"
             >
               {labels.adminLogin}
             </button>
@@ -329,7 +329,7 @@ export default function AdminLoginPage() {
                   type="password"
                   value={secret}
                   onChange={(e) => setSecret(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 text-sm"
+                  className="w-full rounded-xl border border-wlx-mist bg-white px-4 py-3 text-wlx-ink placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 text-sm"
                   placeholder={labels.adminSecretPlaceholder}
                   required
                   autoComplete="current-password"

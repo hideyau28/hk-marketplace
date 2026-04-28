@@ -23,9 +23,9 @@ export default async function AdminPaymentsPage({ params }: PageProps) {
       <div className="flex items-center gap-4 mb-6">
         <SidebarToggle />
         <div>
-          <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">付款方式管理</h1>
-          <div className="text-zinc-500 text-sm">管理 FPS、PayMe、Alipay HK 付款設定</div>
+          <div className="text-wlx-stone text-sm">Admin</div>
+          <h1 className="text-2xl font-semibold text-wlx-ink">付款方式管理</h1>
+          <div className="text-wlx-stone text-sm">管理 FPS、PayMe、Alipay HK 付款設定</div>
         </div>
       </div>
 

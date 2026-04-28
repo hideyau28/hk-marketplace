@@ -139,7 +139,7 @@ export default function AdminSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full bg-zinc-900 text-white z-40 transition-transform duration-300 w-56 ${
+        className={`fixed top-0 left-0 h-full bg-wlx-ink text-white z-40 transition-transform duration-300 w-56 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -150,7 +150,7 @@ export default function AdminSidebar() {
           ) : (
             <h1 className="text-lg font-bold">{tenantBranding.name}</h1>
           )}
-          <p className="text-zinc-400 text-sm mt-1">Admin Panel</p>
+          <p className="text-wlx-stone text-sm mt-1">Admin Panel</p>
         </div>
 
         {/* Navigation */}
@@ -171,7 +171,7 @@ export default function AdminSidebar() {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive
                     ? "bg-olive-600 text-white"
-                    : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                    : "text-wlx-stone hover:bg-zinc-800 hover:text-white"
                 }`}
               >
                 <Icon size={20} />
@@ -186,7 +186,7 @@ export default function AdminSidebar() {
         <div className="absolute bottom-0 left-0 w-full p-4 border-t border-zinc-800">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
+            className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-wlx-stone hover:bg-zinc-800 hover:text-white transition-colors"
           >
             <LogOut size={20} />
             <span>{t.admin.sidebar.logout}</span>
@@ -197,7 +197,7 @@ export default function AdminSidebar() {
         <button
           onClick={() => setIsOpen(false)}
           aria-label="關閉側邊欄"
-          className="absolute top-2 right-2 w-11 h-11 flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+          className="absolute top-2 right-2 w-11 h-11 flex items-center justify-center rounded-lg text-wlx-stone hover:text-white hover:bg-zinc-800 transition-colors"
         >
           <X size={20} />
         </button>

@@ -21,13 +21,13 @@ type StatCardProps = {
 
 function StatCard({ label, value, icon }: StatCardProps) {
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-6">
+    <div className="bg-white rounded-2xl border border-wlx-mist p-6">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-sm text-zinc-500">{label}</div>
-          <div className="text-2xl font-bold text-zinc-900 mt-2 truncate">{value}</div>
+          <div className="text-sm text-wlx-stone">{label}</div>
+          <div className="text-2xl font-bold text-wlx-ink mt-2 truncate">{value}</div>
         </div>
-        <div className="text-zinc-400">{icon}</div>
+        <div className="text-wlx-stone">{icon}</div>
       </div>
     </div>
   );
@@ -254,25 +254,25 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       <div className="flex items-center gap-4 mb-6">
         <SidebarToggle />
         <div>
-          <div className="text-zinc-500 text-sm">{t.admin.dashboard.adminLabel}</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.dashboard.title}</h1>
-          <div className="text-zinc-500 text-sm">{t.admin.dashboard.subtitle}</div>
+          <div className="text-wlx-stone text-sm">{t.admin.dashboard.adminLabel}</div>
+          <h1 className="text-2xl font-semibold text-wlx-ink">{t.admin.dashboard.title}</h1>
+          <div className="text-wlx-stone text-sm">{t.admin.dashboard.subtitle}</div>
         </div>
       </div>
 
       {/* Welcome banner */}
       <div className="bg-gradient-to-r from-olive-50 to-olive-100/50 rounded-2xl border border-olive-200 p-6 mb-6">
-        <h2 className="text-xl font-semibold text-zinc-900 mb-4">
+        <h2 className="text-xl font-semibold text-wlx-ink mb-4">
           👋 歡迎返嚟，{tenant?.name || "店主"}！
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="bg-white/80 rounded-xl p-4 border border-olive-100">
-            <div className="text-sm text-zinc-600 mb-1">{t.admin.dashboard.todayOrders}</div>
-            <div className="text-2xl font-bold text-zinc-900">{todayStats.orderCount}</div>
+            <div className="text-sm text-wlx-stone mb-1">{t.admin.dashboard.todayOrders}</div>
+            <div className="text-2xl font-bold text-wlx-ink">{todayStats.orderCount}</div>
           </div>
           <div className="bg-white/80 rounded-xl p-4 border border-olive-100">
-            <div className="text-sm text-zinc-600 mb-1">{t.admin.dashboard.monthOrders}</div>
-            <div className="text-2xl font-bold text-zinc-900">{monthStats.orderCount}</div>
+            <div className="text-sm text-wlx-stone mb-1">{t.admin.dashboard.monthOrders}</div>
+            <div className="text-2xl font-bold text-wlx-ink">{monthStats.orderCount}</div>
           </div>
         </div>
       </div>
@@ -322,10 +322,10 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         />
       ) : (
         /* Upgrade CTA for free plan */
-        <div className="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-8 text-center">
-          <Lock size={32} className="mx-auto text-zinc-400 mb-3" />
-          <h3 className="text-lg font-semibold text-zinc-900 mb-2">{t.admin.dashboard.upgradeTitle}</h3>
-          <p className="text-sm text-zinc-500 max-w-md mx-auto">{t.admin.dashboard.upgradeDesc}</p>
+        <div className="mt-8 rounded-2xl border border-wlx-mist bg-wlx-cream p-8 text-center">
+          <Lock size={32} className="mx-auto text-wlx-stone mb-3" />
+          <h3 className="text-lg font-semibold text-wlx-ink mb-2">{t.admin.dashboard.upgradeTitle}</h3>
+          <p className="text-sm text-wlx-stone max-w-md mx-auto">{t.admin.dashboard.upgradeDesc}</p>
         </div>
       )}
 
@@ -334,10 +334,10 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         <TopSellingProducts t={t.admin.dashboard} />
       ) : analyticsEnabled ? (
         /* Lite plan: show upgrade CTA for top sellers */
-        <div className="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-8 text-center">
-          <Lock size={32} className="mx-auto text-zinc-400 mb-3" />
-          <h3 className="text-lg font-semibold text-zinc-900 mb-2">{t.admin.dashboard.topSellersProOnly}</h3>
-          <p className="text-sm text-zinc-500 max-w-md mx-auto">{t.admin.dashboard.topSellersProDesc}</p>
+        <div className="mt-8 rounded-2xl border border-wlx-mist bg-wlx-cream p-8 text-center">
+          <Lock size={32} className="mx-auto text-wlx-stone mb-3" />
+          <h3 className="text-lg font-semibold text-wlx-ink mb-2">{t.admin.dashboard.topSellersProOnly}</h3>
+          <p className="text-sm text-wlx-stone max-w-md mx-auto">{t.admin.dashboard.topSellersProDesc}</p>
         </div>
       ) : null}
 
@@ -345,42 +345,42 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
         <Link
           href={`/${locale}/admin/products`}
-          className="flex items-center justify-between bg-white rounded-2xl border border-zinc-200 p-4 hover:bg-zinc-50 transition-colors"
+          className="flex items-center justify-between bg-white rounded-2xl border border-wlx-mist p-4 hover:bg-wlx-cream transition-colors"
         >
           <div className="flex items-center gap-3">
-            <Package size={20} className="text-zinc-400" />
-            <span className="font-medium text-zinc-900">{t.admin.dashboard.viewAllProducts}</span>
+            <Package size={20} className="text-wlx-stone" />
+            <span className="font-medium text-wlx-ink">{t.admin.dashboard.viewAllProducts}</span>
           </div>
-          <ArrowRight size={20} className="text-zinc-400" />
+          <ArrowRight size={20} className="text-wlx-stone" />
         </Link>
         <Link
           href={`/${locale}/admin/orders`}
-          className="flex items-center justify-between bg-white rounded-2xl border border-zinc-200 p-4 hover:bg-zinc-50 transition-colors"
+          className="flex items-center justify-between bg-white rounded-2xl border border-wlx-mist p-4 hover:bg-wlx-cream transition-colors"
         >
           <div className="flex items-center gap-3">
-            <ShoppingCart size={20} className="text-zinc-400" />
-            <span className="font-medium text-zinc-900">{t.admin.dashboard.viewAllOrders}</span>
+            <ShoppingCart size={20} className="text-wlx-stone" />
+            <span className="font-medium text-wlx-ink">{t.admin.dashboard.viewAllOrders}</span>
           </div>
-          <ArrowRight size={20} className="text-zinc-400" />
+          <ArrowRight size={20} className="text-wlx-stone" />
         </Link>
       </div>
 
       {/* Recent orders table */}
       <div className="mt-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-zinc-900">{t.admin.dashboard.recentOrders}</h2>
+          <h2 className="text-lg font-semibold text-wlx-ink">{t.admin.dashboard.recentOrders}</h2>
           <Link href={`/${locale}/admin/orders`} className="text-sm text-olive-600 hover:text-olive-700 font-medium">
             {t.admin.dashboard.viewAll}
           </Link>
         </div>
-        <div className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-wlx-mist overflow-hidden">
           {recentOrders.length === 0 ? (
-            <div className="p-8 text-center text-zinc-500">{t.admin.dashboard.noOrders}</div>
+            <div className="p-8 text-center text-wlx-stone">{t.admin.dashboard.noOrders}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-[800px] w-full text-sm">
                 <thead>
-                  <tr className="text-zinc-600 border-b border-zinc-200">
+                  <tr className="text-wlx-stone border-b border-wlx-mist">
                     <th className="px-4 py-3 text-left">{t.admin.dashboard.tableOrderId}</th>
                     <th className="px-4 py-3 text-left">{t.admin.dashboard.tableCustomer}</th>
                     <th className="px-4 py-3 text-left">{t.admin.dashboard.tableStatus}</th>
@@ -393,18 +393,18 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                   {recentOrders.map((order) => {
                     const amounts = order.amounts as Record<string, unknown> | null;
                     return (
-                      <tr key={order.id} className="border-t border-zinc-200 hover:bg-zinc-50">
+                      <tr key={order.id} className="border-t border-wlx-mist hover:bg-wlx-cream">
                         <td className="px-4 py-3">
-                          <div className="text-zinc-900 font-mono text-xs">{order.id.slice(0, 12)}...</div>
+                          <div className="text-wlx-ink font-mono text-xs">{order.id.slice(0, 12)}...</div>
                         </td>
-                        <td className="px-4 py-3 text-zinc-700">{order.customerName}</td>
+                        <td className="px-4 py-3 text-wlx-stone">{order.customerName}</td>
                         <td className="px-4 py-3">
-                          <span className="inline-flex items-center bg-zinc-100 text-zinc-600 border border-zinc-200 rounded-full px-2 py-1 text-xs">
+                          <span className="inline-flex items-center bg-wlx-cream text-wlx-stone border border-wlx-mist rounded-full px-2 py-1 text-xs">
                             {order.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right text-zinc-900 font-medium">${Math.round(Number(amounts?.total) || 0)}</td>
-                        <td className="px-4 py-3 text-zinc-600 text-xs">{new Date(order.createdAt).toLocaleDateString()}</td>
+                        <td className="px-4 py-3 text-right text-wlx-ink font-medium">${Math.round(Number(amounts?.total) || 0)}</td>
+                        <td className="px-4 py-3 text-wlx-stone text-xs">{new Date(order.createdAt).toLocaleDateString()}</td>
                         <td className="px-4 py-3 text-right">
                           <Link href={`/${locale}/admin/orders/${order.id}`} className="text-olive-600 hover:text-olive-700 text-xs font-medium">
                             View

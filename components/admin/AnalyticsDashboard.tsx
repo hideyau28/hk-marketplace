@@ -40,15 +40,15 @@ function StatCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-6">
+    <div className="bg-white rounded-2xl border border-wlx-mist p-6">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-sm text-zinc-500">{label}</div>
-          <div className="text-2xl font-bold text-zinc-900 mt-2 truncate">
+          <div className="text-sm text-wlx-stone">{label}</div>
+          <div className="text-2xl font-bold text-wlx-ink mt-2 truncate">
             {value}
           </div>
         </div>
-        <div className="text-zinc-400">{icon}</div>
+        <div className="text-wlx-stone">{icon}</div>
       </div>
     </div>
   );
@@ -56,18 +56,18 @@ function StatCard({
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-6 animate-pulse">
-      <div className="h-4 w-20 bg-zinc-200 rounded mb-3" />
-      <div className="h-7 w-16 bg-zinc-200 rounded" />
+    <div className="bg-white rounded-2xl border border-wlx-mist p-6 animate-pulse">
+      <div className="h-4 w-20 bg-wlx-mist rounded mb-3" />
+      <div className="h-7 w-16 bg-wlx-mist rounded" />
     </div>
   );
 }
 
 function SkeletonChart() {
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200 p-6 animate-pulse">
-      <div className="h-4 w-40 bg-zinc-200 rounded mb-4" />
-      <div className="h-64 bg-zinc-100 rounded-xl" />
+    <div className="bg-white rounded-2xl border border-wlx-mist p-6 animate-pulse">
+      <div className="h-4 w-40 bg-wlx-mist rounded mb-4" />
+      <div className="h-64 bg-wlx-cream rounded-xl" />
     </div>
   );
 }
@@ -171,15 +171,15 @@ export default function AnalyticsDashboard() {
       {/* Week stats */}
       {summary && (
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-            <div className="text-sm text-zinc-500">本週訂單</div>
-            <div className="text-2xl font-bold text-zinc-900 mt-2">
+          <div className="bg-white rounded-2xl border border-wlx-mist p-6">
+            <div className="text-sm text-wlx-stone">本週訂單</div>
+            <div className="text-2xl font-bold text-wlx-ink mt-2">
               {summary.week.orderCount}
             </div>
           </div>
-          <div className="bg-white rounded-2xl border border-zinc-200 p-6">
-            <div className="text-sm text-zinc-500">本週收入</div>
-            <div className="text-2xl font-bold text-zinc-900 mt-2">
+          <div className="bg-white rounded-2xl border border-wlx-mist p-6">
+            <div className="text-sm text-wlx-stone">本週收入</div>
+            <div className="text-2xl font-bold text-wlx-ink mt-2">
               ${Math.round(summary.week.revenue)}
             </div>
           </div>
@@ -189,8 +189,8 @@ export default function AnalyticsDashboard() {
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Orders trend */}
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 lg:col-span-2">
-          <div className="mb-4 text-sm font-semibold text-zinc-900">
+        <div className="rounded-2xl border border-wlx-mist bg-white p-6 lg:col-span-2">
+          <div className="mb-4 text-sm font-semibold text-wlx-ink">
             訂單趨勢（過去 30 日）
           </div>
           <div className="h-64">
@@ -210,7 +210,7 @@ export default function AnalyticsDashboard() {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-zinc-400 text-sm">
+              <div className="flex items-center justify-center h-full text-wlx-stone text-sm">
                 未有數據
               </div>
             )}
@@ -218,8 +218,8 @@ export default function AnalyticsDashboard() {
         </div>
 
         {/* Revenue trend */}
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6">
-          <div className="mb-4 text-sm font-semibold text-zinc-900">
+        <div className="rounded-2xl border border-wlx-mist bg-white p-6">
+          <div className="mb-4 text-sm font-semibold text-wlx-ink">
             收入趨勢（30 日）
           </div>
           <div className="h-64">
@@ -239,7 +239,7 @@ export default function AnalyticsDashboard() {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-zinc-400 text-sm">
+              <div className="flex items-center justify-center h-full text-wlx-stone text-sm">
                 未有數據
               </div>
             )}
@@ -248,9 +248,9 @@ export default function AnalyticsDashboard() {
       </div>
 
       {/* Top products */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+      <div className="rounded-2xl border border-wlx-mist bg-white p-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="text-sm font-semibold text-zinc-900">熱門商品</div>
+          <div className="text-sm font-semibold text-wlx-ink">熱門商品</div>
           <div className="flex gap-1">
             {(["7d", "30d", "all"] as const).map((r) => (
               <button
@@ -258,8 +258,8 @@ export default function AnalyticsDashboard() {
                 onClick={() => setTopRange(r)}
                 className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                   topRange === r
-                    ? "bg-zinc-900 text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                    ? "bg-wlx-ink text-white"
+                    : "bg-wlx-cream text-wlx-stone hover:bg-wlx-mist"
                 }`}
               >
                 {r === "7d" ? "7 日" : r === "30d" ? "30 日" : "全部"}
@@ -272,14 +272,14 @@ export default function AnalyticsDashboard() {
           <div className="space-y-3 animate-pulse">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="h-4 w-4 bg-zinc-200 rounded" />
-                <div className="h-4 flex-1 bg-zinc-200 rounded" />
-                <div className="h-4 w-12 bg-zinc-200 rounded" />
+                <div className="h-4 w-4 bg-wlx-mist rounded" />
+                <div className="h-4 flex-1 bg-wlx-mist rounded" />
+                <div className="h-4 w-12 bg-wlx-mist rounded" />
               </div>
             ))}
           </div>
         ) : topProducts.length === 0 ? (
-          <div className="py-8 text-center text-zinc-400 text-sm">
+          <div className="py-8 text-center text-wlx-stone text-sm">
             未有銷售記錄
           </div>
         ) : (
@@ -287,18 +287,18 @@ export default function AnalyticsDashboard() {
             {topProducts.map((p, idx) => (
               <div
                 key={p.name}
-                className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-zinc-50"
+                className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-wlx-cream"
               >
-                <span className="text-xs text-zinc-400 w-5 text-right font-mono">
+                <span className="text-xs text-wlx-stone w-5 text-right font-mono">
                   {idx + 1}
                 </span>
-                <span className="flex-1 text-sm text-zinc-700 truncate">
+                <span className="flex-1 text-sm text-wlx-stone truncate">
                   {p.name}
                 </span>
-                <span className="text-sm font-semibold text-zinc-900 tabular-nums">
+                <span className="text-sm font-semibold text-wlx-ink tabular-nums">
                   {p.quantity} 件
                 </span>
-                <span className="text-xs text-zinc-500 tabular-nums w-20 text-right">
+                <span className="text-xs text-wlx-stone tabular-nums w-20 text-right">
                   ${Math.round(p.revenue)}
                 </span>
               </div>

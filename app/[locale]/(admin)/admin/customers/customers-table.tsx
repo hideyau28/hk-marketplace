@@ -80,7 +80,7 @@ export function CustomersTable({
           className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
             sort !== "totalSpent"
               ? "bg-olive-600 text-white"
-              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              : "bg-wlx-cream text-wlx-stone hover:bg-wlx-mist"
           }`}
         >
           {t.admin.customers.sortByRecent}
@@ -90,7 +90,7 @@ export function CustomersTable({
           className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
             sort === "totalSpent"
               ? "bg-olive-600 text-white"
-              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              : "bg-wlx-cream text-wlx-stone hover:bg-wlx-mist"
           }`}
         >
           {t.admin.customers.sortBySpent}
@@ -106,10 +106,10 @@ export function CustomersTable({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t.admin.customers.search}
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 pl-10 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-olive-300"
+              className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 pl-10 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-olive-300"
             />
             <svg
-              className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400"
+              className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-wlx-stone"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -127,8 +127,8 @@ export function CustomersTable({
 
       {/* Customer cards */}
       {customers.length === 0 ? (
-        <div className="mt-6 rounded-3xl border border-zinc-200 bg-white px-4 py-12 text-center">
-          <div className="text-zinc-400 mb-2">
+        <div className="mt-6 rounded-3xl border border-wlx-mist bg-white px-4 py-12 text-center">
+          <div className="text-wlx-stone mb-2">
             <svg
               className="h-12 w-12 mx-auto"
               fill="none"
@@ -143,12 +143,12 @@ export function CustomersTable({
               />
             </svg>
           </div>
-          <div className="text-zinc-500 font-medium">
+          <div className="text-wlx-stone font-medium">
             {searchQuery
               ? t.admin.customers.noResults
               : t.admin.customers.noCustomers}
           </div>
-          <div className="text-zinc-400 text-sm mt-1">
+          <div className="text-wlx-stone text-sm mt-1">
             {searchQuery
               ? t.admin.customers.noResultsDesc
               : t.admin.customers.noCustomersDesc}
@@ -160,13 +160,13 @@ export function CustomersTable({
             <Link
               key={customer.phone}
               href={`/${locale}/admin/customers/${encodeURIComponent(customer.phone)}`}
-              className="block rounded-2xl border border-zinc-200 bg-white p-4 transition-shadow hover:shadow-md"
+              className="block rounded-2xl border border-wlx-mist bg-white p-4 transition-shadow hover:shadow-md"
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 {/* Left: Customer info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-zinc-900">
+                    <span className="text-sm font-medium text-wlx-ink">
                       {customer.customerName}
                     </span>
                     {customer.orderCount >= 2 && (
@@ -175,16 +175,16 @@ export function CustomersTable({
                       </span>
                     )}
                     {customer.totalSpent >= 1000 && (
-                      <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 border border-amber-100">
+                      <span className="inline-flex items-center rounded-full bg-wlx-cream px-2 py-0.5 text-[11px] font-medium text-amber-700 border border-amber-100">
                         ⭐ VIP
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-zinc-500 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <div className="text-xs text-wlx-stone mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="font-mono">{customer.phone}</span>
                     {customer.email && <span>{customer.email}</span>}
                   </div>
-                  <div className="text-xs text-zinc-400 mt-1">
+                  <div className="text-xs text-wlx-stone mt-1">
                     {customer.orderCount}{" "}
                     {t.admin.customers.orderCount.toLowerCase()} ·{" "}
                     {t.admin.customers.lastOrder.toLowerCase()}{" "}
@@ -195,10 +195,10 @@ export function CustomersTable({
                 {/* Right: Total spent */}
                 <div className="flex items-center justify-between sm:justify-end gap-3">
                   <div className="text-right">
-                    <div className="text-lg font-semibold text-zinc-900">
+                    <div className="text-lg font-semibold text-wlx-ink">
                       {formatCurrency(customer.totalSpent)}
                     </div>
-                    <div className="text-xs text-zinc-400">
+                    <div className="text-xs text-wlx-stone">
                       {t.admin.customers.totalSpent}
                     </div>
                   </div>
@@ -221,7 +221,7 @@ export function CustomersTable({
           ))}
 
           {/* Summary */}
-          <div className="flex items-center justify-between px-4 py-3 text-zinc-600 text-sm">
+          <div className="flex items-center justify-between px-4 py-3 text-wlx-stone text-sm">
             <div>
               {t.admin.customers.showing} {customers.length}{" "}
               {t.admin.customers.customersCount}

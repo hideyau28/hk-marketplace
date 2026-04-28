@@ -199,7 +199,7 @@ function Label({
   return (
     <label
       className={cn(
-        "text-sm font-medium leading-none text-zinc-900",
+        "text-sm font-medium leading-none text-wlx-ink",
         className,
       )}
     >
@@ -209,7 +209,7 @@ function Label({
 }
 
 function Description({ children }: { children: React.ReactNode }) {
-  return <p className="text-[0.8rem] text-zinc-600 mt-1.5">{children}</p>;
+  return <p className="text-[0.8rem] text-wlx-stone mt-1.5">{children}</p>;
 }
 
 function SettingsInput({
@@ -234,7 +234,7 @@ function SettingsInput({
       onChange={onChange}
       placeholder={placeholder}
       autoComplete="off"
-      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+      className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
     />
   );
 }
@@ -261,7 +261,7 @@ function SettingsTextarea({
       placeholder={placeholder}
       rows={rows}
       autoComplete="off"
-      className="flex min-h-[80px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+      className="flex min-h-[80px] w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
     />
   );
 }
@@ -627,14 +627,14 @@ export default function TenantSettings({
 
   if (!dataLoaded) {
     return (
-      <div className="bg-zinc-50 min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+      <div className="bg-wlx-cream min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-wlx-stone" />
       </div>
     );
   }
 
   return (
-    <div className="bg-zinc-50 text-zinc-900 pb-20">
+    <div className="bg-wlx-cream text-wlx-ink pb-20">
       <div className="mx-auto max-w-4xl px-6 py-12">
         <div className="mb-6">
           <SidebarToggle />
@@ -643,10 +643,10 @@ export default function TenantSettings({
         {/* Header */}
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-1.5">
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+            <h1 className="text-3xl font-bold tracking-tight text-wlx-ink">
               ⚙️ 商店設定
             </h1>
-            <p className="text-zinc-600 text-base max-w-lg">
+            <p className="text-wlx-stone text-base max-w-lg">
               管理你嘅商店基本資料、聯絡方式同外觀設定
             </p>
           </div>
@@ -681,7 +681,7 @@ export default function TenantSettings({
               onClick={handleSave}
               disabled={saveState === "saving"}
               className={cn(
-                "inline-flex items-center justify-center gap-2 rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:pointer-events-none disabled:opacity-50",
+                "inline-flex items-center justify-center gap-2 rounded-md bg-wlx-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:pointer-events-none disabled:opacity-50",
                 saveState === "saving" && "opacity-80",
               )}
             >
@@ -703,13 +703,13 @@ export default function TenantSettings({
         <div className="mt-8 space-y-6">
           {/* Plan Status */}
           {planData && (
-            <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+            <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                  <Crown className="h-5 w-5 text-zinc-600" />
+                <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-wlx-stone" />
                   {locale === "zh-HK" ? "方案狀態" : "Plan Status"}
                 </h3>
-                <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+                <p className="text-sm text-wlx-stone mt-1 border-b border-wlx-mist pb-4">
                   {locale === "zh-HK"
                     ? "你嘅訂閱方案同用量"
                     : "Your subscription plan and usage"}
@@ -725,7 +725,7 @@ export default function TenantSettings({
                       ? "bg-violet-100 text-violet-700"
                       : planData.plan === "lite"
                         ? "bg-blue-100 text-blue-700"
-                        : "bg-zinc-100 text-zinc-700",
+                        : "bg-wlx-cream text-wlx-stone",
                   )}
                 >
                   {planData.plan === "pro"
@@ -735,7 +735,7 @@ export default function TenantSettings({
                       : "Free"}
                 </span>
                 {planData.isTrialing && (
-                  <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                  <span className="text-xs text-amber-600 bg-wlx-cream border border-amber-200 px-2 py-0.5 rounded-full">
                     {locale === "zh-HK" ? "試用中" : "Trial"}
                   </span>
                 )}
@@ -749,10 +749,10 @@ export default function TenantSettings({
               {/* SKU usage */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-600">
+                  <span className="text-wlx-stone">
                     {locale === "zh-HK" ? "產品 (SKU)" : "Products (SKU)"}
                   </span>
-                  <span className="font-medium text-zinc-900">
+                  <span className="font-medium text-wlx-ink">
                     {planData.usage.sku.current} /{" "}
                     {planData.usage.sku.limit === Infinity ||
                     planData.usage.sku.limit > 999999
@@ -762,7 +762,7 @@ export default function TenantSettings({
                 </div>
                 {planData.usage.sku.limit !== Infinity &&
                   planData.usage.sku.limit <= 999999 && (
-                    <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-wlx-cream rounded-full overflow-hidden">
                       <div
                         className={cn(
                           "h-full rounded-full transition-all",
@@ -773,7 +773,7 @@ export default function TenantSettings({
                             : planData.usage.sku.current /
                                   planData.usage.sku.limit >=
                                 0.7
-                              ? "bg-amber-500"
+                              ? "bg-wlx-cream0"
                               : "bg-emerald-500",
                         )}
                         style={{
@@ -787,10 +787,10 @@ export default function TenantSettings({
               {/* Orders usage */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-600">
+                  <span className="text-wlx-stone">
                     {locale === "zh-HK" ? "本月訂單" : "Orders this month"}
                   </span>
-                  <span className="font-medium text-zinc-900">
+                  <span className="font-medium text-wlx-ink">
                     {planData.usage.orders.current} /{" "}
                     {planData.usage.orders.limit === Infinity ||
                     planData.usage.orders.limit > 999999
@@ -800,7 +800,7 @@ export default function TenantSettings({
                 </div>
                 {planData.usage.orders.limit !== Infinity &&
                   planData.usage.orders.limit <= 999999 && (
-                    <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-wlx-cream rounded-full overflow-hidden">
                       <div
                         className={cn(
                           "h-full rounded-full transition-all",
@@ -811,7 +811,7 @@ export default function TenantSettings({
                             : planData.usage.orders.current /
                                   planData.usage.orders.limit >=
                                 0.7
-                              ? "bg-amber-500"
+                              ? "bg-wlx-cream0"
                               : "bg-emerald-500",
                         )}
                         style={{
@@ -853,13 +853,13 @@ export default function TenantSettings({
           )}
 
           {/* Basic Info */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Store className="h-5 w-5 text-zinc-600" />
+              <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                <Store className="h-5 w-5 text-wlx-stone" />
                 基本資料
               </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+              <p className="text-sm text-wlx-stone mt-1 border-b border-wlx-mist pb-4">
                 商店嘅基本資訊
               </p>
             </div>
@@ -879,7 +879,7 @@ export default function TenantSettings({
               <div className="space-y-3">
                 <Label>店舖網址</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-zinc-600">wowlix.com/</span>
+                  <span className="text-sm text-wlx-stone">wowlix.com/</span>
                   <SettingsInput
                     id="slug"
                     value={formData.slug || ""}
@@ -888,7 +888,7 @@ export default function TenantSettings({
                   />
                 </div>
                 {slugWarning && (
-                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                  <div className="flex items-start gap-2 p-3 bg-wlx-cream border border-amber-200 rounded-md">
                     <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5" />
                     <p className="text-sm text-amber-800">
                       ⚠️ 改網址會影響現有連結
@@ -924,13 +924,13 @@ export default function TenantSettings({
           </div>
 
           {/* Contact Info */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Phone className="h-5 w-5 text-zinc-600" />
+              <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                <Phone className="h-5 w-5 text-wlx-stone" />
                 聯絡方式
               </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+              <p className="text-sm text-wlx-stone mt-1 border-b border-wlx-mist pb-4">
                 客人聯絡你嘅方式
               </p>
             </div>
@@ -950,13 +950,13 @@ export default function TenantSettings({
           </div>
 
           {/* Social Media Links */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Share2 className="h-5 w-5 text-zinc-600" />
+              <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                <Share2 className="h-5 w-5 text-wlx-stone" />
                 社交媒體連結
               </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+              <p className="text-sm text-wlx-stone mt-1 border-b border-wlx-mist pb-4">
                 顯示喺你商店頁面嘅社交媒體 icon（最多 {MAX_SOCIAL_LINKS} 個）
               </p>
             </div>
@@ -975,7 +975,7 @@ export default function TenantSettings({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.2 }}
-                      className="group flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50/50 p-3"
+                      className="group flex items-center gap-2 rounded-lg border border-wlx-mist bg-wlx-cream/50 p-3"
                     >
                       {/* Reorder buttons */}
                       <div className="flex flex-col gap-0.5">
@@ -993,10 +993,10 @@ export default function TenantSettings({
                               socialLinks: next,
                             }));
                           }}
-                          className="p-0.5 rounded hover:bg-zinc-200 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                          className="p-0.5 rounded hover:bg-wlx-mist disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
                           aria-label="Move up"
                         >
-                          <ChevronUp className="w-3.5 h-3.5 text-zinc-500" />
+                          <ChevronUp className="w-3.5 h-3.5 text-wlx-stone" />
                         </button>
                         <button
                           type="button"
@@ -1012,22 +1012,22 @@ export default function TenantSettings({
                               socialLinks: next,
                             }));
                           }}
-                          className="p-0.5 rounded hover:bg-zinc-200 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                          className="p-0.5 rounded hover:bg-wlx-mist disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
                           aria-label="Move down"
                         >
-                          <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
+                          <ChevronDown className="w-3.5 h-3.5 text-wlx-stone" />
                         </button>
                       </div>
 
                       {/* Platform icon + name */}
                       <div className="flex items-center gap-2 w-28 flex-shrink-0">
-                        <div className="w-8 h-8 rounded-full bg-zinc-200/80 flex items-center justify-center text-zinc-600">
+                        <div className="w-8 h-8 rounded-full bg-wlx-mist/80 flex items-center justify-center text-wlx-stone">
                           <SocialPlatformIcon
                             platform={link.platform}
                             className="w-4 h-4"
                           />
                         </div>
-                        <span className="text-sm font-medium text-zinc-700 truncate">
+                        <span className="text-sm font-medium text-wlx-stone truncate">
                           {platformInfo?.name || link.platform}
                         </span>
                       </div>
@@ -1046,7 +1046,7 @@ export default function TenantSettings({
                           }));
                         }}
                         placeholder={platformInfo?.placeholder || "https://..."}
-                        className="flex-1 h-9 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                        className="flex-1 h-9 rounded-md border border-wlx-mist bg-white px-3 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                       />
 
                       {/* Delete */}
@@ -1061,7 +1061,7 @@ export default function TenantSettings({
                             socialLinks: next,
                           }));
                         }}
-                        className="p-1.5 rounded-md text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        className="p-1.5 rounded-md text-wlx-stone hover:text-red-500 hover:bg-red-50 transition-colors"
                         aria-label="Remove"
                       >
                         <X className="w-4 h-4" />
@@ -1072,7 +1072,7 @@ export default function TenantSettings({
               </AnimatePresence>
 
               {formData.socialLinks.length === 0 && (
-                <p className="text-sm text-zinc-400 py-4 text-center">
+                <p className="text-sm text-wlx-stone py-4 text-center">
                   未有社交媒體連結
                 </p>
               )}
@@ -1092,7 +1092,7 @@ export default function TenantSettings({
                     setFormData((prev) => ({ ...prev, socialLinks: next }));
                     e.target.value = "";
                   }}
-                  className="w-full h-10 rounded-md border border-dashed border-zinc-300 bg-white px-3 text-sm text-zinc-600 hover:border-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 transition-colors cursor-pointer appearance-none"
+                  className="w-full h-10 rounded-md border border-dashed border-wlx-mist bg-white px-3 text-sm text-wlx-stone hover:border-zinc-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 transition-colors cursor-pointer appearance-none"
                 >
                   <option value="">+ 新增社交媒體</option>
                   {SOCIAL_PLATFORMS.filter(
@@ -1108,20 +1108,20 @@ export default function TenantSettings({
             )}
 
             {formData.socialLinks.length >= MAX_SOCIAL_LINKS && (
-              <p className="text-xs text-zinc-400 text-center">
+              <p className="text-xs text-wlx-stone text-center">
                 已達上限 {MAX_SOCIAL_LINKS} 個
               </p>
             )}
           </div>
 
           {/* Currency */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-zinc-600" />
+              <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-wlx-stone" />
                 貨幣
               </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+              <p className="text-sm text-wlx-stone mt-1 border-b border-wlx-mist pb-4">
                 商店顯示嘅貨幣
               </p>
             </div>
@@ -1136,8 +1136,8 @@ export default function TenantSettings({
                   className={cn(
                     "w-full flex items-center gap-3 px-4 py-3 rounded-lg border text-left transition-colors",
                     formData.currency === c.code
-                      ? "border-zinc-900 bg-zinc-50"
-                      : "border-zinc-200 hover:border-zinc-300",
+                      ? "border-zinc-900 bg-wlx-cream"
+                      : "border-wlx-mist hover:border-wlx-mist",
                   )}
                 >
                   <div
@@ -1145,14 +1145,14 @@ export default function TenantSettings({
                       "w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0",
                       formData.currency === c.code
                         ? "border-zinc-900"
-                        : "border-zinc-300",
+                        : "border-wlx-mist",
                     )}
                   >
                     {formData.currency === c.code && (
-                      <div className="w-2 h-2 rounded-full bg-zinc-900" />
+                      <div className="w-2 h-2 rounded-full bg-wlx-ink" />
                     )}
                   </div>
-                  <span className="text-sm font-medium text-zinc-900">
+                  <span className="text-sm font-medium text-wlx-ink">
                     {c.symbol} {c.label}
                   </span>
                 </button>
@@ -1163,30 +1163,30 @@ export default function TenantSettings({
           {/* Payment Methods (link card) */}
           <Link
             href={`/${locale}/admin/settings/payment-methods`}
-            className="block rounded-xl border border-zinc-200 bg-white p-6 md:p-8 hover:border-zinc-300 hover:bg-zinc-50/50 transition-colors group"
+            className="block rounded-xl border border-wlx-mist bg-white p-6 md:p-8 hover:border-wlx-mist hover:bg-wlx-cream/50 transition-colors group"
           >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                  <Wallet className="h-5 w-5 text-zinc-600" />
+                <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-wlx-stone" />
                   收款方式
                 </h3>
-                <p className="text-sm text-zinc-600 mt-1">
+                <p className="text-sm text-wlx-stone mt-1">
                   設定 FPS、PayMe、AlipayHK、銀行過數等收款方式
                 </p>
               </div>
-              <ChevronRight className="h-5 w-5 text-zinc-400 group-hover:text-zinc-600 transition-colors flex-shrink-0" />
+              <ChevronRight className="h-5 w-5 text-wlx-stone group-hover:text-wlx-stone transition-colors flex-shrink-0" />
             </div>
           </Link>
 
           {/* Delivery Options */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Truck className="h-5 w-5 text-zinc-600" />
+              <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                <Truck className="h-5 w-5 text-wlx-stone" />
                 送貨方式
               </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+              <p className="text-sm text-wlx-stone mt-1 border-b border-wlx-mist pb-4">
                 管理客人結帳時嘅送貨選項
               </p>
             </div>
@@ -1195,7 +1195,7 @@ export default function TenantSettings({
               {formData.deliveryOptions.map((opt, index) => (
                 <div
                   key={opt.id}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg border border-zinc-200"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg border border-wlx-mist"
                 >
                   {/* Toggle */}
                   <button
@@ -1217,14 +1217,14 @@ export default function TenantSettings({
                     <span
                       className={cn(
                         "text-sm font-medium",
-                        opt.enabled ? "text-zinc-900" : "text-zinc-400",
+                        opt.enabled ? "text-wlx-ink" : "text-wlx-stone",
                       )}
                     >
                       {opt.label}
                     </span>
                   </div>
 
-                  <span className="text-sm text-zinc-500 flex-shrink-0">
+                  <span className="text-sm text-wlx-stone flex-shrink-0">
                     ${opt.price}
                   </span>
 
@@ -1237,17 +1237,17 @@ export default function TenantSettings({
                         price: String(opt.price),
                       })
                     }
-                    className="w-7 h-7 rounded-md bg-zinc-100 flex items-center justify-center hover:bg-zinc-200 transition-colors"
+                    className="w-7 h-7 rounded-md bg-wlx-cream flex items-center justify-center hover:bg-wlx-mist transition-colors"
                   >
-                    <Pencil className="h-3.5 w-3.5 text-zinc-500" />
+                    <Pencil className="h-3.5 w-3.5 text-wlx-stone" />
                   </button>
 
                   {/* Delete button */}
                   <button
                     onClick={() => deleteDeliveryOption(index)}
-                    className="w-7 h-7 rounded-md bg-zinc-100 flex items-center justify-center hover:bg-red-100 transition-colors"
+                    className="w-7 h-7 rounded-md bg-wlx-cream flex items-center justify-center hover:bg-red-100 transition-colors"
                   >
-                    <Trash2 className="h-3.5 w-3.5 text-zinc-400 hover:text-red-500" />
+                    <Trash2 className="h-3.5 w-3.5 text-wlx-stone hover:text-red-500" />
                   </button>
                 </div>
               ))}
@@ -1257,12 +1257,12 @@ export default function TenantSettings({
             {!addingDelivery ? (
               <button
                 onClick={() => setAddingDelivery(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 bg-zinc-100 rounded-md hover:bg-zinc-200 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-wlx-stone bg-wlx-cream rounded-md hover:bg-wlx-mist transition-colors"
               >
                 <Plus className="h-4 w-4" /> 新增送貨方式
               </button>
             ) : (
-              <div className="border border-zinc-200 rounded-lg p-4 space-y-3">
+              <div className="border border-wlx-mist rounded-lg p-4 space-y-3">
                 <div className="space-y-2">
                   <Label>名稱</Label>
                   <input
@@ -1270,20 +1270,20 @@ export default function TenantSettings({
                     value={newDeliveryLabel}
                     onChange={(e) => setNewDeliveryLabel(e.target.value)}
                     placeholder="郵寄"
-                    className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                    className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>運費</Label>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-zinc-600">$</span>
+                    <span className="text-sm text-wlx-stone">$</span>
                     <input
                       type="number"
                       value={newDeliveryPrice}
                       onChange={(e) => setNewDeliveryPrice(e.target.value)}
                       placeholder="0"
                       min="0"
-                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                     />
                   </div>
                 </div>
@@ -1294,13 +1294,13 @@ export default function TenantSettings({
                       setNewDeliveryLabel("");
                       setNewDeliveryPrice("");
                     }}
-                    className="px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-md hover:bg-zinc-200 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-wlx-stone bg-wlx-cream rounded-md hover:bg-wlx-mist transition-colors"
                   >
                     取消
                   </button>
                   <button
                     onClick={addDeliveryOption}
-                    className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-white bg-wlx-ink rounded-md hover:bg-zinc-800 transition-colors"
                   >
                     儲存
                   </button>
@@ -1310,8 +1310,8 @@ export default function TenantSettings({
 
             {/* Edit delivery modal (inline) */}
             {editingDelivery && (
-              <div className="border border-zinc-300 rounded-lg p-4 space-y-3 bg-zinc-50">
-                <h4 className="text-sm font-semibold text-zinc-900">
+              <div className="border border-wlx-mist rounded-lg p-4 space-y-3 bg-wlx-cream">
+                <h4 className="text-sm font-semibold text-wlx-ink">
                   編輯送貨方式
                 </h4>
                 <div className="space-y-2">
@@ -1324,13 +1324,13 @@ export default function TenantSettings({
                         prev ? { ...prev, label: e.target.value } : null,
                       )
                     }
-                    className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                    className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>運費</Label>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-zinc-600">$</span>
+                    <span className="text-sm text-wlx-stone">$</span>
                     <input
                       type="number"
                       value={editingDelivery.price}
@@ -1340,20 +1340,20 @@ export default function TenantSettings({
                         )
                       }
                       min="0"
-                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                     />
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setEditingDelivery(null)}
-                    className="px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-md hover:bg-zinc-200 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-wlx-stone bg-wlx-cream rounded-md hover:bg-wlx-mist transition-colors"
                   >
                     取消
                   </button>
                   <button
                     onClick={saveEditDelivery}
-                    className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-white bg-wlx-ink rounded-md hover:bg-zinc-800 transition-colors"
                   >
                     儲存
                   </button>
@@ -1362,7 +1362,7 @@ export default function TenantSettings({
             )}
 
             {/* Free shipping threshold */}
-            <div className="pt-4 border-t border-zinc-200 space-y-3">
+            <div className="pt-4 border-t border-wlx-mist space-y-3">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() =>
@@ -1389,7 +1389,7 @@ export default function TenantSettings({
               </div>
               {formData.freeShippingEnabled && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-zinc-600">滿 $</span>
+                  <span className="text-sm text-wlx-stone">滿 $</span>
                   <input
                     type="number"
                     value={formData.freeShippingThreshold ?? ""}
@@ -1403,22 +1403,22 @@ export default function TenantSettings({
                     }
                     placeholder="500"
                     min="0"
-                    className="flex h-10 w-32 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                    className="flex h-10 w-32 rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                   />
-                  <span className="text-sm text-zinc-600">免運費</span>
+                  <span className="text-sm text-wlx-stone">免運費</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Order Confirmation Message */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-zinc-600" />
+              <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-wlx-stone" />
                 訂單訊息
               </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+              <p className="text-sm text-wlx-stone mt-1 border-b border-wlx-mist pb-4">
                 自訂客人完成訂單後嘅顯示訊息
               </p>
             </div>
@@ -1439,7 +1439,7 @@ export default function TenantSettings({
                     }))
                   }
                   placeholder="多謝你嘅訂單！"
-                  className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                  className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                 />
                 <Description>完成落單後顯示嘅感謝文字</Description>
               </div>
@@ -1459,7 +1459,7 @@ export default function TenantSettings({
                   }
                   placeholder="你好！我落咗單 #{orderNumber}"
                   rows={2}
-                  className="flex min-h-[60px] w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                  className="flex min-h-[60px] w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink placeholder:text-wlx-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                 />
                 <Description>可用 {"#{orderNumber}"} 代入訂單編號</Description>
               </div>
@@ -1467,13 +1467,13 @@ export default function TenantSettings({
           </div>
 
           {/* Appearance */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <Palette className="h-5 w-5 text-zinc-600" />
+              <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                <Palette className="h-5 w-5 text-wlx-stone" />
                 外觀
               </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+              <p className="text-sm text-wlx-stone mt-1 border-b border-wlx-mist pb-4">
                 商店嘅視覺設定
               </p>
             </div>
@@ -1490,7 +1490,7 @@ export default function TenantSettings({
                         "w-16 h-16 rounded-lg border-2 transition-all flex flex-col items-center justify-center",
                         formData.coverTemplate === template.id
                           ? "border-zinc-900 ring-2 ring-zinc-900 ring-offset-2"
-                          : "border-zinc-300 hover:border-zinc-400",
+                          : "border-wlx-mist hover:border-zinc-400",
                       )}
                       style={{ backgroundColor: template.color }}
                     >
@@ -1534,7 +1534,7 @@ export default function TenantSettings({
               </div>
 
               {/* Hide Branding Toggle (Pro only) */}
-              <div className="pt-4 border-t border-zinc-200 space-y-3">
+              <div className="pt-4 border-t border-wlx-mist space-y-3">
                 <div className="flex items-center gap-3">
                   {planData?.plan === "pro" ? (
                     <button
@@ -1559,13 +1559,13 @@ export default function TenantSettings({
                       />
                     </button>
                   ) : (
-                    <div className="w-10 h-6 rounded-full bg-zinc-200 relative flex-shrink-0 cursor-not-allowed">
+                    <div className="w-10 h-6 rounded-full bg-wlx-mist relative flex-shrink-0 cursor-not-allowed">
                       <div className="w-5 h-5 rounded-full bg-white shadow absolute top-0.5 left-0.5" />
                     </div>
                   )}
                   <Label
                     className={
-                      planData?.plan !== "pro" ? "text-zinc-400" : undefined
+                      planData?.plan !== "pro" ? "text-wlx-stone" : undefined
                     }
                   >
                     {locale === "zh-HK"
@@ -1597,13 +1597,13 @@ export default function TenantSettings({
           </div>
 
           {/* Account */}
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8 space-y-6">
+          <div className="rounded-xl border border-wlx-mist bg-white p-6 md:p-8 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
-                <User className="h-5 w-5 text-zinc-600" />
+              <h3 className="text-lg font-semibold text-wlx-ink flex items-center gap-2">
+                <User className="h-5 w-5 text-wlx-stone" />
                 帳戶
               </h3>
-              <p className="text-sm text-zinc-600 mt-1 border-b border-zinc-200 pb-4">
+              <p className="text-sm text-wlx-stone mt-1 border-b border-wlx-mist pb-4">
                 帳戶相關設定
               </p>
             </div>
@@ -1626,7 +1626,7 @@ export default function TenantSettings({
                 <Label>Email</Label>
                 {!editingEmail ? (
                   <div className="flex items-center gap-3 mt-1">
-                    <p className="text-sm text-zinc-600">
+                    <p className="text-sm text-wlx-stone">
                       {accountEmail || formData.email || "未設定"}
                     </p>
                     <button
@@ -1635,7 +1635,7 @@ export default function TenantSettings({
                         setEditingEmail(true);
                         setAccountError("");
                       }}
-                      className="text-xs px-2 py-1 rounded bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
+                      className="text-xs px-2 py-1 rounded bg-wlx-cream text-wlx-stone hover:bg-wlx-mist transition-colors"
                     >
                       更改
                     </button>
@@ -1646,7 +1646,7 @@ export default function TenantSettings({
                       type="email"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                       placeholder="新 Email"
                     />
                     <div className="flex gap-2">
@@ -1655,14 +1655,14 @@ export default function TenantSettings({
                           setEditingEmail(false);
                           setAccountError("");
                         }}
-                        className="px-3 py-1.5 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-md hover:bg-zinc-200 transition-colors"
+                        className="px-3 py-1.5 text-sm font-medium text-wlx-stone bg-wlx-cream rounded-md hover:bg-wlx-mist transition-colors"
                       >
                         取消
                       </button>
                       <button
                         onClick={handleSaveEmail}
                         disabled={accountSaving}
-                        className="px-3 py-1.5 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-wlx-ink rounded-md hover:bg-zinc-800 transition-colors disabled:opacity-50"
                       >
                         {accountSaving ? "儲存中..." : "儲存"}
                       </button>
@@ -1672,11 +1672,11 @@ export default function TenantSettings({
               </div>
 
               {/* Password row */}
-              <div className="py-2 border-t border-zinc-100">
+              <div className="py-2 border-t border-wlx-mist">
                 <Label>密碼</Label>
                 {!editingPassword ? (
                   <div className="flex items-center gap-3 mt-1">
-                    <p className="text-sm text-zinc-400 tracking-widest">
+                    <p className="text-sm text-wlx-stone tracking-widest">
                       ••••••••
                     </p>
                     <button
@@ -1684,7 +1684,7 @@ export default function TenantSettings({
                         setEditingPassword(true);
                         setAccountError("");
                       }}
-                      className="text-xs px-2 py-1 rounded bg-zinc-100 text-zinc-600 hover:bg-zinc-200 transition-colors"
+                      className="text-xs px-2 py-1 rounded bg-wlx-cream text-wlx-stone hover:bg-wlx-mist transition-colors"
                     >
                       更改
                     </button>
@@ -1695,7 +1695,7 @@ export default function TenantSettings({
                       type="password"
                       value={currentPw}
                       onChange={(e) => setCurrentPw(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                       placeholder="舊密碼"
                       autoComplete="current-password"
                     />
@@ -1703,7 +1703,7 @@ export default function TenantSettings({
                       type="password"
                       value={newPw}
                       onChange={(e) => setNewPw(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                       placeholder="新密碼（最少 8 個字）"
                       autoComplete="new-password"
                     />
@@ -1711,7 +1711,7 @@ export default function TenantSettings({
                       type="password"
                       value={confirmNewPw}
                       onChange={(e) => setConfirmNewPw(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                      className="flex h-10 w-full rounded-md border border-wlx-mist bg-white px-3 py-2 text-sm text-wlx-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
                       placeholder="確認新密碼"
                       autoComplete="new-password"
                     />
@@ -1724,14 +1724,14 @@ export default function TenantSettings({
                           setConfirmNewPw("");
                           setAccountError("");
                         }}
-                        className="px-3 py-1.5 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-md hover:bg-zinc-200 transition-colors"
+                        className="px-3 py-1.5 text-sm font-medium text-wlx-stone bg-wlx-cream rounded-md hover:bg-wlx-mist transition-colors"
                       >
                         取消
                       </button>
                       <button
                         onClick={handleSavePassword}
                         disabled={accountSaving}
-                        className="px-3 py-1.5 text-sm font-medium text-white bg-zinc-900 rounded-md hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-wlx-ink rounded-md hover:bg-zinc-800 transition-colors disabled:opacity-50"
                       >
                         {accountSaving ? "儲存中..." : "儲存"}
                       </button>
@@ -1741,7 +1741,7 @@ export default function TenantSettings({
               </div>
 
               {/* Logout */}
-              <div className="pt-2 border-t border-zinc-100">
+              <div className="pt-2 border-t border-wlx-mist">
                 <button
                   onClick={() => {
                     if (confirm("確定要登出？")) {

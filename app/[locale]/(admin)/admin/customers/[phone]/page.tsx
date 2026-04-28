@@ -39,11 +39,11 @@ function orderStatusBadgeClass(status: string) {
   if (s === "SHIPPED" || s === "PROCESSING" || s === "FULFILLING")
     return "bg-blue-100 text-blue-700 border border-blue-200";
   if (s === "COMPLETED" || s === "DELIVERED")
-    return "bg-zinc-100 text-zinc-600 border border-zinc-200";
+    return "bg-wlx-cream text-wlx-stone border border-wlx-mist";
   if (s === "CANCELLED") return "bg-red-100 text-red-700 border border-red-200";
   if (s === "REFUNDED")
-    return "bg-amber-100 text-amber-700 border border-amber-200";
-  return "bg-zinc-100 text-zinc-600 border border-zinc-200";
+    return "bg-wlx-cream text-amber-700 border border-amber-200";
+  return "bg-wlx-cream text-wlx-stone border border-wlx-mist";
 }
 
 function formatDate(date: Date): string {
@@ -78,14 +78,14 @@ export default async function CustomerDetailPage({ params }: PageProps) {
         <div className="flex items-center gap-4 mb-6">
           <SidebarToggle />
           <div>
-            <div className="text-zinc-500 text-sm">Admin</div>
-            <h1 className="text-2xl font-semibold text-zinc-900">
+            <div className="text-wlx-stone text-sm">Admin</div>
+            <h1 className="text-2xl font-semibold text-wlx-ink">
               {t.admin.customers.proFeature}
             </h1>
           </div>
         </div>
-        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-zinc-200 bg-white p-12 text-center">
-          <p className="text-zinc-500 mb-6">
+        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-wlx-mist bg-white p-12 text-center">
+          <p className="text-wlx-stone mb-6">
             {t.admin.customers.proFeatureDesc}
           </p>
           <Link
@@ -124,13 +124,13 @@ export default async function CustomerDetailPage({ params }: PageProps) {
         <div className="flex items-center gap-4 mb-6">
           <SidebarToggle />
           <div>
-            <div className="text-zinc-500 text-sm">Admin</div>
-            <h1 className="text-2xl font-semibold text-zinc-900">
+            <div className="text-wlx-stone text-sm">Admin</div>
+            <h1 className="text-2xl font-semibold text-wlx-ink">
               {t.admin.customers.customerDetail}
             </h1>
           </div>
         </div>
-        <div className="mt-4 text-zinc-500">
+        <div className="mt-4 text-wlx-stone">
           {locale === "zh-HK" ? "找不到客戶" : "Customer not found"}
         </div>
         <Link
@@ -160,8 +160,8 @@ export default async function CustomerDetailPage({ params }: PageProps) {
       <div className="flex items-center gap-4 mb-6">
         <SidebarToggle />
         <div>
-          <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">
+          <div className="text-wlx-stone text-sm">Admin</div>
+          <h1 className="text-2xl font-semibold text-wlx-ink">
             {t.admin.customers.customerDetail}
           </h1>
         </div>
@@ -170,7 +170,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
       {/* Back link */}
       <Link
         href={`/${locale}/admin/customers`}
-        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900 transition-colors mb-6"
+        className="inline-flex items-center gap-1 text-sm text-wlx-stone hover:text-wlx-ink transition-colors mb-6"
       >
         <svg
           className="h-4 w-4"
@@ -189,11 +189,11 @@ export default async function CustomerDetailPage({ params }: PageProps) {
       </Link>
 
       {/* Customer info card */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 mb-6">
+      <div className="rounded-2xl border border-wlx-mist bg-white p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl font-semibold text-zinc-900">
+              <h2 className="text-xl font-semibold text-wlx-ink">
                 {latestOrder.customerName}
               </h2>
               {orders.length >= 2 && (
@@ -202,15 +202,15 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                 </span>
               )}
               {totalSpent >= 1000 && (
-                <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 border border-amber-100">
+                <span className="inline-flex items-center rounded-full bg-wlx-cream px-2 py-0.5 text-xs font-medium text-amber-700 border border-amber-100">
                   ⭐ VIP
                 </span>
               )}
             </div>
-            <div className="mt-2 space-y-1 text-sm text-zinc-600">
+            <div className="mt-2 space-y-1 text-sm text-wlx-stone">
               <div className="flex items-center gap-2">
                 <svg
-                  className="h-4 w-4 text-zinc-400"
+                  className="h-4 w-4 text-wlx-stone"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -227,7 +227,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
               {latestOrder.email && (
                 <div className="flex items-center gap-2">
                   <svg
-                    className="h-4 w-4 text-zinc-400"
+                    className="h-4 w-4 text-wlx-stone"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -260,30 +260,30 @@ export default async function CustomerDetailPage({ params }: PageProps) {
         </div>
 
         {/* Stats */}
-        <div className="mt-6 grid grid-cols-3 gap-4 border-t border-zinc-100 pt-4">
+        <div className="mt-6 grid grid-cols-3 gap-4 border-t border-wlx-mist pt-4">
           <div className="text-center">
-            <div className="text-2xl font-semibold text-zinc-900">
+            <div className="text-2xl font-semibold text-wlx-ink">
               {orders.length}
             </div>
-            <div className="text-xs text-zinc-500">
+            <div className="text-xs text-wlx-stone">
               {t.admin.customers.totalOrders}
             </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-semibold text-zinc-900">
+            <div className="text-2xl font-semibold text-wlx-ink">
               {formatCurrency(totalSpent)}
             </div>
-            <div className="text-xs text-zinc-500">
+            <div className="text-xs text-wlx-stone">
               {t.admin.customers.totalSpent}
             </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-semibold text-zinc-900">
+            <div className="text-2xl font-semibold text-wlx-ink">
               {formatCurrency(
                 orders.length > 0 ? totalSpent / orders.length : 0,
               )}
             </div>
-            <div className="text-xs text-zinc-500">
+            <div className="text-xs text-wlx-stone">
               {locale === "zh-HK" ? "平均消費" : "Avg. Order"}
             </div>
           </div>
@@ -291,8 +291,8 @@ export default async function CustomerDetailPage({ params }: PageProps) {
       </div>
 
       {/* Order history */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6">
-        <h3 className="text-lg font-semibold text-zinc-900 mb-4">
+      <div className="rounded-2xl border border-wlx-mist bg-white p-6">
+        <h3 className="text-lg font-semibold text-wlx-ink mb-4">
           {t.admin.customers.orderHistory}
         </h3>
 
@@ -311,12 +311,12 @@ export default async function CustomerDetailPage({ params }: PageProps) {
               <Link
                 key={order.id}
                 href={`/${locale}/admin/orders/${order.id}`}
-                className="block rounded-xl border border-zinc-100 p-4 hover:bg-zinc-50 transition-colors"
+                className="block rounded-xl border border-wlx-mist p-4 hover:bg-wlx-cream transition-colors"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-mono text-zinc-500">
+                      <span className="text-xs font-mono text-wlx-stone">
                         {order.orderNumber || `#${order.id.slice(0, 8)}`}
                       </span>
                       <span
@@ -327,13 +327,13 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                         {translateStatus(order.status, l)}
                       </span>
                     </div>
-                    <div className="text-xs text-zinc-500">
+                    <div className="text-xs text-wlx-stone">
                       {formatDate(order.createdAt)} · {productCount}{" "}
                       {locale === "zh-HK" ? "件商品" : "items"}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-semibold text-zinc-900">
+                    <div className="text-lg font-semibold text-wlx-ink">
                       ${Number(amounts?.total) || 0}
                     </div>
                   </div>

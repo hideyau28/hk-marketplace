@@ -19,9 +19,9 @@ export default async function AdminCoupons({ params }: { params: Promise<{ local
       <div className="flex items-center gap-4 mb-6">
         <SidebarToggle />
         <div>
-          <div className="text-zinc-500 text-sm">Admin</div>
-          <h1 className="text-2xl font-semibold text-zinc-900">{t.admin.coupons.title}</h1>
-          <div className="text-zinc-500 text-sm">{t.admin.coupons.subtitle}</div>
+          <div className="text-wlx-stone text-sm">Admin</div>
+          <h1 className="text-2xl font-semibold text-wlx-ink">{t.admin.coupons.title}</h1>
+          <div className="text-wlx-stone text-sm">{t.admin.coupons.subtitle}</div>
         </div>
       </div>
 

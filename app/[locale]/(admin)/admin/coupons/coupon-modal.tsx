@@ -78,18 +78,18 @@ export default function CouponModal({ coupon, locale, onClose, onSaved }: Coupon
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-3xl border border-zinc-200 bg-white p-6">
+      <div className="w-full max-w-lg rounded-3xl border border-wlx-mist bg-white p-6">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-zinc-900">
+            <h2 className="text-xl font-semibold text-wlx-ink">
               {coupon ? t.admin.coupons.editCoupon : t.admin.coupons.createCoupon}
             </h2>
-            <p className="mt-1 text-zinc-500 text-sm">{t.admin.coupons.configureDiscount}</p>
+            <p className="mt-1 text-wlx-stone text-sm">{t.admin.coupons.configureDiscount}</p>
           </div>
           <button
             onClick={onClose}
             disabled={isPending}
-            className="text-zinc-400 hover:text-zinc-600 disabled:opacity-50"
+            className="text-wlx-stone hover:text-wlx-stone disabled:opacity-50"
           >
             ✕
           </button>
@@ -103,31 +103,31 @@ export default function CouponModal({ coupon, locale, onClose, onSaved }: Coupon
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.code} *</label>
+            <label className="block text-wlx-stone text-sm font-medium mb-2">{t.admin.coupons.code} *</label>
             <input
               value={code}
               onChange={(e) => setCode(e.target.value)}
               disabled={isPending}
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+              className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               placeholder="WELCOME10"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.type}</label>
+              <label className="block text-wlx-stone text-sm font-medium mb-2">{t.admin.coupons.type}</label>
               <select
                 value={discountType}
                 onChange={(e) => setDiscountType(e.target.value as Coupon["discountType"])}
                 disabled={isPending}
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 text-sm text-wlx-ink focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
               >
                 <option value="PERCENTAGE">{t.admin.coupons.percentage}</option>
                 <option value="FIXED">{t.admin.coupons.fixed}</option>
               </select>
             </div>
             <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.discountValue}</label>
+              <label className="block text-wlx-stone text-sm font-medium mb-2">{t.admin.coupons.discountValue}</label>
               <input
                 type="number"
                 min="0"
@@ -135,7 +135,7 @@ export default function CouponModal({ coupon, locale, onClose, onSaved }: Coupon
                 value={discountValue}
                 onChange={(e) => setDiscountValue(e.target.value)}
                 disabled={isPending}
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                 placeholder="10"
               />
             </div>
@@ -143,7 +143,7 @@ export default function CouponModal({ coupon, locale, onClose, onSaved }: Coupon
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.minOrder} ($)</label>
+              <label className="block text-wlx-stone text-sm font-medium mb-2">{t.admin.coupons.minOrder} ($)</label>
               <input
                 type="number"
                 min="0"
@@ -151,12 +151,12 @@ export default function CouponModal({ coupon, locale, onClose, onSaved }: Coupon
                 value={minOrder}
                 onChange={(e) => setMinOrder(e.target.value)}
                 disabled={isPending}
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                 placeholder="0"
               />
             </div>
             <div>
-              <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.maxUsage}</label>
+              <label className="block text-wlx-stone text-sm font-medium mb-2">{t.admin.coupons.maxUsage}</label>
               <input
                 type="number"
                 min="1"
@@ -164,20 +164,20 @@ export default function CouponModal({ coupon, locale, onClose, onSaved }: Coupon
                 value={maxUsage}
                 onChange={(e) => setMaxUsage(e.target.value)}
                 disabled={isPending}
-                className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+                className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 text-sm text-wlx-ink placeholder:text-wlx-stone focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
                 placeholder={t.admin.coupons.unlimited}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-zinc-700 text-sm font-medium mb-2">{t.admin.coupons.expiresAt}</label>
+            <label className="block text-wlx-stone text-sm font-medium mb-2">{t.admin.coupons.expiresAt}</label>
             <input
               type="date"
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
               disabled={isPending}
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
+              className="w-full rounded-2xl border border-wlx-mist bg-white px-4 py-3 text-sm text-wlx-ink focus:outline-none focus:ring-2 focus:ring-zinc-300 disabled:opacity-50"
             />
           </div>
 
@@ -190,7 +190,7 @@ export default function CouponModal({ coupon, locale, onClose, onSaved }: Coupon
               disabled={isPending}
               className="h-4 w-4 accent-olive-600 disabled:opacity-50"
             />
-            <label htmlFor="active" className="text-zinc-700 text-sm">
+            <label htmlFor="active" className="text-wlx-stone text-sm">
               {t.admin.coupons.active}
             </label>
           </div>
@@ -200,7 +200,7 @@ export default function CouponModal({ coupon, locale, onClose, onSaved }: Coupon
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="flex-1 rounded-2xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-200 disabled:opacity-50"
+              className="flex-1 rounded-2xl border border-wlx-mist bg-wlx-cream px-4 py-3 text-sm text-wlx-stone hover:bg-wlx-mist disabled:opacity-50"
             >
               {t.admin.coupons.cancel}
             </button>
