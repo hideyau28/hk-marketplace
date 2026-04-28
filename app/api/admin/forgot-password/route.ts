@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { withApi, ok, ApiError } from "@/lib/api/route-helpers";
 import { randomUUID } from "crypto";
+import { sendEmail } from "@/lib/email/send";
+import PasswordResetEmail from "@/lib/email/templates/PasswordResetEmail";
 
 export const runtime = "nodejs";
 
@@ -36,11 +38,15 @@ export const POST = withApi(async (req: Request) => {
       data: { resetToken, resetTokenExpiresAt },
     });
 
-    // 暫時用 console.log 輸出 reset link（冇 email service）
-    const locale = "zh-HK"; // default locale for reset link
+    const locale = "zh-HK";
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const resetUrl = `${baseUrl}/${locale}/admin/reset-password?token=${resetToken}`;
-    console.log(`[forgot-password] Reset URL for ${cleanEmail}: ${resetUrl}`);
+
+    await sendEmail({
+      to: cleanEmail,
+      subject: "Reset your WoWlix password",
+      template: PasswordResetEmail({ resetUrl, expiresInMinutes: 60 }),
+    });
   }
 
   return ok(req, { ok: true });
