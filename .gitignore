@@ -44,6 +44,10 @@ next-env.d.ts
 *.bak.*
 /backups
 
+# extract-design-system tool artifacts (auto-generated reference, not source of truth)
+.extract-design-system/
+design-system/
+
 !.env.example
 
 # local AI keys

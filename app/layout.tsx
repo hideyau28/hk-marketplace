@@ -11,10 +11,18 @@ import {
 import { getStoreName } from "@/lib/get-store-name";
 import { isPlatformMode } from "@/lib/tenant";
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
+// Local Geist serves both the legacy `--font-geist-sans` and shadcn's `--font-sans`.
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff2",
   variable: "--font-geist-sans",
+  weight: "100 900",
+});
+
+const geistSansShadcn = localFont({
+  src: "./fonts/GeistVF.woff2",
+  variable: "--font-sans",
   weight: "100 900",
 });
 
@@ -109,7 +117,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-HK" suppressHydrationWarning>
+    <html lang="zh-HK" suppressHydrationWarning className={cn("font-sans", geistSansShadcn.variable)}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${bebasNeue.variable} ${playfairDisplay.variable} ${montserrat.variable} ${cormorantGaramond.variable} ${inter.variable} ${lato.variable} bg-white text-zinc-900 antialiased`}
       >
