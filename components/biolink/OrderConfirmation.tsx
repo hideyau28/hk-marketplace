@@ -273,7 +273,7 @@ export default function OrderConfirmation({
           {/* Order summary */}
           {order.items && order.items.length > 0 && (
             <div
-              className="rounded-2xl p-4 mb-4"
+              className="rounded-wlx-soft p-4 mb-4"
               style={{
                 backgroundColor: cardBg,
                 border: `1px solid ${subtleBorder}`,
@@ -356,7 +356,7 @@ export default function OrderConfirmation({
           {/* ─── Payment proof uploaded → waiting for merchant ─── */}
           {proofUploaded && (
             <div
-              className="rounded-2xl p-5 mb-4 text-center"
+              className="rounded-wlx-soft p-5 mb-4 text-center"
               style={{
                 backgroundColor: cardBg,
                 border: `1px solid ${subtleBorder}`,
@@ -400,7 +400,7 @@ export default function OrderConfirmation({
               {/* Payment info card — provider config or legacy fallback */}
               {hasAnyPaymentInfo && (
                 <div
-                  className="rounded-2xl p-5"
+                  className="rounded-wlx-soft p-5"
                   style={{
                     backgroundColor: cardBg,
                     border: `1px solid ${subtleBorder}`,
@@ -604,7 +604,7 @@ export default function OrderConfirmation({
               {/* No payment info fallback */}
               {!hasAnyPaymentInfo && (
                 <div
-                  className="rounded-2xl p-5 mb-4 text-center"
+                  className="rounded-wlx-soft p-5 mb-4 text-center"
                   style={{
                     backgroundColor: cardBg,
                     border: `1px solid ${subtleBorder}`,
@@ -620,7 +620,7 @@ export default function OrderConfirmation({
 
               {/* ─── Upload payment proof ─── */}
               <div
-                className="rounded-2xl p-5"
+                className="rounded-wlx-soft p-5"
                 style={{
                   backgroundColor: inputBg,
                   border: `1px solid ${subtleBorder}`,
@@ -724,7 +724,7 @@ export default function OrderConfirmation({
 
           {/* Next steps */}
           <div
-            className="rounded-2xl p-5 mb-4"
+            className="rounded-wlx-soft p-5 mb-4"
             style={{
               backgroundColor: cardBg,
               border: `1px solid ${subtleBorder}`,

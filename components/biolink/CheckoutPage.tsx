@@ -535,7 +535,7 @@ export default function CheckoutPage({
 
             {freeShippingReached && (
               <p className="mt-2 text-sm text-green-400 font-medium">
-                🎉 滿 {formatPrice(tenant.freeShippingThreshold!, currency)}{" "}
+                滿 {formatPrice(tenant.freeShippingThreshold!, currency)}{" "}
                 免運費！
               </p>
             )}
@@ -732,7 +732,7 @@ export default function CheckoutPage({
                 收款資料
               </h3>
               <div
-                className="rounded-2xl p-4"
+                className="rounded-wlx-soft p-4"
                 style={{
                   backgroundColor: inputBg,
                   border: `1px solid ${subtleBorder}`,
@@ -858,7 +858,7 @@ export default function CheckoutPage({
               訂單摘要
             </h3>
             <div
-              className="rounded-2xl p-4"
+              className="rounded-wlx-soft p-4"
               style={{
                 backgroundColor: inputBg,
                 border: `1px solid ${subtleBorder}`,
@@ -937,7 +937,7 @@ export default function CheckoutPage({
 
           {/* Trust signals */}
           <div
-            className="mt-5 rounded-2xl px-4 py-4"
+            className="mt-5 rounded-wlx-soft px-4 py-4"
             style={{
               backgroundColor: `${tmpl.subtext}08`,
               border: `1px solid ${tmpl.subtext}12`,
@@ -987,7 +987,7 @@ export default function CheckoutPage({
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="mt-6 w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform disabled:active:scale-100"
+            className="mt-6 w-full py-4 rounded-none text-white font-bold text-base active:scale-[0.98] transition-transform disabled:active:scale-100"
             style={{
               backgroundColor: tmpl.accent,
               opacity: submitting ? 0.5 : 1,
