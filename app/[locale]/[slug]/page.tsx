@@ -35,6 +35,7 @@ export default async function SlugPage({ params }: PageProps) {
         description: true,
         whatsapp: true,
         instagram: true,
+        socialLinks: true,
         brandColor: true,
         logoUrl: true,
         coverPhoto: true,
@@ -151,6 +152,8 @@ export default async function SlugPage({ params }: PageProps) {
     deliveryOptions:
       (tenant.deliveryOptions as DeliveryOption[] | null) ||
       DEFAULT_DELIVERY_OPTIONS,
+    socialLinks:
+      (tenant.socialLinks as Array<{ platform: string; url: string }>) || [],
     freeShippingThreshold: tenant.freeShippingThreshold,
     orderConfirmMessage:
       (tenant.orderConfirmMessage as OrderConfirmConfig | null) ||

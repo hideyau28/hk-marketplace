@@ -9,6 +9,7 @@ export type TenantInfo = {
   currency: string;
   whatsapp: string | null;
   instagram: string | null;
+  socialLinks: Array<{ platform: string; url: string }>;
   description: string | null;
   coverPhoto: string | null;
 };
@@ -29,6 +30,7 @@ export async function getTenantInfo(): Promise<TenantInfo> {
       currency: true,
       whatsapp: true,
       instagram: true,
+      socialLinks: true,
       description: true,
       coverPhoto: true,
     },
@@ -43,10 +45,15 @@ export async function getTenantInfo(): Promise<TenantInfo> {
       currency: "HKD",
       whatsapp: null,
       instagram: null,
+      socialLinks: [],
       description: null,
       coverPhoto: null,
     };
   }
 
-  return tenant;
+  return {
+    ...tenant,
+    socialLinks:
+      (tenant.socialLinks as Array<{ platform: string; url: string }>) || [],
+  };
 }
