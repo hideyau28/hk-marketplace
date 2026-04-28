@@ -134,7 +134,7 @@ export default function StudioProductSheet({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="text-[11px] uppercase tracking-[0.18em] text-wlx-stone hover:text-wlx-ink transition-colors duration-200"
+          className="min-h-[44px] inline-flex items-center text-[11px] uppercase tracking-[0.18em] text-wlx-stone hover:text-wlx-ink transition-colors duration-200"
           style={{ transitionTimingFunction: "var(--wlx-ease)" }}
         >
           Close
@@ -144,7 +144,7 @@ export default function StudioProductSheet({
             type="button"
             onClick={onToggleWishlist}
             aria-label={wishlisted ? "Remove from saved" : "Save"}
-            className="text-[11px] uppercase tracking-[0.18em] text-wlx-stone hover:text-wlx-ink transition-colors duration-200"
+            className="min-h-[44px] inline-flex items-center text-[11px] uppercase tracking-[0.18em] text-wlx-stone hover:text-wlx-ink transition-colors duration-200"
             style={{ transitionTimingFunction: "var(--wlx-ease)" }}
           >
             {wishlisted ? "Saved" : "Save"}

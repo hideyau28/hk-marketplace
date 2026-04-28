@@ -300,7 +300,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full rounded-xl bg-wlx-ink py-3 text-white font-semibold hover:bg-wlx-ink/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full min-h-[44px] rounded-wlx-soft bg-wlx-ink py-3 text-[12px] uppercase tracking-[0.18em] text-wlx-paper hover:bg-wlx-ink/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading && !showSecretLogin ? labels.submitting : labels.submit}
             </button>

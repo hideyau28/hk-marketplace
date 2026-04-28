@@ -47,7 +47,7 @@ export default function StudioCartBar({
         <button
           type="button"
           onClick={handleCheckout}
-          className="px-5 py-2.5 sm:px-7 sm:py-3 text-[12px] sm:text-[13px] uppercase tracking-[0.18em] bg-wlx-ink text-wlx-paper hover:bg-wlx-ink/90 transition-colors duration-200"
+          className="min-h-[44px] px-6 sm:px-8 text-[12px] sm:text-[13px] uppercase tracking-[0.18em] bg-wlx-ink text-wlx-paper hover:bg-wlx-ink/90 transition-colors duration-200"
           style={{ transitionTimingFunction: "var(--wlx-ease)" }}
         >
           Checkout

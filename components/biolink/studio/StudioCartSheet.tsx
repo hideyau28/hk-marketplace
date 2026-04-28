@@ -70,7 +70,7 @@ export default function StudioCartSheet({
             type="button"
             onClick={onClose}
             aria-label={isZh ? "關閉購物車" : "Close cart"}
-            className="text-[11px] uppercase tracking-[0.18em] text-wlx-stone hover:text-wlx-ink transition-colors duration-200"
+            className="min-h-[44px] inline-flex items-center text-[11px] uppercase tracking-[0.18em] text-wlx-stone hover:text-wlx-ink transition-colors duration-200"
             style={{ transitionTimingFunction: "var(--wlx-ease)" }}
           >
             Close
@@ -160,7 +160,7 @@ export default function StudioCartSheet({
                           onRemoveItem(item.productId, item.variant)
                         }
                         aria-label={`${isZh ? "移除" : "Remove"} ${item.name}`}
-                        className="text-[11px] uppercase tracking-[0.18em] text-wlx-stone hover:text-wlx-ink transition-colors duration-200"
+                        className="min-h-[44px] inline-flex items-center text-[11px] uppercase tracking-[0.18em] text-wlx-stone hover:text-wlx-ink transition-colors duration-200"
                         style={{ transitionTimingFunction: "var(--wlx-ease)" }}
                       >
                         {isZh ? "移除" : "Remove"}
@@ -210,7 +210,7 @@ export default function StudioCartSheet({
                 <button
                   type="button"
                   onClick={onClearCart}
-                  className="text-[11px] uppercase tracking-[0.18em] text-wlx-stone hover:text-wlx-ink transition-colors duration-200"
+                  className="min-h-[44px] text-[11px] uppercase tracking-[0.18em] text-wlx-stone hover:text-wlx-ink transition-colors duration-200"
                   style={{ transitionTimingFunction: "var(--wlx-ease)" }}
                 >
                   {isZh ? "清空購物車" : "Clear cart"}
