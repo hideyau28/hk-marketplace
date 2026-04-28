@@ -50,6 +50,9 @@ import CartSheet from "./CartSheet";
 import CheckoutPage from "./CheckoutPage";
 import StudioHero from "./studio/StudioHero";
 import StudioProductGrid from "./studio/StudioProductGrid";
+import StudioCartBar from "./studio/StudioCartBar";
+import StudioCartSheet from "./studio/StudioCartSheet";
+import StudioProductSheet from "./studio/StudioProductSheet";
 import type { OrderResult } from "./CheckoutPage";
 import OrderConfirmation from "./OrderConfirmation";
 import ProductSheet from "./ProductSheet";
@@ -363,33 +366,61 @@ export default function BioLinkPage({ tenant, products }: Props) {
 
         {/* Cart bar or WhatsApp FAB */}
         {cartCount > 0 ? (
-          <CartBar
-            count={cartCount}
-            total={cartTotal}
-            currency={currency}
-            whatsapp={tenant.whatsapp}
-            onCheckout={() => setShowCart(true)}
-          />
+          isStudio ? (
+            <StudioCartBar
+              count={cartCount}
+              total={cartTotal}
+              currency={currency}
+              whatsapp={tenant.whatsapp}
+              onCheckout={() => setShowCart(true)}
+            />
+          ) : (
+            <CartBar
+              count={cartCount}
+              total={cartTotal}
+              currency={currency}
+              whatsapp={tenant.whatsapp}
+              onCheckout={() => setShowCart(true)}
+            />
+          )
         ) : (
           <WhatsAppFAB whatsapp={tenant.whatsapp} cart={cart.items} />
         )}
 
         {/* Cart sheet (bottom sheet) */}
-        <CartSheet
-          open={showCart}
-          onClose={() => setShowCart(false)}
-          items={cart.items}
-          currency={currency}
-          languages={tenant.languages}
-          freeShippingThreshold={tenant.freeShippingThreshold}
-          onUpdateQty={handleUpdateQty}
-          onRemoveItem={handleRemoveItem}
-          onClearCart={handleClearCart}
-          onCheckout={() => {
-            setShowCart(false);
-            setShowCheckout(true);
-          }}
-        />
+        {isStudio ? (
+          <StudioCartSheet
+            open={showCart}
+            onClose={() => setShowCart(false)}
+            items={cart.items}
+            currency={currency}
+            languages={tenant.languages}
+            freeShippingThreshold={tenant.freeShippingThreshold}
+            onUpdateQty={handleUpdateQty}
+            onRemoveItem={handleRemoveItem}
+            onClearCart={handleClearCart}
+            onCheckout={() => {
+              setShowCart(false);
+              setShowCheckout(true);
+            }}
+          />
+        ) : (
+          <CartSheet
+            open={showCart}
+            onClose={() => setShowCart(false)}
+            items={cart.items}
+            currency={currency}
+            languages={tenant.languages}
+            freeShippingThreshold={tenant.freeShippingThreshold}
+            onUpdateQty={handleUpdateQty}
+            onRemoveItem={handleRemoveItem}
+            onClearCart={handleClearCart}
+            onCheckout={() => {
+              setShowCart(false);
+              setShowCheckout(true);
+            }}
+          />
+        )}
 
         {/* Checkout page (full screen) */}
         <CheckoutPage
@@ -411,18 +442,28 @@ export default function BioLinkPage({ tenant, products }: Props) {
         )}
 
         {/* Product bottom sheet (variant selection) */}
-        {sheetProduct && (
-          <ProductSheet
-            product={sheetProduct}
-            currency={currency}
-            onClose={() => setSheetProduct(null)}
-            onAddToCart={handleSheetAdd}
-            allProducts={products}
-            onSwitchProduct={setSheetProduct}
-            wishlisted={isWishlisted(wishlist, sheetProduct.id)}
-            onToggleWishlist={() => handleToggleWishlist(sheetProduct.id)}
-          />
-        )}
+        {sheetProduct &&
+          (isStudio ? (
+            <StudioProductSheet
+              product={sheetProduct}
+              currency={currency}
+              onClose={() => setSheetProduct(null)}
+              onAddToCart={handleSheetAdd}
+              wishlisted={isWishlisted(wishlist, sheetProduct.id)}
+              onToggleWishlist={() => handleToggleWishlist(sheetProduct.id)}
+            />
+          ) : (
+            <ProductSheet
+              product={sheetProduct}
+              currency={currency}
+              onClose={() => setSheetProduct(null)}
+              onAddToCart={handleSheetAdd}
+              allProducts={products}
+              onSwitchProduct={setSheetProduct}
+              wishlisted={isWishlisted(wishlist, sheetProduct.id)}
+              onToggleWishlist={() => handleToggleWishlist(sheetProduct.id)}
+            />
+          ))}
 
         {/* Wishlist sheet */}
         {showWishlist && (
