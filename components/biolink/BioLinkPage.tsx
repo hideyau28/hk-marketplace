@@ -48,6 +48,8 @@ import CartBar from "./CartBar";
 import WhatsAppFAB from "./WhatsAppFAB";
 import CartSheet from "./CartSheet";
 import CheckoutPage from "./CheckoutPage";
+import StudioHero from "./studio/StudioHero";
+import StudioProductGrid from "./studio/StudioProductGrid";
 import type { OrderResult } from "./CheckoutPage";
 import OrderConfirmation from "./OrderConfirmation";
 import ProductSheet from "./ProductSheet";
@@ -75,6 +77,7 @@ export default function BioLinkPage({ tenant, products }: Props) {
     () => getCoverTemplate(tenant.coverTemplate),
     [tenant.coverTemplate],
   );
+  const isStudio = tmpl.id === "studio";
   const pathname = usePathname() || "/en";
   const locale = (pathname.split("/").filter(Boolean)[0] || "en") as Locale;
 
@@ -250,7 +253,9 @@ export default function BioLinkPage({ tenant, products }: Props) {
   return (
     <TemplateProvider value={tmpl}>
       <div
-        className="min-h-screen max-w-[480px] mx-auto relative overflow-x-hidden"
+        className={`min-h-screen mx-auto relative overflow-x-hidden ${
+          isStudio ? "max-w-none" : "max-w-[480px]"
+        }`}
         style={{
           backgroundColor: tmpl.bg,
           fontFamily: `${getFontVar(tmpl.bodyFont)}, sans-serif`,
@@ -273,51 +278,57 @@ export default function BioLinkPage({ tenant, products }: Props) {
           </Link>
         )}
 
-        <CoverPhoto url={tenant.coverPhoto} />
-        <ProfileSection tenant={tenant} />
+        {isStudio ? (
+          <StudioHero tenant={tenant} />
+        ) : (
+          <>
+            <CoverPhoto url={tenant.coverPhoto} />
+            <ProfileSection tenant={tenant} />
 
-        {/* Wishlist button */}
-        <div className="flex justify-center -mt-1 mb-3">
-          <button
-            onClick={() => setShowWishlist(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all active:scale-95"
-            style={{
-              backgroundColor: `${tmpl.subtext}12`,
-              color: tmpl.text,
-            }}
-          >
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill={wishlistCount > 0 ? "#ef4444" : "none"}
-              stroke={wishlistCount > 0 ? "#ef4444" : "currentColor"}
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-              />
-            </svg>
-            我的收藏
-            {wishlistCount > 0 && (
-              <span
-                className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-bold text-white"
-                style={{ backgroundColor: "#ef4444" }}
+            {/* Wishlist button */}
+            <div className="flex justify-center -mt-1 mb-3">
+              <button
+                onClick={() => setShowWishlist(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all active:scale-95"
+                style={{
+                  backgroundColor: `${tmpl.subtext}12`,
+                  color: tmpl.text,
+                }}
               >
-                {wishlistCount}
-              </span>
-            )}
-          </button>
-        </div>
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill={wishlistCount > 0 ? "#ef4444" : "none"}
+                  stroke={wishlistCount > 0 ? "#ef4444" : "currentColor"}
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                  />
+                </svg>
+                我的收藏
+                {wishlistCount > 0 && (
+                  <span
+                    className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-bold text-white"
+                    style={{ backgroundColor: "#ef4444" }}
+                  >
+                    {wishlistCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          </>
+        )}
 
         {/* Search bar — only show when store has 10+ products */}
-        {products.length >= 10 && (
+        {products.length >= 10 && !isStudio && (
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
         )}
 
-        {/* Featured loot cards */}
-        {featured.length > 0 && (
+        {/* Featured loot cards (skipped on Studio template) */}
+        {!isStudio && featured.length > 0 && (
           <FeaturedSection
             products={featured}
             currency={currency}
@@ -327,20 +338,28 @@ export default function BioLinkPage({ tenant, products }: Props) {
           />
         )}
 
-        {/* Spacer (no longer a gradient since bg is unified) */}
-        {featured.length > 0 && <div className="h-6" />}
+        {/* Spacer */}
+        {!isStudio && featured.length > 0 && <div className="h-6" />}
 
-        {/* Light zone — Product grid */}
-        <ProductGrid
-          products={grid}
-          allProducts={allGrid}
-          currency={currency}
-          onAdd={handleCardAdd}
-          onTap={handleProductTap}
-          searchQuery={searchQuery}
-          wishlist={wishlist}
-          onToggleWishlist={handleToggleWishlist}
-        />
+        {isStudio ? (
+          <StudioProductGrid
+            products={products}
+            currency={currency}
+            onTap={handleProductTap}
+            searchQuery={searchQuery}
+          />
+        ) : (
+          <ProductGrid
+            products={grid}
+            allProducts={allGrid}
+            currency={currency}
+            onAdd={handleCardAdd}
+            onTap={handleProductTap}
+            searchQuery={searchQuery}
+            wishlist={wishlist}
+            onToggleWishlist={handleToggleWishlist}
+          />
+        )}
 
         {/* Cart bar or WhatsApp FAB */}
         {cartCount > 0 ? (

@@ -101,6 +101,25 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
     bodyFont: "Lato",
     defaultBanner: "/banners/petal.webp",
   },
+  {
+    id: "studio",
+    label: "工作室",
+    labelEn: "Studio",
+    descZh: "精緻編輯感",
+    descEn: "Editorial premium",
+    bg: "#FBFAF7",          // wlx-paper
+    card: "#F8F6F2",        // wlx-cream
+    text: "#1A1A1A",        // wlx-ink
+    subtext: "#6F6A63",     // wlx-stone
+    accent: "#C9A961",      // wlx-accent (default; tenant brandColor overrides)
+    headerGradient: "linear-gradient(180deg, rgba(26,26,26,0) 0%, rgba(26,26,26,0.45) 100%)",
+    borderRadius: { card: 0, button: 0, image: 0 },
+    buttonStyle: "filled",
+    shadow: "0 4px 12px rgba(26,26,26,0.06)",
+    headingFont: "Geist",
+    bodyFont: "Geist",
+    defaultBanner: "/banners/mochi.webp",
+  },
 ];
 
 // 所有舊 template ID → mochi（backward compat）
