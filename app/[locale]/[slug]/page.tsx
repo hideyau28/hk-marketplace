@@ -177,9 +177,12 @@ export async function generateMetadata({
 
     const title = `${tenant.name} | WoWlix`;
     const description = tenant.description || `Shop at ${tenant.name}`;
-    const ogImage = tenant.coverPhoto || "https://wowlix.com/og-default.png";
     const pageUrl = `https://www.wowlix.com/${slug}`;
 
+    // Note: do NOT set `openGraph.images` / `twitter.images` here. Next.js
+    // auto-discovers the dynamic image from `opengraph-image.tsx` co-located
+    // with this route — explicitly setting an array shadows it and forces
+    // the static fallback.
     return {
       title,
       description,
@@ -187,7 +190,6 @@ export async function generateMetadata({
       openGraph: {
         title: `${tenant.name} | WoWlix`,
         description,
-        images: [ogImage],
         type: "website",
         url: pageUrl,
         siteName: "WoWlix",
@@ -196,7 +198,6 @@ export async function generateMetadata({
         card: "summary_large_image",
         title: `${tenant.name} | WoWlix`,
         description,
-        images: [ogImage],
       },
     };
   } catch (err) {
