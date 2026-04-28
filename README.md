@@ -1,34 +1,40 @@
-# HK•Market - Hong Kong Sports Marketplace
+# hk-marketplace — HK IG / WhatsApp 小店 + Biolink SaaS
 
-A modern, full-featured e-commerce platform built specifically for Hong Kong sports retailers. Single-tenant architecture with a powerful admin dashboard and seamless customer experience.
+A multi-tenant SaaS platform that gives Hong Kong sellers an IG-bio-friendly storefront, a WhatsApp-driven checkout, and a full merchant admin — all under one slug like `/[shop]`. Each tenant gets a biolink page, a product catalog, and HK-local payment options (FPS, PayMe, Stripe).
 
 ## 🚀 Features
 
-### Customer-Facing
-- **Product Catalog**: Browse sports gear with advanced filtering by brand, category, and stock status
-- **Multi-size Support**: Product size selection with EU, US, UK, and Universal sizing systems
-- **Shopping Cart**: Persistent cart with size-specific items
-- **Checkout**: Stripe-powered secure payment processing
-- **Order Tracking**: Real-time order status updates
-- **Wishlist**: Save favorite products for later
-- **Search**: Fast product search with instant results
-- **Internationalization**: Full support for English and Traditional Chinese (zh-HK)
-- **Dark Mode**: Light, dark, and system theme modes
-- **Currency Support**: HKD, USD, EUR, GBP with real-time conversion
-- **Mobile-First**: Responsive design with bottom navigation on mobile
-- **PWA Ready**: Progressive Web App with offline support
-- **Push Notifications**: Opt-in order updates and promotional notifications
+### Buyer-facing (per tenant `/[slug]`)
+- **Biolink Page**: Branded landing with cover, logo, brand color, social links (IG, WhatsApp, drag-reorderable multi-platform icons)
+- **Product Catalog**: Browse with category / brand / stock filters; supports single + dual-axis variants (e.g. colour × size)
+- **Shopping Cart**: Persistent, variant-aware
+- **Order-first Checkout**: Place order, then upload payment proof on the confirmation page (FPS / PayMe / bank transfer flows)
+- **Stripe Checkout**: Optional card payment for tenants that connect Stripe
+- **Order Tracking**: Status + fulfillment timestamps, WhatsApp follow-up template
+- **Trust Signals**: Configurable badges on checkout / confirmation pages
+- **Wishlist + Search**
+- **i18n**: Traditional Chinese (zh-HK) + English
+- **Mobile-first PWA**: Bottom nav, offline shell, opt-in push notifications
+- **Dark mode**: Light / dark / system
 
-### Admin Dashboard
-- **Product Management**: CRUD operations with bulk CSV import/export
-- **Order Management**: View, update, and track all orders
-- **Inventory Control**: Real-time stock management
-- **Coupon System**: Percentage and fixed-amount discount codes
-- **Receipt Generation**: PDF receipts for completed orders
-- **Admin Logs**: Audit trail of all admin actions
-- **CSV Templates**: Download templates for bulk product uploads
-- **Image Uploads**: Cloudinary integration for product images
-- **Settings**: Store-wide configuration (name, tagline, policies)
+### Merchant admin (per tenant `/admin`)
+- **Onboarding Wizard** (`/start`): Tenant signup, WhatsApp / dial code, FPS, plan selection
+- **Product Management**: CRUD, bulk CSV import/export, dual-variant editor
+- **Order Management**: Status transitions with timestamps (PENDING → PAID → FULFILLING → SHIPPED → COMPLETED), payment-attempt history
+- **Inventory Control**: Per-variant stock
+- **Coupons**: % and fixed-amount codes
+- **Receipts**: PDF generation
+- **Storefront Settings**: Brand colour, cover template, hero, social links, delivery options, free-shipping threshold, order-confirm message
+- **Audit Log**: All admin actions tracked
+- **Auth**: Basic Auth + tenant-admin OTP / Google OAuth + forgot-password flow
+
+### Multi-tenant / SaaS
+- **Tenant Model**: Slug-based routing (`/[slug]`), optional custom domain
+- **Plans + Billing**: Stripe subscription (free / paid tiers, trial, grace period)
+- **Stripe Connect**: Tenants connect their own Stripe account for card payments
+- **HK-local Payments**: FPS (account + QR), PayMe (link + QR)
+- **Templates**: Biolink template engine (default: `mochi`)
+- **Branding Hide**: Per-plan toggle for "Powered by" branding
 
 ### Technical Features
 - **Analytics**: Google Analytics 4 and Meta Pixel integration
@@ -242,8 +248,11 @@ npm run stripe:trigger:checkout
 hk-marketplace/
 ├── app/                      # Next.js App Router
 │   ├── [locale]/            # Locale-based routing (en, zh-HK)
-│   │   ├── (admin)/         # Admin dashboard routes
-│   │   └── (customer)/      # Customer-facing routes
+│   │   ├── (admin)/         # Tenant admin dashboard
+│   │   ├── (customer)/      # Buyer-facing routes (cart, checkout, orders, etc.)
+│   │   ├── (marketing)/     # Public marketing pages (pricing, etc.)
+│   │   ├── [slug]/          # Per-tenant biolink storefront entry
+│   │   └── start/           # Tenant onboarding wizard
 │   ├── api/                 # API routes
 │   ├── robots.ts            # Dynamic robots.txt
 │   └── sitemap.ts           # Dynamic sitemap
@@ -252,18 +261,20 @@ hk-marketplace/
 │   ├── admin/              # Admin authentication
 │   ├── api/                # API helpers
 │   ├── analytics.ts        # Analytics tracking
+│   ├── biolink-helpers.ts  # Biolink data shape + variant/image helpers
 │   ├── cart.ts             # Shopping cart logic
 │   ├── currency.ts         # Multi-currency support
+│   ├── get-tenant-info.ts  # Resolve current tenant from request context
 │   ├── i18n.ts             # Internationalization
 │   ├── prisma.ts           # Prisma client
 │   ├── push-notifications.ts # Push notification handling
 │   ├── theme-context.tsx   # Dark mode theme provider
 │   └── translations.ts     # Translation strings
 ├── prisma/
-│   └── schema.prisma       # Database schema
+│   └── schema.prisma       # Database schema (Tenant-rooted multi-tenancy)
 ├── public/                  # Static assets
 │   └── sw.js               # Service worker
-├── scripts/                 # Development scripts
+├── scripts/                 # Development + smoke scripts
 ├── .env.example            # Environment variables template
 ├── next.config.ts          # Next.js configuration
 ├── package.json            # Dependencies
@@ -293,4 +304,4 @@ For issues or questions:
 
 ---
 
-Built with ❤️ for Hong Kong sports retailers
+Built for Hong Kong IG / WhatsApp sellers

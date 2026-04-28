@@ -1,100 +1,29 @@
 # STATUS — hk-marketplace
 
-Updated: 2026-01-28
+Updated: 2026-04-28
 
-## ✅ Recently completed
-- Payments: PaymentAttempt model + webhook updates (expired doesn’t cancel order)
-- Admin: PaymentAttempts shown in Orders + “Last Payment” column
-- Orders: Fulfillment timestamps (fulfillingAt/shippedAt/completedAt/cancelledAt/refundedAt/disputedAt) + auto-set on status PATCH
-- Smoke: payments smoke script (`scripts/smoke-payments.sh`) + fixes
+> Multi-tenant HK IG / WhatsApp 小店 + biolink SaaS. See `README.md` for overview.
 
 ---
 
-## NEXT 3 TASKS (priority order)
+## ✅ Recently completed (last ~30 days)
+
+- **Admin product list**: auto-refresh after adding new product (#344)
+- **Checkout / confirmation**: trust signals (#343)
+- **Checkout flow**: order-first, pay-later — proof upload on confirmation page (#342)
+- **Biolink**: social icons drag-reorder + multi-platform `socialLinks` Json field (#341)
+- **Auth**: rate limiting on send-otp endpoint (#340)
+- **Tenant admin**: forgot/reset password flow (#339)
+- **Onboarding wizard**: WhatsApp dial code + international format (+852…) (#332–#336)
 
 ---
 
-## UI BASELINE (Army Green) — 3 parallel tasks
-Use task files under `TASKS/`:
-- `TASKS/UI-1-tokens.md`
-- `TASKS/UI-2-cards.md`
-- `TASKS/UI-3-home.md`
+## 🚧 In progress
 
-Progress
-- UI-1 Tokens: ☑ Done
-- UI-2 Cards:  ☑ Done
-- UI-3 Home:   ☑ Done
+- `socialLinks` propagation to all read paths (`[slug]/page.tsx`, `lib/biolink-helpers.ts`, `lib/get-tenant-info.ts`, `prisma/schema.prisma`) — schema + helpers updated, migration + admin form + render still pending
 
 ---
 
-## CONTENT (sports merchant) — next tasks
-- `TASKS/CONTENT-1-product-badges.md` (P0)
-- `TASKS/CONTENT-2-categorygrid-sports.md` (P1)
+## NEXT
 
-Progress
-- CONTENT-1 Product badges: ☐ Not started / ☐ In progress / ☐ Blocked / ☐ Done
-- CONTENT-2 CategoryGrid sports: ☑ Done
-
----
-
-### TASK 1 (P0) — Fulfillment status transition rules + timestamps correctness
-**Goal**: make status updates safe/consistent (no impossible jumps), ensure timestamps are set only when appropriate.
-
-**Scope (allowlist)**
-- `app/api/orders/[id]/route.ts`
-- `app/[locale]/admin/orders/*`
-- (optional) `lib/*` helper only
-
-**Checklist**
-- [x] Define allowed status transitions (e.g. PENDING→PAID→FULFILLING→SHIPPED→COMPLETED; allow CANCELLED from PENDING/PAID; etc.)
-- [x] Enforce transitions in PATCH `/api/orders/[id]` (400 BAD_REQUEST on invalid)
-- [x] When transitioning, set the correct timestamp only once (already implemented) and don't set unrelated timestamps
-- [x] Admin UI shows a clear error on invalid transition
-- [x] `npm run ci:build` PASS
-- [x] Commit + `git status` clean
-
-**Owner**: Claude Code (Opus 4.5)
-**Progress**: ☑ Done
-
----
-
-### TASK 2 (P1) — Admin Orders UX: payment + fulfillment at-a-glance
-**Goal**: reduce clicks for ops: show last payment + key fulfillment timestamps in table; improve copyability.
-
-**Scope (allowlist)**
-- `app/[locale]/admin/orders/orders-table.tsx`
-- `app/[locale]/admin/orders/order-detail-modal.tsx`
-
-**Checklist**
-- [x] Orders table: show Last Payment (already exists) as badge with color mapping
-- [x] Orders table: add columns for key timestamps (PaidAt, ShippedAt) or a compact "Fulfillment" indicator
-- [x] Detail modal: add copy button for Stripe IDs (optional), keep monospace selectable
-- [x] Empty states (no attempts / no timestamps) look clean
-- [x] `npm run ci:build` PASS
-- [x] Commit + `git status` clean
-
-**Owner**: Claude Code (Sonnet 4.5)
-**Progress**: ☑ Done
-
----
-
-### TASK 3 (P2) — Smoke: fulfillment + status update validation
-**Goal**: add a smoke script that validates admin auth + PATCH status behavior + timestamp write-once.
-
-**Scope (allowlist)**
-- `scripts/*`
-- `RUNBOOK.md`
-- (optional) `package.json` scripts only
-
-**Checklist**
-- [x] New `scripts/smoke-fulfillment.sh`
-- [x] Requires `ADMIN_SECRET` env; fails fast with usage hint
-- [x] Creates an order (reuse logic from smoke-payments if possible)
-- [x] PATCH status through a valid sequence; asserts timestamps change as expected
-- [x] Attempts an invalid transition; asserts 400 BAD_REQUEST
-- [x] Prints `SMOKE PASS (fulfillment)`
-- [x] Document in `RUNBOOK.md`
-- [x] Commit + `git status` clean
-
-**Owner**: Claude Code (Sonnet 4.5)
-**Progress**: ☑ Done
+_(empty — define when picking up next task)_
