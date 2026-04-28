@@ -150,13 +150,16 @@ export function middleware(request: NextRequest) {
   // 3. For non-slug URLs: apply cookie/param tenant override
   //    localePathSlug URLs (e.g. /en/giftyouflora) skip cookie override
   //    so the [slug] page resolves the correct tenant from the URL segment.
+  //    On platform-bare domains (wowlix.com / www.wowlix.com), the implicit
+  //    `__dev_tenant` cookie is ignored so the landing page always renders;
+  //    explicit `?tenant=` param still wins (used for preview / demos).
   if (!localePathSlug) {
     const tenantParam = request.nextUrl.searchParams.get("tenant");
     if (tenantParam) {
       tenantSlug = tenantParam;
       devTenantCookieChanged = true;
       tenantOverridden = true;
-    } else {
+    } else if (!isPlatform) {
       const cookieVal = request.cookies.get("__dev_tenant")?.value;
       if (cookieVal) {
         tenantSlug = cookieVal;
