@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   verifyOTP,
-  validateHKPhone,
-  normalizePhone,
+  validateEmail,
+  normalizeEmail,
   createToken,
 } from "@/lib/auth";
 import { getTenantId } from "@/lib/tenant";
@@ -19,27 +19,26 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { phone, otp } = body;
+    const { email, otp } = body;
 
-    if (!phone || !otp) {
+    if (!email || !otp) {
       return NextResponse.json(
-        { ok: false, error: { code: "MISSING_FIELDS", message: "電話號碼同驗證碼為必填" } },
+        { ok: false, error: { code: "MISSING_FIELDS", message: "電郵同驗證碼為必填" } },
         { status: 400 }
       );
     }
 
-    // Validate HK phone format
-    if (!validateHKPhone(phone)) {
+    if (!validateEmail(email)) {
       return NextResponse.json(
-        { ok: false, error: { code: "INVALID_PHONE", message: "請輸入有效嘅香港電話號碼" } },
+        { ok: false, error: { code: "INVALID_EMAIL", message: "請輸入有效嘅電郵地址" } },
         { status: 400 }
       );
     }
 
-    const normalizedPhone = normalizePhone(phone);
+    const normalizedEmail = normalizeEmail(email);
 
-    // Verify OTP
-    if (!(await verifyOTP(normalizedPhone, otp))) {
+    // Verify OTP — keyed by email (OtpCode.phone column is a generic identifier)
+    if (!(await verifyOTP(normalizedEmail, otp))) {
       return NextResponse.json(
         { ok: false, error: { code: "INVALID_OTP", message: "驗證碼不正確或已過期" } },
         { status: 400 }
@@ -48,14 +47,21 @@ export async function POST(request: NextRequest) {
 
     const tenantId = await getTenantId(request);
 
-    // Find or create user
+    // Find user by email; fall back to creating one if first-time login.
+    // User.phone is @unique + required — for email-only signups we mirror the
+    // email into the phone column so the constraint is satisfied. Legacy users
+    // created with real phones still log in via their phone (separate flow).
     let user = await prisma.user.findFirst({
-      where: { phone: normalizedPhone, tenantId },
+      where: { email: normalizedEmail, tenantId },
     });
 
     if (!user) {
       user = await prisma.user.create({
-        data: { phone: normalizedPhone, tenantId },
+        data: {
+          email: normalizedEmail,
+          phone: normalizedEmail,
+          tenantId,
+        },
       });
     }
 

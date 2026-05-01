@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   generateOTP,
   storeOTP,
-  validateHKPhone,
-  normalizePhone,
+  validateEmail,
+  normalizeEmail,
+  OTP_EXPIRY_MINUTES,
 } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { withRateLimit } from "@/lib/api/rate-limit-middleware";
+import { sendEmail } from "@/lib/email/send";
+import OtpEmail from "@/lib/email/templates/OtpEmail";
 
 // Per-IP: 10 requests / 15 min (prevent bulk enumeration)
 const ipLimiter = withRateLimit(
@@ -14,8 +17,8 @@ const ipLimiter = withRateLimit(
   { keyPrefix: "send-otp:ip" },
 );
 
-// Per-phone config: 3 requests / 15 min (prevent spamming one number)
-const PHONE_LIMIT = { interval: 15 * 60 * 1000, maxRequests: 3 };
+// Per-email: 3 requests / 15 min (prevent spamming one inbox)
+const EMAIL_LIMIT = { interval: 15 * 60 * 1000, maxRequests: 3 };
 
 export async function POST(request: NextRequest) {
   // Check IP rate limit first (before parsing body)
@@ -32,37 +35,39 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { phone } = body;
+    const { email } = body;
 
-    if (!phone) {
+    if (!email) {
       return NextResponse.json(
         {
           ok: false,
-          error: { code: "MISSING_PHONE", message: "電話號碼為必填" },
+          error: { code: "MISSING_EMAIL", message: "電郵為必填" },
         },
         { status: 400 },
       );
     }
 
-    // Validate HK phone format
-    if (!validateHKPhone(phone)) {
+    if (!validateEmail(email)) {
       return NextResponse.json(
         {
           ok: false,
           error: {
-            code: "INVALID_PHONE",
-            message: "請輸入有效嘅香港電話號碼（8位數字）",
+            code: "INVALID_EMAIL",
+            message: "請輸入有效嘅電郵地址",
           },
         },
         { status: 400 },
       );
     }
 
-    const normalizedPhone = normalizePhone(phone);
+    const normalizedEmail = normalizeEmail(email);
 
-    // Check per-phone rate limit (after validation, before sending OTP)
-    const phoneResult = await rateLimit(`send-otp:phone:${normalizedPhone}`, PHONE_LIMIT);
-    if (!phoneResult.allowed) {
+    // Check per-email rate limit (after validation, before sending OTP)
+    const emailResult = await rateLimit(
+      `send-otp:email:${normalizedEmail}`,
+      EMAIL_LIMIT,
+    );
+    if (!emailResult.allowed) {
       return NextResponse.json(
         {
           ok: false,
@@ -74,8 +79,29 @@ export async function POST(request: NextRequest) {
 
     const otp = generateOTP();
 
-    // Store OTP
-    await storeOTP(normalizedPhone, otp);
+    // Store OTP keyed by email (OtpCode.phone column is a generic identifier)
+    await storeOTP(normalizedEmail, otp);
+
+    // Send OTP via Resend (falls back to console.log when RESEND_API_KEY unset)
+    const sendResult = await sendEmail({
+      to: normalizedEmail,
+      subject: `Your WoWlix verification code: ${otp}`,
+      template: OtpEmail({ code: otp, expiresInMinutes: OTP_EXPIRY_MINUTES }),
+    });
+
+    if (!sendResult.ok) {
+      console.error("[send-otp] Email delivery failed:", sendResult.error);
+      return NextResponse.json(
+        {
+          ok: false,
+          error: {
+            code: "EMAIL_SEND_FAILED",
+            message: "驗證碼發送失敗，請稍後再試",
+          },
+        },
+        { status: 502 },
+      );
+    }
 
     // Only expose OTP in local development — never in Preview, staging, or production.
     // NODE_ENV === "development" only matches `next dev`; Vercel Preview runs as "production".
@@ -84,7 +110,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       data: {
-        message: "驗證碼已發送",
+        message: "驗證碼已發送至您嘅電郵",
         // Only include OTP in local dev
         ...(isDevMode && { otp, demoMode: true }),
       },

@@ -33,7 +33,12 @@ export function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Store OTP for a phone number (5 minute expiry)
+// OTP_EXPIRY_MINUTES — keep in sync with the copy inside OtpEmail.tsx.
+export const OTP_EXPIRY_MINUTES = 5;
+
+// Store OTP for an identifier (5 minute expiry).
+// `phone` parameter name is historical — it accepts any unique identifier
+// (HK phone or email). The OtpCode.phone DB column acts as a generic key.
 export async function storeOTP(phone: string, otp: string): Promise<void> {
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
@@ -110,6 +115,21 @@ export function validateHKPhone(phone: string): boolean {
 export function normalizePhone(phone: string): string {
   const digits = phone.replace(/^\+852/, "").replace(/\D/g, "");
   return `+852${digits}`;
+}
+
+// Email validation — rough RFC-5322 lite, enough to reject obvious junk.
+// Real validation happens when Resend tries to deliver.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function validateEmail(email: string): boolean {
+  if (typeof email !== "string") return false;
+  const trimmed = email.trim();
+  if (trimmed.length === 0 || trimmed.length > 254) return false;
+  return EMAIL_REGEX.test(trimmed);
+}
+
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
 }
 
 // Create JWT token

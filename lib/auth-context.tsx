@@ -13,7 +13,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (phone: string, otp: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, otp: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   updateProfile: (data: { name?: string; email?: string; address?: string }) => Promise<{ success: boolean; error?: string }>;
@@ -51,13 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchUser();
   }, [fetchUser]);
 
-  const login = async (phone: string, otp: string) => {
+  const login = async (email: string, otp: string) => {
     try {
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ phone, otp }),
+        body: JSON.stringify({ email, otp }),
       });
       const data = await res.json();
       if (data.ok && data.data.user) {

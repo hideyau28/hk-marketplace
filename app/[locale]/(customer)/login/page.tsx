@@ -4,9 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-import { ArrowLeft, Phone, Shield } from "lucide-react";
+import { ArrowLeft, Mail, Shield } from "lucide-react";
 
-type Step = "phone" | "otp";
+type Step = "email" | "otp";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,8 +18,8 @@ export default function LoginPage() {
   const redirectTo = searchParams?.get("redirect") || `/${locale}`;
   const { user, login } = useAuth();
 
-  const [step, setStep] = useState<Step>("phone");
-  const [phone, setPhone] = useState("");
+  const [step, setStep] = useState<Step>("email");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,15 +43,15 @@ export default function LoginPage() {
     }
   }, [countdown]);
 
-  const validatePhone = (value: string): boolean => {
-    const digits = value.replace(/\D/g, "");
-    if (digits.length !== 8) return false;
-    return ["2", "3", "5", "6", "7", "8", "9"].includes(digits[0]);
+  const validateEmailInput = (value: string): boolean => {
+    const trimmed = value.trim();
+    if (trimmed.length === 0 || trimmed.length > 254) return false;
+    return EMAIL_REGEX.test(trimmed);
   };
 
   const handleSendOtp = async () => {
-    if (!validatePhone(phone)) {
-      setError("請輸入有效嘅8位香港電話號碼");
+    if (!validateEmailInput(email)) {
+      setError("請輸入有效嘅電郵地址");
       return;
     }
 
@@ -60,14 +62,14 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: `+852${phone.replace(/\D/g, "")}` }),
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
       const data = await res.json();
 
       if (data.ok) {
         setStep("otp");
         setCountdown(60);
-        // Store demo OTP if provided
+        // Store demo OTP if provided (local dev only)
         if (data.data.demoMode && data.data.otp) {
           setDemoOtp(data.data.otp);
         }
@@ -121,8 +123,8 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const normalizedPhone = `+852${phone.replace(/\D/g, "")}`;
-    const result = await login(normalizedPhone, otpCode);
+    const normalizedEmail = email.trim().toLowerCase();
+    const result = await login(normalizedEmail, otpCode);
 
     if (result.success) {
       router.push(redirectTo);
@@ -144,17 +146,24 @@ export default function LoginPage() {
 
   const t = {
     title: locale === "zh-HK" ? "登入 / 註冊" : "Login / Register",
-    phoneLabel: locale === "zh-HK" ? "電話號碼" : "Phone Number",
-    phonePlaceholder: locale === "zh-HK" ? "輸入8位電話號碼" : "Enter 8-digit phone number",
-    sendOtp: locale === "zh-HK" ? "發送驗證碼" : "Send OTP",
-    otpLabel: locale === "zh-HK" ? "驗證碼" : "Verification Code",
-    otpSent: locale === "zh-HK" ? "驗證碼已發送到" : "OTP sent to",
+    emailLabel: locale === "zh-HK" ? "電郵地址" : "Email address",
+    emailPlaceholder: locale === "zh-HK" ? "you@example.com" : "you@example.com",
+    sendOtp: locale === "zh-HK" ? "發送電郵驗證碼" : "Send email code",
+    otpLabel: locale === "zh-HK" ? "電郵驗證碼" : "Email verification code",
+    otpSent: locale === "zh-HK" ? "驗證碼已發送至" : "Code sent to",
     verify: locale === "zh-HK" ? "驗證" : "Verify",
     resend: locale === "zh-HK" ? "重新發送" : "Resend",
     resendIn: locale === "zh-HK" ? "秒後可重新發送" : "s before resend",
-    demoHint: locale === "zh-HK" ? "測試用驗證碼: 123456" : "Test OTP: 123456",
+    demoHint:
+      locale === "zh-HK"
+        ? "本地測試：驗證碼會喺呢度顯示"
+        : "Local dev: code shown here",
     back: locale === "zh-HK" ? "返回" : "Back",
-    changePhone: locale === "zh-HK" ? "更改號碼" : "Change number",
+    changeEmail: locale === "zh-HK" ? "更改電郵" : "Change email",
+    checkInbox:
+      locale === "zh-HK"
+        ? "請檢查收件箱（及垃圾郵件夾）"
+        : "Check your inbox (and spam folder)",
   };
 
   return (
@@ -174,24 +183,25 @@ export default function LoginPage() {
             {t.title}
           </h1>
 
-          {step === "phone" && (
+          {step === "email" && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                  {t.phoneLabel}
+                  {t.emailLabel}
                 </label>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                    <Phone size={16} />
-                    <span className="text-sm">+852</span>
-                  </div>
+                <div className="relative">
+                  <Mail
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+                  />
                   <input
-                    type="tel"
-                    inputMode="numeric"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                    placeholder={t.phonePlaceholder}
-                    className="flex-1 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-olive-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t.emailPlaceholder}
+                    className="w-full rounded-xl border border-zinc-200 bg-white pl-9 pr-4 py-2.5 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-olive-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
                     autoFocus
                     onKeyDown={(e) => e.key === "Enter" && handleSendOtp()}
                   />
@@ -206,26 +216,24 @@ export default function LoginPage() {
 
               <button
                 onClick={handleSendOtp}
-                disabled={loading || phone.length !== 8}
+                disabled={loading || !validateEmailInput(email)}
                 className="w-full rounded-xl bg-olive-600 py-3 text-white font-semibold hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? "發送中..." : t.sendOtp}
               </button>
-
-              {/* Demo hint */}
-              <div className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
-                <div className="flex items-center gap-2">
-                  <Shield size={16} />
-                  <span>{t.demoHint}</span>
-                </div>
-              </div>
             </div>
           )}
 
           {step === "otp" && (
             <div className="space-y-4">
               <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                {t.otpSent} <span className="font-semibold text-zinc-900 dark:text-zinc-100">+852 {phone}</span>
+                {t.otpSent}{" "}
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  {email.trim().toLowerCase()}
+                </span>
+                <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
+                  {t.checkInbox}
+                </div>
               </div>
 
               <div>
@@ -249,10 +257,14 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Show demo OTP if available */}
+              {/* Show demo OTP if available (local dev only) */}
               {demoOtp && (
                 <div className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-                  驗證碼: <span className="font-mono font-semibold">{demoOtp}</span>
+                  <div className="flex items-center gap-2">
+                    <Shield size={16} />
+                    <span>{t.demoHint}: </span>
+                    <span className="font-mono font-semibold">{demoOtp}</span>
+                  </div>
                 </div>
               )}
 
@@ -273,14 +285,14 @@ export default function LoginPage() {
               <div className="flex items-center justify-between text-sm">
                 <button
                   onClick={() => {
-                    setStep("phone");
+                    setStep("email");
                     setOtp(["", "", "", "", "", ""]);
                     setError(null);
                     setDemoOtp(null);
                   }}
                   className="text-olive-600 hover:text-olive-700 dark:text-olive-500 dark:hover:text-olive-400"
                 >
-                  {t.changePhone}
+                  {t.changeEmail}
                 </button>
                 <button
                   onClick={handleResend}
@@ -289,14 +301,6 @@ export default function LoginPage() {
                 >
                   {countdown > 0 ? `${countdown}${t.resendIn}` : t.resend}
                 </button>
-              </div>
-
-              {/* Demo hint */}
-              <div className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
-                <div className="flex items-center gap-2">
-                  <Shield size={16} />
-                  <span>{t.demoHint}</span>
-                </div>
               </div>
             </div>
           )}
