@@ -64,10 +64,9 @@ export async function POST(req: Request) {
       role: admin.role,
     });
 
-    // Build response with cookie
+    // JWT lives in httpOnly cookie only — never echoed to JSON body to avoid XSS exfiltration
     const response = NextResponse.json({
       ok: true,
-      token,
       admin: {
         id: admin.id,
         email: admin.email,

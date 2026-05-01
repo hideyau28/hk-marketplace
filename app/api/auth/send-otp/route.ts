@@ -77,15 +77,16 @@ export async function POST(request: NextRequest) {
     // Store OTP
     await storeOTP(normalizedPhone, otp);
 
-    // In demo mode, return OTP in response for easy testing
-    const isDemoMode = process.env.NODE_ENV !== "production";
+    // Only expose OTP in local development — never in Preview, staging, or production.
+    // NODE_ENV === "development" only matches `next dev`; Vercel Preview runs as "production".
+    const isDevMode = process.env.NODE_ENV === "development";
 
     return NextResponse.json({
       ok: true,
       data: {
         message: "驗證碼已發送",
-        // Only include OTP in demo mode
-        ...(isDemoMode && { otp, demoMode: true }),
+        // Only include OTP in local dev
+        ...(isDevMode && { otp, demoMode: true }),
       },
     });
   } catch (error) {

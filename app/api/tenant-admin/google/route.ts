@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 
 /**
  * GET /api/tenant-admin/google
  * Redirects the user to the Google OAuth 2.0 consent screen.
+ * Sets a CSRF state cookie for verification in the callback.
  * Accepts ?onboarding=true to pass state through the OAuth flow.
  */
 export async function GET(request: NextRequest) {
@@ -21,10 +23,13 @@ export async function GET(request: NextRequest) {
 
   const redirectUri = `${baseUrl}/api/tenant-admin/google/callback`;
 
-  // Pass onboarding flag + locale through OAuth state param
+  // CSRF nonce — embedded in OAuth state and stored in httpOnly cookie for verification
+  const nonce = crypto.randomBytes(32).toString("hex");
+
+  // Pass onboarding flag + locale + CSRF nonce through OAuth state param
   const isOnboarding = request.nextUrl.searchParams.get("onboarding") === "true";
   const locale = request.nextUrl.searchParams.get("locale") || "en";
-  const stateObj: Record<string, unknown> = { locale };
+  const stateObj: Record<string, unknown> = { locale, nonce };
   if (isOnboarding) stateObj.onboarding = true;
   const stateStr = Buffer.from(JSON.stringify(stateObj)).toString("base64url");
 
@@ -41,5 +46,14 @@ export async function GET(request: NextRequest) {
 
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 
-  return NextResponse.redirect(googleAuthUrl);
+  const response = NextResponse.redirect(googleAuthUrl);
+  response.cookies.set("google_oauth_state", nonce, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 600, // 10 minutes
+    path: "/",
+  });
+
+  return response;
 }

@@ -19,9 +19,10 @@ export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is required");
 
-  // Parse state to check if this is an onboarding flow + locale
+  // Parse state to check if this is an onboarding flow + locale + CSRF nonce
   let isOnboarding = false;
   let locale = "en";
+  let stateNonce: string | null = null;
   if (stateParam) {
     try {
       const stateObj = JSON.parse(
@@ -30,6 +31,9 @@ export async function GET(request: NextRequest) {
       isOnboarding = stateObj.onboarding === true;
       if (stateObj.locale && typeof stateObj.locale === "string") {
         locale = stateObj.locale;
+      }
+      if (stateObj.nonce && typeof stateObj.nonce === "string") {
+        stateNonce = stateObj.nonce;
       }
     } catch {
       // Invalid state, ignore
@@ -48,6 +52,13 @@ export async function GET(request: NextRequest) {
   if (!code) {
     console.error("[Google OAuth] No authorization code in callback");
     return NextResponse.redirect(`${errorRedirect}?error=no_code`);
+  }
+
+  // CSRF state verification — nonce in state must match httpOnly cookie
+  const storedNonce = request.cookies.get("google_oauth_state")?.value;
+  if (!stateNonce || !storedNonce || stateNonce !== storedNonce) {
+    console.error("[Google OAuth] State mismatch (CSRF check failed)");
+    return NextResponse.redirect(`${errorRedirect}?error=state_mismatch`);
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
