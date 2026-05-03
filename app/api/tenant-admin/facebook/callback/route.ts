@@ -2,39 +2,74 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSession } from "@/lib/admin/session";
 import { prisma } from "@/lib/prisma";
 import { exchangeCodeForToken, getFacebookUser } from "@/lib/auth/facebook";
+import { signToken } from "@/lib/auth/jwt";
 
 export const runtime = "nodejs";
+
+const ALLOWED_LOCALES = new Set(["en", "zh-HK"]);
+
+/**
+ * Build a redirect response and clear the CSRF nonce cookie at the same time.
+ * Used for both error and success paths so the cookie never lingers across flows.
+ */
+function redirectAndClearState(url: string): NextResponse {
+  const response = NextResponse.redirect(url);
+  response.cookies.delete("fb_oauth_state");
+  return response;
+}
 
 /**
  * GET /api/tenant-admin/facebook/callback
  * Handles the OAuth 2.0 callback from Facebook.
  * Verifies CSRF state, exchanges code for token, checks email whitelist,
- * creates an admin session, and redirects to the admin dashboard.
+ * creates an admin session (admin_session + tenant-admin-token cookies),
+ * and redirects to the admin dashboard in the user's locale.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
   const error = searchParams.get("error");
-  const state = searchParams.get("state");
+  const stateParam = searchParams.get("state");
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   if (!baseUrl) throw new Error("NEXT_PUBLIC_BASE_URL is required");
+
+  // Parse state to extract locale + CSRF nonce
+  let locale = "en";
+  let stateNonce: string | null = null;
+  if (stateParam) {
+    try {
+      const stateObj = JSON.parse(
+        Buffer.from(stateParam, "base64url").toString(),
+      );
+      if (stateObj.locale && ALLOWED_LOCALES.has(stateObj.locale)) {
+        locale = stateObj.locale;
+      }
+      if (stateObj.nonce && typeof stateObj.nonce === "string") {
+        stateNonce = stateObj.nonce;
+      }
+    } catch {
+      // Invalid state — fall back to default locale, fail CSRF check below
+    }
+  }
+
+  const errorRedirect = `${baseUrl}/${locale}/admin/login`;
 
   // User cancelled the Facebook login
   if (error) {
     console.error("[Facebook OAuth] Error from Facebook:", error);
-    return NextResponse.redirect(`${baseUrl}/en/admin/login?error=facebook_denied`);
+    return redirectAndClearState(`${errorRedirect}?error=facebook_denied`);
   }
 
   if (!code) {
     console.error("[Facebook OAuth] No authorization code in callback");
-    return NextResponse.redirect(`${baseUrl}/en/admin/login?error=no_code`);
+    return redirectAndClearState(`${errorRedirect}?error=no_code`);
   }
 
-  // CSRF state verification
-  const storedState = request.cookies.get("fb_oauth_state")?.value;
-  if (!state || !storedState || state !== storedState) {
+  // CSRF state verification — nonce in state must match httpOnly cookie
+  const storedNonce = request.cookies.get("fb_oauth_state")?.value;
+  if (!stateNonce || !storedNonce || stateNonce !== storedNonce) {
     console.error("[Facebook OAuth] State mismatch (CSRF check failed)");
-    return NextResponse.redirect(`${baseUrl}/en/admin/login?error=state_mismatch`);
+    return redirectAndClearState(`${errorRedirect}?error=state_mismatch`);
   }
 
   const appId = process.env.FACEBOOK_APP_ID;
@@ -42,7 +77,7 @@ export async function GET(request: NextRequest) {
 
   if (!appId || !appSecret) {
     console.error("[Facebook OAuth] Facebook OAuth credentials not configured");
-    return NextResponse.redirect(`${baseUrl}/en/admin/login?error=config`);
+    return redirectAndClearState(`${errorRedirect}?error=config`);
   }
 
   const callbackUrl = `${baseUrl}/api/tenant-admin/facebook/callback`;
@@ -56,7 +91,7 @@ export async function GET(request: NextRequest) {
 
     if (!fbUser.email) {
       console.error("[Facebook OAuth] No email returned from Facebook");
-      return NextResponse.redirect(`${baseUrl}/en/admin/login?error=no_email`);
+      return redirectAndClearState(`${errorRedirect}?error=no_email`);
     }
 
     // Check if email is in the TenantAdmin whitelist
@@ -65,30 +100,47 @@ export async function GET(request: NextRequest) {
     });
 
     if (!admin) {
-      console.error("[Facebook OAuth] Email not in TenantAdmin whitelist:", fbUser.email);
-      return NextResponse.redirect(`${baseUrl}/en/admin/login?error=unauthorized`);
+      console.error(
+        "[Facebook OAuth] Email not in TenantAdmin whitelist:",
+        fbUser.email,
+      );
+      return redirectAndClearState(`${errorRedirect}?error=unauthorized`);
     }
 
-    // Create admin session JWT
-    const token = await createSession();
+    // Two cookies are required for an authenticated admin session:
+    //   admin_session     — middleware guard (short-lived, 24h)
+    //   tenant-admin-token — JWT carrying tenantId/adminId/email/role,
+    //                        consumed by API routes for tenant context (7d)
+    // Missing tenant-admin-token caused every post-login API call to 401.
+    const sessionToken = await createSession();
+    const adminToken = signToken({
+      tenantId: admin.tenantId,
+      adminId: admin.id,
+      email: admin.email,
+      role: admin.role,
+    });
 
-    // Set cookie directly on the redirect response (same pattern as Google OAuth)
-    const redirectUrl = `${baseUrl}/en/admin/products`;
-    const response = NextResponse.redirect(redirectUrl);
-    response.cookies.set("admin_session", token, {
+    // Set cookies directly on the redirect response (same pattern as Google OAuth)
+    const redirectUrl = `${baseUrl}/${locale}/admin/products`;
+    const response = redirectAndClearState(redirectUrl);
+    response.cookies.set("admin_session", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax", // "lax" required for OAuth flows (navigation from Facebook)
       maxAge: 60 * 60 * 24,
       path: "/",
     });
-
-    // Delete the CSRF state cookie
-    response.cookies.delete("fb_oauth_state");
+    response.cookies.set("tenant-admin-token", adminToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days, matches Google callback
+      path: "/",
+    });
 
     return response;
   } catch (err) {
     console.error("[Facebook OAuth] Callback error:", err);
-    return NextResponse.redirect(`${baseUrl}/en/admin/login?error=callback_failed`);
+    return redirectAndClearState(`${errorRedirect}?error=callback_failed`);
   }
 }
