@@ -5,10 +5,11 @@ import Link from "next/link";
 import {
   ArrowRight,
   Boxes,
-  ListChecks,
-  Users,
+  Check,
   Languages,
+  ListChecks,
   Sparkles,
+  Users,
 } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 
@@ -29,19 +30,19 @@ const T = {
     heroSecondary: "已有帳戶？登入",
     heroTrust: "0% 佣金 · 唔使信用卡 · 即開即用",
 
-    statsEyebrow: "首批商戶嘅選擇",
-    stat1Num: "500",
-    stat1Suffix: "+",
-    stat1Label: "間 IG 小店",
-    stat2Num: "12k",
-    stat2Suffix: "+",
-    stat2Label: "件商品上架",
-    stat3Num: "98",
-    stat3Suffix: "%",
-    stat3Label: "訂單成功率",
-    stat4Num: "99.9",
-    stat4Suffix: "%",
-    stat4Label: "服務正常時間",
+    statsEyebrow: "我哋承諾",
+    stat1Num: "0",
+    stat1Suffix: "%",
+    stat1Label: "佣金",
+    stat2Num: "2",
+    stat2Suffix: "分鐘",
+    stat2Label: "開店時間",
+    stat3Num: "$0",
+    stat3Suffix: "",
+    stat3Label: "免費開始",
+    stat4Num: "新",
+    stat4Suffix: "",
+    stat4Label: "首批商戶招募中",
 
     featEyebrow: "為小店而設",
     featTitle: "你需要嘅一切，都喺呢度。",
@@ -56,6 +57,28 @@ const T = {
       "自動建立客戶檔案，回購率、訂單歷史、聯絡資料一目了然。",
     feat4Title: "多語言支援",
     feat4Desc: "繁中 / 英文同步切換，海外客人都睇得明。SEO 自動處理。",
+
+    pricingEyebrow: "定價",
+    pricingTitle: "簡單透明，0% 佣金。",
+    pricingSub: "你賺幾多就係幾多。冇隱藏收費。",
+    pricingFreeName: "Free",
+    pricingFreeDesc: "試水溫",
+    pricingFreePrice: "$0",
+    pricingFreePeriod: "／月",
+    pricingFreeFeats: ["50 件商品", "基本模板", "Email 驗證碼登入"],
+    pricingLiteName: "Lite",
+    pricingLiteDesc: "認真做生意",
+    pricingLitePrice: "$99",
+    pricingLitePeriod: "／月",
+    pricingLiteBadge: "推薦",
+    pricingLiteFeats: ["500 件商品", "所有模板", "自訂域名", "優先支援"],
+    pricingProName: "Pro",
+    pricingProDesc: "規模化",
+    pricingProPrice: "$299",
+    pricingProPeriod: "／月",
+    pricingProFeats: ["無限商品", "API 接入", "多分店", "專屬客服支援"],
+    pricingCta: "選擇方案",
+    pricingFullLink: "查看完整定價",
 
     howEyebrow: "三步開店",
     howTitle: "由 link 到生意，最快兩分鐘。",
@@ -103,19 +126,19 @@ const T = {
     heroSecondary: "Have an account? Login",
     heroTrust: "0% commission · No credit card · Live instantly",
 
-    statsEyebrow: "Trusted by early shops",
-    stat1Num: "500",
-    stat1Suffix: "+",
-    stat1Label: "IG shops",
-    stat2Num: "12k",
-    stat2Suffix: "+",
-    stat2Label: "products listed",
-    stat3Num: "98",
-    stat3Suffix: "%",
-    stat3Label: "order success rate",
-    stat4Num: "99.9",
-    stat4Suffix: "%",
-    stat4Label: "uptime",
+    statsEyebrow: "What we promise",
+    stat1Num: "0",
+    stat1Suffix: "%",
+    stat1Label: "Commission",
+    stat2Num: "2",
+    stat2Suffix: "min",
+    stat2Label: "To launch",
+    stat3Num: "$0",
+    stat3Suffix: "",
+    stat3Label: "Free to start",
+    stat4Num: "New",
+    stat4Suffix: "",
+    stat4Label: "Onboarding now",
 
     featEyebrow: "Built for small shops",
     featTitle: "Everything you need, nothing you don't.",
@@ -131,6 +154,38 @@ const T = {
     feat4Title: "Multilingual",
     feat4Desc:
       "Bilingual zh-HK / EN out of the box. Overseas customers welcomed. SEO handled.",
+
+    pricingEyebrow: "Pricing",
+    pricingTitle: "Simple, transparent, 0% commission.",
+    pricingSub: "What you earn is what you keep. No hidden fees.",
+    pricingFreeName: "Free",
+    pricingFreeDesc: "Test the waters",
+    pricingFreePrice: "$0",
+    pricingFreePeriod: "/mo",
+    pricingFreeFeats: ["50 products", "Basic templates", "Email OTP login"],
+    pricingLiteName: "Lite",
+    pricingLiteDesc: "Serious business",
+    pricingLitePrice: "$99",
+    pricingLitePeriod: "/mo",
+    pricingLiteBadge: "Recommended",
+    pricingLiteFeats: [
+      "500 products",
+      "All templates",
+      "Custom domain",
+      "Priority support",
+    ],
+    pricingProName: "Pro",
+    pricingProDesc: "Scale up",
+    pricingProPrice: "$299",
+    pricingProPeriod: "/mo",
+    pricingProFeats: [
+      "Unlimited products",
+      "API access",
+      "Multi-store",
+      "Dedicated support",
+    ],
+    pricingCta: "Choose plan",
+    pricingFullLink: "See full pricing",
 
     howEyebrow: "Three steps",
     howTitle: "From link to live in two minutes.",
@@ -301,72 +356,178 @@ export default function WowlixLandingPage({ locale = "zh-HK" }: Props) {
           />
         </div>
 
-        <div className="relative mx-auto max-w-[1200px] px-5 pb-20 pt-24 sm:px-8 sm:pb-32 sm:pt-32">
-          {/* Announcement pill */}
-          <div
-            className="wlx-fade-up inline-flex items-center gap-2 border border-wlx-mist bg-wlx-paper/60 px-3 py-1.5 backdrop-blur-sm"
-            style={{ animationDelay: "60ms" }}
-          >
-            <Sparkles size={12} className="text-wlx-accent" />
-            <span className="text-[11px] uppercase tracking-[0.18em] text-wlx-ink">
-              {t.heroPill}
-            </span>
-          </div>
-
-          {/* Headline */}
-          <h1
-            className="wlx-fade-up mt-7 max-w-[18ch] font-wlx-display text-[clamp(44px,9.5vw,96px)] font-semibold leading-[1.02] tracking-[-0.02em]"
-            style={{ animationDelay: "140ms" }}
-          >
-            {t.heroTitleA}{" "}
-            <span className="font-wlx-serif text-wlx-accent italic font-normal">
-              {t.heroTitleAccent}
-            </span>{" "}
-            {t.heroTitleB}
-          </h1>
-
-          {/* Sub */}
-          <p
-            className="wlx-fade-up mt-7 max-w-[44ch] text-base leading-relaxed text-wlx-stone sm:text-lg"
-            style={{ animationDelay: "220ms" }}
-          >
-            {t.heroSub}
-          </p>
-
-          {/* CTAs */}
-          <div
-            className="wlx-fade-up mt-10 flex flex-col gap-3 sm:flex-row sm:items-center"
-            style={{ animationDelay: "300ms" }}
-          >
-            <Link
-              href={`/${locale}/start`}
-              className="group inline-flex items-center justify-center gap-2 bg-wlx-ink px-7 py-4 text-[12px] uppercase tracking-[0.22em] text-wlx-paper transition-all duration-300 hover:bg-wlx-ink/90 hover:shadow-[0_18px_40px_-18px_rgba(26,26,26,0.6)]"
-              style={{ transitionTimingFunction: "var(--wlx-ease)" }}
+        <div className="relative mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-12 px-5 pb-20 pt-24 sm:px-8 sm:pb-32 sm:pt-32 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
+          {/* ── Left: copy ── */}
+          <div>
+            {/* Announcement pill */}
+            <div
+              className="wlx-fade-up inline-flex items-center gap-2 border border-wlx-mist bg-wlx-paper/60 px-3 py-1.5 backdrop-blur-sm"
+              style={{ animationDelay: "60ms" }}
             >
-              {t.heroCta}
-              <ArrowRight
-                size={14}
-                className="transition-transform duration-300 group-hover:translate-x-1"
+              <Sparkles size={12} className="text-wlx-accent" />
+              <span className="text-[11px] uppercase tracking-[0.18em] text-wlx-ink">
+                {t.heroPill}
+              </span>
+            </div>
+
+            {/* Headline — titleA on its own line; accent + titleB stay
+                together on line 2 so the italic word never mid-word-splits. */}
+            <h1
+              className="wlx-fade-up mt-7 font-wlx-display text-[clamp(40px,6.4vw,68px)] font-semibold leading-[1.05] tracking-[-0.02em]"
+              style={{ animationDelay: "140ms" }}
+            >
+              <span className="block">{t.heroTitleA}</span>
+              <span className="block">
+                <span className="font-wlx-serif text-wlx-accent italic font-normal">
+                  {t.heroTitleAccent}
+                </span>{" "}
+                {t.heroTitleB}
+              </span>
+            </h1>
+
+            {/* Sub */}
+            <p
+              className="wlx-fade-up mt-7 max-w-[44ch] text-base leading-relaxed text-wlx-stone sm:text-lg"
+              style={{ animationDelay: "220ms" }}
+            >
+              {t.heroSub}
+            </p>
+
+            {/* CTAs */}
+            <div
+              className="wlx-fade-up mt-10 flex flex-col gap-3 sm:flex-row sm:items-center"
+              style={{ animationDelay: "300ms" }}
+            >
+              <Link
+                href={`/${locale}/start`}
+                className="group inline-flex items-center justify-center gap-2 bg-wlx-ink px-7 py-4 text-[12px] uppercase tracking-[0.22em] text-wlx-paper transition-all duration-300 hover:bg-wlx-ink/90 hover:shadow-[0_18px_40px_-18px_rgba(26,26,26,0.6)]"
                 style={{ transitionTimingFunction: "var(--wlx-ease)" }}
-              />
-            </Link>
-            <Link
-              href={`/${locale}/admin/login`}
-              className="inline-flex items-center justify-center gap-1 px-2 py-4 text-[12px] uppercase tracking-[0.22em] text-wlx-stone transition-colors duration-200 hover:text-wlx-ink sm:px-4"
-              style={{ transitionTimingFunction: "var(--wlx-ease)" }}
+              >
+                {t.heroCta}
+                <ArrowRight
+                  size={14}
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                  style={{ transitionTimingFunction: "var(--wlx-ease)" }}
+                />
+              </Link>
+              <Link
+                href={`/${locale}/admin/login`}
+                className="inline-flex items-center justify-center gap-1 px-2 py-4 text-[12px] uppercase tracking-[0.22em] text-wlx-stone transition-colors duration-200 hover:text-wlx-ink sm:px-4"
+                style={{ transitionTimingFunction: "var(--wlx-ease)" }}
+              >
+                {t.heroSecondary}
+                <ArrowRight size={12} />
+              </Link>
+            </div>
+
+            {/* Trust line */}
+            <p
+              className="wlx-fade-up mt-8 text-[12px] uppercase tracking-[0.18em] text-wlx-stone/80"
+              style={{ animationDelay: "380ms" }}
             >
-              {t.heroSecondary}
-              <ArrowRight size={12} />
-            </Link>
+              {t.heroTrust}
+            </p>
           </div>
 
-          {/* Trust line */}
-          <p
-            className="wlx-fade-up mt-8 text-[12px] uppercase tracking-[0.18em] text-wlx-stone/80"
-            style={{ animationDelay: "380ms" }}
+          {/* ── Right: phone mockup (lg+ only) ──
+              Mini storefront preview drawn entirely with CSS — no images,
+              uses the same wlx-* tokens so it tracks tenant-overridden accent. */}
+          <div
+            className="wlx-fade-up hidden lg:flex lg:justify-center"
+            style={{ animationDelay: "460ms" }}
+            aria-hidden
           >
-            {t.heroTrust}
-          </p>
+            <div
+              className="relative"
+              style={{ transform: "rotate(-2deg)" }}
+            >
+              {/* Soft halo behind the phone */}
+              <div
+                className="absolute -inset-10 -z-10 rounded-full opacity-60 blur-3xl"
+                style={{
+                  background:
+                    "radial-gradient(closest-side, rgba(201,169,97,0.35), transparent 70%)",
+                }}
+              />
+
+              {/* Phone outer frame (bezel) */}
+              <div className="relative w-[300px] rounded-[44px] bg-wlx-ink p-[10px] shadow-[0_30px_60px_-20px_rgba(26,26,26,0.55)] ring-1 ring-wlx-ink/30">
+                {/* Notch */}
+                <div className="absolute left-1/2 top-[10px] z-20 h-6 w-28 -translate-x-1/2 rounded-b-2xl bg-wlx-ink" />
+
+                {/* Inner screen */}
+                <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[34px] bg-wlx-paper">
+                  {/* Top app bar */}
+                  <div className="flex items-center justify-between border-b border-wlx-mist px-4 pb-3 pt-9">
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-full bg-gradient-to-br from-wlx-accent to-wlx-stone" />
+                      <span className="font-wlx-display text-[13px] font-semibold tracking-tight text-wlx-ink">
+                        @maysshop
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-wlx-accent" />
+                      <span className="text-[9px] uppercase tracking-[0.18em] text-wlx-stone">
+                        Live
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Banner */}
+                  <div className="mx-3 mt-3 flex h-16 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-wlx-cream via-wlx-mist to-wlx-paper">
+                    <span className="font-wlx-serif text-xs italic text-wlx-stone">
+                      Spring drop
+                    </span>
+                  </div>
+
+                  {/* Product grid 2×2 */}
+                  <div className="mx-3 mt-3 grid grid-cols-2 gap-2">
+                    {[
+                      { name: "Hoop ring", price: "$ 280" },
+                      { name: "Pearl set", price: "$ 480" },
+                      { name: "Charm bracelet", price: "$ 360" },
+                      { name: "Mini studs", price: "$ 180" },
+                    ].map((p, i) => (
+                      <div key={i} className="space-y-1">
+                        <div className="aspect-square overflow-hidden rounded-md border border-wlx-mist bg-wlx-cream">
+                          {/* Tiny abstract motif so cards aren't visually empty */}
+                          <div
+                            className="h-full w-full"
+                            style={{
+                              background:
+                                i % 2 === 0
+                                  ? "radial-gradient(circle at 35% 40%, rgba(201,169,97,0.4), transparent 55%)"
+                                  : "radial-gradient(circle at 60% 60%, rgba(111,106,99,0.3), transparent 55%)",
+                            }}
+                          />
+                        </div>
+                        <div className="truncate text-[9px] text-wlx-ink">
+                          {p.name}
+                        </div>
+                        <div className="text-[10px] font-semibold tabular-nums text-wlx-ink">
+                          {p.price}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Sticky cart bar */}
+                  <div className="absolute inset-x-0 bottom-0 border-t border-wlx-mist bg-wlx-paper/95 px-3 py-3 backdrop-blur">
+                    <div className="rounded bg-wlx-ink py-2 text-center text-[10px] uppercase tracking-[0.18em] text-wlx-paper">
+                      View cart · 2
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating accent badge */}
+              <div className="absolute -left-6 top-12 hidden rotate-[8deg] border border-wlx-mist bg-wlx-paper px-3 py-1.5 shadow-md xl:block">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-wlx-ink">
+                  0% commission
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -435,6 +596,140 @@ export default function WowlixLandingPage({ locale = "zh-HK" }: Props) {
               );
             })}
           </ul>
+        </div>
+      </section>
+
+      {/* ───────── Pricing ───────── */}
+      <section className="wlx-reveal border-b border-wlx-mist">
+        <div className="mx-auto max-w-[1200px] px-5 py-20 sm:px-8 sm:py-28">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-wlx-stone">
+            {t.pricingEyebrow}
+          </p>
+          <h2 className="mt-5 max-w-[26ch] font-wlx-display text-[clamp(28px,4.8vw,48px)] font-semibold leading-[1.1] tracking-[-0.02em]">
+            {t.pricingTitle}
+          </h2>
+          <p className="mt-3 max-w-[44ch] text-base leading-relaxed text-wlx-stone sm:text-lg">
+            {t.pricingSub}
+          </p>
+
+          <div className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Free */}
+            <article className="group relative flex flex-col border border-wlx-mist bg-wlx-paper p-8 transition-colors duration-300 hover:border-wlx-ink/30">
+              <h3 className="font-wlx-display text-xl font-semibold tracking-tight">
+                {t.pricingFreeName}
+              </h3>
+              <p className="mt-1 text-[12px] uppercase tracking-[0.18em] text-wlx-stone">
+                {t.pricingFreeDesc}
+              </p>
+              <p className="mt-7 font-wlx-display text-4xl font-semibold tabular-nums tracking-tight">
+                {t.pricingFreePrice}
+                <span className="ml-1 text-sm font-normal text-wlx-stone">
+                  {t.pricingFreePeriod}
+                </span>
+              </p>
+              <ul className="mt-7 flex-1 space-y-3 text-sm text-wlx-ink">
+                {t.pricingFreeFeats.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check
+                      size={16}
+                      strokeWidth={2}
+                      className="mt-0.5 shrink-0 text-wlx-ink"
+                    />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`/${locale}/start`}
+                className="mt-8 inline-block border border-wlx-ink py-3 text-center text-[12px] uppercase tracking-[0.22em] text-wlx-ink transition-colors duration-200 hover:bg-wlx-ink hover:text-wlx-paper"
+                style={{ transitionTimingFunction: "var(--wlx-ease)" }}
+              >
+                {t.pricingCta}
+              </Link>
+            </article>
+
+            {/* Lite — recommended */}
+            <article className="relative flex flex-col bg-wlx-ink p-8 text-wlx-paper shadow-[0_30px_60px_-25px_rgba(26,26,26,0.5)] lg:-my-2">
+              <div className="absolute -top-3 left-8 bg-wlx-accent px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-wlx-accent-fg">
+                {t.pricingLiteBadge}
+              </div>
+              <h3 className="font-wlx-display text-xl font-semibold tracking-tight">
+                {t.pricingLiteName}
+              </h3>
+              <p className="mt-1 text-[12px] uppercase tracking-[0.18em] text-wlx-paper/70">
+                {t.pricingLiteDesc}
+              </p>
+              <p className="mt-7 font-wlx-display text-4xl font-semibold tabular-nums tracking-tight">
+                {t.pricingLitePrice}
+                <span className="ml-1 text-sm font-normal text-wlx-paper/70">
+                  {t.pricingLitePeriod}
+                </span>
+              </p>
+              <ul className="mt-7 flex-1 space-y-3 text-sm">
+                {t.pricingLiteFeats.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check
+                      size={16}
+                      strokeWidth={2}
+                      className="mt-0.5 shrink-0 text-wlx-accent"
+                    />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`/${locale}/start?plan=lite`}
+                className="mt-8 inline-block bg-wlx-paper py-3 text-center text-[12px] uppercase tracking-[0.22em] text-wlx-ink transition-colors duration-200 hover:bg-wlx-paper/90"
+                style={{ transitionTimingFunction: "var(--wlx-ease)" }}
+              >
+                {t.pricingCta}
+              </Link>
+            </article>
+
+            {/* Pro */}
+            <article className="group relative flex flex-col border border-wlx-mist bg-wlx-paper p-8 transition-colors duration-300 hover:border-wlx-ink/30">
+              <h3 className="font-wlx-display text-xl font-semibold tracking-tight">
+                {t.pricingProName}
+              </h3>
+              <p className="mt-1 text-[12px] uppercase tracking-[0.18em] text-wlx-stone">
+                {t.pricingProDesc}
+              </p>
+              <p className="mt-7 font-wlx-display text-4xl font-semibold tabular-nums tracking-tight">
+                {t.pricingProPrice}
+                <span className="ml-1 text-sm font-normal text-wlx-stone">
+                  {t.pricingProPeriod}
+                </span>
+              </p>
+              <ul className="mt-7 flex-1 space-y-3 text-sm text-wlx-ink">
+                {t.pricingProFeats.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check
+                      size={16}
+                      strokeWidth={2}
+                      className="mt-0.5 shrink-0 text-wlx-ink"
+                    />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`/${locale}/start?plan=pro`}
+                className="mt-8 inline-block border border-wlx-ink py-3 text-center text-[12px] uppercase tracking-[0.22em] text-wlx-ink transition-colors duration-200 hover:bg-wlx-ink hover:text-wlx-paper"
+                style={{ transitionTimingFunction: "var(--wlx-ease)" }}
+              >
+                {t.pricingCta}
+              </Link>
+            </article>
+          </div>
+
+          <Link
+            href={`/${locale}/pricing`}
+            className="mt-10 inline-flex items-center gap-1 text-[12px] uppercase tracking-[0.22em] text-wlx-stone transition-colors duration-200 hover:text-wlx-ink"
+            style={{ transitionTimingFunction: "var(--wlx-ease)" }}
+          >
+            {t.pricingFullLink}
+            <ArrowRight size={12} />
+          </Link>
         </div>
       </section>
 

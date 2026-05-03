@@ -47,8 +47,20 @@ export default async function CustomerLayout({
     );
   }
 
-  // Fetch tenant template + welcome popup settings (tenant-aware)
-  const tenantId = await getServerTenantId();
+  // Fetch tenant template + welcome popup settings (tenant-aware).
+  // If tenant lookup fails (slug unknown, tenant disabled, DB hiccup) we
+  // fall through to a minimal layout so page.tsx's catch can render the
+  // landing page instead of 500-ing the whole route.
+  let tenantId: string;
+  try {
+    tenantId = await getServerTenantId();
+  } catch {
+    return (
+      <ThemeProvider>
+        <main>{children}</main>
+      </ThemeProvider>
+    );
+  }
   const [tenantRow, storeSettings] = await Promise.all([
     prisma.tenant
       .findUnique({
